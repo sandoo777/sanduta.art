@@ -157,43 +157,51 @@ export default function AdminProducts() {
           </button>
         )}
       </form>
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">Image</th>
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Category</th>
-            <th className="p-2 border">Price</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="border">
-              <td className="p-2 border">
-                {product.image_url && <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover" />}
-              </td>
-              <td className="p-2 border">{product.name}</td>
-              <td className="p-2 border">{product.category}</td>
-              <td className="p-2 border">{product.price}</td>
-              <td className="p-2 border">
-                <button
-                  onClick={() => handleEdit(product)}
-                  className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(product.id)}
-                  className="px-2 py-1 bg-red-500 text-white rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden border border-gray-300 md:rounded-lg">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Image</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Name</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Category</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Price</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {products.map((product) => (
+                  <tr key={product.id}>
+                    <td className="px-2 md:px-4 py-3 border-r">
+                      {product.image_url && <img src={product.image_url} alt={product.name} className="w-12 h-12 md:w-16 md:h-16 object-cover rounded" />}
+                    </td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{product.name}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{product.category}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{product.price} ₽</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="px-2 py-1 bg-yellow-500 text-white rounded text-xs md:text-sm hover:bg-yellow-600 transition"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="px-2 py-1 bg-red-500 text-white rounded text-xs md:text-sm hover:bg-red-600 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

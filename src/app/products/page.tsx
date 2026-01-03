@@ -148,16 +148,16 @@ function ProductsContent() {
       <Header />
       
       <div className="flex-1">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-center mb-2">Каталог продуктов</h1>
-          <p className="text-center text-gray-600 mb-8">Выберите продукт из нашего огромного ассортимента</p>
+        <div className="container mx-auto px-4 py-6 md:py-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Каталог продуктов</h1>
+          <p className="text-center text-gray-600 mb-6 md:mb-8 text-sm md:text-base">Выберите продукт из нашего огромного ассортимента</p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
             {/* Filters Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white p-6 rounded-lg shadow-md sticky top-20">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">Фильтры</h2>
+              <div className="bg-white p-4 md:p-6 rounded-lg shadow-md lg:sticky lg:top-20">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-semibold">Фильтры</h2>
                   {(selectedCategories.length > 0 || searchTerm || priceRange[0] > 0 || priceRange[1] < maxPrice) && (
                     <button
                       onClick={handleClearFilters}
@@ -169,20 +169,20 @@ function ProductsContent() {
                 </div>
 
                 {/* Search */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Поиск</label>
+                <div className="mb-4 md:mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">Поиск</label>
                   <input
                     type="text"
                     placeholder="Поиск по названию..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base"
                   />
                 </div>
 
                 {/* Categories */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Категории</label>
+                <div className="mb-4 md:mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">Категории</label>
                   <div className="space-y-2">
                     {categories.map(category => (
                       <label key={category} className="flex items-center">
@@ -192,15 +192,15 @@ function ProductsContent() {
                           onChange={() => handleCategoryToggle(category)}
                           className="rounded border-gray-300 text-blue-600 mr-2"
                         />
-                        <span className="text-gray-700">{category}</span>
+                        <span className="text-gray-700 text-sm md:text-base">{category}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
                 {/* Price Range */}
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Цена</label>
+                <div className="mb-4 md:mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">Цена</label>
                   <div className="space-y-2">
                     <input
                       type="range"
@@ -218,7 +218,7 @@ function ProductsContent() {
                       onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
                       className="w-full"
                     />
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs md:text-sm text-gray-600">
                       {priceRange[0]} ₽ - {priceRange[1]} ₽
                     </div>
                   </div>
@@ -226,11 +226,11 @@ function ProductsContent() {
 
                 {/* Sort */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Сортировка</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">Сортировка</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'newest')}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base"
                   >
                     <option value="name">По названию</option>
                     <option value="price">По цене</option>
@@ -242,25 +242,25 @@ function ProductsContent() {
 
             {/* Products Grid */}
             <div className="lg:col-span-3">
-              <div className="flex items-center justify-between mb-6">
-                <p className="text-gray-600">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <p className="text-gray-600 text-sm md:text-base">
                   Найдено товаров: <span className="font-semibold">{filteredProducts.length}</span>
                 </p>
               </div>
 
               {filteredProducts.length === 0 ? (
-                <div className="bg-white p-8 rounded-lg shadow-md text-center">
-                  <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white p-6 md:p-8 rounded-lg shadow-md text-center">
+                  <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10a4 4 0 018 0m-7 0a7 7 0 1114 0m-13 0a9 9 0 1118 0" />
                   </svg>
-                  <p className="text-xl text-gray-600 mb-2">Товары не найдены</p>
-                  <p className="text-gray-500">Попробуйте изменить критерии поиска или фильтры</p>
+                  <p className="text-lg md:text-xl text-gray-600 mb-2">Товары не найдены</p>
+                  <p className="text-sm md:text-base text-gray-500">Попробуйте изменить критерии поиска или фильтры</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition transform hover:-translate-y-1">
-                      <div className="relative h-48 bg-gray-200 overflow-hidden">
+                      <div className="relative h-40 sm:h-48 bg-gray-200 overflow-hidden">
                         {product.image_url ? (
                           <img
                             src={product.image_url}
@@ -269,19 +269,19 @@ function ProductsContent() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-10 h-10 md:w-12 md:h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                           </div>
                         )}
                       </div>
-                      <div className="p-4">
-                        <p className="text-sm text-blue-600 font-medium mb-1">{product.category}</p>
-                        <h2 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{product.name}</h2>
-                        <p className="text-2xl font-bold text-blue-600 mb-4">{product.price} ₽</p>
+                      <div className="p-3 md:p-4">
+                        <p className="text-xs md:text-sm text-blue-600 font-medium mb-1">{product.category}</p>
+                        <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{product.name}</h2>
+                        <p className="text-xl md:text-2xl font-bold text-blue-600 mb-3 md:mb-4">{product.price} ₽</p>
                         <button
                           onClick={() => addToCart(product)}
-                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium"
+                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium text-sm md:text-base"
                         >
                           Добавить в корзину
                         </button>

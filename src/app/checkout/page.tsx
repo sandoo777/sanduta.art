@@ -266,29 +266,29 @@ function CheckoutContent() {
       <Header />
       
       <div className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <h1 className="text-3xl font-bold text-center mb-8">Оформление заказа</h1>
+        <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
+          <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8">Оформление заказа</h1>
 
           {cart.length === 0 && !response ? (
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
+            <div className="bg-white p-6 md:p-8 rounded-lg shadow-md text-center">
               <p className="text-gray-600">Корзина пуста</p>
             </div>
           ) : (
             <>
               {/* Cart Summary */}
-              <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 className="text-xl font-semibold mb-4">Ваша корзина</h2>
+              <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8">
+                <h2 className="text-lg md:text-xl font-semibold mb-4">Ваша корзина</h2>
                 {cart.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b last:border-0">
-                    <div>
-                      <span className="font-medium">{item.product.name}</span>
-                      <span className="ml-2 text-gray-600">x{item.quantity}</span>
+                  <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 border-b last:border-0 gap-2">
+                    <div className="flex-1">
+                      <span className="font-medium text-sm md:text-base">{item.product.name}</span>
+                      <span className="ml-2 text-gray-600 text-sm">x{item.quantity}</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span>{(item.product.price * item.quantity).toLocaleString('ru-RU')} ₽</span>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                      <span className="text-sm md:text-base font-medium">{(item.product.price * item.quantity).toLocaleString('ru-RU')} ₽</span>
                       <button
                         onClick={() => removeFromCart(item.product.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-red-600 hover:text-red-800 text-xs md:text-sm px-2 py-1"
                       >
                         Удалить
                       </button>
@@ -296,7 +296,7 @@ function CheckoutContent() {
                   </div>
                 ))}
                 <div className="border-t pt-4 mt-4">
-                  <div className="flex justify-between font-bold text-lg">
+                  <div className="flex justify-between font-bold text-base md:text-lg">
                     <span>Итого:</span>
                     <span className="text-blue-600">{total.toLocaleString('ru-RU')} ₽</span>
                   </div>
@@ -304,75 +304,75 @@ function CheckoutContent() {
               </div>
 
               {!response && (
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
                   {/* Delivery Error */}
                   {fieldErrors.submit && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm md:text-base">
                       {fieldErrors.submit}
                     </div>
                   )}
 
                   {/* Personal Information */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-6">Личные данные</h3>
+                  <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+                    <h3 className="text-base md:text-lg font-semibold mb-4 md:mb-6">Личные данные</h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2">Имя *</label>
+                        <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Имя *</label>
                         <input
                           type="text"
                           value={customerName}
                           onChange={(e) => handleFieldChange('customerName', e.target.value)}
-                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                          className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                             fieldErrors.customerName ? 'border-red-500' : ''
                           }`}
                           required
                         />
                         {fieldErrors.customerName && (
-                          <p className="text-red-600 text-sm mt-1">{fieldErrors.customerName}</p>
+                          <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.customerName}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2">Email *</label>
+                        <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Email *</label>
                         <input
                           type="email"
                           value={customerEmail}
                           onChange={(e) => handleFieldChange('customerEmail', e.target.value)}
-                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                          className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                             fieldErrors.customerEmail ? 'border-red-500' : ''
                           }`}
                           required
                         />
                         {fieldErrors.customerEmail && (
-                          <p className="text-red-600 text-sm mt-1">{fieldErrors.customerEmail}</p>
+                          <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.customerEmail}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2">Телефон *</label>
+                        <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Телефон *</label>
                         <input
                           type="tel"
                           value={customerPhone}
                           onChange={(e) => handleFieldChange('customerPhone', e.target.value)}
-                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                          className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                             fieldErrors.customerPhone ? 'border-red-500' : ''
                           }`}
                           placeholder="+380501234567"
                           required
                         />
                         {fieldErrors.customerPhone && (
-                          <p className="text-red-600 text-sm mt-1">{fieldErrors.customerPhone}</p>
+                          <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.customerPhone}</p>
                         )}
                       </div>
                     </div>
                   </div>
 
                   {/* Delivery Method */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-6">Доставка</h3>
+                  <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+                    <h3 className="text-base md:text-lg font-semibold mb-4 md:mb-6">Доставка</h3>
                     <div className="space-y-4">
                       <div className="space-y-3">
-                        <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50" style={{ borderColor: deliveryMethod === 'home' ? '#2563eb' : '#e5e7eb' }}>
+                        <label className="flex items-start sm:items-center p-3 md:p-4 border rounded-lg cursor-pointer hover:bg-blue-50 transition" style={{ borderColor: deliveryMethod === 'home' ? '#2563eb' : '#e5e7eb' }}>
                           <input
                             type="radio"
                             value="home"
@@ -382,15 +382,15 @@ function CheckoutContent() {
                               setPickupPoints([]);
                               setSelectedPickupPoint('');
                             }}
-                            className="mr-3"
+                            className="mr-3 mt-1 sm:mt-0 flex-shrink-0"
                           />
                           <div>
-                            <div className="font-medium">Доставка на дом (Nova Poshta)</div>
-                            <div className="text-sm text-gray-600">Стандартная доставка почтой</div>
+                            <div className="font-medium text-sm md:text-base">Доставка на дом (Nova Poshta)</div>
+                            <div className="text-xs md:text-sm text-gray-600">Стандартная доставка почтой</div>
                           </div>
                         </label>
 
-                        <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50" style={{ borderColor: deliveryMethod === 'pickup' ? '#2563eb' : '#e5e7eb' }}>
+                        <label className="flex items-start sm:items-center p-3 md:p-4 border rounded-lg cursor-pointer hover:bg-blue-50 transition" style={{ borderColor: deliveryMethod === 'pickup' ? '#2563eb' : '#e5e7eb' }}>
                           <input
                             type="radio"
                             value="pickup"
@@ -401,17 +401,17 @@ function CheckoutContent() {
                                 handleCitySelect(city);
                               }
                             }}
-                            className="mr-3"
+                            className="mr-3 mt-1 sm:mt-0 flex-shrink-0"
                           />
                           <div>
-                            <div className="font-medium">Пункт выдачи (Nova Poshta)</div>
-                            <div className="text-sm text-gray-600">Быстрее и дешевле</div>
+                            <div className="font-medium text-sm md:text-base">Пункт выдачи (Nova Poshta)</div>
+                            <div className="text-xs md:text-sm text-gray-600">Быстрее и дешевле</div>
                           </div>
                         </label>
                       </div>
 
                       <div>
-                        <label className="block text-gray-700 font-medium mb-2">Город *</label>
+                        <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Город *</label>
                         <input
                           type="text"
                           value={city}
@@ -419,22 +419,22 @@ function CheckoutContent() {
                             setCity(e.target.value);
                             handleCitySearch(e.target.value);
                           }}
-                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                          className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                             fieldErrors.city ? 'border-red-500' : ''
                           }`}
                           placeholder="Введите город"
                           required
                         />
                         {fieldErrors.city && (
-                          <p className="text-red-600 text-sm mt-1">{fieldErrors.city}</p>
+                          <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.city}</p>
                         )}
                         {cities.length > 0 && (
-                          <div className="mt-2 border rounded-lg max-h-40 overflow-y-auto bg-white">
+                          <div className="mt-2 border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
                             {cities.map((c) => (
                               <div
                                 key={c.Ref}
                                 onClick={() => handleCitySelect(c.Description)}
-                                className="p-3 cursor-pointer hover:bg-blue-100 border-b last:border-0"
+                                className="p-3 cursor-pointer hover:bg-blue-100 border-b last:border-0 text-sm md:text-base transition"
                               >
                                 {c.Description}
                               </div>
@@ -445,33 +445,33 @@ function CheckoutContent() {
 
                       {deliveryMethod === 'home' && (
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">Адрес *</label>
+                          <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Адрес *</label>
                           <input
                             type="text"
                             value={address}
                             onChange={(e) => handleFieldChange('address', e.target.value)}
-                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                            className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                               fieldErrors.address ? 'border-red-500' : ''
                             }`}
                             placeholder="Улица, дом, квартира"
                             required={deliveryMethod === 'home'}
                           />
                           {fieldErrors.address && (
-                            <p className="text-red-600 text-sm mt-1">{fieldErrors.address}</p>
+                            <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.address}</p>
                           )}
                         </div>
                       )}
 
                       {deliveryMethod === 'pickup' && pickupPoints.length > 0 && (
                         <div>
-                          <label className="block text-gray-700 font-medium mb-2">Пункт выдачи *</label>
+                          <label className="block text-gray-700 font-medium mb-2 text-sm md:text-base">Пункт выдачи *</label>
                           <select
                             value={selectedPickupPoint}
                             onChange={(e) => {
                               setSelectedPickupPoint(e.target.value);
                               setFieldErrors(prev => ({ ...prev, selectedPickupPoint: '' }));
                             }}
-                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 ${
+                            className={`w-full px-3 md:px-4 py-2 md:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm md:text-base ${
                               fieldErrors.selectedPickupPoint ? 'border-red-500' : ''
                             }`}
                             required
@@ -484,7 +484,7 @@ function CheckoutContent() {
                             ))}
                           </select>
                           {fieldErrors.selectedPickupPoint && (
-                            <p className="text-red-600 text-sm mt-1">{fieldErrors.selectedPickupPoint}</p>
+                            <p className="text-red-600 text-xs md:text-sm mt-1">{fieldErrors.selectedPickupPoint}</p>
                           )}
                         </div>
                       )}
@@ -492,34 +492,34 @@ function CheckoutContent() {
                   </div>
 
                   {/* Payment Method */}
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-6">Способ оплаты</h3>
+                  <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
+                    <h3 className="text-base md:text-lg font-semibold mb-4 md:mb-6">Способ оплаты</h3>
                     <div className="space-y-3">
-                      <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50" style={{ borderColor: paymentMethod === 'paynet' ? '#2563eb' : '#e5e7eb' }}>
+                      <label className="flex items-start sm:items-center p-3 md:p-4 border rounded-lg cursor-pointer hover:bg-blue-50 transition" style={{ borderColor: paymentMethod === 'paynet' ? '#2563eb' : '#e5e7eb' }}>
                         <input
                           type="radio"
                           value="paynet"
                           checked={paymentMethod === 'paynet'}
                           onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="mr-3"
+                          className="mr-3 mt-1 sm:mt-0 flex-shrink-0"
                         />
                         <div>
-                          <div className="font-medium">Карта VISA/MasterCard (Paynet)</div>
-                          <div className="text-sm text-gray-600">Безопасная онлайн оплата</div>
+                          <div className="font-medium text-sm md:text-base">Карта VISA/MasterCard (Paynet)</div>
+                          <div className="text-xs md:text-sm text-gray-600">Безопасная онлайн оплата</div>
                         </div>
                       </label>
 
-                      <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-blue-50" style={{ borderColor: paymentMethod === 'cod' ? '#2563eb' : '#e5e7eb' }}>
+                      <label className="flex items-start sm:items-center p-3 md:p-4 border rounded-lg cursor-pointer hover:bg-blue-50 transition" style={{ borderColor: paymentMethod === 'cod' ? '#2563eb' : '#e5e7eb' }}>
                         <input
                           type="radio"
                           value="cod"
                           checked={paymentMethod === 'cod'}
                           onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="mr-3"
+                          className="mr-3 mt-1 sm:mt-0 flex-shrink-0"
                         />
                         <div>
-                          <div className="font-medium">Оплата при получении</div>
-                          <div className="text-sm text-gray-600">Удобно и безопасно</div>
+                          <div className="font-medium text-sm md:text-base">Оплата при получении</div>
+                          <div className="text-xs md:text-sm text-gray-600">Удобно и безопасно</div>
                         </div>
                       </label>
                     </div>
@@ -529,7 +529,7 @@ function CheckoutContent() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-green-600 text-white py-3 md:py-4 px-4 rounded-lg hover:bg-green-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
                   >
                     {loading ? 'Обработка...' : 'Оформить заказ'}
                   </button>
@@ -537,17 +537,17 @@ function CheckoutContent() {
               )}
 
               {response && (
-                <div className={`bg-white p-8 rounded-lg shadow-md text-center ${response.error ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}`}>
+                <div className={`bg-white p-6 md:p-8 rounded-lg shadow-md text-center ${response.error ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}`}>
                   {response.error ? (
                     <>
-                      <h2 className="text-xl font-semibold text-red-600 mb-2">Ошибка</h2>
-                      <p className="text-gray-600">{response.error}</p>
+                      <h2 className="text-lg md:text-xl font-semibold text-red-600 mb-2">Ошибка</h2>
+                      <p className="text-gray-600 text-sm md:text-base">{response.error}</p>
                     </>
                   ) : (
                     <>
-                      <h2 className="text-xl font-semibold text-green-600 mb-2">{response.message}</h2>
+                      <h2 className="text-lg md:text-xl font-semibold text-green-600 mb-2">{response.message}</h2>
                       {response.orderId && (
-                        <p className="text-gray-600 mt-4">
+                        <p className="text-gray-600 mt-4 text-sm md:text-base">
                           ID заказа: <span className="font-mono font-semibold">{response.orderId}</span>
                         </p>
                       )}

@@ -35,40 +35,46 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Users Management</h2>
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Email</th>
-            <th className="p-2 border">Role</th>
-            <th className="p-2 border">Orders</th>
-            <th className="p-2 border">Joined</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id} className="border">
-              <td className="p-2 border">{user.name || "N/A"}</td>
-              <td className="p-2 border">{user.email}</td>
-              <td className="p-2 border">{user.role}</td>
-              <td className="p-2 border">{user._count?.orders || 0}</td>
-              <td className="p-2 border">{new Date(user.createdAt).toLocaleDateString()}</td>
-              <td className="p-2 border">
-                <select
-                  value={user.role}
-                  onChange={(e) => updateRole(user.id, e.target.value)}
-                  className="p-1 border rounded"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h2 className="text-xl md:text-2xl font-bold mb-4">Users Management</h2>
+      <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden border border-gray-300 md:rounded-lg">
+            <table className="min-w-full divide-y divide-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Name</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Email</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Role</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Orders</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Joined</th>
+                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.name || "N/A"}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.email}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.role}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user._count?.orders || 0}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm">
+                      <select
+                        value={user.role}
+                        onChange={(e) => updateRole(user.id, e.target.value)}
+                        className="p-1 md:p-2 border rounded text-xs md:text-sm w-full md:w-auto"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
