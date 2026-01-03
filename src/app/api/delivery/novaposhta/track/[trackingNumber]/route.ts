@@ -3,10 +3,10 @@ import { novaPoshtaClient } from '@/lib/novaposhta';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { trackingNumber: string } }
+  { params }: { params: Promise<{ trackingNumber: string }> }
 ) {
   try {
-    const trackingNumber = params.trackingNumber;
+    const { trackingNumber } = await params;
 
     if (!trackingNumber) {
       return NextResponse.json(
