@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
 export default function CheckoutPage() {
-  const { cart, total, clearCart } = useCart();
+  const { cart, total, clearCart, removeFromCart } = useCart();
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [response, setResponse] = useState<any>(null);
@@ -50,10 +50,21 @@ export default function CheckoutPage() {
           <>
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
               <h2 className="text-xl font-semibold mb-4">Ваша корзина</h2>
-              {cart.map((product, index) => (
-                <div key={index} className="flex justify-between mb-2">
-                  <span>{product.name}</span>
-                  <span>{product.price} руб.</span>
+              {cart.map((item, index) => (
+                <div key={index} className="flex justify-between items-center mb-2">
+                  <div>
+                    <span>{item.product.name}</span>
+                    <span className="ml-2 text-gray-600">x{item.quantity}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>{item.product.price * item.quantity} руб.</span>
+                    <button
+                      onClick={() => removeFromCart(item.product.id)}
+                      className="ml-2 text-red-600 hover:text-red-800"
+                    >
+                      Удалить
+                    </button>
+                  </div>
                 </div>
               ))}
               <div className="border-t pt-2 mt-4">

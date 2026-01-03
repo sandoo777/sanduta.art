@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
     });
 
     // Create order items
-    for (const product of products) {
+    for (const item of products) {
       await prisma.orderItem.create({
         data: {
           orderId: order.id,
-          productId: product.id,
-          quantity: 1, // Assuming 1 per product in cart
+          productId: item.product.id,
+          quantity: item.quantity,
         },
       });
     }
