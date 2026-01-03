@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
   const searchParams = useSearchParams();
@@ -23,13 +23,19 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetch('/api/products')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         setProducts(data);
         setLoading(false);
       })
       .catch((err) => {
         console.error('Failed to fetch products:', err);
+        setError('Не удалось загрузить продукты. Попробуйте позже.');
         setLoading(false);
       });
   }, []);
@@ -52,7 +58,11 @@ export default function ProductsPage() {
   }, [products, categoryFilter, searchTerm]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center">Загрузка...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>;
   }
 
   return (

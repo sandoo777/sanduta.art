@@ -1,14 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
   const { cart, total, clearCart, removeFromCart } = useCart();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+    if (!session) {
+      router.push('/login');
+    } else {
+      setCustomerName(session.user?.name || '');
+      setCustomerEmail(session.user?.email || '');
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return null; // Will redirect
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +48,7 @@ export default function CheckoutPage() {
           total,
           customer_name: customerName,
           customer_email: customerEmail,
+          userId: session.user.id,
         }),
       });
       const data = await res.json();

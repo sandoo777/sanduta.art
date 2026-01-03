@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { products, total, customer_name, customer_email } = body;
+    const { products, total, customer_name, customer_email, userId } = body;
 
     if (!products || !total || !customer_name || !customer_email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
         total,
         customerName: customer_name,
         customerEmail: customer_email,
+        userId,
       },
     });
 

@@ -6,16 +6,62 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  accounts Account[]
+  sessions Session[]
+  orders   Order[]
 
   @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
 }
 
 model Product {
@@ -23,7 +69,7 @@ model Product {
   name      String
   category  String
   price     Float
-  image_url String
+  image_url String?
   createdAt DateTime @default(now())
 
   orderItems OrderItem[]
@@ -36,8 +82,10 @@ model Order {
   total         Float
   customerName  String
   customerEmail String
+  userId        String?
   createdAt     DateTime @default(now())
 
+  user   User?        @relation(fields: [userId], references: [id])
   orderItems OrderItem[]
 
   @@map("orders")
