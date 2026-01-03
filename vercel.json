@@ -1,7 +1,4 @@
 {
-  "projectSettings": {
-    "nodeVersion": "20.x"
-  },
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
@@ -18,10 +15,5 @@
     "NOVAPOSTA_API_URL": "@novaposta_api_url",
     "NEXT_PUBLIC_GA_ID": "@next_public_ga_id"
   },
-  "regions": ["iad1"],
-  "functions": {
-    "src/app/api/**": {
-      "maxDuration": 60
-    }
-  }
+  "regions": ["iad1"]
 }
