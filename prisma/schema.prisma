@@ -80,17 +80,23 @@ model Product {
 }
 
 model Order {
-  id              String   @id @default(cuid())
-  total           Float
-  customerName    String
-  customerEmail   String
-  status          String   @default("pending")
-  paymentStatus   String   @default("pending") // pending, paid, failed
-  deliveryStatus  String   @default("pending") // pending, shipped, delivered
-  trackingNumber  String?
-  paynetSessionId String?
-  userId          String?
-  createdAt       DateTime @default(now())
+  id                   String   @id @default(cuid())
+  total                Float
+  customerName         String
+  customerEmail        String
+  customerPhone        String?
+  status               String   @default("pending")
+  paymentStatus        String   @default("pending") // pending, paid, failed
+  paymentMethod        String?  // card, cash
+  deliveryStatus       String   @default("pending") // pending, shipped, delivered
+  deliveryMethod       String?  // novaposhta, courier, pickup
+  deliveryAddress      String?
+  city                 String?
+  novaPoshtaWarehouse  String?
+  trackingNumber       String?
+  paynetSessionId      String?
+  userId               String?
+  createdAt            DateTime @default(now())
 
   user       User?        @relation(fields: [userId], references: [id])
   orderItems OrderItem[]
