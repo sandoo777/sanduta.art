@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { orders } from '@/lib/data';
-import { Order } from '@/lib/types';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,19 +10,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const newOrder: Order = {
-      id: orders.length + 1,
-      products,
-      total,
-      customer_name,
-      customer_email,
-      created_at: new Date().toISOString(),
-    };
+    // Create order
+    const order = await prisma.order.create({
+      data: {
+        total,
+        customerName: customer_name,
+        customerEmail: customer_email,
+      },
+    });
 
-    orders.push(newOrder);
+    // Create order items
+    for (const product of products) {
+      await prisma.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId: product.id,
+          quantity: 1, // Assuming 1 per product in cart
+        },
+      });
+    }
 
-    return NextResponse.json({ message: 'Order submitted successfully', order: newOrder }, { status: 201 });
+    return NextResponse.json({ message: 'Order submitted successfully', order }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    console.error('Error creating order:', error);
+    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 }
