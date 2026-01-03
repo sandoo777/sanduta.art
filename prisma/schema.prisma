@@ -71,6 +71,7 @@ model Product {
   category  String
   price     Float
   image_url String?
+  options   Json?
   createdAt DateTime @default(now())
 
   orderItems OrderItem[]

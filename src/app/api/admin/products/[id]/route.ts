@@ -8,11 +8,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, category, price, image_url } = await request.json();
+  const { name, category, price, image_url, options } = await request.json();
 
   const product = await prisma.product.update({
     where: { id: params.id },
-    data: { name, category, price, image_url },
+    data: { name, category, price, image_url, options },
   });
 
   return NextResponse.json(product);

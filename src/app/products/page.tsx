@@ -9,6 +9,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
   const searchParams = useSearchParams();
@@ -95,11 +96,17 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <div key={product.id} className="bg-white p-6 rounded-lg shadow-md">
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded mb-4"
-              />
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded mb-4"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gray-200 rounded mb-4 flex items-center justify-center">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
               <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
               <p className="text-gray-600 mb-4">{product.category}</p>
               <p className="text-2xl font-bold text-blue-600 mb-4">{product.price} руб.</p>

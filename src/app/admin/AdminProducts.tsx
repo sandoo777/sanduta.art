@@ -8,12 +8,14 @@ interface Product {
   category: string;
   price: number;
   image_url?: string;
+  options?: any;
 }
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: "", category: "", price: "", image_url: "" });
+  const [form, setForm] = useState({ name: "", category: "", price: "", image_url: "", options: "" });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -23,6 +25,26 @@ export default function AdminProducts() {
     const res = await fetch("/api/admin/products");
     const data = await res.json();
     setProducts(data);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setUploading(false);
+
+    if (res.ok) {
+      setForm({ ...form, image_url: data.url });
+    } else {
+      alert("Upload failed");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,13 +59,14 @@ export default function AdminProducts() {
         name: form.name,
         category: form.category,
         price: parseFloat(form.price),
-        image_url: form.image_url || null,
+        image_url: form.image_url,
+        options: form.options ? JSON.parse(form.options) : null,
       }),
     });
 
     if (res.ok) {
       fetchProducts();
-      setForm({ name: "", category: "", price: "", image_url: "" });
+      setForm({ name: "", category: "", price: "", image_url: "", options: "" });
       setEditing(null);
     }
   };
@@ -55,6 +78,7 @@ export default function AdminProducts() {
       category: product.category,
       price: product.price.toString(),
       image_url: product.image_url || "",
+      options: product.options ? JSON.stringify(product.options) : "",
     });
   };
 
@@ -101,6 +125,21 @@ export default function AdminProducts() {
             onChange={(e) => setForm({ ...form, image_url: e.target.value })}
             className="p-2 border rounded"
           />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])}
+            className="p-2 border rounded"
+            disabled={uploading}
+          />
+          {uploading && <p>Uploading...</p>}
+          <textarea
+            placeholder="Options (JSON)"
+            value={form.options}
+            onChange={(e) => setForm({ ...form, options: e.target.value })}
+            className="p-2 border rounded"
+            rows={3}
+          />
         </div>
         <button type="submit" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
           {editing ? "Update" : "Add"} Product
@@ -110,7 +149,7 @@ export default function AdminProducts() {
             type="button"
             onClick={() => {
               setEditing(null);
-              setForm({ name: "", category: "", price: "", image_url: "" });
+              setForm({ name: "", category: "", price: "", image_url: "", options: "" });
             }}
             className="ml-4 px-4 py-2 bg-gray-500 text-white rounded"
           >
@@ -121,6 +160,7 @@ export default function AdminProducts() {
       <table className="w-full border">
         <thead>
           <tr className="bg-gray-100">
+            <th className="p-2 border">Image</th>
             <th className="p-2 border">Name</th>
             <th className="p-2 border">Category</th>
             <th className="p-2 border">Price</th>
@@ -130,6 +170,9 @@ export default function AdminProducts() {
         <tbody>
           {products.map((product) => (
             <tr key={product.id} className="border">
+              <td className="p-2 border">
+                {product.image_url && <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover" />}
+              </td>
               <td className="p-2 border">{product.name}</td>
               <td className="p-2 border">{product.category}</td>
               <td className="p-2 border">{product.price}</td>
