@@ -3,17 +3,5 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url",
-    "PAYNET_API_KEY": "@paynet_api_key",
-    "PAYNET_SECRET": "@paynet_secret",
-    "PAYNET_MERCHANT_ID": "@paynet_merchant_id",
-    "PAYNET_API_URL": "@paynet_api_url",
-    "NOVAPOSTA_API_KEY": "@novaposta_api_key",
-    "NOVAPOSTA_API_URL": "@novaposta_api_url",
-    "NEXT_PUBLIC_GA_ID": "@next_public_ga_id"
-  },
   "regions": ["iad1"]
 }
