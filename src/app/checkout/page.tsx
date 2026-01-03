@@ -6,7 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validateCheckoutForm, validateEmail, validatePhone, ValidationError } from '@/lib/validation';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/Footer';
 
 interface City {

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/Footer';
 
 interface OrderItem {

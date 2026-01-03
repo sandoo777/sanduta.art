@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/Footer';
 import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
 

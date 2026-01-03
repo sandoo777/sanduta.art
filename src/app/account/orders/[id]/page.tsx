@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/Footer';
 
 interface OrderItem {

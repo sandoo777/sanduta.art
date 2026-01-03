@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Product } from '@/lib/types';
 import { useCart } from '@/context/CartContext';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/Footer';
 
 export default function ProductsPage() {
