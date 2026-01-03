@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -7,11 +8,12 @@ export default function Home() {
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-blue-600">Sanduta Art</h1>
+            <Link href="/" className="text-2xl font-bold text-blue-600">Sanduta Art</Link>
           </div>
           <nav className="hidden md:flex space-x-6">
-            <a href="#" className="text-gray-700 hover:text-blue-600">Главная</a>
-            <a href="#" className="text-gray-700 hover:text-blue-600">Продукты</a>
+            <Link href="/" className="text-gray-700 hover:text-blue-600">Главная</Link>
+            <Link href="/products" className="text-gray-700 hover:text-blue-600">Продукты</Link>
+            <Link href="/checkout" className="text-gray-700 hover:text-blue-600">Корзина</Link>
             <a href="#" className="text-gray-700 hover:text-blue-600">О нас</a>
             <a href="#" className="text-gray-700 hover:text-blue-600">Контакты</a>
           </nav>
