@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { HomeHeader } from "@/components/layout/HomeHeader";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <HomeHeader />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20 md:py-32">
+      {/* Hero Section - Call to Action */}
+      <section className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Печать фотографий</h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">Качественные фотоуслуги для ваших воспоминаний. Печать на бумаге, холсте, кружках и многом другом</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">Печать фотографий</h2>
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Качественные фотоуслуги для ваших воспоминаний. Печать на бумаге, холсте, кружках и многом другом</p>
           <Link href="/products" className="inline-block bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition shadow-lg">
             Перейти в каталог
           </Link>
