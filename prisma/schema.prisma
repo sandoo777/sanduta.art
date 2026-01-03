@@ -14,6 +14,7 @@ model User {
   name          String?
   email         String    @unique
   password      String?
+  role          String    @default("user")
   emailVerified DateTime?
   image         String?
   createdAt     DateTime  @default(now())
@@ -82,6 +83,7 @@ model Order {
   total         Float
   customerName  String
   customerEmail String
+  status        String   @default("pending")
   userId        String?
   createdAt     DateTime @default(now())
 

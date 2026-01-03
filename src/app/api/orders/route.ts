@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
         customerName: customer_name,
         customerEmail: customer_email,
         userId,
+        status: "pending",
       },
     });
 

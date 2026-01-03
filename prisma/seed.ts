@@ -20,6 +20,18 @@ async function main() {
       },
     ],
   });
+
+  // Create admin user
+  await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      name: 'Admin',
+      email: 'admin@example.com',
+      password: '$2b$10$ysMrPS/I.zIeAEBA9ykaxO8wxFLmLPVh84wdrTms2cijstqoiAM8a',
+      role: 'admin',
+    },
+  });
 }
 
 main()
