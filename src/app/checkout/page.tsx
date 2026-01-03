@@ -85,10 +85,19 @@ function CheckoutContent() {
       const res = await fetch(
         `/api/delivery/novaposhta/cities?search=${encodeURIComponent(searchTerm)}`
       );
+      
+      if (!res.ok) {
+        console.error('Failed to fetch cities');
+        setCities([]);
+        return;
+      }
+      
       const data = await res.json();
       setCities(data.cities || []);
     } catch (err) {
       console.error('Error fetching cities:', err);
+      setCities([]);
+      // Could show a fallback message to manually enter city name
     }
   };
 
@@ -103,10 +112,19 @@ function CheckoutContent() {
         const res = await fetch(
           `/api/delivery/novaposhta/pickup-points?city=${encodeURIComponent(selectedCity)}`
         );
+        
+        if (!res.ok) {
+          console.error('Failed to fetch pickup points');
+          setPickupPoints([]);
+          return;
+        }
+        
         const data = await res.json();
         setPickupPoints(data.pickupPoints || []);
       } catch (err) {
         console.error('Error fetching pickup points:', err);
+        setPickupPoints([]);
+        // Could set an error message for the user here if needed
       }
     }
   };
@@ -190,6 +208,7 @@ function CheckoutContent() {
       const orderId = orderData.order.id;
 
       // Register delivery with Nova Poshta
+      let deliveryWarning = null;
       try {
         const deliveryRes = await fetch('/api/delivery/novaposhta', {
           method: 'POST',
@@ -205,36 +224,72 @@ function CheckoutContent() {
         });
 
         if (!deliveryRes.ok) {
-          console.error('Failed to create shipment');
+          const errorData = await deliveryRes.json();
+          console.error('Failed to create shipment:', errorData);
+          deliveryWarning = 'Delivery registration is delayed. Your order is saved and will be processed manually.';
         }
       } catch (err) {
         console.error('Error registering delivery:', err);
+        deliveryWarning = 'Delivery service temporarily unavailable. Your order is saved and will be processed manually.';
       }
 
       // Handle payment
       if (paymentMethod === 'paynet') {
-        const paymentRes = await fetch('/api/payment/paynet', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId }),
-        });
+        try {
+          const paymentRes = await fetch('/api/payment/paynet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId }),
+          });
 
-        if (!paymentRes.ok) {
-          throw new Error('Failed to create payment session');
+          if (!paymentRes.ok) {
+            const errorData = await paymentRes.json();
+            console.error('Payment error:', errorData);
+            
+            // If payment service is down, offer fallback
+            if (errorData.details?.fallback === 'cod_available') {
+              setResponse({
+                error: 'Payment service temporarily unavailable. Please use cash on delivery or try again later.',
+                orderId,
+                canRetry: true,
+              });
+              setLoading(false);
+              return;
+            }
+            throw new Error(errorData.error || 'Failed to create payment session');
+          }
+
+          const paymentData = await paymentRes.json();
+          
+          if (deliveryWarning) {
+            // Show warning but continue with payment
+            setResponse({
+              message: `${deliveryWarning} Redirecting to payment...`,
+              orderId,
+            });
+          } else {
+            setResponse({
+              message: 'Redirecting to payment...',
+              orderId,
+            });
+          }
+
+          // Redirect to Paynet
+          window.location.href = paymentData.paymentUrl;
+        } catch (paymentErr) {
+          console.error('Payment error:', paymentErr);
+          setFieldErrors({ 
+            submit: paymentErr instanceof Error ? paymentErr.message : 'Payment service error'
+          });
+          setLoading(false);
+          return;
         }
-
-        const paymentData = await paymentRes.json();
-        setResponse({
-          message: 'Redirecting to payment...',
-          orderId,
-        });
-
-        // Redirect to Paynet
-        window.location.href = paymentData.paymentUrl;
       } else {
         // COD (Cash on Delivery)
         setResponse({
-          message: 'Order created successfully! You will pay upon delivery.',
+          message: deliveryWarning 
+            ? `${deliveryWarning} Order created successfully! You will pay upon delivery.`
+            : 'Order created successfully! You will pay upon delivery.',
           orderId,
         });
         clearCart();

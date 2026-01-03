@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { sendOrderEmails, OrderEmailData } from '@/lib/email';
+import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('API:Orders', 'Fetching user orders');
+    
     const session = await getServerSession();
     
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      logger.warn('API:Orders', 'Unauthorized access attempt');
+      return createErrorResponse('Unauthorized. Please log in.', 401);
     }
 
     // Find user by email
@@ -17,7 +21,8 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      logger.warn('API:Orders', 'User not found', { email: session.user.email });
+      return createErrorResponse('User not found', 404);
     }
 
     // Fetch user's orders
@@ -33,15 +38,19 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
+    logger.info('API:Orders', `Fetched ${orders.length} orders`, { userId: user.id });
+
     return NextResponse.json({ orders });
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    logApiError('API:Orders', error, { action: 'fetch_orders' });
+    return createErrorResponse('Failed to fetch orders. Please try again later.', 500);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('API:Orders', 'Creating new order');
+    
     const body = await request.json();
     const { 
       products, 
@@ -59,7 +68,18 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!products || !total || !customer_name || !customer_email) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      logger.warn('API:Orders', 'Missing required fields', { 
+        hasProducts: !!products, 
+        hasTotal: !!total, 
+        hasName: !!customer_name, 
+        hasEmail: !!customer_email 
+      });
+      return createErrorResponse('Missing required fields: products, total, name, and email are required', 400);
+    }
+
+    if (!Array.isArray(products) || products.length === 0) {
+      logger.warn('API:Orders', 'Invalid products array');
+      return createErrorResponse('Cart is empty or invalid', 400);
     }
 
     // Create order
@@ -125,12 +145,18 @@ export async function POST(request: NextRequest) {
 
     // Send emails (don't wait for completion to avoid slowing down the response)
     sendOrderEmails(emailData).catch(error => {
-      console.error('Failed to send order emails:', error);
+      logApiError('API:Orders:Email', error, { orderId: order.id });
+    });
+
+    logger.info('API:Orders', 'Order created successfully', { 
+      orderId: order.id, 
+      total: order.total, 
+      itemCount: orderItems.length 
     });
 
     return NextResponse.json({ message: 'Order submitted successfully', order }, { status: 201 });
   } catch (error) {
-    console.error('Error creating order:', error);
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+    logApiError('API:Orders', error, { action: 'create_order' });
+    return createErrorResponse('Failed to create order. Please try again or contact support.', 500);
   }
 }

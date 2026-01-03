@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { novaPoshtaClient } from '@/lib/novaposhta';
+import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('API:NovaPoshta', 'Creating shipment');
+    
     const body = await request.json();
     const {
       orderId,
@@ -16,9 +19,16 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!orderId || !customerPhone || !city || !address || !deliveryType) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+      logger.warn('API:NovaPoshta', 'Missing required fields', {
+        hasOrderId: !!orderId,
+        hasPhone: !!customerPhone,
+        hasCity: !!city,
+        hasAddress: !!address,
+        hasDeliveryType: !!deliveryType,
+      });
+      return createErrorResponse(
+        'Missing required fields for delivery',
+        400
       );
     }
 
@@ -29,46 +39,76 @@ export async function POST(request: NextRequest) {
     });
 
     if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      logger.warn('API:NovaPoshta', 'Order not found', { orderId });
+      return createErrorResponse('Order not found', 404);
     }
 
-    // Create shipment with Nova Poshta
-    const shipment = await novaPoshtaClient.createShipment({
-      orderId,
-      customerName: order.customerName,
-      customerEmail: order.customerEmail,
-      customerPhone,
-      city,
-      address,
-      deliveryType,
-      pickupPointRef,
-      weight,
-      cod: order.total, // Cash on delivery = order total
+    logger.info('API:NovaPoshta', 'Creating Nova Poshta shipment', { 
+      orderId, 
+      city, 
+      deliveryType 
     });
 
-    // Update order with tracking number
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        trackingNumber: shipment.tracking_number,
-        deliveryStatus: 'shipped',
-      },
-    });
+    try {
+      // Create shipment with Nova Poshta
+      const shipment = await novaPoshtaClient.createShipment({
+        orderId,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone,
+        city,
+        address,
+        deliveryType,
+        pickupPointRef,
+        weight,
+        cod: order.total, // Cash on delivery = order total
+      });
 
-    return NextResponse.json(
-      {
-        message: 'Shipment created successfully',
-        trackingNumber: shipment.tracking_number,
-        reference: shipment.reference,
-        status: shipment.status,
-      },
-      { status: 200 }
-    );
+      // Update order with tracking number
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          trackingNumber: shipment.tracking_number,
+          deliveryStatus: 'shipped',
+        },
+      });
+
+      logger.info('API:NovaPoshta', 'Shipment created successfully', { 
+        orderId, 
+        trackingNumber: shipment.tracking_number 
+      });
+
+      return NextResponse.json(
+        {
+          message: 'Shipment created successfully',
+          trackingNumber: shipment.tracking_number,
+          reference: shipment.reference,
+          status: shipment.status,
+        },
+        { status: 200 }
+      );
+    } catch (novaPoshtaError) {
+      logApiError('API:NovaPoshta', novaPoshtaError, { orderId, service: 'novaposhta_api' });
+      
+      // Still update order status even if Nova Poshta fails
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          deliveryStatus: 'pending',
+        },
+      });
+      
+      return createErrorResponse(
+        'Delivery service temporarily unavailable. Your order is saved and will be processed manually.',
+        503,
+        { orderId, fallback: 'manual_processing' }
+      );
+    }
   } catch (error) {
-    console.error('Error creating Nova Poshta shipment:', error);
-    return NextResponse.json(
-      { error: 'Failed to create shipment' },
-      { status: 500 }
+    logApiError('API:NovaPoshta', error, { action: 'create_shipment' });
+    return createErrorResponse(
+      'Failed to create shipment. Please contact support with your order number.',
+      500
     );
   }
 }
