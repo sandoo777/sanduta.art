@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
         customerEmail: customer_email,
         userId,
         status: "pending",
+        paymentStatus: "pending",
+        deliveryStatus: "pending",
       },
     });
 
