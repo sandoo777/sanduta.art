@@ -198,6 +198,15 @@ export default function OrdersPage() {
                         ))}
                       </div>
                     </div>
+
+                    <div className="border-t pt-4 mt-4">
+                      <a
+                        href={`/account/orders/${order.id}`}
+                        className="inline-block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium"
+                      >
+                        Просмотреть детали заказа
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
