@@ -47,8 +47,11 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
+      setLoading(false);
+      
+      // Use window.location instead of router.push for more reliable redirect
       setTimeout(() => {
-        router.push('/login');
+        window.location.href = '/login';
       }, 2000);
     } catch (err) {
       console.error('Reset error:', err);
