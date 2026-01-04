@@ -1,6 +1,8 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useAutoSave } from '@/modules/editor/useAutoSave';
+import { useEditorStore } from '@/modules/editor/editorStore';
 
 interface EditorLayoutProps {
   topbar: ReactNode;
@@ -15,6 +17,47 @@ export default function EditorLayout({
   canvas,
   rightSidebar,
 }: EditorLayoutProps) {
+  // Enable auto-save
+  useAutoSave();
+  
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const { undo, redo, deleteElement, selectedElementId, saveProject } = useEditorStore.getState();
+
+      // Undo (Ctrl/Cmd + Z)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+
+      // Redo (Ctrl/Cmd + Shift + Z)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+
+      // Save (Ctrl/Cmd + S)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveProject();
+      }
+
+      // Delete (Delete or Backspace)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId) {
+        const target = e.target as HTMLElement;
+        // Don't delete if typing in input/textarea
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          e.preventDefault();
+          deleteElement(selectedElementId);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
   return (
     <div className="fixed inset-0 flex flex-col bg-[#F3F4F6] overflow-hidden">
       {/* Topbar */}

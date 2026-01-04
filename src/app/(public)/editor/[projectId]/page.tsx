@@ -1,6 +1,7 @@
 'use client';
 
-import { use, useEffect } from 'react';
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import EditorLayout from '@/components/public/editor/EditorLayout';
 import EditorTopbar from '@/components/public/editor/EditorTopbar';
@@ -14,100 +15,97 @@ interface PageProps {
 
 export default function EditorPage({ params }: PageProps) {
   const { projectId } = use(params);
-  const { setProjectName, addElement } = useEditorStore();
+  const router = useRouter();
+  const { setProject } = useEditorStore();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Initialize project
-    setProjectName(`Proiect #${projectId}`);
-
-    // Add some demo elements for testing
-    addElement({
-      id: 'demo-text-1',
-      type: 'text',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 50,
-      content: 'Bun venit în Editor!',
-      fontSize: 24,
-      color: '#0066FF',
-      fontFamily: 'Arial',
-      textAlign: 'center',
-      zIndex: 1,
-      visible: true,
-      locked: false,
-      rotation: 0,
-      opacity: 1,
-    });
-
-    addElement({
-      id: 'demo-shape-1',
-      type: 'shape',
-      x: 350,
-      y: 150,
-      width: 150,
-      height: 150,
-      shape: 'rectangle',
-      fill: '#FACC15',
-      borderRadius: 12,
-      zIndex: 0,
-      visible: true,
-      locked: false,
-      rotation: 0,
-      opacity: 0.8,
-    });
-
-    addElement({
-      id: 'demo-shape-2',
-      type: 'shape',
-      x: 200,
-      y: 300,
-      width: 100,
-      height: 100,
-      shape: 'circle',
-      fill: '#0066FF',
-      borderRadius: 0,
-      zIndex: 0,
-      visible: true,
-      locked: false,
-      rotation: 0,
-      opacity: 0.6,
-    });
-
-    // Keyboard shortcuts
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const { undo, redo, deleteElement, selectedElementId } = useEditorStore.getState();
-
-      // Undo (Ctrl/Cmd + Z)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        undo();
+    const loadProject = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Create new project if ID is 'new'
+        if (projectId === 'new') {
+          const response = await fetch('/api/editor/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: 'Proiect Nou',
+              elements: [],
+              canvas: { width: 800, height: 600 },
+            }),
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to create project');
+          }
+          
+          const newProject = await response.json();
+          setProject(newProject);
+          
+          // Redirect to the new project URL
+          router.replace(`/editor/${newProject.id}`);
+        } else {
+          // Load existing project
+          const response = await fetch(`/api/editor/projects/${projectId}`);
+          
+          if (response.status === 404) {
+            setError('Proiect negăsit');
+            return;
+          }
+          
+          if (!response.ok) {
+            throw new Error('Failed to load project');
+          }
+          
+          const project = await response.json();
+          setProject(project);
+        }
+      } catch (err) {
+        console.error('Error loading project:', err);
+        setError('Eroare la încărcarea proiectului');
+      } finally {
+        setLoading(false);
       }
-
-      // Redo (Ctrl/Cmd + Shift + Z)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
-        e.preventDefault();
-        redo();
-      }
-
-      // Delete (Delete or Backspace)
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId) {
-        e.preventDefault();
-        deleteElement(selectedElementId);
-      }
-
-      // TODO: Add more shortcuts
-      // Ctrl/Cmd + G → Group
-      // Ctrl/Cmd + Shift + G → Ungroup
-      // Arrow keys → Nudge
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    loadProject();
+  }, [projectId, setProject, router]);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [projectId, setProjectName, addElement]);
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Se încarcă proiectul...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{error}</h2>
+          <p className="text-gray-600 mb-6">Proiectul nu a putut fi încărcat</p>
+          <button
+            onClick={() => router.push('/editor/new')}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Creează proiect nou
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <EditorLayout

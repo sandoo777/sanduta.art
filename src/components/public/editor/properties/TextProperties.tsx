@@ -167,7 +167,7 @@ export default function TextProperties({ element, onUpdate }: TextPropertiesProp
           Aliniere
         </label>
         <div className="grid grid-cols-3 gap-2">
-          {['left', 'center', 'right'].map((align) => (
+          {(['left', 'center', 'right'] as const).map((align) => (
             <button
               key={align}
               onClick={() => onUpdate('textAlign', align)}
@@ -224,7 +224,7 @@ export default function TextProperties({ element, onUpdate }: TextPropertiesProp
         </label>
         <select
           value={element.textTransform || 'none'}
-          onChange={(e) => onUpdate('textTransform', e.target.value)}
+          onChange={(e) => onUpdate('textTransform', e.target.value as 'none' | 'uppercase' | 'lowercase' | 'capitalize')}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none 
                    focus:ring-2 focus:ring-[#0066FF] focus:border-transparent text-sm"
         >

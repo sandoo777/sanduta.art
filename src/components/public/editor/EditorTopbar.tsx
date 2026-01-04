@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import {
   ArrowUturnLeftIcon,
@@ -10,11 +9,23 @@ import {
   ArrowsPointingOutIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+  CloudArrowUpIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 export default function EditorTopbar() {
-  const { undo, redo, canUndo, canRedo, zoom, setZoom, projectName } = useEditorStore();
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const { 
+    undo, 
+    redo, 
+    canUndo, 
+    canRedo, 
+    zoom, 
+    setZoom, 
+    projectName,
+    saveStatus,
+    hasUnsavedChanges,
+    saveProject,
+  } = useEditorStore();
 
   const handleUndo = () => {
     if (canUndo()) undo();
@@ -37,16 +48,56 @@ export default function EditorTopbar() {
   };
 
   const handleSave = async () => {
-    setSaveStatus('saving');
-    // Simulare salvare
-    setTimeout(() => {
-      setSaveStatus('saved');
-    }, 1000);
+    await saveProject();
   };
 
   const handleFinalize = () => {
     // TODO: Redirect to checkout sau review
     console.log('Finalizează designul');
+  };
+  
+  // Save button status
+  const getSaveIcon = () => {
+    switch (saveStatus) {
+      case 'saving':
+        return <ArrowPathIcon className="w-4 h-4 animate-spin" />;
+      case 'saved':
+        return <CheckCircleIcon className="w-4 h-4" />;
+      case 'error':
+        return <ExclamationTriangleIcon className="w-4 h-4" />;
+      default:
+        return <CloudArrowUpIcon className="w-4 h-4" />;
+    }
+  };
+  
+  const getSaveText = () => {
+    switch (saveStatus) {
+      case 'saving':
+        return 'Se salvează...';
+      case 'saved':
+        return 'Salvat';
+      case 'error':
+        return 'Eroare';
+      default:
+        return hasUnsavedChanges ? 'Salvează' : 'Salvat';
+    }
+  };
+  
+  const getSaveButtonClass = () => {
+    const base = 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors';
+    
+    switch (saveStatus) {
+      case 'saving':
+        return `${base} bg-blue-100 text-blue-600 cursor-wait`;
+      case 'saved':
+        return `${base} bg-green-100 text-green-600`;
+      case 'error':
+        return `${base} bg-red-100 text-red-600 hover:bg-red-200`;
+      default:
+        return hasUnsavedChanges 
+          ? `${base} bg-blue-500 text-white hover:bg-blue-600`
+          : `${base} bg-gray-100 text-gray-600`;
+    }
   };
 
   return (
@@ -114,32 +165,18 @@ export default function EditorTopbar() {
             <ArrowsPointingOutIcon className="w-5 h-5 text-gray-700" />
           </button>
         </div>
-
-        {/* Save Status */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          {saveStatus === 'saved' && (
-            <>
-              <CheckCircleIcon className="w-4 h-4 text-green-500" />
-              <span className="hidden sm:inline">Salvat</span>
-            </>
-          )}
-          {saveStatus === 'saving' && (
-            <>
-              <ArrowPathIcon className="w-4 h-4 text-blue-500 animate-spin" />
-              <span className="hidden sm:inline">Salvare...</span>
-            </>
-          )}
-        </div>
       </div>
 
       {/* Right Section - Action Buttons */}
       <div className="flex items-center gap-3">
         <button
           onClick={handleSave}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 
-                   rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+          disabled={saveStatus === 'saving'}
+          className={getSaveButtonClass()}
+          title={getSaveText()}
         >
-          Salvează
+          {getSaveIcon()}
+          <span className="hidden sm:inline">{getSaveText()}</span>
         </button>
         <button
           onClick={handleFinalize}

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { Template } from './templates/templateList';
+import { Project, ProjectVersion, SaveStatus } from './projectModel';
+import { generateThumbnail, uploadThumbnail } from './generateThumbnail';
 
 export interface EditorElement {
   id: string;
@@ -59,6 +61,9 @@ interface EditorStore {
   // Project info
   projectName: string | null;
   projectId: string | null;
+  currentProject: Project | null;
+  saveStatus: SaveStatus;
+  hasUnsavedChanges: boolean;
   
   // Canvas state
   elements: EditorElement[];
@@ -115,12 +120,22 @@ interface EditorStore {
   
   // Template actions
   loadTemplate: (template: Template) => void;
+  
+  // Project actions
+  setProject: (project: Project) => void;
+  saveProject: () => Promise<void>;
+  createVersion: () => void;
+  restoreVersion: (versionId: string) => void;
+  markAsUnsaved: () => void;
 }
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   // Initial state
   projectName: null,
   projectId: null,
+  currentProject: null,
+  saveStatus: 'idle' as SaveStatus,
+  hasUnsavedChanges: false,
   elements: [],
   selectedElementId: null,
   selectedElementIds: [],
@@ -142,6 +157,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   addElement: (element) => {
     set((state) => ({
       elements: [...state.elements, element],
+      hasUnsavedChanges: true,
     }));
     get().saveToHistory();
   },
@@ -151,7 +167,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const newElements = state.elements.map((el) =>
         el.id === id ? { ...el, ...updates } : el
       );
-      return { elements: newElements };
+      return { elements: newElements, hasUnsavedChanges: true };
     });
     get().saveToHistory();
   },
@@ -161,6 +177,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       elements: state.elements.filter((el) => el.id !== id),
       selectedElementId: state.selectedElementId === id ? null : state.selectedElementId,
       selectedElementIds: state.selectedElementIds.filter((elId) => elId !== id),
+      hasUnsavedChanges: true,
     }));
     get().saveToHistory();
   },
@@ -379,5 +396,157 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     
     // Save to history
     get().saveToHistory();
+  },
+  
+  // Project actions
+  setProject: (project) => {
+    set({
+      currentProject: project,
+      projectId: project.id,
+      projectName: project.name,
+      elements: project.elements || [],
+      canvasSize: project.canvas || { width: 800, height: 600 },
+      selectedElementId: null,
+      selectedElementIds: [],
+      hasUnsavedChanges: false,
+      saveStatus: 'idle' as SaveStatus,
+      history: [],
+      historyIndex: -1,
+    });
+    get().saveToHistory();
+  },
+  
+  saveProject: async () => {
+    const state = get();
+    
+    if (!state.currentProject) {
+      console.error('No current project to save');
+      return;
+    }
+    
+    set({ saveStatus: 'saving' as SaveStatus });
+    
+    try {
+      // Generate thumbnail
+      const thumbnailUrl = await generateThumbnail(
+        state.elements,
+        state.canvasSize
+      );
+      
+      // Prepare project data
+      const updatedProject: Project = {
+        ...state.currentProject,
+        elements: state.elements,
+        canvas: state.canvasSize,
+        thumbnailUrl,
+        updatedAt: new Date(),
+      };
+      
+      // Upload thumbnail if generated locally
+      if (thumbnailUrl && thumbnailUrl.startsWith('data:')) {
+        const uploadedUrl = await uploadThumbnail(thumbnailUrl, state.currentProject.id);
+        updatedProject.thumbnailUrl = uploadedUrl;
+      }
+      
+      // Send to API
+      const response = await fetch(`/api/editor/projects/${state.currentProject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProject),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save project');
+      }
+      
+      const savedProject = await response.json();
+      
+      set({
+        currentProject: savedProject,
+        hasUnsavedChanges: false,
+        saveStatus: 'saved' as SaveStatus,
+      });
+      
+      // Reset to idle after 2 seconds
+      setTimeout(() => {
+        if (get().saveStatus === 'saved') {
+          set({ saveStatus: 'idle' as SaveStatus });
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Save error:', error);
+      set({ saveStatus: 'error' as SaveStatus });
+      
+      // Reset error state after 3 seconds
+      setTimeout(() => {
+        if (get().saveStatus === 'error') {
+          set({ saveStatus: 'idle' as SaveStatus });
+        }
+      }, 3000);
+    }
+  },
+  
+  createVersion: () => {
+    const state = get();
+    
+    if (!state.currentProject) return;
+    
+    const newVersion: ProjectVersion = {
+      versionId: `v_${Date.now()}`,
+      timestamp: new Date(),
+      elements: JSON.parse(JSON.stringify(state.elements)),
+      canvas: { ...state.canvasSize },
+    };
+    
+    const versions = [...(state.currentProject.versions || []), newVersion];
+    
+    // Keep only last 20 versions
+    const limitedVersions = versions.slice(-20);
+    
+    set({
+      currentProject: {
+        ...state.currentProject,
+        versions: limitedVersions,
+      },
+    });
+  },
+  
+  restoreVersion: (versionId) => {
+    const state = get();
+    
+    if (!state.currentProject) return;
+    
+    const version = state.currentProject.versions?.find((v) => v.versionId === versionId);
+    
+    if (!version) {
+      console.error('Version not found:', versionId);
+      return;
+    }
+    
+    // Confirm restoration
+    const confirmed = confirm(
+      'Restaurarea acestei versiuni va înlocui starea curentă. Continuați?'
+    );
+    
+    if (!confirmed) return;
+    
+    // Create snapshot of current state before restoring
+    get().createVersion();
+    
+    // Restore version
+    set({
+      elements: JSON.parse(JSON.stringify(version.elements)),
+      canvasSize: { ...version.canvas },
+      selectedElementId: null,
+      selectedElementIds: [],
+      hasUnsavedChanges: true,
+    });
+    
+    get().saveToHistory();
+  },
+  
+  markAsUnsaved: () => {
+    set({ hasUnsavedChanges: true });
   },
 }));
