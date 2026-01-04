@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, Input, Button } from "@/components/ui";
@@ -11,6 +11,24 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { data: session, status, update } = useSession();
+
+  // Redirect authenticated users based on their role
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      const role = session.user.role;
+      console.log(`[Login] User authenticated with role: ${role}`);
+      
+      // Use router.push for smooth client-side navigation
+      if (role === "ADMIN") {
+        router.push("/admin");
+      } else if (role === "MANAGER") {
+        router.push("/manager/orders");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,37 +36,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log(`[Login] Attempting sign in for: ${email}`);
+      
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log(`[Login] Sign in result:`, result);
+
       if (result?.error) {
+        console.error(`[Login] Sign in failed:`, result.error);
         setError("Email sau parolă incorectă");
         setLoading(false);
       } else if (result?.ok) {
-        // Fetch session to get user role
-        try {
-          const response = await fetch('/api/auth/session');
-          const session = await response.json();
-          
-          // Redirect based on role
-          if (session?.user?.role === 'ADMIN') {
-            window.location.href = "/admin";
-          } else if (session?.user?.role === 'MANAGER') {
-            window.location.href = "/manager/orders";
-          } else {
-            window.location.href = "/";
-          }
-        } catch (err) {
-          console.error('Session fetch error:', err);
-          // Fallback to home page
-          window.location.href = "/";
-        }
+        console.log(`[Login] Sign in successful, updating session...`);
+        // Force session update to get the latest data with role
+        await update();
+        // The useEffect will handle the redirect after session is updated
       }
     } catch (err) {
-      console.error('Sign in error:', err);
+      console.error('[Login] Sign in error:', err);
       setError("A apărut o eroare. Încearcă din nou.");
       setLoading(false);
     }
