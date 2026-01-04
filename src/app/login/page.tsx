@@ -22,8 +22,9 @@ export default function LoginPage() {
       console.log(`[Login] User authenticated with role: ${role}, redirecting...`);
       
       // Use window.location for hard redirect to avoid RSC navigation issues
+      // Redirect to /admin/products instead of /admin to avoid trailing slash redirect loop
       if (role === "ADMIN") {
-        window.location.href = "/admin";
+        window.location.href = "/admin/products";
       } else if (role === "MANAGER") {
         window.location.href = "/manager/orders";
       } else {
