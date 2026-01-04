@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, Input, Button } from "@/components/ui";
 
@@ -26,9 +26,22 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid credentials");
+      setError("Email sau parolă incorectă");
     } else {
-      router.push("/");
+      // Fetch session to get user role
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+      
+      // Redirect based on role
+      if (session?.user?.role === 'ADMIN') {
+        router.push("/admin");
+      } else if (session?.user?.role === 'MANAGER') {
+        router.push("/manager/orders");
+      } else {
+        router.push("/");
+      }
+      
+      router.refresh();
     }
   };
 
@@ -63,6 +76,14 @@ export default function LoginPage() {
               Войти
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Nu ai cont?{" "}
+              <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                Înregistrează-te
+              </a>
+            </p>
+          </div>
         </Card>
       </div>
     </div>
