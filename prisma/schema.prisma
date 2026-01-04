@@ -71,16 +71,32 @@ model VerificationToken {
   @@map("verificationtokens")
 }
 
-model Product {
-  id        String   @id @default(cuid())
-  name      String
-  category  String
-  price     Float
-  image_url String?
-  options   Json?
-  createdAt DateTime @default(now())
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  color     String?   @default("#3B82F6")
+  icon      String?   @default("📦")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  orderItems OrderItem[]
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id         String    @id @default(cuid())
+  name       String
+  categoryId String?
+  category   String    // Keep for backward compatibility
+  price      Float
+  image_url  String?
+  options    Json?
+  createdAt  DateTime  @default(now())
+
+  categoryRef Category?   @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
 
   @@map("products")
 }
