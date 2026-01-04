@@ -1,11 +1,10 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
-import { Role } from "@/lib/types-prisma";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -13,16 +12,9 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (!session || session.user.role !== Role.ADMIN) {
-      router.push('/login');
-    }
-  }, [session, status, router]);
-
+  // Show loading state
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -31,8 +23,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (!session || session.user.role !== Role.ADMIN) {
-    return null;
+  // Middleware should handle redirect, just show unauthorized here
+  if (!session || session.user.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Unauthorized Access</h1>
+          <p className="text-gray-600">You don't have permission to access this page.</p>
+          <Link href="/" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
+            Go to Homepage
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const navItems = [
