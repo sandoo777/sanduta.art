@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { useAutoSave } from '@/modules/editor/useAutoSave';
 import { useEditorStore } from '@/modules/editor/editorStore';
 
@@ -90,6 +91,33 @@ export default function EditorLayout({
         {/* Mobile toolbox will slide in from left */}
         {/* Mobile layers/properties will slide in from right */}
       </div>
+      
+      {/* Toast Notifications */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#fff',
+            color: '#111827',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            borderRadius: '8px',
+            padding: '12px 16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

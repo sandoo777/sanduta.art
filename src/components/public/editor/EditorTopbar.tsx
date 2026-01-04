@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import {
   ArrowUturnLeftIcon,
@@ -11,9 +12,12 @@ import {
   ArrowPathIcon,
   CloudArrowUpIcon,
   ExclamationTriangleIcon,
+  DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline';
+import ExportPanel from './export/ExportPanel';
 
 export default function EditorTopbar() {
+  const [showExportPanel, setShowExportPanel] = useState(false);
   const { 
     undo, 
     redo, 
@@ -178,6 +182,19 @@ export default function EditorTopbar() {
           {getSaveIcon()}
           <span className="hidden sm:inline">{getSaveText()}</span>
         </button>
+        
+        {/* Export Button */}
+        <button
+          onClick={() => setShowExportPanel(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 
+                   bg-white border border-gray-300 rounded-lg hover:bg-gray-50 
+                   transition-colors shadow-sm"
+          title="Exportă designul"
+        >
+          <DocumentArrowDownIcon className="w-5 h-5" />
+          <span className="hidden sm:inline">Exportă</span>
+        </button>
+        
         <button
           onClick={handleFinalize}
           className="px-4 py-2 text-sm font-medium text-white bg-[#0066FF] rounded-lg 
@@ -186,6 +203,12 @@ export default function EditorTopbar() {
           Finalizează Design
         </button>
       </div>
+      
+      {/* Export Panel */}
+      <ExportPanel 
+        isOpen={showExportPanel} 
+        onClose={() => setShowExportPanel(false)} 
+      />
     </div>
   );
 }

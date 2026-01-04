@@ -214,6 +214,7 @@ export default function EditorCanvas() {
     >
       {/* Canvas Container */}
       <div
+        data-canvas-container
         className="relative bg-white shadow-2xl rounded-lg overflow-visible"
         style={{
           width: `${canvasSize.width * zoom}px`,
