@@ -17,31 +17,40 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
-
-    if (result?.error) {
-      setError("Email sau parolă incorectă");
-    } else {
-      // Fetch session to get user role
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-      
-      // Redirect based on role
-      if (session?.user?.role === 'ADMIN') {
-        router.push("/admin");
-      } else if (session?.user?.role === 'MANAGER') {
-        router.push("/manager/orders");
-      } else {
-        router.push("/");
+      if (result?.error) {
+        setError("Email sau parolă incorectă");
+        setLoading(false);
+      } else if (result?.ok) {
+        // Fetch session to get user role
+        try {
+          const response = await fetch('/api/auth/session');
+          const session = await response.json();
+          
+          // Redirect based on role
+          if (session?.user?.role === 'ADMIN') {
+            window.location.href = "/admin";
+          } else if (session?.user?.role === 'MANAGER') {
+            window.location.href = "/manager/orders";
+          } else {
+            window.location.href = "/";
+          }
+        } catch (err) {
+          console.error('Session fetch error:', err);
+          // Fallback to home page
+          window.location.href = "/";
+        }
       }
-      
-      router.refresh();
+    } catch (err) {
+      console.error('Sign in error:', err);
+      setError("A apărut o eroare. Încearcă din nou.");
+      setLoading(false);
     }
   };
 
