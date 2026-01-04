@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Role } from "@/lib/types-prisma";
 
 export function Header() {
   const { data: session } = useSession();
@@ -161,7 +162,7 @@ export function Header() {
                     >
                       My Orders
                     </Link>
-                    {session.user?.role === 'ADMIN' && (
+                    {session.user?.role === Role.ADMIN && (
                       <Link
                         href="/admin"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"

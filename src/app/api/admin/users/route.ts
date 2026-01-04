@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { Role } from "@/lib/types-prisma";
 
 export async function GET() {
   try {
+    const session = await getServerSession();
+    
+    if (!session || session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -11,6 +19,9 @@ export async function GET() {
         role: true,
         createdAt: true,
         _count: { select: { orders: true } },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
