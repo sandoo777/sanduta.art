@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { Role } from "@/lib/types-prisma";
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 export async function GET() {
   try {
+    const session = await getServerSession();
+    
+    if (!session || session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     logger.info('API:Admin:Products', 'Fetching all products');
     
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     
     logger.info('API:Admin:Products', `Fetched ${products.length} products`);
     
@@ -19,11 +31,21 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession();
+    
+    if (!session || session.user.role !== Role.ADMIN) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { name, category, price, image_url, options } = await request.json();
 
     if (!name || !category || price === undefined) {
       logger.warn('API:Admin:Products', 'Missing required fields', { hasName: !!name, hasCategory: !!category, hasPrice: price !== undefined });
       return createErrorResponse('Name, category, and price are required', 400);
+    }
+
+    if (price < 0) {
+      return createErrorResponse('Price must be a positive number', 400);
     }
 
     logger.info('API:Admin:Products', 'Creating new product', { name, category, price });
