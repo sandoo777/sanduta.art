@@ -523,6 +523,320 @@ Planned components:
 
 ---
 
+## Orders Management UI
+
+Complete admin interface for managing orders with status workflows, item management, and file attachments.
+
+### Orders List Page
+
+**Location:** `src/app/admin/orders/page.tsx`
+
+**Features:**
+- Responsive table/card layout
+- Advanced filtering (status, payment, search)
+- Real-time order status badges
+- Direct navigation to order details
+
+**Usage:**
+```tsx
+// Auto-rendered at /admin/orders
+// Includes:
+// - Search by ID, customer name, or email
+// - Filter by order status
+// - Filter by payment status  
+// - View details button for each order
+```
+
+### Order Details Page
+
+**Location:** `src/app/admin/orders/[id]/page.tsx`
+
+**Tabs:**
+- **Overview**: Customer info, order summary, assigned operator
+- **Items**: Manage order items with add/edit/delete
+- **Files**: Attach and manage order files
+- **Timeline**: View order history and events
+
+**Usage:**
+```tsx
+// Auto-rendered at /admin/orders/[id]
+// Dynamic routing with order ID parameter
+```
+
+### OrderStatusManager
+
+**Location:** `src/app/admin/orders/components/OrderStatusManager.tsx`
+
+**Props:**
+- `orderId`: string - The order ID
+- `currentStatus`: string - Current order status
+- `onStatusChanged`: (status: string) => void - Callback after update
+
+**Features:**
+- Dropdown with all OrderStatus enum values
+- Color-coded status badges
+- API integration with toast notifications
+- Real-time status updates
+
+**Usage:**
+```tsx
+import { OrderStatusManager } from '@/app/admin/orders/components/OrderStatusManager';
+
+<OrderStatusManager
+  orderId={order.id}
+  currentStatus={order.status}
+  onStatusChanged={(status) => refreshOrder()}
+/>
+```
+
+**Status Options:**
+- PENDING → În așteptare (yellow)
+- CONFIRMED → Confirmat (blue)
+- IN_PROGRESS → În progres (purple)
+- READY → Gata (green)
+- SHIPPED → Livrat (indigo)
+- DELIVERED → Entregat (dark green)
+- CANCELLED → Anulat (red)
+
+### PaymentStatusManager
+
+**Location:** `src/app/admin/orders/components/PaymentStatusManager.tsx`
+
+**Props:**
+- `orderId`: string
+- `currentPaymentStatus`: string
+- `onPaymentStatusChanged`: (status: string) => void
+
+**Payment Status Options:**
+- PENDING → În așteptare
+- PAID → Plătit
+- PARTIAL → Parțial plătit
+- REFUNDED → Returnat
+
+### AssignOperator
+
+**Location:** `src/app/admin/orders/components/AssignOperator.tsx`
+
+**Props:**
+- `orderId`: string
+- `assignedToUserId`: string | null
+- `assignedOperatorName`: string
+- `onOperatorAssigned`: (operatorId: string | null) => void
+
+**Features:**
+- Fetches OPERATOR role users from API
+- Dropdown selection with email display
+- Supports unassignment (null value)
+- Real-time operator assignment
+
+### OrderItemsManager
+
+**Location:** `src/app/admin/orders/components/OrderItemsManager.tsx`
+
+**Props:**
+- `orderId`: string
+- `items`: OrderItem[]
+- `onItemsChanged`: () => void
+
+**Features:**
+- Display all order items with quantities and prices
+- Add new items with product ID
+- Adjust quantities with +/- buttons
+- Delete items with confirmation
+- Auto-calculates line totals and order total
+- Server-side price recalculation
+
+**Usage:**
+```tsx
+import { OrderItemsManager } from '@/app/admin/orders/components/OrderItemsManager';
+
+<OrderItemsManager
+  orderId={order.id}
+  items={order.orderItems}
+  onItemsChanged={() => loadOrder()}
+/>
+```
+
+### OrderFilesManager
+
+**Location:** `src/app/admin/orders/components/OrderFilesManager.tsx`
+
+**Props:**
+- `orderId`: string
+- `files`: OrderFile[]
+- `onFilesChanged`: () => void
+
+**Features:**
+- List all attached files
+- Add files via URL and name
+- Delete files with confirmation
+- Download/preview links
+- File creation timestamps
+
+**File Structure:**
+```typescript
+interface OrderFile {
+  id: string;
+  url: string;
+  name: string;
+  createdAt: string;
+}
+```
+
+### OrderTimeline
+
+**Location:** `src/app/admin/orders/components/OrderTimeline.tsx`
+
+**Props:**
+- `createdAt`: string
+- `updatedAt`: string
+- `status`: string
+- `paymentStatus`: string
+- `itemsCount`: number
+- `filesCount`: number
+
+**Features:**
+- Visual timeline with colored dots
+- Event categorization (created, status_changed, payment_updated, etc.)
+- Chronological event display
+- Romanian localized dates
+
+**Event Types:**
+- Order created (green)
+- Status changed (blue)
+- Payment updated (purple)
+- Item added (yellow)
+- Item removed (red)
+- File added (indigo)
+
+### useOrders Hook
+
+**Location:** `src/modules/orders/useOrders.ts`
+
+Custom hook for all order API operations with loading states and error handling.
+
+**Functions:**
+```typescript
+const {
+  loading,
+  getOrders,        // () => Promise<{success, data}>
+  getOrder,         // (id) => Promise<{success, data}>
+  updateStatus,     // (id, status) => Promise<{success, data}>
+  updatePaymentStatus, // (id, paymentStatus) => Promise<{success, data}>
+  assignOperator,   // (id, userId | null) => Promise<{success, data}>
+  addItem,          // (orderId, item) => Promise<{success, data}>
+  updateItem,       // (orderId, itemId, updates) => Promise<{success, data}>
+  deleteItem,       // (orderId, itemId) => Promise<{success}>
+  addFile,          // (orderId, file) => Promise<{success, data}>
+  deleteFile,       // (orderId, fileId) => Promise<{success}>
+} = useOrders();
+```
+
+**Usage:**
+```tsx
+import { useOrders } from '@/modules/orders/useOrders';
+
+const MyComponent = () => {
+  const { loading, getOrders, updateStatus } = useOrders();
+
+  const loadOrders = async () => {
+    const result = await getOrders();
+    if (result.success) {
+      setOrders(result.data);
+    }
+  };
+
+  const changeStatus = async (orderId: string, newStatus: string) => {
+    const result = await updateStatus(orderId, newStatus);
+    if (result.success) {
+      toast.success('Status updated');
+    } else {
+      toast.error(result.error);
+    }
+  };
+};
+```
+
+### Integration Example
+
+Complete order details page setup:
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useOrders } from '@/modules/orders/useOrders';
+import { OrderStatusManager } from './components/OrderStatusManager';
+import { PaymentStatusManager } from './components/PaymentStatusManager';
+import { AssignOperator } from './components/AssignOperator';
+import { OrderItemsManager } from './components/OrderItemsManager';
+import { OrderFilesManager } from './components/OrderFilesManager';
+import { OrderTimeline } from './components/OrderTimeline';
+
+export default function OrderDetailsPage({ params }: { params: { id: string } }) {
+  const [order, setOrder] = useState(null);
+  const { getOrder } = useOrders();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const loadOrder = async () => {
+    const result = await getOrder(params.id);
+    if (result.success) setOrder(result.data);
+  };
+
+  useEffect(() => {
+    loadOrder();
+  }, [params.id]);
+
+  return (
+    <div>
+      {/* Status Management */}
+      <OrderStatusManager
+        orderId={order.id}
+        currentStatus={order.status}
+        onStatusChanged={loadOrder}
+      />
+      
+      {/* Payment Management */}
+      <PaymentStatusManager
+        orderId={order.id}
+        currentPaymentStatus={order.paymentStatus}
+        onPaymentStatusChanged={loadOrder}
+      />
+
+      {/* Tabs */}
+      {activeTab === 'items' && (
+        <OrderItemsManager
+          orderId={order.id}
+          items={order.orderItems}
+          onItemsChanged={loadOrder}
+        />
+      )}
+
+      {activeTab === 'files' && (
+        <OrderFilesManager
+          orderId={order.id}
+          files={order.files}
+          onFilesChanged={loadOrder}
+        />
+      )}
+
+      {activeTab === 'timeline' && (
+        <OrderTimeline
+          createdAt={order.createdAt}
+          updatedAt={order.updatedAt}
+          status={order.status}
+          paymentStatus={order.paymentStatus}
+          itemsCount={order._count?.orderItems || 0}
+          filesCount={order._count?.files || 0}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+---
+
 ## Support
 
 For questions or issues with UI components:
