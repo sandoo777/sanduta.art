@@ -182,7 +182,9 @@ export default function ImageProperties({ element, onUpdate }: ImagePropertiesPr
         </label>
         <select
           value={element.objectFit || 'cover'}
-          onChange={(e) => onUpdate('objectFit', e.target.value as 'none' | 'cover' | 'contain' | 'fill')}
+          onChange={(e) => {
+            onUpdate('objectFit', (e.target.value || 'cover') as 'none' | 'cover' | 'contain' | 'fill');
+          }}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none 
                    focus:ring-2 focus:ring-[#0066FF] focus:border-transparent text-sm"
         >

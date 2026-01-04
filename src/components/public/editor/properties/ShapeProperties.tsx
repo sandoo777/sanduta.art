@@ -45,7 +45,7 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
           Tip Formă
         </label>
         <div className="grid grid-cols-3 gap-2 md:grid-cols-4">
-          {(['rectangle', 'circle', 'triangle'] as const).map((shape) => (
+          {(['rectangle' as const, 'circle' as const, 'triangle' as const]).map((shape) => (
             <button
               key={shape}
               onClick={() => onUpdate('shape', shape)}
@@ -167,7 +167,9 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
               </label>
               <select
                 value={element.strokeStyle || 'solid'}
-                onChange={(e) => onUpdate('strokeStyle', e.target.value as 'solid' | 'dashed' | 'dotted')}
+                onChange={(e) => {
+                  onUpdate('strokeStyle', (e.target.value || 'solid') as 'solid' | 'dashed' | 'dotted');
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none 
                          focus:ring-2 focus:ring-[#0066FF] focus:border-transparent text-sm"
               >
@@ -222,14 +224,15 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
                 min="-50"
                 max="50"
                 value={element.shadow?.offsetX || 0}
-                onChange={(e) => 
+                onChange={(e) => {
+                  const shadow = element.shadow || { offsetX: 0, offsetY: 0, blur: 0, color: '#000000' };
                   onUpdate('shadow', { 
                     offsetX: parseFloat(e.target.value),
-                    offsetY: element.shadow?.offsetY ?? 0,
-                    blur: element.shadow?.blur ?? 0,
-                    color: element.shadow?.color ?? '#000000',
-                  })
-                }
+                    offsetY: shadow.offsetY,
+                    blur: shadow.blur,
+                    color: shadow.color,
+                  });
+                }}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#0066FF]"
               />
             </div>
@@ -244,14 +247,15 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
                 min="-50"
                 max="50"
                 value={element.shadow?.offsetY || 0}
-                onChange={(e) => 
+                onChange={(e) => {
+                  const shadow = element.shadow || { offsetX: 0, offsetY: 0, blur: 0, color: '#000000' };
                   onUpdate('shadow', { 
-                    offsetX: element.shadow?.offsetX ?? 0,
+                    offsetX: shadow.offsetX,
                     offsetY: parseFloat(e.target.value),
-                    blur: element.shadow?.blur ?? 0,
-                    color: element.shadow?.color ?? '#000000',
-                  })
-                }
+                    blur: shadow.blur,
+                    color: shadow.color,
+                  });
+                }}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#0066FF]"
               />
             </div>
@@ -266,14 +270,15 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
                 min="0"
                 max="50"
                 value={element.shadow?.blur || 0}
-                onChange={(e) => 
+                onChange={(e) => {
+                  const shadow = element.shadow || { offsetX: 0, offsetY: 0, blur: 0, color: '#000000' };
                   onUpdate('shadow', { 
-                    offsetX: element.shadow?.offsetX ?? 0,
-                    offsetY: element.shadow?.offsetY ?? 0,
+                    offsetX: shadow.offsetX,
+                    offsetY: shadow.offsetY,
                     blur: parseFloat(e.target.value),
-                    color: element.shadow?.color ?? '#000000',
-                  })
-                }
+                    color: shadow.color,
+                  });
+                }}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#0066FF]"
               />
             </div>
@@ -286,14 +291,15 @@ export default function ShapeProperties({ element, onUpdate }: ShapePropertiesPr
               <input
                 type="color"
                 value={element.shadow?.color || '#000000'}
-                onChange={(e) => 
+                onChange={(e) => {
+                  const shadow = element.shadow || { offsetX: 0, offsetY: 0, blur: 0, color: '#000000' };
                   onUpdate('shadow', { 
-                    offsetX: element.shadow?.offsetX ?? 0,
-                    offsetY: element.shadow?.offsetY ?? 0,
-                    blur: element.shadow?.blur ?? 0,
+                    offsetX: shadow.offsetX,
+                    offsetY: shadow.offsetY,
+                    blur: shadow.blur,
                     color: e.target.value,
-                  })
-                }
+                  });
+                }}
                 className="w-full h-10 rounded border border-gray-300 cursor-pointer"
               />
             </div>
