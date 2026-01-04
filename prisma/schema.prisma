@@ -86,14 +86,20 @@ model Category {
 }
 
 model Product {
-  id         String    @id @default(cuid())
-  name       String
-  categoryId String?
-  category   String    // Keep for backward compatibility
-  price      Float
-  image_url  String?
-  options    Json?
-  createdAt  DateTime  @default(now())
+  id          String    @id @default(cuid())
+  name        String
+  slug        String?   @unique
+  description String?   @db.Text
+  categoryId  String?
+  category    String    // Keep for backward compatibility
+  price       Float
+  stock       Int       @default(0)
+  image_url   String?
+  images      String[]  @default([])
+  status      String    @default("ACTIVE") // ACTIVE, DRAFT
+  options     Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
 
   categoryRef Category?   @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]

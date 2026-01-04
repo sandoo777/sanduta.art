@@ -16,6 +16,9 @@ export async function GET() {
     logger.info('API:Admin:Products', 'Fetching all products');
     
     const products = await prisma.product.findMany({
+      include: {
+        categoryRef: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -38,10 +41,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, category, price, image_url, options } = await request.json();
+    const { name, slug, description, category, categoryId, price, stock, image_url, images, status, options } = await request.json();
 
-    if (!name || !category || price === undefined) {
-      logger.warn('API:Admin:Products', 'Missing required fields', { hasName: !!name, hasCategory: !!category, hasPrice: price !== undefined });
+    if (!name || (!category && !categoryId) || price === undefined) {
+      logger.warn('API:Admin:Products', 'Missing required fields', { hasName: !!name, hasCategory: !!(category || categoryId), hasPrice: price !== undefined });
       return createErrorResponse('Name, category, and price are required', 400);
     }
 
@@ -49,10 +52,38 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Price must be a positive number', 400);
     }
 
-    logger.info('API:Admin:Products', 'Creating new product', { name, category, price });
+    // Generate slug from name if not provided
+    const finalSlug = slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+
+    // Check if slug already exists
+    if (finalSlug) {
+      const existing = await prisma.product.findUnique({
+        where: { slug: finalSlug },
+      });
+      if (existing) {
+        return createErrorResponse('Product with this slug already exists', 400);
+      }
+    }
+
+    logger.info('API:Admin:Products', 'Creating new product', { name, category: category || categoryId, price });
 
     const product = await prisma.product.create({
-      data: { name, category, price, image_url, options },
+      data: { 
+        name, 
+        slug: finalSlug,
+        description,
+        category: category || 'Uncategorized', 
+        categoryId,
+        price, 
+        stock: stock || 0,
+        image_url, 
+        images: images || [],
+        status: status || 'ACTIVE',
+        options 
+      },
+      include: {
+        categoryRef: true,
+      },
     });
 
     logger.info('API:Admin:Products', 'Product created successfully', { productId: product.id, name: product.name });
