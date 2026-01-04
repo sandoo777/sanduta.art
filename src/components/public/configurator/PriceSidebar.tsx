@@ -3,13 +3,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePriceCalculator, type PriceSelection, type PriceBreakdown } from '@/modules/configurator/usePriceCalculator';
 
+type FileStatus = {
+  overall: 'pending' | 'ok' | 'warning' | 'error';
+  message?: string;
+};
+
 interface PriceSidebarProps {
   selection: PriceSelection;
   productName: string;
   onContinue?: () => void;
+  continueLabel?: string;
+  fileStatus?: FileStatus;
 }
 
-export function PriceSidebar({ selection, productName, onContinue }: PriceSidebarProps) {
+export function PriceSidebar({ selection, productName, onContinue, continueLabel = 'Continuă la pasul 2', fileStatus }: PriceSidebarProps) {
   const calculator = usePriceCalculator();
   const [breakdown, setBreakdown] = useState<PriceBreakdown>(() => calculator.calcTotal(selection));
 
@@ -33,6 +40,25 @@ export function PriceSidebar({ selection, productName, onContinue }: PriceSideba
     };
   }, [breakdown]);
 
+  const fileBadge = useMemo(() => {
+    if (!fileStatus) return null;
+    const map = {
+      ok: 'bg-green-100 text-green-700',
+      warning: 'bg-amber-100 text-amber-700',
+      error: 'bg-red-100 text-red-700',
+      pending: 'bg-gray-100 text-gray-600',
+    } as const;
+    const labels = {
+      ok: 'Fișier validat',
+      warning: 'Necesită atenție',
+      error: 'Eroare fișier',
+      pending: 'Fără fișier',
+    } as const;
+    return { className: map[fileStatus.overall], label: labels[fileStatus.overall] };
+  }, [fileStatus]);
+
+  const disabled = fileStatus?.overall === 'error' || fileStatus?.overall === 'pending';
+
   return (
     <aside className="bg-white border border-gray-200 rounded-lg shadow-lg p-5 sm:p-6 sticky top-6">
       <div className="flex items-center justify-between mb-4">
@@ -55,14 +81,29 @@ export function PriceSidebar({ selection, productName, onContinue }: PriceSideba
 
       <div className="bg-blue-50 rounded-lg p-3 mb-4">
         <p className="text-sm text-blue-800 font-semibold">{productName}</p>
-        <p className="text-xs text-blue-700">Pasul 1 · Specificații principale</p>
+        <p className="text-xs text-blue-700">Configurator produs</p>
       </div>
+
+      {fileStatus && (
+        <div className="border border-gray-100 rounded-lg p-3 mb-4 bg-gray-50">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm font-semibold text-gray-900">Fișier</p>
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${fileBadge?.className || ''}`}>
+              {fileBadge?.label}
+            </span>
+          </div>
+          <p className="text-xs text-gray-600">{fileStatus.message || 'Adaugă fișier sau alege editorul.'}</p>
+        </div>
+      )}
 
       <button
         onClick={onContinue}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+        disabled={disabled}
+        className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+          disabled ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
+        }`}
       >
-        Continuă la pasul 2
+        {continueLabel}
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
