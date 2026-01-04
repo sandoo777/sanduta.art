@@ -100,7 +100,9 @@ export default function AdminUsersPage() {
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case Role.MANAGER:
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case Role.USER:
+      case Role.OPERATOR:
+        return 'bg-green-100 text-green-800 border-green-200';
+      case Role.VIEWER:
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -151,9 +153,9 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Users</div>
+            <div className="text-sm text-gray-600">Viewers</div>
             <div className="text-2xl font-bold text-gray-900">
-              {users.filter(u => u.role === Role.USER).length}
+              {users.filter(u => u.role === Role.VIEWER).length}
             </div>
           </div>
         </div>
@@ -213,7 +215,8 @@ export default function AdminUsersPage() {
                               : 'cursor-pointer hover:opacity-80'
                           }`}
                         >
-                          <option value={Role.USER}>User</option>
+                          <option value={Role.VIEWER}>Viewer</option>
+                          <option value={Role.OPERATOR}>Operator</option>
                           <option value={Role.MANAGER}>Manager</option>
                           <option value={Role.ADMIN}>Admin</option>
                         </select>

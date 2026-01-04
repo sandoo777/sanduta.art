@@ -26,8 +26,9 @@ export async function POST(request: NextRequest) {
     await prisma.order.update({
       where: { id: order_id },
       data: {
-        paymentStatus: paymentStatus === 'paid' ? 'PAID' : paymentStatus === 'failed' ? 'PENDING' : 'PENDING',
-        status: paymentStatus === 'paid' ? 'CONFIRMED' : 'PENDING',
+        paymentStatus: paymentStatus === 'paid' ? 'PAID' : paymentStatus === 'failed' ? 'FAILED' : 'PENDING',
+        // Move the order into the first production stage once the payment clears
+        status: paymentStatus === 'paid' ? 'IN_PREPRODUCTION' : 'PENDING',
       },
     });
 

@@ -1,24 +1,19 @@
 "use client";
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Step4Summary } from '@/components/public/configurator/Step4Summary';
 import { useAddToCart } from '@/modules/configurator/useAddToCart';
+import { usePriceCalculator, type PriceSelection } from '@/modules/configurator/usePriceCalculator';
 import type { ConfiguratorSelection, UpsellItem } from '@/components/public/configurator/Step4Summary';
 
 // TODO: replace with actual selection from context/store
-const mockSelection: ConfiguratorSelection = {
-  productId: 'rollup-banner',
-  dimensions: '85 x 200 cm',
-  material: 'Material textil premium',
-  finish: 'Capse + tiv',
+const defaultSelection: PriceSelection = {
+  dimension: 'A4',
+  material: '170g',
+  finishes: ['laminare-mata'],
   quantity: 2,
-  productionSpeed: 'Produse în 48h',
-  unitPrice: 450,
-  totalPrice: 900,
-  previewUrl: '/images/sample-rollup.jpg',
-  fileName: 'rollup-final.pdf',
-  fileStatus: 'ok',
+  productionSpeed: 'express',
 };
 
 const mockUpsells: UpsellItem[] = [
@@ -28,30 +23,41 @@ const mockUpsells: UpsellItem[] = [
 
 export default function Step4SummaryPage() {
   const router = useRouter();
+  const calculator = usePriceCalculator();
   const { addToCart, loading } = useAddToCart();
+  const selectionInput = useMemo<PriceSelection>(() => defaultSelection, []);
+  const breakdown = useMemo(() => calculator.calcTotal(selectionInput), [calculator, selectionInput]);
   const [upsells, setUpsells] = useState(mockUpsells);
+
+  const mockSelection: ConfiguratorSelection = useMemo(
+    () => ({
+      productId: 'rollup-banner',
+      dimensions: 'A4 (210 x 297 mm)',
+      material: selectionInput.material,
+      finish: 'Laminare mată',
+      quantity: selectionInput.quantity,
+      productionSpeed: 'Express (48h)',
+      unitPrice: Number((breakdown.total / selectionInput.quantity).toFixed(2)),
+      totalPrice: breakdown.total,
+      previewUrl: '/images/sample-rollup.jpg',
+      fileName: 'rollup-final.pdf',
+      fileStatus: 'ok',
+    }),
+    [breakdown.total, selectionInput.material, selectionInput.quantity]
+  );
 
   const handleAddToCart = async () => {
     const upsellsTotal = upsells.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+    const totalWithUpsells = breakdown.total + upsellsTotal;
     
     await addToCart({
       productId: mockSelection.productId,
-      selection: {
-        dimensions: mockSelection.dimensions,
-        material: mockSelection.material,
-        finish: mockSelection.finish,
-        productionSpeed: mockSelection.productionSpeed,
-        quantity: mockSelection.quantity,
-      },
-      upsells: upsells.map((u) => ({ id: u.id, title: u.title, price: u.price })),
+      selection: selectionInput,
+      upsells: upsells.map((u) => ({ label: u.title, delta: u.price })),
       fileUrl: mockSelection.previewUrl,
       previewUrl: mockSelection.previewUrl,
-      priceBreakdown: {
-        unitPrice: mockSelection.unitPrice,
-        totalPrice: mockSelection.totalPrice + upsellsTotal,
-        upsellsTotal,
-      },
-      totalPrice: mockSelection.totalPrice + upsellsTotal,
+      priceBreakdown: { ...breakdown, total: totalWithUpsells },
+      totalPrice: totalWithUpsells,
     });
   };
 

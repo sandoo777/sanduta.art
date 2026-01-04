@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactElement } from 'react';
+
 interface SummarySpecificationsProps {
   dimensions: string;
   material: string;
@@ -25,7 +27,7 @@ const labels = {
   total: 'Preț total',
 };
 
-const icons: Record<string, JSX.Element> = {
+const icons: Record<string, ReactElement> = {
   dimension: (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} />
