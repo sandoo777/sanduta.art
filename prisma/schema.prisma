@@ -307,8 +307,39 @@ model ProductionJob {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  assignedTo User? @relation("AssignedProductionJobs", fields: [assignedToId], references: [id])
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  assignedTo      User?           @relation("AssignedProductionJobs", fields: [assignedToId], references: [id])
+  materialUsages  MaterialUsage[]
 
   @@map("production_jobs")
+}
+
+model Material {
+  id          String          @id @default(cuid())
+  name        String
+  sku         String?         @unique
+  unit        String          // ex: "kg", "m2", "ml", "pcs"
+  stock       Float           @default(0)
+  minStock    Float           @default(0)   // alert threshold
+  costPerUnit Decimal         @default(0) @db.Decimal(10, 2)
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  consumption MaterialUsage[]
+
+  @@map("materials")
+}
+
+model MaterialUsage {
+  id         String        @id @default(cuid())
+  materialId String
+  jobId      String
+  quantity   Float
+  createdAt  DateTime      @default(now())
+
+  material Material       @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  job      ProductionJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("material_usages")
 }
