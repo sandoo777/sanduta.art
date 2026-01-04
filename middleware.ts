@@ -1,24 +1,34 @@
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export default withAuth({
-  callbacks: {
-    authorized({ token, req }) {
-      const path = req.nextUrl.pathname;
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
 
-      // Admin-only routes
-      if (path.startsWith("/admin")) {
-        return token?.role === "ADMIN";
-      }
+    // Check authorization
+    if (path.startsWith("/admin") && token?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
 
-      // Manager or Admin routes
-      if (path.startsWith("/manager")) {
-        return token?.role === "MANAGER" || token?.role === "ADMIN";
-      }
+    if (path.startsWith("/manager") && token?.role !== "MANAGER" && token?.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    }
 
-      return true;
-    },
+    return NextResponse.next();
   },
-});
+  {
+    callbacks: {
+      authorized({ token }) {
+        // Allow access if user is authenticated
+        return !!token;
+      },
+    },
+    pages: {
+      signIn: "/login",
+    },
+  }
+);
 
 export const config = {
   matcher: ["/admin/:path*", "/manager/:path*"],
