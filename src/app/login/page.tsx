@@ -19,18 +19,18 @@ export default function LoginPage() {
     if (status === "authenticated" && session?.user && !hasRedirected.current) {
       hasRedirected.current = true;
       const role = session.user.role;
-      console.log(`[Login] User authenticated with role: ${role}`);
+      console.log(`[Login] User authenticated with role: ${role}, redirecting...`);
       
-      // Use router.replace to avoid back button issues
+      // Use window.location for hard redirect to avoid RSC navigation issues
       if (role === "ADMIN") {
-        router.replace("/admin");
+        window.location.href = "/admin";
       } else if (role === "MANAGER") {
-        router.replace("/manager/orders");
+        window.location.href = "/manager/orders";
       } else {
-        router.replace("/");
+        window.location.href = "/";
       }
     }
-  }, [status, session, router]);
+  }, [status, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
