@@ -214,6 +214,7 @@ model Order {
   user         User?     @relation(fields: [userId], references: [id])
   assignedTo   User?     @relation("AssignedOrders", fields: [assignedToUserId], references: [id])
   orderItems   OrderItem[]
+  files        OrderFile[]
 
   @@map("orders")
 }
@@ -232,4 +233,16 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
+}
+
+model OrderFile {
+  id        String   @id @default(cuid())
+  orderId   String
+  url       String
+  name      String
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_files")
 }

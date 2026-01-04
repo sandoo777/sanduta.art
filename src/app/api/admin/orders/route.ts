@@ -1,54 +1,211 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
-import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function GET() {
+/**
+ * GET /api/admin/orders
+ * List all orders with relations
+ */
+export async function GET(req: NextRequest) {
   try {
-    logger.info('API:Admin:Orders', 'Fetching all orders');
-    
+    const session = await getServerSession(authOptions);
+
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const orders = await prisma.order.findMany({
       include: {
-        user: { select: { name: true, email: true } },
-        orderItems: { include: { product: { select: { name: true } } } },
+        customer: true,
+        assignedTo: {
+          select: { id: true, name: true, email: true },
+        },
+        orderItems: {
+          include: {
+            product: {
+              select: { id: true, name: true, price: true },
+            },
+          },
+        },
+        files: true,
+        _count: {
+          select: {
+            orderItems: true,
+            files: true,
+          },
+        },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-
-    logger.info('API:Admin:Orders', `Fetched ${orders.length} orders`);
 
     return NextResponse.json(orders);
   } catch (error) {
-    logApiError('API:Admin:Orders', error, { action: 'fetch_orders' });
-    return createErrorResponse('Failed to fetch orders', 500);
+    console.error("Error fetching orders:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch orders" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(request: NextRequest) {
+/**
+ * POST /api/admin/orders
+ * Create a new order
+ *
+ * Body:
+ * {
+ *   customerId: string,
+ *   source: "ONLINE" | "OFFLINE",
+ *   channel: "WEB" | "PHONE" | "WALK_IN" | "EMAIL",
+ *   items: [
+ *     {
+ *       productId: string,
+ *       variantId?: string,
+ *       quantity: number,
+ *       customDescription?: string
+ *     }
+ *   ],
+ *   dueDate?: string
+ * }
+ */
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const { orderId, status, paymentStatus, deliveryStatus } = body;
+    const session = await getServerSession(authOptions);
 
-    if (!orderId) {
-      logger.warn('API:Admin:Orders', 'Missing orderId in update request');
-      return createErrorResponse('Order ID is required', 400);
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    logger.info('API:Admin:Orders', 'Updating order', { orderId, status, paymentStatus, deliveryStatus });
+    const body = await req.json();
+    const { customerId, source, channel, items, dueDate } = body;
 
-    const updated = await prisma.order.update({
-      where: { id: orderId },
+    // Validations
+    if (!customerId) {
+      return NextResponse.json(
+        { error: "Customer is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!items || items.length === 0) {
+      return NextResponse.json(
+        { error: "At least one item is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if customer exists
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+
+    if (!customer) {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 400 }
+      );
+    }
+
+    // Verify all products exist and get their prices
+    let totalPrice = 0;
+    const orderItemsData = [];
+
+    for (const item of items) {
+      if (!item.productId || !item.quantity || item.quantity <= 0) {
+        return NextResponse.json(
+          { error: "Product ID and valid quantity required for each item" },
+          { status: 400 }
+        );
+      }
+
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+        include: {
+          variants: {
+            where: item.variantId ? { id: item.variantId } : undefined,
+          },
+        },
+      });
+
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product ${item.productId} not found` },
+          { status: 400 }
+        );
+      }
+
+      // Get unit price from variant or product
+      let unitPrice = Number(product.price) || 0;
+      if (item.variantId) {
+        const variant = product.variants.find((v: any) => v.id === item.variantId);
+        if (!variant) {
+          return NextResponse.json(
+            { error: `Variant ${item.variantId} not found` },
+            { status: 400 }
+          );
+        }
+        unitPrice = Number(variant.price);
+      }
+
+      const lineTotal = unitPrice * item.quantity;
+      totalPrice += lineTotal;
+
+      orderItemsData.push({
+        productId: item.productId,
+        variantId: item.variantId || undefined,
+        quantity: item.quantity,
+        customDescription: item.customDescription || undefined,
+        unitPrice,
+        lineTotal,
+      });
+    }
+
+    // Create order with items
+    const order = await prisma.order.create({
       data: {
-        ...(status && { status }),
-        ...(paymentStatus && { paymentStatus }),
-        ...(deliveryStatus && { deliveryStatus }),
+        customerId,
+        customerName: customer.name,
+        customerEmail: customer.email || "",
+        customerPhone: customer.phone || undefined,
+        source: source || "ONLINE",
+        channel: channel || "WEB",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        totalPrice,
+        currency: "MDL",
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        orderItems: {
+          create: orderItemsData,
+        },
+      },
+      include: {
+        customer: true,
+        orderItems: {
+          include: {
+            product: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+        files: true,
       },
     });
 
-    logger.info('API:Admin:Orders', 'Order updated successfully', { orderId });
-
-    return NextResponse.json(updated);
+    return NextResponse.json(order, { status: 201 });
   } catch (error) {
-    logApiError('API:Admin:Orders', error, { action: 'update_order' });
-    return createErrorResponse('Failed to update order', 500);
+    console.error("Error creating order:", error);
+    return NextResponse.json(
+      { error: "Failed to create order" },
+      { status: 500 }
+    );
   }
 }
