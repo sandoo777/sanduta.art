@@ -101,10 +101,27 @@ model Product {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
 
-  categoryRef Category?   @relation(fields: [categoryId], references: [id])
+  categoryRef Category?       @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
+  variants    ProductVariant[]
 
   @@map("products")
+}
+
+model ProductVariant {
+  id              String   @id @default(cuid())
+  productId       String
+  name            String   // e.g., "Size", "Color"
+  value           String   // e.g., "M", "Red"
+  priceAdjustment Float    @default(0)
+  stockAdjustment Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, name, value])
+  @@map("product_variants")
 }
 
 model Order {
