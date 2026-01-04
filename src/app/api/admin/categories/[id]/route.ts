@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Role } from "@/lib/types-prisma";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== Role.ADMIN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== Role.ADMIN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -90,7 +91,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== Role.ADMIN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
