@@ -66,7 +66,8 @@ model User {
   accounts       Account[]
   sessions       Session[]
   orders         Order[]
-  assignedOrders Order[]  @relation("AssignedOrders")
+  assignedOrders Order[]        @relation("AssignedOrders")
+  customerNotes  CustomerNote[] @relation("CustomerNotes")
 
   @@map("users")
 }
@@ -170,18 +171,46 @@ model ProductImage {
 model Customer {
   id        String         @id @default(cuid())
   name      String
-  email     String?
+  email     String         @unique
   phone     String?
   address   String?
+  city      String?
+  country   String?        @default("Moldova")
   company   String?
   source    CustomerSource @default(ONLINE)
-  tags      String[]       @default([])
   createdAt DateTime       @default(now())
   updatedAt DateTime       @default(now()) @updatedAt
 
   orders Order[]
+  notes  CustomerNote[]
+  tags   CustomerTag[]
 
   @@map("customers")
+}
+
+model CustomerNote {
+  id          String   @id @default(cuid())
+  customerId  String
+  content     String   @db.Text
+  createdById String
+  createdAt   DateTime @default(now())
+
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("CustomerNotes", fields: [createdById], references: [id])
+
+  @@map("customer_notes")
+}
+
+model CustomerTag {
+  id         String   @id @default(cuid())
+  customerId String
+  label      String
+  color      String   @default("#3B82F6")
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_tags")
 }
 
 model Order {
