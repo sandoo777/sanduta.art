@@ -1,96 +1,190 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Role } from "@/lib/types-prisma";
-import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+import { authOptions } from "@/modules/auth/nextauth";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+/**
+ * GET /api/admin/products
+ * List all products with relations
+ */
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== Role.ADMIN) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    logger.info('API:Admin:Products', 'Fetching all products');
-    
     const products = await prisma.product.findMany({
       include: {
-        categoryRef: true,
+        category: true,
+        images: true,
+        variants: true,
+        _count: {
+          select: {
+            orderItems: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
-    
-    logger.info('API:Admin:Products', `Fetched ${products.length} products`);
-    
+
     return NextResponse.json(products);
   } catch (error) {
-    logApiError('API:Admin:Products', error, { action: 'fetch_products' });
-    return createErrorResponse('Failed to fetch products', 500);
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/admin/products
+ * Create a new product
+ * 
+ * Body:
+ * {
+ *   name: string,
+ *   slug: string,
+ *   description?: string,
+ *   price: number,
+ *   categoryId: string,
+ *   images?: string[],
+ *   variants?: [{ name: string, price: number, stock: number }]
+ * }
+ */
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== Role.ADMIN) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { name, slug, description, category, categoryId, price, stock, image_url, images, status, options } = await request.json();
+    const body = await req.json();
+    const { name, slug, description, price, categoryId, images, variants } = body;
 
-    if (!name || (!category && !categoryId) || price === undefined) {
-      logger.warn('API:Admin:Products', 'Missing required fields', { hasName: !!name, hasCategory: !!(category || categoryId), hasPrice: price !== undefined });
-      return createErrorResponse('Name, category, and price are required', 400);
+    // Validations
+    if (!name) {
+      return NextResponse.json(
+        { error: "Name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!slug) {
+      return NextResponse.json(
+        { error: "Slug is required" },
+        { status: 400 }
+      );
     }
 
     if (price < 0) {
-      return createErrorResponse('Price must be a positive number', 400);
+      return NextResponse.json(
+        { error: "Price must be non-negative" },
+        { status: 400 }
+      );
     }
 
-    // Generate slug from name if not provided
-    const finalSlug = slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-
-    // Check if slug already exists
-    if (finalSlug) {
-      const existing = await prisma.product.findUnique({
-        where: { slug: finalSlug },
-      });
-      if (existing) {
-        return createErrorResponse('Product with this slug already exists', 400);
-      }
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
     }
 
-    logger.info('API:Admin:Products', 'Creating new product', { name, category: category || categoryId, price });
+    // Check if slug is unique
+    const existingProduct = await prisma.product.findUnique({
+      where: { slug },
+    });
 
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: "Slug already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Check if category exists
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 400 }
+      );
+    }
+
+    // Create product with relations
     const product = await prisma.product.create({
-      data: { 
-        name, 
-        slug: finalSlug,
+      data: {
+        name,
+        slug,
         description,
-        category: category || 'Uncategorized', 
+        price: price,
         categoryId,
-        price, 
-        stock: stock || 0,
-        image_url, 
-        images: images || [],
-        status: status || 'ACTIVE',
-        options 
       },
       include: {
-        categoryRef: true,
+        category: true,
+        images: true,
+        variants: true,
       },
     });
 
-    logger.info('API:Admin:Products', 'Product created successfully', { productId: product.id, name: product.name });
+    // Add images if provided
+    if (images && images.length > 0) {
+      await Promise.all(
+        images.map((url: string) =>
+          prisma.productImage.create({
+            data: { productId: product.id, url },
+          })
+        )
+      );
+    }
 
-    return NextResponse.json(product, { status: 201 });
+    // Add variants if provided
+    if (variants && variants.length > 0) {
+      await Promise.all(
+        variants.map((v: any) =>
+          prisma.productVariant.create({
+            data: {
+              productId: product.id,
+              name: v.name,
+              price: v.price,
+              stock: v.stock,
+            },
+          })
+        )
+      );
+    }
+
+    // Fetch complete product with all relations
+    const completeProduct = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        category: true,
+        images: true,
+        variants: true,
+      },
+    });
+
+    return NextResponse.json(completeProduct, { status: 201 });
   } catch (error) {
-    logApiError('API:Admin:Products', error, { action: 'create_product' });
-    return createErrorResponse('Failed to create product', 500);
+    console.error("Error creating product:", error);
+    return NextResponse.json(
+      { error: "Failed to create product" },
+      { status: 500 }
+    );
   }
 }

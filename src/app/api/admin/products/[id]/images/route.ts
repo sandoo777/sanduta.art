@@ -4,14 +4,12 @@ import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
 
 /**
- * POST /api/admin/products/[id]/variants
- * Add a new variant to a product
+ * POST /api/admin/products/[id]/images
+ * Add a new image to a product
  * 
  * Body:
  * {
- *   name: string,
- *   price: number,
- *   stock: number
+ *   url: string
  * }
  */
 export async function POST(
@@ -29,26 +27,12 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { name, price, stock } = body;
+    const { url } = body;
 
     // Validations
-    if (!name) {
+    if (!url) {
       return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
-      );
-    }
-
-    if (price < 0) {
-      return NextResponse.json(
-        { error: "Price must be non-negative" },
-        { status: 400 }
-      );
-    }
-
-    if (stock < 0) {
-      return NextResponse.json(
-        { error: "Stock must be non-negative" },
+        { error: "URL is required" },
         { status: 400 }
       );
     }
@@ -65,21 +49,19 @@ export async function POST(
       );
     }
 
-    // Create variant
-    const variant = await prisma.productVariant.create({
+    // Create image
+    const image = await prisma.productImage.create({
       data: {
         productId: params.id,
-        name,
-        price: price,
-        stock,
+        url,
       },
     });
 
-    return NextResponse.json(variant, { status: 201 });
+    return NextResponse.json(image, { status: 201 });
   } catch (error) {
-    console.error("Error creating variant:", error);
+    console.error("Error creating image:", error);
     return NextResponse.json(
-      { error: "Failed to create variant" },
+      { error: "Failed to create image" },
       { status: 500 }
     );
   }
