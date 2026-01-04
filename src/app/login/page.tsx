@@ -22,13 +22,22 @@ export default function LoginPage() {
       console.log(`[Login] User authenticated with role: ${role}, redirecting...`);
       
       // Use window.location for hard redirect to avoid RSC navigation issues
-      // Redirect to /admin/products instead of /admin to avoid trailing slash redirect loop
-      if (role === "ADMIN") {
-        window.location.href = "/admin/products";
-      } else if (role === "MANAGER") {
-        window.location.href = "/manager/orders";
-      } else {
-        window.location.href = "/";
+      switch (role) {
+        case "ADMIN":
+          window.location.href = "/admin/products";
+          break;
+        case "MANAGER":
+          window.location.href = "/manager";
+          break;
+        case "OPERATOR":
+          window.location.href = "/operator";
+          break;
+        case "USER":
+        case "CLIENT":
+          window.location.href = "/account";
+          break;
+        default:
+          window.location.href = "/";
       }
     }
   }, [status, session]);

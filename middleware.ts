@@ -6,25 +6,38 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Log for debugging
-    console.log(`[Middleware] Path: ${path}, Role: ${token?.role || 'NO ROLE'}, Email: ${token?.email || 'NO EMAIL'}`);
+    console.log(`[Middleware] Path: ${path}, Role: ${token?.role || 'NO ROLE'}`);
 
-    // Check authorization for admin routes
+    // Admin routes - only ADMIN
     if (path.startsWith("/admin")) {
       if (token?.role !== "ADMIN") {
-        console.log(`[Middleware] DENIED - Admin access requires ADMIN role, got: ${token?.role || 'none'}`);
+        console.log(`[Middleware] DENIED - Admin requires ADMIN role`);
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
-      console.log(`[Middleware] ALLOWED - Admin access granted`);
     }
 
-    // Check authorization for manager routes
+    // Manager routes - ADMIN + MANAGER
     if (path.startsWith("/manager")) {
       if (token?.role !== "MANAGER" && token?.role !== "ADMIN") {
-        console.log(`[Middleware] DENIED - Manager access requires MANAGER or ADMIN role, got: ${token?.role || 'none'}`);
+        console.log(`[Middleware] DENIED - Manager requires MANAGER or ADMIN role`);
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
-      console.log(`[Middleware] ALLOWED - Manager access granted`);
+    }
+
+    // Operator routes - ADMIN + OPERATOR
+    if (path.startsWith("/operator")) {
+      if (token?.role !== "OPERATOR" && token?.role !== "ADMIN") {
+        console.log(`[Middleware] DENIED - Operator requires OPERATOR or ADMIN role`);
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    }
+
+    // Client account routes - only CLIENT (or logged in users)
+    if (path.startsWith("/account")) {
+      if (!token) {
+        console.log(`[Middleware] DENIED - Account requires authentication`);
+        return NextResponse.redirect(new URL("/login", req.url));
+      }
     }
 
     return NextResponse.next();
@@ -32,12 +45,7 @@ export default withAuth(
   {
     callbacks: {
       authorized({ token }) {
-        // Allow access if user is authenticated (has a token)
-        const isAuthorized = !!token;
-        if (!isAuthorized) {
-          console.log(`[Middleware] No token - redirecting to login`);
-        }
-        return isAuthorized;
+        return !!token;
       },
     },
     pages: {
@@ -48,9 +56,9 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/admin",
     "/admin/:path*",
-    "/manager",
     "/manager/:path*",
+    "/operator/:path*",
+    "/account/:path*",
   ],
 };

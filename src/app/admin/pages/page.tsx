@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 
@@ -63,8 +62,7 @@ export default function AdminPagesPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Pages Management</h1>
           <Button>Add New Page</Button>
@@ -141,6 +139,5 @@ export default function AdminPagesPage() {
           </div>
         )}
       </div>
-    </AdminLayout>
   );
 }

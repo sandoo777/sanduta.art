@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
@@ -26,8 +25,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="max-w-4xl">
+    <div className="max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
           <p className="text-gray-600 mt-2">Manage your site configuration and preferences</p>
@@ -164,6 +162,5 @@ export default function AdminSettingsPage() {
           </div>
         </form>
       </div>
-    </AdminLayout>
   );
 }

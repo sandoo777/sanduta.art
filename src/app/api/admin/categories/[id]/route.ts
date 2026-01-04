@@ -72,8 +72,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       data: {
         ...(name && { name }),
         ...(slug && { slug }),
-        ...(color && { color }),
-        ...(icon && { icon }),
+        ...(color !== undefined && { color }),
+        ...(icon !== undefined && { icon }),
       },
       include: {
         _count: {
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     if (category._count.products > 0) {
       return NextResponse.json({ 
-        error: `Cannot delete category with ${category._count.products} associated products` 
+        error: `Cannot delete category. It has ${category._count.products} associated product${category._count.products > 1 ? 's' : ''}. Please reassign or delete the products first.` 
       }, { status: 400 });
     }
 

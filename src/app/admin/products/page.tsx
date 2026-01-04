@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -186,8 +185,7 @@ export default function AdminProductsPage() {
   const categories = Array.from(new Set(products.map(p => p.category)));
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Products Management</h1>
@@ -424,6 +422,5 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
-    </AdminLayout>
   );
 }

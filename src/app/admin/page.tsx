@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -12,15 +11,19 @@ export default function AdminPage() {
   ];
 
   const quickActions = [
+    { title: 'Dashboard', description: 'View analytics and statistics', icon: '📊', link: '/admin/dashboard' },
     { title: 'Manage Products', description: 'Add, edit, or remove products', icon: '📦', link: '/admin/products' },
-    { title: 'View Orders', description: 'Process and manage orders', icon: '📋', link: '/manager/orders' },
+    { title: 'View Orders', description: 'Process and manage orders', icon: '📋', link: '/admin/orders' },
     { title: 'Manage Categories', description: 'Organize product categories', icon: '🏷️', link: '/admin/categories' },
+    { title: 'Customers', description: 'Manage customer information', icon: '👥', link: '/admin/customers' },
+    { title: 'Production', description: 'Track production status', icon: '🏭', link: '/admin/production' },
+    { title: 'Materials', description: 'Manage inventory and materials', icon: '📦', link: '/admin/materials' },
+    { title: 'Reports', description: 'View business reports', icon: '📈', link: '/admin/reports' },
     { title: 'Site Settings', description: 'Configure site preferences', icon: '⚙️', link: '/admin/settings' },
   ];
 
   return (
-    <AdminLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-2">Welcome to the admin panel. Here's your overview.</p>
@@ -46,7 +49,7 @@ export default function AdminPage() {
         {/* Quick Actions */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quickActions.map((action) => (
               <Link key={action.title} href={action.link}>
                 <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition">
@@ -95,6 +98,6 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }

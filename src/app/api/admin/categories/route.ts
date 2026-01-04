@@ -19,7 +19,7 @@ export async function GET() {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        name: 'asc', // Alfabetic order
       },
     });
 
