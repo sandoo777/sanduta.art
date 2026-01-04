@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Card, Input, Button } from "@/components/ui";
@@ -12,20 +12,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { data: session, status, update } = useSession();
+  const hasRedirected = useRef(false);
 
-  // Redirect authenticated users based on their role
+  // Redirect authenticated users based on their role (only once)
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
+    if (status === "authenticated" && session?.user && !hasRedirected.current) {
+      hasRedirected.current = true;
       const role = session.user.role;
       console.log(`[Login] User authenticated with role: ${role}`);
       
-      // Use router.push for smooth client-side navigation
+      // Use router.replace to avoid back button issues
       if (role === "ADMIN") {
-        router.push("/admin");
+        router.replace("/admin");
       } else if (role === "MANAGER") {
-        router.push("/manager/orders");
+        router.replace("/manager/orders");
       } else {
-        router.push("/");
+        router.replace("/");
       }
     }
   }, [status, session, router]);
