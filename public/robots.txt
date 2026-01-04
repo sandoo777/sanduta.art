@@ -1,19 +1,32 @@
 User-agent: *
 Allow: /
-Disallow: /api/
+
+# Disallow admin and internal pages
 Disallow: /admin/
+Disallow: /manager/
+Disallow: /operator/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /account/
+Disallow: /checkout/
+Disallow: /setup/
 Disallow: /*.json$
 
+# Sitemap
 Sitemap: https://sanduta.art/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 0
 
 # Google Search Console
 User-agent: Googlebot
 Allow: /
+Allow: /products
+Allow: /about
+Allow: /contact
 
 # Bing
 User-agent: Bingbot
 Allow: /
 
-# Other crawlers
-User-agent: *
-Allow: /

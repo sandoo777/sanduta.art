@@ -1,26 +1,86 @@
 @import "tailwindcss";
 
+/* Sanduta.Art Brand Colors */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors */
+  --primary: #0066FF;
+  --primary-dark: #0052CC;
+  --primary-light: #3D8BFF;
+  
+  /* Secondary Colors */
+  --secondary: #111827;
+  --secondary-light: #374151;
+  
+  /* Accent */
+  --accent: #FACC15;
+  --accent-dark: #EAB308;
+  
+  /* Backgrounds */
+  --background: #F9FAFB;
+  --background-white: #FFFFFF;
+  
+  /* Text */
+  --foreground: #111827;
+  --text-gray: #6B7280;
+  --text-light: #9CA3AF;
+  
+  /* Borders */
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Colors */
+  --color-primary: #0066FF;
+  --color-primary-dark: #0052CC;
+  --color-primary-light: #3D8BFF;
+  --color-secondary: #111827;
+  --color-secondary-light: #374151;
+  --color-accent: #FACC15;
+  --color-accent-dark: #EAB308;
+  --color-background: #F9FAFB;
+  --color-foreground: #111827;
+  
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-gray);
 }
