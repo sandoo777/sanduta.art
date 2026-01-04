@@ -6,13 +6,29 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Check authorization
-    if (path.startsWith("/admin") && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    // Log for debugging
+    if (path.startsWith("/admin") || path.startsWith("/manager")) {
+      console.log(`[Middleware] Checking access to: ${path}`);
+      console.log(`[Middleware] Token role: ${token?.role}`);
+      console.log(`[Middleware] Token: ${JSON.stringify(token)}`);
     }
 
-    if (path.startsWith("/manager") && token?.role !== "MANAGER" && token?.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
+    // Check authorization for admin routes
+    if (path.startsWith("/admin")) {
+      if (token?.role !== "ADMIN") {
+        console.log(`[Middleware] DENIED - User does not have ADMIN role`);
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+      console.log(`[Middleware] ALLOWED - User has ADMIN role`);
+    }
+
+    // Check authorization for manager routes
+    if (path.startsWith("/manager")) {
+      if (token?.role !== "MANAGER" && token?.role !== "ADMIN") {
+        console.log(`[Middleware] DENIED - User does not have MANAGER or ADMIN role`);
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+      console.log(`[Middleware] ALLOWED - User has required role`);
     }
 
     return NextResponse.next();
@@ -21,7 +37,9 @@ export default withAuth(
     callbacks: {
       authorized({ token }) {
         // Allow access if user is authenticated
-        return !!token;
+        const isAuthorized = !!token;
+        console.log(`[Middleware] authorized callback - token exists: ${isAuthorized}`);
+        return isAuthorized;
       },
     },
     pages: {
@@ -31,5 +49,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/admin/:path*", "/manager/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/manager", "/manager/:path*"],
 };
