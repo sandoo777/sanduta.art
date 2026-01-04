@@ -27,12 +27,10 @@ export async function GET(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
     
-    // Parse JSON fields
+    // Parse JSON data field
     const parsedProject = {
       ...project,
-      elements: project.elements ? JSON.parse(project.elements as string) : [],
-      canvas: project.canvas ? JSON.parse(project.canvas as string) : { width: 800, height: 600 },
-      versions: project.versions ? JSON.parse(project.versions as string) : [],
+      data: project.data ? JSON.parse(project.data as string) : { elements: [], canvas: { width: 800, height: 600 }, versions: [] },
     };
     
     return NextResponse.json(parsedProject);
@@ -59,7 +57,7 @@ export async function PUT(
     }
     
     const body = await request.json();
-    const { name, elements, canvas, thumbnailUrl, versions } = body;
+    const { name, data, thumbnail } = body;
     
     // Verify project ownership
     const existingProject = await prisma.editorProject.findUnique({
@@ -78,20 +76,16 @@ export async function PUT(
       where: { id: id },
       data: {
         name,
-        elements: JSON.stringify(elements),
-        canvas: JSON.stringify(canvas),
-        thumbnailUrl,
-        versions: JSON.stringify(versions || []),
+        data: JSON.stringify(data),
+        thumbnail,
         updatedAt: new Date(),
       },
     });
     
-    // Parse JSON fields for response
+    // Parse JSON data field for response
     const parsedProject = {
       ...updatedProject,
-      elements: JSON.parse(updatedProject.elements as string),
-      canvas: JSON.parse(updatedProject.canvas as string),
-      versions: JSON.parse(updatedProject.versions as string),
+      data: JSON.parse(updatedProject.data as string),
     };
     
     return NextResponse.json(parsedProject);

@@ -95,6 +95,70 @@ Acest document oferă o privire de ansamblu asupra întregii documentații tehni
 - [REPORTS_TESTING.md](./REPORTS_TESTING.md) - Ghid testare
 - [TASK_10.1_SUMMARY.md](./TASK_10.1_SUMMARY.md) - Sumar implementare
 
+---
+
+### Module 11: User Dashboard & Order Details ✅ NEW
+**Status**: Complet implementat și funcțional
+
+#### User Dashboard
+**Documentație**:
+- [DASHBOARD_USER.md](./DASHBOARD_USER.md) - Documentație completă dashboard
+- [DASHBOARD_QUICK_START.md](./DASHBOARD_QUICK_START.md) - Ghid rapid început
+
+**Features**:
+- ✅ Listă comenzi cu filtrare și sortare
+- ✅ Gestionare proiecte salvate
+- ✅ Manager adrese de livrare
+- ✅ Profil utilizator editabil
+- ✅ Setări cont (schimbare parolă, ștergere cont)
+- ✅ Responsive sidebar navigation
+
+#### Order Details Page ✅
+**Documentație**:
+- [ORDER_DETAILS_PAGE.md](./ORDER_DETAILS_PAGE.md) - Documentație tehnică completă
+- [ORDER_DETAILS_QUICK_START.md](./ORDER_DETAILS_QUICK_START.md) - Quick start
+- [ORDER_DETAILS_FINAL_REPORT.md](./ORDER_DETAILS_FINAL_REPORT.md) - Raport final
+
+**Componente UI** (8 total):
+1. `OrderStatusBar.tsx` - Bară progres 5 etape
+2. `OrderTimeline.tsx` - Cronologie evenimente
+3. `OrderProducts.tsx` - Card-uri produse cu specificații
+4. `OrderFiles.tsx` - Manager fișiere cu download
+5. `OrderDelivery.tsx` - Info livrare + tracking AWB
+6. `OrderPayment.tsx` - Detalii plată + factură
+7. `OrderAddress.tsx` - Date contact client
+8. `OrderHistory.tsx` - Audit trail modificări
+
+**API Endpoints**:
+- `GET /api/account/orders/[orderId]/details` - Detalii extinse comandă
+
+**Features**:
+- ✅ Status progress bar vizual (5 etape)
+- ✅ Timeline evenimente cu color coding
+- ✅ Display produse cu specificații tehnice
+- ✅ Manager fișiere cu validare și download
+- ✅ Tracking livrare cu link AWB
+- ✅ Informații plată cu download factură
+- ✅ Date contact clickable (email, telefon)
+- ✅ Istoric modificări cu user attribution
+- ✅ Layout responsive (mobile + desktop)
+
+**Testing**:
+- Script: `./scripts/test-order-details.sh`
+- Verificare: Toate 8 componente + hook + API
+
+---
+
+### Module 10: Reports & Analytics ✅
+**Status**: Backend Completat, UI în așteptare (TASK 10.2)
+
+#### TASK 10.1: Backend Implementation ✅
+
+**Documentație**:
+- [REPORTS_BACKEND.md](./REPORTS_BACKEND.md) - Specificații API complete
+- [REPORTS_TESTING.md](./REPORTS_TESTING.md) - Ghid testare
+- [TASK_10.1_SUMMARY.md](./TASK_10.1_SUMMARY.md) - Sumar implementare
+
 **API Endpoints** (6 total):
 1. **GET /api/admin/reports/overview** - KPIs Dashboard
    - Total revenue, orders, customers, products
@@ -202,6 +266,8 @@ Acest document oferă o privire de ansamblu asupra întregii documentații tehni
 | Production Jobs    | ✅           | ✅            | ✅           | ✅        | ✅     |
 | Materials          | ✅           | ✅            | ⏳           | ✅        | ✅     |
 | Reports            | ✅           | ⏳            | ✅           | ✅        | 🔄     |
+| User Dashboard     | ✅           | ✅            | ✅           | ✅        | ✅     |
+| Order Details      | ✅           | ✅            | ✅           | ✅        | ✅     |
 
 **Legendă**:
 - ✅ Completat

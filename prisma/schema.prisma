@@ -76,6 +76,9 @@ model User {
   active        Boolean   @default(true)
   emailVerified DateTime?
   image         String?
+  phone         String?
+  company       String?
+  cui           String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -86,6 +89,7 @@ model User {
   customerNotes  CustomerNote[]   @relation("CustomerNotes")
   productionJobs ProductionJob[]  @relation("AssignedProductionJobs")
   editorProjects EditorProject[]
+  addresses      Address[]
 
   @@map("users")
 }
@@ -356,18 +360,35 @@ model SystemSetting {
 }
 
 model EditorProject {
-  id           String   @id @default(cuid())
-  name         String
-  userId       String
-  elements     String   @db.Text  // JSON stringified array of editor elements
-  canvas       String   @db.Text  // JSON stringified canvas configuration
-  thumbnailUrl String?
-  versions     String   @default("[]") @db.Text  // JSON stringified array of version snapshots
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  data      String   @db.Text  // JSON stringified project data
+  thumbnail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("editor_projects")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String
+  phone      String
+  address    String
+  city       String
+  country    String   @default("Moldova")
+  postalCode String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
 }

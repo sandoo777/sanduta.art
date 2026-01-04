@@ -13,24 +13,21 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { name, elements = [], canvas = { width: 800, height: 600 } } = body;
+    const { name, data = { elements: [], canvas: { width: 800, height: 600 }, versions: [] }, thumbnail } = body;
     
     const project = await prisma.editorProject.create({
       data: {
         name: name || 'Proiect Nou',
         userId: session.user.id,
-        elements: JSON.stringify(elements),
-        canvas: JSON.stringify(canvas),
-        versions: JSON.stringify([]),
+        data: JSON.stringify(data),
+        thumbnail,
       },
     });
     
-    // Parse JSON fields for response
+    // Parse JSON data field for response
     const parsedProject = {
       ...project,
-      elements: JSON.parse(project.elements as string),
-      canvas: JSON.parse(project.canvas as string),
-      versions: JSON.parse(project.versions as string),
+      data: JSON.parse(project.data as string),
     };
     
     return NextResponse.json(parsedProject, { status: 201 });
@@ -62,7 +59,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        thumbnailUrl: true,
+        thumbnail: true,
         createdAt: true,
         updatedAt: true,
       },
