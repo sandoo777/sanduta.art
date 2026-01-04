@@ -8,15 +8,23 @@ type FileStatus = {
   message?: string;
 };
 
+export type SidebarUpsell = {
+  label: string;
+  delta?: number;
+  savingsText?: string;
+  type?: 'quantity' | 'finish' | 'addon';
+};
+
 interface PriceSidebarProps {
   selection: PriceSelection;
   productName: string;
   onContinue?: () => void;
   continueLabel?: string;
   fileStatus?: FileStatus;
+  upsells?: SidebarUpsell[];
 }
 
-export function PriceSidebar({ selection, productName, onContinue, continueLabel = 'Continuă la pasul 2', fileStatus }: PriceSidebarProps) {
+export function PriceSidebar({ selection, productName, onContinue, continueLabel = 'Continuă la pasul 2', fileStatus, upsells }: PriceSidebarProps) {
   const calculator = usePriceCalculator();
   const [breakdown, setBreakdown] = useState<PriceBreakdown>(() => calculator.calcTotal(selection));
 
@@ -93,6 +101,30 @@ export function PriceSidebar({ selection, productName, onContinue, continueLabel
             </span>
           </div>
           <p className="text-xs text-gray-600">{fileStatus.message || 'Adaugă fișier sau alege editorul.'}</p>
+        </div>
+      )}
+
+      {upsells && upsells.length > 0 && (
+        <div className="border border-gray-100 rounded-lg p-3 mb-4 bg-gray-50">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold text-gray-900">Upsell-uri selectate</p>
+            <span className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold">+valoare</span>
+          </div>
+          <div className="space-y-2 text-sm">
+            {upsells.map((u, idx) => (
+              <div key={`${u.label}-${idx}`} className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-gray-800 font-semibold">{u.label}</span>
+                  {u.savingsText && <span className="text-xs text-green-600">{u.savingsText}</span>}
+                </div>
+                {typeof u.delta === 'number' && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold">
+                    {u.delta >= 0 ? `+${u.delta.toFixed(0)} MDL` : `${u.delta.toFixed(0)} MDL`}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

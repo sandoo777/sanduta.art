@@ -1,6 +1,13 @@
 type Dimension = 'A6' | 'A5' | 'A4' | 'custom';
 type Material = '130g' | '170g' | '300g';
-type Finish = 'laminare-lucioasa' | 'laminare-mata' | 'colturi-rotunjite' | 'perforare' | 'pliere';
+type Finish =
+  | 'laminare-lucioasa'
+  | 'laminare-mata'
+  | 'colturi-rotunjite'
+  | 'perforare'
+  | 'pliere'
+  | 'foliu-auriu'
+  | 'foliu-argintiu';
 type ProductionSpeed = 'standard' | 'express' | 'super-express';
 
 export interface PriceSelection {
@@ -33,6 +40,8 @@ const finishPrices: Record<Finish, number> = {
   'colturi-rotunjite': 25,
   perforare: 35,
   pliere: 50,
+  'foliu-auriu': 120,
+  'foliu-argintiu': 120,
 };
 
 const productionMultiplier: Record<ProductionSpeed, number> = {
