@@ -54,7 +54,8 @@ export default function LoginPage() {
         console.log(`[Login] Sign in successful, updating session...`);
         // Force session update to get the latest data with role
         await update();
-        // The useEffect will handle the redirect after session is updated
+        // Keep loading state - useEffect will handle redirect
+        // Don't set loading to false, component will unmount during navigation
       }
     } catch (err) {
       console.error('[Login] Sign in error:', err);
