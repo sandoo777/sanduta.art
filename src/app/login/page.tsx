@@ -30,10 +30,7 @@ export default function LoginPage() {
           window.location.href = "/manager";
           break;
         case "OPERATOR":
-          window.location.href = "/operator";
-          break;
-        case "USER":
-        case "CLIENT":
+        case "VIEWER":
           window.location.href = "/account";
           break;
         default:
