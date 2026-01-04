@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import {
   ArrowUturnLeftIcon,
@@ -13,11 +14,19 @@ import {
   CloudArrowUpIcon,
   ExclamationTriangleIcon,
   DocumentArrowDownIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import ExportPanel from './export/ExportPanel';
+import { exportPNG, exportPrintReady } from '@/modules/editor/export/exportEngine';
+import { uploadPdf, uploadPreview } from '@/modules/editor/export/uploadExport';
+import { buildConfiguratorPayload } from '@/modules/editor/export/buildConfiguratorPayload';
+import { toast } from 'react-hot-toast';
 
 export default function EditorTopbar() {
   const [showExportPanel, setShowExportPanel] = useState(false);
+  const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [finalizeMessage, setFinalizeMessage] = useState('');
   const { 
     undo, 
     redo, 
@@ -29,7 +38,11 @@ export default function EditorTopbar() {
     saveStatus,
     hasUnsavedChanges,
     saveProject,
+    projectId,
+    elements,
+    canvasSize,
   } = useEditorStore();
+  const router = useRouter();
 
   const handleUndo = () => {
     if (canUndo()) undo();
@@ -56,8 +69,63 @@ export default function EditorTopbar() {
   };
 
   const handleFinalize = () => {
-    // TODO: Redirect to checkout sau review
-    console.log('Finalizează designul');
+    setShowFinalizeModal(true);
+  };
+
+  const handleConfirmFinalize = async () => {
+    try {
+      setIsFinalizing(true);
+      setFinalizeMessage('Se exportă designul...');
+
+      const canvasElement = document.querySelector('[data-canvas-container]') as HTMLElement | null;
+      if (!canvasElement) throw new Error('Canvas indisponibil pentru export');
+
+      // Export print-ready PDF
+      const pdfBlob = await exportPrintReady(
+        canvasElement,
+        elements,
+        { width: canvasSize.width, height: canvasSize.height },
+        { bleed: 3, cropMarks: true, cmyk: true, dpi: 300, background: 'white' }
+      );
+
+      // Export low-res PNG preview
+      const previewBlob = await exportPNG(
+        canvasElement,
+        { width: canvasSize.width, height: canvasSize.height },
+        { dpi: 72, background: 'white' }
+      );
+
+      setFinalizeMessage('Se încarcă fișierul...');
+
+      const baseName = (projectName || 'design').replace(/\s+/g, '-').toLowerCase();
+      const pdfUrl = await uploadPdf(pdfBlob, `${baseName}-print-ready.pdf`);
+      const previewUrl = await uploadPreview(previewBlob, `${baseName}-preview.png`);
+
+      const payload = buildConfiguratorPayload({
+        fileUrl: pdfUrl,
+        previewUrl,
+        projectId: projectId || `proj-${Date.now()}`,
+        projectName: projectName || 'Design',
+        width: canvasSize.width,
+        height: canvasSize.height,
+        bleed: 3,
+      });
+
+      // Persist payload pentru configurator (sessionStorage)
+      sessionStorage.setItem('editorDesignPayload', JSON.stringify(payload));
+
+      setFinalizeMessage('Gata! Te ducem în configurator...');
+
+      const slug = resolveProductSlugFromPath();
+      router.push(`/produse/${slug}/configure?fromEditor=true&projectId=${payload.projectId}`);
+    } catch (error) {
+      console.error('Finalize error:', error);
+      toast.error('Exportul a eșuat. Încearcă din nou.');
+      setFinalizeMessage('');
+    } finally {
+      setIsFinalizing(false);
+      setShowFinalizeModal(false);
+    }
   };
   
   // Save button status
@@ -209,6 +277,55 @@ export default function EditorTopbar() {
         isOpen={showExportPanel} 
         onClose={() => setShowExportPanel(false)} 
       />
+
+        {/* Finalize Modal */}
+        {showFinalizeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <SparklesIcon className="w-6 h-6 text-primary" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Finalizează designul</h3>
+                  <p className="text-sm text-gray-600">Ești sigur că vrei să finalizezi designul și să îl trimiți în configurator?</p>
+                </div>
+              </div>
+
+              {finalizeMessage && (
+                <div className="bg-blue-50 text-blue-800 text-sm px-3 py-2 rounded-lg">
+                  {finalizeMessage}
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setShowFinalizeModal(false)}
+                  disabled={isFinalizing}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                >
+                  Anulează
+                </button>
+                <button
+                  onClick={handleConfirmFinalize}
+                  disabled={isFinalizing}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+                >
+                  {isFinalizing && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
+                  Trimite în configurator
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
+
+  function resolveProductSlugFromPath(): string {
+    if (typeof window === 'undefined') return 'custom';
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const editorIndex = segments.indexOf('editor');
+    if (editorIndex !== -1 && segments[editorIndex + 1]) {
+      return segments[editorIndex + 1];
+    }
+    return 'custom';
+  }

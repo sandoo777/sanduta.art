@@ -50,6 +50,7 @@ export function PriceSidebar({ selection, productName, onContinue, continueLabel
 
   const fileBadge = useMemo(() => {
     if (!fileStatus) return null;
+    const fromEditor = fileStatus.message?.toLowerCase().includes('editor');
     const map = {
       ok: 'bg-green-100 text-green-700',
       warning: 'bg-amber-100 text-amber-700',
@@ -57,12 +58,12 @@ export function PriceSidebar({ selection, productName, onContinue, continueLabel
       pending: 'bg-gray-100 text-gray-600',
     } as const;
     const labels = {
-      ok: 'Fișier validat',
+      ok: fromEditor ? 'Fișier generat în editor' : 'Fișier validat',
       warning: 'Necesită atenție',
       error: 'Eroare fișier',
       pending: 'Fără fișier',
     } as const;
-    return { className: map[fileStatus.overall], label: labels[fileStatus.overall] };
+    return { className: map[fileStatus.overall], label: labels[fileStatus.overall], fromEditor };
   }, [fileStatus]);
 
   const disabled = fileStatus?.overall === 'error' || fileStatus?.overall === 'pending';
@@ -97,6 +98,7 @@ export function PriceSidebar({ selection, productName, onContinue, continueLabel
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm font-semibold text-gray-900">Fișier</p>
             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${fileBadge?.className || ''}`}>
+              {fileBadge?.fromEditor ? '✨ ' : ''}
               {fileBadge?.label}
             </span>
           </div>

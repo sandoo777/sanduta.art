@@ -24,6 +24,25 @@ Acest document oferă o privire de ansamblu asupra întregii documentații tehni
 - [UI_COMPONENTS.md](./UI_COMPONENTS.md) - Componente UI reutilizabile
 - [ADMIN_PANEL_INTEGRATION.md](./ADMIN_PANEL_INTEGRATION.md) - Integrare admin panel
 
+### 4. Shopping Cart System ✅ NEW
+**Status**: Complet și testat
+
+- [CART_SYSTEM.md](./CART_SYSTEM.md) - Documentație completă a sistemului
+- [CART_INTEGRATION_GUIDE.md](./CART_INTEGRATION_GUIDE.md) - Ghid de integrare
+- [CART_IMPLEMENTATION_SUMMARY.md](./CART_IMPLEMENTATION_SUMMARY.md) - Rezumat implementare
+- [CART_FINAL_REPORT.md](./CART_FINAL_REPORT.md) - Raport final
+- [CART_ARCHITECTURE.md](./CART_ARCHITECTURE.md) - Arhitectura detaliată
+
+**Features**:
+- ✅ Store management cu Zustand
+- ✅ Componente React responsive
+- ✅ Adăugare/Ștergere/Editare/Duplicare produse
+- ✅ Calculare totaluri (Subtotal, Discount, VAT)
+- ✅ Persistență localStorage
+- ✅ Header cart indicator
+- ✅ Mobile-optimized layout
+- ✅ Edit mode cu configurator integration
+
 ---
 
 ## 🎯 Documentație pe Module

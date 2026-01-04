@@ -1,16 +1,25 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Step1Specifications } from '@/components/public/configurator/Step1Specifications';
 import { PriceSidebar } from '@/components/public/configurator/PriceSidebar';
 import { usePriceCalculator, type PriceSelection } from '@/modules/configurator/usePriceCalculator';
+import { useCartStore } from '@/modules/cart/cartStore';
 
 export default function ConfigureProductPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const calculator = usePriceCalculator();
+  const { getItem } = useCartStore();
+
+  // Check if we're editing an existing cart item
+  const editItemId = searchParams?.get('editItemId');
+
+  // Check if we're editing an existing cart item
+  const editItemId = searchParams?.get('editItemId');
 
   const productName = useMemo(() => {
     const raw = params?.slug || 'produs';
@@ -20,6 +29,7 @@ export default function ConfigureProductPage() {
       .join(' ');
   }, [params?.slug]);
 
+  // Initialize selection state with default values
   const [selection, setSelection] = useState<PriceSelection>({
     dimension: 'A5',
     material: '170g',
@@ -28,15 +38,59 @@ export default function ConfigureProductPage() {
     productionSpeed: 'standard',
   });
 
+  // Load existing cart item data if editing
+  useEffect(() => {
+    if (editItemId) {
+      const item = getItem(editItemId);
+      if (item && item.specifications) {
+        // Map cart item specifications to PriceSelection format
+        const dimensions = item.specifications.dimensions;
+        let dimensionKey = 'A5'; // default
+        
+        // Try to determine dimension key from dimensions
+        if (dimensions.width === 210 && dimensions.height === 297) dimensionKey = 'A4';
+        else if (dimensions.width === 148 && dimensions.height === 210) dimensionKey = 'A5';
+        else if (dimensions.width === 105 && dimensions.height === 148) dimensionKey = 'A6';
+        
+        setSelection({
+          dimension: dimensionKey,
+          material: item.specifications.material.id || '170g',
+          finishes: item.specifications.finishes?.map(f => f.id) || [],
+          quantity: item.specifications.quantity,
+          productionSpeed: 'standard', // Default if not stored
+        });
+      }
+    }
+  }, [editItemId, getItem]);
+
   const mobileTotal = useMemo(() => calculator.calcTotal(selection).total, [selection, calculator]);
 
   const handleContinue = () => {
+    // If editing, store the editItemId in session storage for next steps
+    if (editItemId) {
+      sessionStorage.setItem('editItemId', editItemId);
+    }
     router.push(`/produse/${params?.slug}/configure/step-2`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Edit Mode Banner */}
+        {editItemId && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-blue-900">Modul editare</p>
+                <p className="text-xs text-blue-700">Modifici un produs din coș. Modificările vor actualiza produsul existent.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-blue-600">Acasă</Link>

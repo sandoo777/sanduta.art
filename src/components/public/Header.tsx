@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useCartStore } from '@/modules/cart/cartStore';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { getTotals } = useCartStore();
+  const cartItemCount = getTotals().itemCount;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +59,20 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
+            {/* Cart link */}
+            <Link
+              href="/cart"
+              className="relative p-2 text-gray-700 transition-colors hover:text-primary hover:bg-gray-100 rounded-lg"
+              aria-label={`Coș de cumpărături (${cartItemCount} produse)`}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#0066FF] text-xs font-bold text-white">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
+              )}
+            </Link>
+
             {/* Account link - Desktop */}
             <Link
               href="/account"
@@ -66,10 +83,9 @@ export function Header() {
             </Link>
 
             {/* CTA Button */}
-            <Link href="/products" className="hidden md:block">
+            <Link href="/produse" className="hidden md:block">
               <Button>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Comandă acum
+                Explorează produsele
               </Button>
             </Link>
 
@@ -92,6 +108,21 @@ export function Header() {
         {isMenuOpen && (
           <nav className="border-t border-gray-100 py-4 md:hidden">
             <div className="flex flex-col space-y-4">
+              <Link
+                href="/cart"
+                className="flex items-center justify-between text-base font-medium text-gray-700 transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <div className="flex items-center space-x-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Coș de cumpărături</span>
+                </div>
+                {cartItemCount > 0 && (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0066FF] text-xs font-bold text-white">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -110,10 +141,9 @@ export function Header() {
                 <User className="h-5 w-5" />
                 <span>Contul meu</span>
               </Link>
-              <Link href="/products" className="block" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/produse" className="block" onClick={() => setIsMenuOpen(false)}>
                 <Button className="w-full">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Comandă acum
+                  Explorează produsele
                 </Button>
               </Link>
             </div>

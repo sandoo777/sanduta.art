@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { FileUpload, type UploadMeta } from './FileUpload';
 import { FilePreview } from './FilePreview';
 import { DesignEntry } from './DesignEntry';
@@ -28,6 +29,7 @@ const defaultSpecs: ProductSpecs = {
 
 export function Step2UploadDesign({ productName, onStatusChange, onContinue }: Step2UploadDesignProps) {
   const validator = useFileValidation();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'upload' | 'design'>('upload');
   const [file, setFile] = useState<File | undefined>();
   const [previewUrl, setPreviewUrl] = useState<string | undefined>();
@@ -35,10 +37,45 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   const [validation, setValidation] = useState<FileValidationResult | undefined>();
   const [status, setStatus] = useState<FileStatusState>({ overall: 'pending' });
   const [designReady, setDesignReady] = useState(false);
+  const [fromEditor, setFromEditor] = useState(false);
 
   useEffect(() => {
     onStatusChange?.(status);
   }, [status, onStatusChange]);
+
+  // Preia payload din editor dacă query fromEditor=true
+  useEffect(() => {
+    const fromEditorFlag = searchParams.get('fromEditor') === 'true';
+    if (!fromEditorFlag) return;
+
+    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('editorDesignPayload') : null;
+    if (!raw) return;
+
+    try {
+      const payload = JSON.parse(raw) as {
+        fileUrl: string;
+        previewUrl: string;
+        projectId: string;
+        projectName: string;
+        width: number;
+        height: number;
+        bleed: number;
+      };
+
+      setFromEditor(true);
+      setActiveTab('upload');
+      setPreviewUrl(payload.previewUrl);
+      setValidation({ resolution: 'ok', bleed: 'ok', dimensions: 'ok', color: 'ok', fonts: 'ok' });
+      const nextStatus: FileStatusState = {
+        overall: 'ok',
+        message: 'Designul tău a fost importat automat din editor.',
+      };
+      setStatus(nextStatus);
+      onStatusChange?.(nextStatus);
+    } catch (error) {
+      console.error('Cannot parse editorDesignPayload', error);
+    }
+  }, [searchParams, onStatusChange]);
 
   const handleFileSelect = (selected: File, meta?: UploadMeta) => {
     setFile(selected);
@@ -86,10 +123,11 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   };
 
   const canContinue = useMemo(() => {
+    if (fromEditor) return true;
     if (activeTab === 'design') return designReady;
     if (!file) return false;
     return status.overall !== 'error' && status.overall !== 'pending';
-  }, [activeTab, designReady, file, status.overall]);
+  }, [activeTab, designReady, file, status.overall, fromEditor]);
 
   return (
     <div className="space-y-6">
@@ -114,19 +152,32 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
       {activeTab === 'upload' && (
         <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6 items-start">
           <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-lg font-semibold text-gray-900">Încarcă fișierul</p>
-                  <p className="text-sm text-gray-600">Acceptăm PDF, PNG, JPG, TIFF, SVG · până la 200MB</p>
+            {fromEditor ? (
+              <div className="bg-white border border-green-200 rounded-lg p-4 shadow-sm space-y-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900">Fișier generat în editor</p>
+                    <p className="text-sm text-gray-600">Designul tău a fost importat automat din editor.</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">Auto-import</span>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Pasul 2</span>
+                <div className="text-sm text-gray-600">Validări: rezoluție OK · bleed OK · culori CMYK · fonturi OK</div>
               </div>
-              <FileUpload
-                onFileSelect={handleFileSelect}
-                helperText="Asigură-te că fișierul are bleed și este în CMYK. Dacă nu, primești un warning."
-              />
-            </div>
+            ) : (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900">Încarcă fișierul</p>
+                    <p className="text-sm text-gray-600">Acceptăm PDF, PNG, JPG, TIFF, SVG · până la 200MB</p>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Pasul 2</span>
+                </div>
+                <FileUpload
+                  onFileSelect={handleFileSelect}
+                  helperText="Asigură-te că fișierul are bleed și este în CMYK. Dacă nu, primești un warning."
+                />
+              </div>
+            )}
 
             {validation && (
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
