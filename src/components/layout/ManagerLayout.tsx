@@ -67,7 +67,7 @@ export function ManagerLayout({ children }: ManagerLayoutProps) {
                 <span className="font-medium">{item.label}</span>
               </Link>
             ))}
-            {session.user.role === Role.ADMIN && (
+            {session.user.role === 'ADMIN' && (
               <Link
                 href="/admin"
                 className="flex items-center px-4 py-3 mb-2 rounded-lg text-gray-700 hover:bg-gray-100 transition border-t mt-4 pt-4"
