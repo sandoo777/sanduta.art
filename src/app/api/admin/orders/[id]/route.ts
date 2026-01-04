@@ -9,8 +9,9 @@ import { prisma } from "@/lib/prisma";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -22,7 +23,7 @@ export async function GET(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         customer: true,
         assignedTo: {
@@ -76,8 +77,9 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -93,7 +95,7 @@ export async function PATCH(
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingOrder) {
@@ -125,7 +127,7 @@ export async function PATCH(
     if (assignedToUserId !== undefined) updateData.assignedToUserId = assignedToUserId || null;
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         customer: true,
@@ -159,8 +161,9 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -173,7 +176,7 @@ export async function DELETE(
 
     // Check if order exists
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!order) {
@@ -193,7 +196,7 @@ export async function DELETE(
 
     // Delete order (cascade will delete items and files)
     await prisma.order.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ message: "Order deleted successfully" });

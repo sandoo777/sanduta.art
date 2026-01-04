@@ -2,11 +2,15 @@
 
 import { SessionProvider } from "next-auth/react";
 import { CartProvider } from '@/context/CartContext';
+import { Toaster } from 'sonner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <CartProvider>{children}</CartProvider>
+      <CartProvider>
+        {children}
+        <Toaster position="top-right" />
+      </CartProvider>
     </SessionProvider>
   );
 }

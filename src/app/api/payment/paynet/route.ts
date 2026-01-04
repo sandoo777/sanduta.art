@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Order not found', 404);
     }
 
-    logger.info('API:Paynet', 'Creating Paynet session', { orderId, amount: order.total });
+    logger.info('API:Paynet', 'Creating Paynet session', { orderId, amount: order.totalPrice });
 
     // Create Paynet session
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     try {
       const paynetSession = await paynetClient.createSession({
         orderId: order.id,
-        amount: order.total,
+        amount: Number(order.totalPrice),
         description: `Payment for order ${order.id}`,
         customerEmail: order.customerEmail,
         customerName: order.customerName,

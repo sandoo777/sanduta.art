@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         deliveryType,
         pickupPointRef,
         weight,
-        cod: order.total, // Cash on delivery = order total
+        cod: Number(order.totalPrice), // Cash on delivery = order total
       });
 
       // Update order with tracking number

@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     await prisma.order.update({
       where: { id: order_id },
       data: {
-        paymentStatus,
-        status: paymentStatus === 'paid' ? 'confirmed' : 'pending',
+        paymentStatus: paymentStatus === 'paid' ? 'PAID' : paymentStatus === 'failed' ? 'PENDING' : 'PENDING',
+        status: paymentStatus === 'paid' ? 'CONFIRMED' : 'PENDING',
       },
     });
 

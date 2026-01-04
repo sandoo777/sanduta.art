@@ -9,8 +9,9 @@ import { prisma } from "@/lib/prisma";
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; fileId: string } }
+  { params }: { params: Promise<{ id: string; fileId: string }> }
 ) {
+  const { id, fileId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -23,7 +24,7 @@ export async function DELETE(
 
     // Check if file exists
     const file = await prisma.orderFile.findUnique({
-      where: { id: params.fileId },
+      where: { id: fileId },
     });
 
     if (!file) {
@@ -34,7 +35,7 @@ export async function DELETE(
     }
 
     // Verify file belongs to the order
-    if (file.orderId !== params.id) {
+    if (file.orderId !== id) {
       return NextResponse.json(
         { error: "File does not belong to this order" },
         { status: 400 }
@@ -43,7 +44,7 @@ export async function DELETE(
 
     // Delete file
     await prisma.orderFile.delete({
-      where: { id: params.fileId },
+      where: { id: fileId },
     });
 
     return NextResponse.json({ message: "File deleted successfully" });

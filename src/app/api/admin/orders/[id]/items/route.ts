@@ -35,8 +35,9 @@ async function recalculateOrderTotal(orderId: string) {
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -60,7 +61,7 @@ export async function POST(
 
     // Check if order exists
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!order) {
@@ -105,7 +106,7 @@ export async function POST(
     // Create item
     const item = await prisma.orderItem.create({
       data: {
-        orderId: params.id,
+        orderId: id,
         productId,
         variantId: variantId || undefined,
         quantity,
@@ -121,7 +122,7 @@ export async function POST(
     });
 
     // Recalculate order total
-    await recalculateOrderTotal(params.id);
+    await recalculateOrderTotal(id);
 
     return NextResponse.json(item, { status: 201 });
   } catch (error) {

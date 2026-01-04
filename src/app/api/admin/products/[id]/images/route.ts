@@ -14,9 +14,10 @@ import { prisma } from "@/lib/prisma";
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -39,7 +40,7 @@ export async function POST(
 
     // Check if product exists
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!product) {
@@ -52,7 +53,7 @@ export async function POST(
     // Create image
     const image = await prisma.productImage.create({
       data: {
-        productId: params.id,
+        productId: id,
         url,
       },
     });

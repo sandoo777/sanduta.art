@@ -15,8 +15,9 @@ import { prisma } from "@/lib/prisma";
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -40,7 +41,7 @@ export async function POST(
 
     // Check if order exists
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!order) {
@@ -53,7 +54,7 @@ export async function POST(
     // Create file
     const file = await prisma.orderFile.create({
       data: {
-        orderId: params.id,
+        orderId: id,
         url,
         name,
       },

@@ -9,9 +9,10 @@ import { prisma } from "@/lib/prisma";
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; imageId: string } }
+  { params }: { params: Promise<{ id: string; imageId: string }> }
 ) {
   try {
+    const { id, imageId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -23,7 +24,7 @@ export async function DELETE(
 
     // Check if image exists
     const image = await prisma.productImage.findUnique({
-      where: { id: params.imageId },
+      where: { id: imageId },
     });
 
     if (!image) {
@@ -34,7 +35,7 @@ export async function DELETE(
     }
 
     // Verify image belongs to the product
-    if (image.productId !== params.id) {
+    if (image.productId !== id) {
       return NextResponse.json(
         { error: "Image does not belong to this product" },
         { status: 400 }
@@ -43,7 +44,7 @@ export async function DELETE(
 
     // Delete image
     await prisma.productImage.delete({
-      where: { id: params.imageId },
+      where: { id: imageId },
     });
 
     return NextResponse.json({ message: "Image deleted successfully" });

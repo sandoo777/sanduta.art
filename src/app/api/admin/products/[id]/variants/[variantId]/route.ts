@@ -16,9 +16,10 @@ import { prisma } from "@/lib/prisma";
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string; variantId: string } }
+  { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
+    const { id, variantId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -48,7 +49,7 @@ export async function PATCH(
 
     // Check if variant exists
     const existingVariant = await prisma.productVariant.findUnique({
-      where: { id: params.variantId },
+      where: { id: variantId },
     });
 
     if (!existingVariant) {
@@ -59,7 +60,7 @@ export async function PATCH(
     }
 
     // Verify variant belongs to the product
-    if (existingVariant.productId !== params.id) {
+    if (existingVariant.productId !== id) {
       return NextResponse.json(
         { error: "Variant does not belong to this product" },
         { status: 400 }
@@ -73,7 +74,7 @@ export async function PATCH(
     if (stock !== undefined) updateData.stock = stock;
 
     const variant = await prisma.productVariant.update({
-      where: { id: params.variantId },
+      where: { id: variantId },
       data: updateData,
     });
 
@@ -93,9 +94,10 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; variantId: string } }
+  { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
+    const { id, variantId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "ADMIN") {
@@ -107,7 +109,7 @@ export async function DELETE(
 
     // Check if variant exists
     const variant = await prisma.productVariant.findUnique({
-      where: { id: params.variantId },
+      where: { id: variantId },
     });
 
     if (!variant) {
@@ -118,7 +120,7 @@ export async function DELETE(
     }
 
     // Verify variant belongs to the product
-    if (variant.productId !== params.id) {
+    if (variant.productId !== id) {
       return NextResponse.json(
         { error: "Variant does not belong to this product" },
         { status: 400 }
@@ -127,7 +129,7 @@ export async function DELETE(
 
     // Delete variant
     await prisma.productVariant.delete({
-      where: { id: params.variantId },
+      where: { id: variantId },
     });
 
     return NextResponse.json({ message: "Variant deleted successfully" });

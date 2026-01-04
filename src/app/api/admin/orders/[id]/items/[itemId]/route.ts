@@ -33,8 +33,9 @@ async function recalculateOrderTotal(orderId: string) {
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string; itemId: string } }
+  { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
+  const { id, itemId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -58,7 +59,7 @@ export async function PATCH(
 
     // Check if item exists
     const existingItem = await prisma.orderItem.findUnique({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
 
     if (!existingItem) {
@@ -69,7 +70,7 @@ export async function PATCH(
     }
 
     // Verify item belongs to the order
-    if (existingItem.orderId !== params.id) {
+    if (existingItem.orderId !== id) {
       return NextResponse.json(
         { error: "Item does not belong to this order" },
         { status: 400 }
@@ -80,14 +81,14 @@ export async function PATCH(
     const updateData: any = {};
     if (quantity !== undefined) {
       updateData.quantity = quantity;
-      updateData.lineTotal = existingItem.unitPrice * quantity;
+      updateData.lineTotal = Number(existingItem.unitPrice) * quantity;
     }
     if (customDescription !== undefined) {
       updateData.customDescription = customDescription || null;
     }
 
     const item = await prisma.orderItem.update({
-      where: { id: params.itemId },
+      where: { id: itemId },
       data: updateData,
       include: {
         product: {
@@ -97,7 +98,7 @@ export async function PATCH(
     });
 
     // Recalculate order total
-    await recalculateOrderTotal(params.id);
+    await recalculateOrderTotal(id);
 
     return NextResponse.json(item);
   } catch (error) {
@@ -115,8 +116,9 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; itemId: string } }
+  { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
+  const { id, itemId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -129,7 +131,7 @@ export async function DELETE(
 
     // Check if item exists
     const item = await prisma.orderItem.findUnique({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
 
     if (!item) {
@@ -140,7 +142,7 @@ export async function DELETE(
     }
 
     // Verify item belongs to the order
-    if (item.orderId !== params.id) {
+    if (item.orderId !== id) {
       return NextResponse.json(
         { error: "Item does not belong to this order" },
         { status: 400 }
@@ -149,11 +151,11 @@ export async function DELETE(
 
     // Delete item
     await prisma.orderItem.delete({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
 
     // Recalculate order total
-    await recalculateOrderTotal(params.id);
+    await recalculateOrderTotal(id);
 
     return NextResponse.json({ message: "Item deleted successfully" });
   } catch (error) {

@@ -70,7 +70,6 @@ export async function PATCH(
             { id: { not: id } },
             {
               name: name || existing.name,
-              value: value || existing.value,
             },
           ],
         },

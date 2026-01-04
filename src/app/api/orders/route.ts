@@ -85,13 +85,13 @@ export async function POST(request: NextRequest) {
     // Create order
     const order = await prisma.order.create({
       data: {
-        total,
+        totalPrice: total,
         customerName: customer_name,
         customerEmail: customer_email,
         customerPhone: customer_phone,
         userId,
-        status: "pending",
-        paymentStatus: payment_method === 'card' ? 'paid' : 'pending',
+        status: "PENDING",
+        paymentStatus: payment_method === 'card' ? 'PAID' : 'PENDING',
         deliveryStatus: "pending",
         paymentMethod: payment_method,
         deliveryMethod: delivery_method,
@@ -128,8 +128,7 @@ export async function POST(request: NextRequest) {
       items: orderItems.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
-        price: item.product.price,
-        image_url: item.product.image_url || undefined,
+        price: Number(item.product.price),
       })),
       subtotal: total,
       shippingCost: 0, // You can calculate shipping cost based on delivery method
@@ -150,7 +149,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('API:Orders', 'Order created successfully', { 
       orderId: order.id, 
-      total: order.total, 
+      total: order.totalPrice, 
       itemCount: orderItems.length 
     });
 
