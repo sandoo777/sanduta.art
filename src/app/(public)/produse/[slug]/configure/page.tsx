@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Step1Specifications } from '@/components/public/configurator/Step1Specifications';
 import { PriceSidebar } from '@/components/public/configurator/PriceSidebar';
-import { usePriceCalculator, type PriceSelection } from '@/modules/configurator/usePriceCalculator';
+import { 
+  usePriceCalculator, 
+  type PriceSelection,
+  type Dimension,
+  type Material,
+  type Finish
+} from '@/modules/configurator/usePriceCalculator';
 import { useCartStore } from '@/modules/cart/cartStore';
 
 export default function ConfigureProductPage() {
@@ -14,9 +20,6 @@ export default function ConfigureProductPage() {
   const searchParams = useSearchParams();
   const calculator = usePriceCalculator();
   const { getItem } = useCartStore();
-
-  // Check if we're editing an existing cart item
-  const editItemId = searchParams?.get('editItemId');
 
   // Check if we're editing an existing cart item
   const editItemId = searchParams?.get('editItemId');
@@ -53,9 +56,9 @@ export default function ConfigureProductPage() {
         else if (dimensions.width === 105 && dimensions.height === 148) dimensionKey = 'A6';
         
         setSelection({
-          dimension: dimensionKey,
-          material: item.specifications.material.id || '170g',
-          finishes: item.specifications.finishes?.map(f => f.id) || [],
+          dimension: dimensionKey as Dimension,
+          material: (item.specifications.material.id || '170g') as Material,
+          finishes: (item.specifications.finishes?.map(f => f.id) || []) as Finish[],
           quantity: item.specifications.quantity,
           productionSpeed: 'standard', // Default if not stored
         });
