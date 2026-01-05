@@ -7,6 +7,7 @@ import { Button } from '@/components/ui';
 import { useCartStore } from '@/modules/cart/cartStore';
 import { useSession } from 'next-auth/react';
 import NotificationsDropdown from '@/components/account/notifications/NotificationsDropdown';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,6 +63,9 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="compact" />
+
             {/* Notifications dropdown - only for authenticated users */}
             {session && <NotificationsDropdown />}
 

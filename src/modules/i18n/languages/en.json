@@ -1,0 +1,188 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "projects": "Projects",
+    "orders": "Orders",
+    "files": "Files",
+    "settings": "Settings",
+    "profile": "Profile",
+    "security": "Security",
+    "preferences": "Preferences",
+    "notifications": "Notifications"
+  },
+  "preferences": {
+    "title": "My Preferences",
+    "subtitle": "Manage your preferences for a personalized experience",
+    "language": {
+      "title": "Language",
+      "subtitle": "Select your preferred interface language",
+      "ro": "Romanian",
+      "en": "English",
+      "ru": "Russian"
+    },
+    "theme": {
+      "title": "Theme",
+      "subtitle": "Choose your interface theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Configure which notifications you want to receive",
+      "email": {
+        "title": "Email Notifications",
+        "orders": "Orders",
+        "ordersDesc": "Receive notifications about your order status",
+        "projects": "Projects",
+        "projectsDesc": "Notifications about your projects",
+        "files": "Files",
+        "filesDesc": "Updates about your files",
+        "promotions": "Promotions",
+        "promotionsDesc": "Special offers and discounts"
+      },
+      "push": {
+        "title": "Push Notifications",
+        "enable": "Enable push notifications in browser"
+      },
+      "inApp": {
+        "title": "In-App Notifications",
+        "enable": "Show notifications in interface"
+      }
+    },
+    "editor": {
+      "title": "Editor Preferences",
+      "subtitle": "Configure graphic editor behavior",
+      "grid": {
+        "title": "Grid",
+        "snapToGrid": "Snap to grid",
+        "snapToGridDesc": "Objects automatically align to grid",
+        "showGrid": "Show grid",
+        "showGridDesc": "Grid visibility in editor",
+        "gridSize": "Grid size (px)",
+        "gridSizeDesc": "Distance between grid lines"
+      },
+      "units": {
+        "title": "Units of measurement",
+        "px": "Pixels (px)",
+        "mm": "Millimeters (mm)",
+        "cm": "Centimeters (cm)"
+      },
+      "autoSave": {
+        "title": "Auto-save",
+        "interval": "Auto-save interval",
+        "5sec": "5 seconds",
+        "10sec": "10 seconds",
+        "30sec": "30 seconds"
+      },
+      "uiDensity": {
+        "title": "UI Density",
+        "compact": "Compact",
+        "standard": "Standard",
+        "spacious": "Spacious"
+      }
+    },
+    "configurator": {
+      "title": "Configurator Preferences",
+      "subtitle": "Default settings for product configurator",
+      "quantity": "Default quantity",
+      "quantityDesc": "Preselected quantity when configuring",
+      "productionTime": "Production time",
+      "productionTimeStandard": "Standard",
+      "productionTimeExpress": "Express",
+      "delivery": "Delivery method",
+      "deliveryCourier": "Courier",
+      "deliveryPickup": "Personal pickup",
+      "payment": "Payment method",
+      "paymentCard": "Card",
+      "paymentCash": "Cash",
+      "paymentTransfer": "Bank transfer"
+    },
+    "communication": {
+      "title": "Communications & Marketing",
+      "subtitle": "Manage the communications you receive",
+      "newsletter": "Newsletter",
+      "newsletterDesc": "Receive our monthly newsletter",
+      "specialOffers": "Special offers",
+      "specialOffersDesc": "Exclusive offers for you",
+      "recommendations": "Personalized recommendations",
+      "recommendationsDesc": "Suggestions based on your preferences",
+      "productNews": "Product news",
+      "productNewsDesc": "Be the first to know about new products"
+    },
+    "saved": "Preferences saved successfully",
+    "error": "Error saving preferences"
+  },
+  "editor": {
+    "title": "Graphic Editor",
+    "new": "New project",
+    "open": "Open",
+    "save": "Save",
+    "export": "Export",
+    "undo": "Undo",
+    "redo": "Redo",
+    "layers": "Layers",
+    "properties": "Properties"
+  },
+  "configurator": {
+    "title": "Product Configurator",
+    "selectProduct": "Select product",
+    "customize": "Customize",
+    "quantity": "Quantity",
+    "material": "Material",
+    "size": "Size",
+    "addToCart": "Add to cart"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "items": "Items",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "checkout": "Checkout"
+  },
+  "orders": {
+    "title": "My Orders",
+    "orderNumber": "Order number",
+    "date": "Date",
+    "status": "Status",
+    "total": "Total",
+    "details": "Details",
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  }
+}

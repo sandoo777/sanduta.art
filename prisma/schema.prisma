@@ -85,6 +85,30 @@ enum ActivityType {
   NEW_DEVICE
 }
 
+enum Language {
+  RO
+  EN
+  RU
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum EditorUnit {
+  PX
+  MM
+  CM
+}
+
+enum UIDensity {
+  COMPACT
+  STANDARD
+  SPACIOUS
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -119,6 +143,7 @@ model User {
   notifications  Notification[]
   userSessions   UserSession[]
   securityActivity SecurityActivity[]
+  preferences    UserPreferences?
 
   @@map("users")
 }
@@ -533,4 +558,49 @@ model SecurityActivity {
   @@index([userId])
   @@index([userId, createdAt])
   @@map("security_activity")
+}
+
+model UserPreferences {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  
+  // Language & Theme
+  language  Language @default(RO)
+  theme     Theme    @default(SYSTEM)
+  
+  // Notifications
+  emailOrders        Boolean @default(true)
+  emailProjects      Boolean @default(true)
+  emailFiles         Boolean @default(true)
+  emailPromotions    Boolean @default(false)
+  pushNotifications  Boolean @default(true)
+  inAppNotifications Boolean @default(true)
+  
+  // Editor Preferences
+  editorSnapToGrid    Boolean    @default(true)
+  editorGridVisible   Boolean    @default(true)
+  editorGridSize      Int        @default(10)
+  editorUnit          EditorUnit @default(PX)
+  editorAutoSave      Int        @default(10) // seconds
+  editorUIDensity     UIDensity  @default(STANDARD)
+  
+  // Configurator Preferences
+  configDefaultQuantity       Int    @default(1)
+  configDefaultProductionTime String @default("standard")
+  configDefaultDelivery       String @default("courier")
+  configDefaultPayment        String @default("card")
+  
+  // Communications & Marketing
+  newsletter              Boolean @default(false)
+  specialOffers           Boolean @default(false)
+  personalizedRecommend   Boolean @default(false)
+  productNews             Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("user_preferences")
 }

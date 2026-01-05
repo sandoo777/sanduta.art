@@ -14,8 +14,10 @@ import {
   XMarkIcon,
   DocumentDuplicateIcon,
   BellIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 interface NavItem {
   label: string;
@@ -53,6 +55,11 @@ const navItems: NavItem[] = [
     label: "Date personale",
     href: "/dashboard/profile",
     icon: UserIcon,
+  },
+  {
+    label: "Preferințe",
+    href: "/dashboard/preferences",
+    icon: AdjustmentsHorizontalIcon,
   },
   {
     label: "Setări cont",
@@ -107,6 +114,12 @@ export default function AccountSidebar() {
           );
         })}
       </nav>
+
+      <div className="px-3 py-4 border-t border-gray-200">
+        <div className="mb-4">
+          <LanguageSwitcher />
+        </div>
+      </div>
 
       <div className="px-3 py-6 border-t border-gray-200">
         <button

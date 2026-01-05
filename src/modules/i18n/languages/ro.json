@@ -1,0 +1,188 @@
+{
+  "common": {
+    "welcome": "Bun venit",
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "close": "Închide",
+    "search": "Caută",
+    "loading": "Se încarcă...",
+    "error": "A apărut o eroare",
+    "success": "Succes",
+    "confirm": "Confirmă",
+    "back": "Înapoi",
+    "next": "Următorul",
+    "previous": "Anterior",
+    "submit": "Trimite",
+    "yes": "Da",
+    "no": "Nu"
+  },
+  "auth": {
+    "login": "Autentificare",
+    "logout": "Deconectare",
+    "register": "Înregistrare",
+    "email": "Email",
+    "password": "Parolă",
+    "forgotPassword": "Ai uitat parola?",
+    "rememberMe": "Ține-mă minte",
+    "signIn": "Conectează-te",
+    "signUp": "Înregistrează-te",
+    "signOut": "Deconectează-te"
+  },
+  "dashboard": {
+    "title": "Tablou de bord",
+    "overview": "Prezentare generală",
+    "projects": "Proiecte",
+    "orders": "Comenzi",
+    "files": "Fișiere",
+    "settings": "Setări",
+    "profile": "Profil",
+    "security": "Securitate",
+    "preferences": "Preferințe",
+    "notifications": "Notificări"
+  },
+  "preferences": {
+    "title": "Preferințele mele",
+    "subtitle": "Gestionează preferințele tale pentru o experiență personalizată",
+    "language": {
+      "title": "Limbă",
+      "subtitle": "Selectează limba preferată pentru interfață",
+      "ro": "Română",
+      "en": "Engleză",
+      "ru": "Rusă"
+    },
+    "theme": {
+      "title": "Temă",
+      "subtitle": "Alege tema interfeței",
+      "light": "Luminoasă",
+      "dark": "Întunecată",
+      "system": "Sistem"
+    },
+    "notifications": {
+      "title": "Notificări",
+      "subtitle": "Configurează notificările pe care dorești să le primești",
+      "email": {
+        "title": "Notificări Email",
+        "orders": "Comenzi",
+        "ordersDesc": "Primește notificări despre starea comenzilor tale",
+        "projects": "Proiecte",
+        "projectsDesc": "Notificări despre proiectele tale",
+        "files": "Fișiere",
+        "filesDesc": "Actualizări despre fișierele tale",
+        "promotions": "Promoții",
+        "promotionsDesc": "Oferte speciale și reduceri"
+      },
+      "push": {
+        "title": "Notificări Push",
+        "enable": "Activează notificările push în browser"
+      },
+      "inApp": {
+        "title": "Notificări în Platformă",
+        "enable": "Afișează notificări în interfață"
+      }
+    },
+    "editor": {
+      "title": "Preferințe Editor",
+      "subtitle": "Configurează comportamentul editorului grafic",
+      "grid": {
+        "title": "Grilă",
+        "snapToGrid": "Alipire la grilă",
+        "snapToGridDesc": "Obiectele se aliniază automat la grilă",
+        "showGrid": "Afișează grila",
+        "showGridDesc": "Vizibilitatea grilei în editor",
+        "gridSize": "Dimensiune grilă (px)",
+        "gridSizeDesc": "Distanța între liniile grilei"
+      },
+      "units": {
+        "title": "Unități de măsură",
+        "px": "Pixeli (px)",
+        "mm": "Milimetri (mm)",
+        "cm": "Centimetri (cm)"
+      },
+      "autoSave": {
+        "title": "Auto-salvare",
+        "interval": "Interval salvare automată",
+        "5sec": "5 secunde",
+        "10sec": "10 secunde",
+        "30sec": "30 secunde"
+      },
+      "uiDensity": {
+        "title": "Densitate UI",
+        "compact": "Compactă",
+        "standard": "Standard",
+        "spacious": "Spațioasă"
+      }
+    },
+    "configurator": {
+      "title": "Preferințe Configurator",
+      "subtitle": "Setări implicite pentru configuratorul de produse",
+      "quantity": "Cantitate implicită",
+      "quantityDesc": "Cantitatea preselectată la configurare",
+      "productionTime": "Timp de producție",
+      "productionTimeStandard": "Standard",
+      "productionTimeExpress": "Express",
+      "delivery": "Metodă livrare",
+      "deliveryCourier": "Curier",
+      "deliveryPickup": "Ridicare personală",
+      "payment": "Metodă plată",
+      "paymentCard": "Card",
+      "paymentCash": "Numerar",
+      "paymentTransfer": "Transfer bancar"
+    },
+    "communication": {
+      "title": "Comunicări & Marketing",
+      "subtitle": "Gestionează comunicările pe care le primești",
+      "newsletter": "Newsletter",
+      "newsletterDesc": "Primește newsletter-ul nostru lunar",
+      "specialOffers": "Oferte speciale",
+      "specialOffersDesc": "Oferte exclusive pentru tine",
+      "recommendations": "Recomandări personalizate",
+      "recommendationsDesc": "Sugestii bazate pe preferințele tale",
+      "productNews": "Noutăți despre produse",
+      "productNewsDesc": "Află primii despre produsele noi"
+    },
+    "saved": "Preferințele au fost salvate cu succes",
+    "error": "Eroare la salvarea preferințelor"
+  },
+  "editor": {
+    "title": "Editor Grafic",
+    "new": "Proiect nou",
+    "open": "Deschide",
+    "save": "Salvează",
+    "export": "Exportă",
+    "undo": "Anulează",
+    "redo": "Refă",
+    "layers": "Straturi",
+    "properties": "Proprietăți"
+  },
+  "configurator": {
+    "title": "Configurator Produse",
+    "selectProduct": "Selectează produsul",
+    "customize": "Personalizează",
+    "quantity": "Cantitate",
+    "material": "Material",
+    "size": "Dimensiune",
+    "addToCart": "Adaugă în coș"
+  },
+  "cart": {
+    "title": "Coș de cumpărături",
+    "empty": "Coșul tău este gol",
+    "items": "Articole",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "checkout": "Finalizează comanda"
+  },
+  "orders": {
+    "title": "Comenzile mele",
+    "orderNumber": "Număr comandă",
+    "date": "Dată",
+    "status": "Status",
+    "total": "Total",
+    "details": "Detalii",
+    "pending": "În așteptare",
+    "processing": "În procesare",
+    "completed": "Finalizată",
+    "cancelled": "Anulată"
+  }
+}
