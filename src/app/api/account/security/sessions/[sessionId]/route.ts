@@ -24,8 +24,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { sessionId } = params;
-
     // Verify session belongs to user
     const userSession = await prisma.userSession.findFirst({
       where: {

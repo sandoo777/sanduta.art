@@ -24,8 +24,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { notificationId } = params;
-
     // Verify notification belongs to user
     const notification = await prisma.notification.findFirst({
       where: {
@@ -54,6 +52,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ notificationId: string }> }
 ) {
+  const { notificationId } = await params;
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -69,8 +68,6 @@ export async function DELETE(
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    const { notificationId } = params;
 
     // Verify notification belongs to user
     const notification = await prisma.notification.findFirst({

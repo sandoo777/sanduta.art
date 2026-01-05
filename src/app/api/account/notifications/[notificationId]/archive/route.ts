@@ -24,8 +24,6 @@ export async function POST(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { notificationId } = params;
-
     // Verify notification belongs to user
     const notification = await prisma.notification.findFirst({
       where: {
