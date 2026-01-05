@@ -233,12 +233,24 @@
 ## 📊 Statistici
 
 - **Total API routes:** ~69
-- **Securizate complet:** 10 (14.5%)
-- **În așteptare:** 59 (85.5%)
+- **Securizate complet:** 15 (22%)
+- **În așteptare:** 54 (78%)
+
+### Securizate Recent (Session 2)
+
+#### Admin Orders ✅
+- [x] `GET /api/admin/orders/[id]` - withRole, rate limiting
+- [x] `PATCH /api/admin/orders/[id]` - withRole, Zod validation, audit logging (STATUS_CHANGE, ORDER_ASSIGN)
+- [x] `DELETE /api/admin/orders/[id]` - withRole, rate limiting strict, status validation, audit logging
+
+#### Account Files ✅
+- [x] `GET /api/account/files` - withAuth, rate limiting (SEARCH), sanitized search
+- [x] `GET /api/account/files/[fileId]` - withAuth, ownership verification, rate limiting
+- [x] `DELETE /api/account/files/[fileId]` - withAuth, ownership verification, rate limiting strict, audit logging
 
 ### Prioritate Înaltă (următoarele 5)
-1. Orders management (DELETE, status change)
-2. Files upload/delete (ownership)
+1. ~~Orders management (DELETE, status change)~~ ✅ DONE
+2. ~~Files upload/delete (ownership)~~ ✅ DONE
 3. Projects DELETE (ownership)
 4. 2FA endpoints (rate limiting)
 5. Materials consume (audit logging)
@@ -246,6 +258,7 @@
 ## 🎯 Target
 
 - **Zilnic:** 10-15 endpoints securizate
+- **Progres zilnic:** Sesiunea 1: 10 endpoints, Sesiunea 2: 5 endpoints (total 15)
 - **Target finalizare:** 7-8 Ianuarie 2026
 - **Review final:** 9 Ianuarie 2026
 

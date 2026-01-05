@@ -1,29 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withAuth } from "@/lib/auth-middleware";
+import { rateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { sanitizeString } from "@/lib/validation";
 
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
+export const GET = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      // Rate limiting
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.SEARCH);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
+      }
 
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search")?.trim();
-    const sort = searchParams.get("sort") || "newest";
-    const typeFilter = searchParams.get("type");
+      const { searchParams } = new URL(request.url);
+      const searchRaw = searchParams.get("search")?.trim();
+      const search = searchRaw ? sanitizeString(searchRaw) : null;
+      const sort = searchParams.get("sort") || "newest";
+      const typeFilter = searchParams.get("type");
 
     let orderBy: { [key: string]: "asc" | "desc" } = { createdAt: "desc" };
 
@@ -63,26 +60,27 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const payload = files.map((file) => ({
-      id: file.id,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      thumbnailUrl: file.thumbnailUrl,
-      previewUrl: file.previewUrl,
-      originalUrl: file.originalUrl,
-      createdAt: file.createdAt.toISOString(),
-      updatedAt: file.updatedAt.toISOString(),
-      lastUsedAt: file.lastUsedAt ? file.lastUsedAt.toISOString() : null,
-      versionCount: file._count.versions,
-    }));
+      const payload = files.map((file) => ({
+        id: file.id,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        thumbnailUrl: file.thumbnailUrl,
+        previewUrl: file.previewUrl,
+        originalUrl: file.originalUrl,
+        createdAt: file.createdAt.toISOString(),
+        updatedAt: file.updatedAt.toISOString(),
+        lastUsedAt: file.lastUsedAt ? file.lastUsedAt.toISOString() : null,
+        versionCount: file._count.versions,
+      }));
 
-    return NextResponse.json(payload);
-  } catch (error) {
-    console.error("Error loading files", error);
-    return NextResponse.json(
-      { error: "Failed to load files" },
-      { status: 500 }
-    );
+      return NextResponse.json(payload);
+    } catch (error) {
+      console.error("Error loading files", error);
+      return NextResponse.json(
+        { error: "Failed to load files" },
+        { status: 500 }
+      );
+    }
   }
-}
+);
