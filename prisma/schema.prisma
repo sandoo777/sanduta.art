@@ -216,6 +216,9 @@ model Product {
   variants    ProductVariant[]
   orderItems  OrderItem[]
 
+  @@index([categoryId])
+  @@index([slug])
+  @@index([createdAt])
   @@map("products")
 }
 
@@ -322,6 +325,13 @@ model Order {
   files          OrderFile[]
   productionJobs ProductionJob[]
 
+  @@index([userId])
+  @@index([customerId])
+  @@index([customerEmail])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([assignedToUserId])
   @@map("orders")
 }
 
