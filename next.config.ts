@@ -69,14 +69,6 @@ const nextConfig: NextConfig = {
       'recharts',
       'date-fns',
     ],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
 
   // Compiler optimizations
