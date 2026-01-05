@@ -1,55 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { withAuth } from '@/lib/auth-middleware';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { sendOrderEmails, OrderEmailData } from '@/lib/email';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
 
-export async function GET(request: NextRequest) {
-  try {
-    logger.info('API:Orders', 'Fetching user orders');
-    
-    const session = await getServerSession();
-    
-    if (!session?.user?.email) {
-      logger.warn('API:Orders', 'Unauthorized access attempt');
-      return createErrorResponse('Unauthorized. Please log in.', 401);
-    }
+export const GET = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      // Rate limiting
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
+      }
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+      logger.info('API:Orders', 'Fetching user orders', { userId: user.id });
 
-    if (!user) {
-      logger.warn('API:Orders', 'User not found', { email: session.user.email });
-      return createErrorResponse('User not found', 404);
-    }
-
-    // Fetch user's orders
-    const orders = await prisma.order.findMany({
-      where: { userId: user.id },
-      include: {
-        orderItems: {
-          include: {
-            product: true,
+      // Fetch user's orders
+      const orders = await prisma.order.findMany({
+        where: { userId: user.id },
+        include: {
+          orderItems: {
+            include: {
+              product: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      });
 
-    logger.info('API:Orders', `Fetched ${orders.length} orders`, { userId: user.id });
+      logger.info('API:Orders', `Fetched ${orders.length} orders`, { userId: user.id });
 
-    return NextResponse.json({ orders });
-  } catch (error) {
-    logApiError('API:Orders', error, { action: 'fetch_orders' });
-    return createErrorResponse('Failed to fetch orders. Please try again later.', 500);
+      return NextResponse.json({ orders });
+    } catch (error) {
+      logApiError('API:Orders', error, { action: 'fetch_orders' });
+      return createErrorResponse('Failed to fetch orders. Please try again later.', 500);
+    }
   }
-}
+);
 
-export async function POST(request: NextRequest) {
-  try {
-    logger.info('API:Orders', 'Creating new order');
+export const POST = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      // Rate limiting strict pentru crearea de comenzi
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_STRICT);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
+      }
+
+      logger.info('API:Orders', 'Creating new order', { userId: user.id });
     
     const body = await request.json();
     const { 
@@ -147,6 +153,20 @@ export async function POST(request: NextRequest) {
       logApiError('API:Orders:Email', error, { orderId: order.id });
     });
 
+    // Audit log
+    await logAuditAction({
+      userId: user.id,
+      action: AUDIT_ACTIONS.ORDER_CREATE,
+      resourceType: 'order',
+      resourceId: order.id,
+      details: {
+        total: order.totalPrice,
+        itemCount: orderItems.length,
+        paymentMethod: payment_method,
+        deliveryMethod: delivery_method,
+      },
+    });
+
     logger.info('API:Orders', 'Order created successfully', { 
       orderId: order.id, 
       total: order.totalPrice, 
@@ -159,3 +179,4 @@ export async function POST(request: NextRequest) {
     return createErrorResponse('Failed to create order. Please try again or contact support.', 500);
   }
 }
+);

@@ -1,56 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { withAuth } from '@/lib/auth-middleware';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const session = await getServerSession();
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const GET = withAuth(
+  async (request: NextRequest, { params, user }) => {
+    try {
+      // Rate limiting
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
+      }
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+      const { id } = await params;
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Fetch specific order
-    const order = await prisma.order.findUnique({
-      where: { 
-        id,
-        userId: user.id, // Ensure user can only access their own orders
-      },
-      include: {
-        orderItems: {
-          include: {
-            product: true,
+      // Fetch specific order with ownership check
+      const order = await prisma.order.findFirst({
+        where: { 
+          id,
+          userId: user.id, // Ensure user can only access their own orders
+        },
+        include: {
+          orderItems: {
+            include: {
+              product: true,
+            },
+          },
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
           },
         },
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+      });
 
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      if (!order) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ order });
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });
     }
-
-    return NextResponse.json({ order });
-  } catch (error) {
-    console.error('Error fetching order:', error);
-    return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });
   }
-}
+);
