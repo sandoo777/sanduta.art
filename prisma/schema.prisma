@@ -74,6 +74,17 @@ enum NotificationType {
   SYSTEM
 }
 
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  PASSWORD_CHANGE
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  SESSION_REVOKED
+  FAILED_LOGIN
+  NEW_DEVICE
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -86,6 +97,12 @@ model User {
   phone         String?
   company       String?
   cui           String?
+  
+  // Two-Factor Authentication
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorSecret  String?
+  backupCodes      String[]  @default([])
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -100,6 +117,8 @@ model User {
   projectFolders ProjectFolder[]
   addresses      Address[]
   notifications  Notification[]
+  userSessions   UserSession[]
+  securityActivity SecurityActivity[]
 
   @@map("users")
 }
@@ -474,4 +493,44 @@ model Notification {
   @@index([userId, read])
   @@index([userId, archived])
   @@map("notifications")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  deviceName   String?
+  browser      String?
+  os           String?
+  ipAddress    String?
+  location     String?
+  isActive     Boolean  @default(true)
+  lastActivity DateTime @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([userId, isActive])
+  @@index([sessionToken])
+  @@map("user_sessions")
+}
+
+model SecurityActivity {
+  id          String       @id @default(cuid())
+  userId      String
+  type        ActivityType
+  description String
+  ipAddress   String?
+  userAgent   String?
+  location    String?
+  success     Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("security_activity")
 }
