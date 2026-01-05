@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { FileUpload, type UploadMeta } from './FileUpload';
 import { FilePreview } from './FilePreview';
 import { DesignEntry } from './DesignEntry';
+import { SavedFilesPickerModal } from './SavedFilesPickerModal';
+import type { SavedFile } from '@/modules/account/useSavedFilesLibrary';
 import { useFileValidation, type FileValidationResult, type ValidationStatus, type ProductSpecs } from '@/modules/configurator/useFileValidation';
 
 export type FileStatusState = {
@@ -38,6 +41,8 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   const [status, setStatus] = useState<FileStatusState>({ overall: 'pending' });
   const [designReady, setDesignReady] = useState(false);
   const [fromEditor, setFromEditor] = useState(false);
+  const [libraryModalOpen, setLibraryModalOpen] = useState(false);
+  const [libraryFile, setLibraryFile] = useState<SavedFile | null>(null);
 
   useEffect(() => {
     onStatusChange?.(status);
@@ -80,6 +85,7 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   const handleFileSelect = (selected: File, meta?: UploadMeta) => {
     setFile(selected);
     setDesignReady(false);
+    setLibraryFile(null);
     const url = URL.createObjectURL(selected);
     setPreviewUrl(url);
     setPages(meta?.pages);
@@ -105,11 +111,33 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   };
 
   const handleRemoveFile = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setFile(undefined);
     setPreviewUrl(undefined);
     setValidation(undefined);
+    setLibraryFile(null);
+    setFromEditor(false);
+    setDesignReady(false);
+    setPages(undefined);
     setStatus({ overall: 'pending', message: 'Niciun fișier selectat.' });
+  };
+
+  const handleSelectFromLibrary = (savedFile: SavedFile) => {
+    setLibraryFile(savedFile);
+    setLibraryModalOpen(false);
+    setFromEditor(false);
+    setFile(undefined);
+    setDesignReady(false);
+    setPages(undefined);
+    setPreviewUrl(savedFile.previewUrl || savedFile.thumbnailUrl || savedFile.originalUrl);
+    setValidation(undefined);
+    const nextStatus: FileStatusState = {
+      overall: 'ok',
+      message: 'Fișier selectat din biblioteca ta. Pregătit pentru pasul următor.',
+    };
+    setStatus(nextStatus);
   };
 
   const handleSelectTemplate = (templateId: string) => {
@@ -123,11 +151,12 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   };
 
   const canContinue = useMemo(() => {
+    if (libraryFile) return true;
     if (fromEditor) return true;
     if (activeTab === 'design') return designReady;
     if (!file) return false;
     return status.overall !== 'error' && status.overall !== 'pending';
-  }, [activeTab, designReady, file, status.overall, fromEditor]);
+  }, [activeTab, designReady, file, status.overall, fromEditor, libraryFile]);
 
   return (
     <div className="space-y-6">
@@ -172,6 +201,38 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
                   </div>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Pasul 2</span>
                 </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+                  <p className="text-sm text-gray-600">
+                    Ai mai folosit un fișier aprobat? Deschide biblioteca și reutilizează-l instant.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setLibraryModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  >
+                    <DocumentDuplicateIcon className="w-4 h-4" />
+                    Biblioteca de fișiere
+                  </button>
+                </div>
+                {libraryFile && (
+                  <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-blue-900 truncate" title={libraryFile.name}>
+                        {libraryFile.name}
+                      </p>
+                      <p className="text-xs text-blue-800">
+                        {libraryFile.type.toUpperCase()} · {formatBytes(libraryFile.size)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="text-xs font-semibold text-blue-900 hover:underline"
+                    >
+                      Schimbă fișierul
+                    </button>
+                  </div>
+                )}
                 <FileUpload
                   onFileSelect={handleFileSelect}
                   helperText="Asigură-te că fișierul are bleed și este în CMYK. Dacă nu, primești un warning."
@@ -212,7 +273,10 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
             pages={pages}
             validation={validation}
             overall={status.overall}
-            onRemove={handleRemoveFile}
+            onRemove={file || previewUrl ? handleRemoveFile : undefined}
+            fileLabel={libraryFile ? libraryFile.name : fromEditor ? 'Design importat din editor' : undefined}
+            fileSizeBytes={libraryFile?.size}
+            fileTypeHint={libraryFile?.type}
           />
         </div>
       )}
@@ -244,6 +308,11 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
           </div>
         </div>
       )}
+      <SavedFilesPickerModal
+        open={libraryModalOpen}
+        onClose={() => setLibraryModalOpen(false)}
+        onSelect={handleSelectFromLibrary}
+      />
     </div>
   );
 }
@@ -291,4 +360,12 @@ function dotClass(status: ValidationStatus) {
   if (status === 'ok') return 'bg-green-500';
   if (status === 'warning') return 'bg-amber-500';
   return 'bg-red-500';
+}
+
+function formatBytes(bytes: number) {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / Math.pow(1024, exponent);
+  return `${value.toFixed(value >= 10 || exponent === 0 ? 0 : 1)} ${units[exponent]}`;
 }

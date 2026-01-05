@@ -11,6 +11,9 @@ interface FilePreviewProps {
   validation?: FileValidationResult;
   overall?: ValidationStatus | 'pending';
   onRemove?: () => void;
+  fileLabel?: string;
+  fileSizeBytes?: number;
+  fileTypeHint?: string;
 }
 
 const statusCopy: Record<ValidationStatus, { label: string; className: string }> = {
@@ -19,8 +22,30 @@ const statusCopy: Record<ValidationStatus, { label: string; className: string }>
   error: { label: 'Eroare', className: 'bg-red-100 text-red-700' },
 };
 
-export function FilePreview({ file, previewUrl, pages, validation, overall = 'pending', onRemove }: FilePreviewProps) {
-  const isPdf = useMemo(() => file?.type === 'application/pdf', [file]);
+export function FilePreview({
+  file,
+  previewUrl,
+  pages,
+  validation,
+  overall = 'pending',
+  onRemove,
+  fileLabel,
+  fileSizeBytes,
+  fileTypeHint,
+}: FilePreviewProps) {
+  const resolvedType = file?.type || fileTypeHint || '';
+  const isPdf = useMemo(() => resolvedType.toLowerCase().includes('pdf'), [resolvedType]);
+
+  const displayLabel = useMemo(() => {
+    if (file) {
+      return `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)}MB`;
+    }
+    if (fileLabel) {
+      const suffix = fileSizeBytes ? ` · ${formatBytes(fileSizeBytes)}` : '';
+      return `${fileLabel}${suffix}`;
+    }
+    return 'Niciun fișier selectat';
+  }, [file, fileLabel, fileSizeBytes]);
 
   const validationItems = useMemo(() => {
     if (!validation) return [];
@@ -42,9 +67,7 @@ export function FilePreview({ file, previewUrl, pages, validation, overall = 'pe
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div>
           <p className="text-sm font-semibold text-gray-900">Previzualizare fișier</p>
-          <p className="text-xs text-gray-500 truncate max-w-xs">
-            {file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)}MB` : 'Niciun fișier selectat'}
-          </p>
+          <p className="text-xs text-gray-500 truncate max-w-xs">{displayLabel}</p>
         </div>
         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${overallBadge.className}`}>
           {overallBadge.label}
@@ -90,7 +113,7 @@ export function FilePreview({ file, previewUrl, pages, validation, overall = 'pe
           </div>
         )}
 
-        {onRemove && file && (
+        {onRemove && (file || previewUrl) && (
           <button
             type="button"
             onClick={onRemove}
@@ -108,4 +131,12 @@ function dotClass(status: ValidationStatus) {
   if (status === 'ok') return 'bg-green-500';
   if (status === 'warning') return 'bg-amber-500';
   return 'bg-red-500';
+}
+
+function formatBytes(bytes: number) {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / Math.pow(1024, exponent);
+  return `${value.toFixed(value >= 10 || exponent === 0 ? 0 : 1)} ${units[exponent]}`;
 }

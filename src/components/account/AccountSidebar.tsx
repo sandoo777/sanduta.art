@@ -12,6 +12,7 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
 
@@ -31,6 +32,11 @@ const navItems: NavItem[] = [
     label: "Proiectele mele",
     href: "/dashboard/projects",
     icon: FolderIcon,
+  },
+  {
+    label: "Fișiere salvate",
+    href: "/dashboard/files",
+    icon: DocumentDuplicateIcon,
   },
   {
     label: "Adrese",
