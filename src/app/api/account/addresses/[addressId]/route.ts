@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { addressId: string } }
+  { params }: { params: Promise<{ addressId: string }> }
 ) {
+  const { addressId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -25,7 +26,7 @@ export async function PATCH(
     // Check if address belongs to user
     const address = await prisma.address.findFirst({
       where: {
-        id: params.addressId,
+        id: addressId,
         userId: user.id,
       },
     });
@@ -40,13 +41,13 @@ export async function PATCH(
     // If setting as default, unset other defaults
     if (isDefault) {
       await prisma.address.updateMany({
-        where: { userId: user.id, isDefault: true, id: { not: params.addressId } },
+        where: { userId: user.id, isDefault: true, id: { not: addressId } },
         data: { isDefault: false },
       });
     }
 
     const updatedAddress = await prisma.address.update({
-      where: { id: params.addressId },
+      where: { id: addressId },
       data: {
         ...(name && { name }),
         ...(phone && { phone }),
@@ -70,8 +71,9 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { addressId: string } }
+  { params }: { params: Promise<{ addressId: string }> }
 ) {
+  const { addressId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -90,7 +92,7 @@ export async function DELETE(
     // Check if address belongs to user
     const address = await prisma.address.findFirst({
       where: {
-        id: params.addressId,
+        id: addressId,
         userId: user.id,
       },
     });
@@ -100,7 +102,7 @@ export async function DELETE(
     }
 
     await prisma.address.delete({
-      where: { id: params.addressId },
+      where: { id: addressId },
     });
 
     return NextResponse.json({ success: true });

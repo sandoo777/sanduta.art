@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
+  const { projectId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -25,7 +26,7 @@ export async function DELETE(
     // Check if project belongs to user
     const project = await prisma.editorProject.findFirst({
       where: {
-        id: params.projectId,
+        id: projectId,
         userId: user.id,
       },
     });
@@ -35,7 +36,7 @@ export async function DELETE(
     }
 
     await prisma.editorProject.delete({
-      where: { id: params.projectId },
+      where: { id: projectId },
     });
 
     return NextResponse.json({ success: true });

@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
+  const { orderId } = await params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -24,7 +25,7 @@ export async function GET(
 
     const order = await prisma.order.findFirst({
       where: {
-        id: params.orderId,
+        id: orderId,
         userId: user.id,
       },
       include: {

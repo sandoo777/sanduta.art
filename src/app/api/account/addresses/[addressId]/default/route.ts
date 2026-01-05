@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: Request,
-  { params }: { params: { addressId: string } }
+  { params }: { params: Promise<{ addressId: string }> }
 ) {
   try {
+    const { addressId } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -25,7 +26,7 @@ export async function POST(
     // Check if address belongs to user
     const address = await prisma.address.findFirst({
       where: {
-        id: params.addressId,
+        id: addressId,
         userId: user.id,
       },
     });
@@ -42,7 +43,7 @@ export async function POST(
 
     // Set this one as default
     await prisma.address.update({
-      where: { id: params.addressId },
+      where: { id: addressId },
       data: { isDefault: true },
     });
 
