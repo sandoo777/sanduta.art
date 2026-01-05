@@ -1,62 +1,62 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withAuth } from '@/lib/auth-middleware';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
-  const { sessionId } = await params;
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Verify session belongs to user
-    const userSession = await prisma.userSession.findFirst({
-      where: {
-        id: sessionId,
-        userId: user.id
+export const DELETE = withAuth(
+  async (request: NextRequest, { params, user }) => {
+    try {
+      // Rate limiting
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_STRICT);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
       }
-    });
 
-    if (!userSession) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
-    }
+      const { sessionId } = await params;
 
-    // Revoke session
-    await prisma.userSession.update({
-      where: { id: sessionId },
-      data: { isActive: false }
-    });
+      // Verify session belongs to user
+      const userSession = await prisma.userSession.findFirst({
+        where: {
+          id: sessionId,
+          userId: user.id
+        },
+        select: {
+          id: true,
+          deviceName: true,
+          ipAddress: true,
+        },
+      });
 
-    // Log activity
-    const headers = request.headers;
-    await prisma.securityActivity.create({
-      data: {
+      if (!userSession) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      }
+
+      // Revoke session
+      await prisma.userSession.update({
+        where: { id: sessionId },
+        data: { isActive: false }
+      });
+
+      // Audit log
+      await logAuditAction({
         userId: user.id,
-        type: 'SESSION_REVOKED',
-        description: `Sesiunea de pe ${userSession.deviceName || 'dispozitiv necunoscut'} a fost revocată`,
-        ipAddress: headers.get('x-forwarded-for') || headers.get('x-real-ip') || 'unknown',
-        userAgent: headers.get('user-agent') || 'unknown'
-      }
-    });
+        action: AUDIT_ACTIONS.SESSION_REVOKE,
+        resourceType: 'session',
+        resourceId: sessionId,
+        details: {
+          deviceName: userSession.deviceName,
+          ipAddress: userSession.ipAddress,
+        },
+      });
 
-    return NextResponse.json({ success: true, message: 'Sesiunea a fost revocată' });
-  } catch (error) {
-    console.error('Error revoking session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json({ success: true, message: 'Sesiunea a fost revocată' });
+    } catch (error) {
+      console.error('Error revoking session:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
   }
-}
+);

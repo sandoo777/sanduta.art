@@ -1,88 +1,99 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withAuth } from '@/lib/auth-middleware';
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { validateInput, passwordSchema } from '@/lib/validation';
+import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
+import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
-export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Parola actuală este obligatorie'),
+  newPassword: passwordSchema,
+});
 
-  try {
-    const { currentPassword, newPassword } = await request.json();
-
-    if (!currentPassword || !newPassword) {
-      return NextResponse.json(
-        { error: 'Toate câmpurile sunt obligatorii' },
-        { status: 400 }
-      );
-    }
-
-    if (newPassword.length < 8) {
-      return NextResponse.json(
-        { error: 'Parola nouă trebuie să aibă minim 8 caractere' },
-        { status: 400 }
-      );
-    }
-
-    // Verifică dacă parola conține litere mari, mici, cifre și simboluri
-    const hasUpperCase = /[A-Z]/.test(newPassword);
-    const hasLowerCase = /[a-z]/.test(newPassword);
-    const hasNumbers = /\d/.test(newPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
-      return NextResponse.json(
-        { error: 'Parola trebuie să conțină litere mari, mici, cifre și simboluri' },
-        { status: 400 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, password: true }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'Utilizator negăsit' }, { status: 404 });
-    }
-
-    // Verifică parola actuală
-    const isValid = await bcrypt.compare(currentPassword, user.password);
-    if (!isValid) {
-      return NextResponse.json(
-        { error: 'Parola actuală este incorectă' },
-        { status: 400 }
-      );
-    }
-
-    // Hash parola nouă
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Actualizează parola
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword }
-    });
-
-    // Log activitate
-    const headers = request.headers;
-    await prisma.securityActivity.create({
-      data: {
-        userId: user.id,
-        type: 'PASSWORD_CHANGE',
-        description: 'Parola a fost schimbată cu succes',
-        ipAddress: headers.get('x-forwarded-for') || headers.get('x-real-ip') || 'unknown',
-        userAgent: headers.get('user-agent') || 'unknown'
+export const POST = withAuth(
+  async (request: NextRequest, { user }) => {
+    try {
+      // Rate limiting strict pentru schimbare parolă
+      const rateLimitResult = await rateLimit(request, RATE_LIMITS.PASSWORD_RESET);
+      if (!rateLimitResult.allowed) {
+        return NextResponse.json(
+          { error: rateLimitResult.error },
+          { status: 429 }
+        );
       }
-    });
 
-    return NextResponse.json({ success: true, message: 'Parola a fost schimbată cu succes' });
-  } catch (error) {
-    console.error('Error changing password:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      const body = await request.json();
+
+      // Validate input
+      const validation = await validateInput(changePasswordSchema, body);
+      if (!validation.success) {
+        return NextResponse.json(
+          { error: 'Date invalide', details: validation.errors },
+          { status: 400 }
+        );
+      }
+
+      const { currentPassword, newPassword } = validation.data;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { id: true, password: true, email: true }
+      });
+
+      if (!dbUser) {
+        return NextResponse.json({ error: 'Utilizator negăsit' }, { status: 404 });
+      }
+
+      // Verifică parola actuală
+      const isValid = await bcrypt.compare(currentPassword, dbUser.password);
+      if (!isValid) {
+        // Log failed attempt
+        await logAuditAction({
+          userId: user.id,
+          action: AUDIT_ACTIONS.PASSWORD_CHANGE,
+          resourceType: 'user',
+          resourceId: user.id,
+          details: { success: false, reason: 'invalid_current_password' },
+        });
+
+        return NextResponse.json(
+          { error: 'Parola actuală este incorectă' },
+          { status: 400 }
+        );
+      }
+
+      // Hash parola nouă
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Actualizează parola
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword }
+      });
+
+      // Audit log success
+      await logAuditAction({
+        userId: user.id,
+        action: AUDIT_ACTIONS.PASSWORD_CHANGE,
+        resourceType: 'user',
+        resourceId: user.id,
+        details: { success: true },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Parola a fost schimbată cu succes'
+      });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      return NextResponse.json(
+        { error: 'Eroare la schimbarea parolei' },
+        { status: 500 }
+      );
+    }
+  }
+);
   }
 }
