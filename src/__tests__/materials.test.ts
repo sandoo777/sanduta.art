@@ -1,7 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@/lib/prisma";
 
-describe("Materials & Inventory Backend", () => {
+const hasDatabaseCredentials = Boolean(
+  process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.SHADOW_DATABASE_URL
+);
+
+const describeMaterials = hasDatabaseCredentials ? describe : describe.skip;
+
+if (!hasDatabaseCredentials) {
+  console.warn(
+    "Skipping materials integration tests because no database credentials are configured"
+  );
+}
+
+describeMaterials("Materials & Inventory Backend", () => {
   let testMaterial: any;
   let testJob: any;
   let testOrder: any;

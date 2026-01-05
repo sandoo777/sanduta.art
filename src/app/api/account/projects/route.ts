@@ -27,8 +27,10 @@ export async function GET() {
     const projects = user.editorProjects.map((project) => ({
       id: project.id,
       name: project.name,
-      thumbnail: project.thumbnail,
+      folderId: project.folderId,
+      thumbnailUrl: project.thumbnail,
       updatedAt: project.updatedAt.toISOString(),
+      createdAt: project.createdAt.toISOString(),
       data: project.data,
     }));
 
