@@ -13,6 +13,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   DocumentDuplicateIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
 
@@ -37,6 +38,11 @@ const navItems: NavItem[] = [
     label: "Fișiere salvate",
     href: "/dashboard/files",
     icon: DocumentDuplicateIcon,
+  },
+  {
+    label: "Notificări",
+    href: "/dashboard/notifications",
+    icon: BellIcon,
   },
   {
     label: "Adrese",

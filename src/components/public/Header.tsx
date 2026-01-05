@@ -5,12 +5,15 @@ import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useCartStore } from '@/modules/cart/cartStore';
+import { useSession } from 'next-auth/react';
+import NotificationsDropdown from '@/components/account/notifications/NotificationsDropdown';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { getTotals } = useCartStore();
   const cartItemCount = getTotals().itemCount;
+  const { data: session } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,6 +62,9 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
+            {/* Notifications dropdown - only for authenticated users */}
+            {session && <NotificationsDropdown />}
+
             {/* Cart link */}
             <Link
               href="/cart"
