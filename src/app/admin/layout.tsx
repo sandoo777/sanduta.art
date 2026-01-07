@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { AdminSidebar } from './_components/AdminSidebar';
 import { AdminTopbar } from './_components/AdminTopbar';
 
@@ -13,8 +11,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { status } = useSession();
 
   // Show loading state
   if (status === 'loading') {
@@ -28,26 +25,8 @@ export default function AdminLayout({
     );
   }
 
-  // Check authentication and role
-  if (!session || session.user.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🔒</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Unauthorized Access</h1>
-          <p className="text-gray-600 mb-6">You don't have permission to access the admin panel.</p>
-          <Link 
-            href="/" 
-            className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-          >
-            Go to Homepage
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Middleware handles authentication and authorization
+  // If user reaches here, they are authenticated and authorized
 
   return (
     <div className="flex min-h-screen bg-gray-50">

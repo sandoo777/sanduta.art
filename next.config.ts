@@ -47,15 +47,6 @@ const nextConfig: NextConfig = {
     },
   ],
 
-  // Redirects
-  redirects: async () => [
-    {
-      source: '/admin',
-      destination: '/admin/',
-      permanent: false,
-    },
-  ],
-
   // Environment variables
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,

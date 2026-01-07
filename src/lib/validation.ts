@@ -155,6 +155,3 @@ export function sanitizeString(str: string): string {
     .replace(/'/g, '&#x27;')
     .trim();
 }
-
-  return errors;
-}
