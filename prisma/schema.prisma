@@ -202,24 +202,45 @@ model Category {
 }
 
 model Product {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
-  slug        String    @unique
-  description String?   @db.Text
-  price       Decimal   @default(0) @db.Decimal(10, 2)
+  slug        String      @unique
+  sku         String?     @unique
+  description String?     @db.Text
+  descriptionShort String? @db.Text
+  type        ProductType @default(STANDARD)
+  price       Decimal     @default(0) @db.Decimal(10, 2)
   categoryId  String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  active      Boolean     @default(true)
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String?
+  options         Json?
+  dimensions      Json?
+  pricing         Json?
+  production      Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   category    Category         @relation(fields: [categoryId], references: [id])
   images      ProductImage[]
   variants    ProductVariant[]
   orderItems  OrderItem[]
+  materials   ProductMaterial[]
+  printMethods ProductPrintMethod[]
+  finishing   ProductFinishing[]
 
   @@index([categoryId])
   @@index([slug])
   @@index([createdAt])
+  @@index([active])
   @@map("products")
+}
+
+enum ProductType {
+  STANDARD
+  CONFIGURABLE
+  CUSTOM
 }
 
 model ProductVariant {
@@ -245,6 +266,47 @@ model ProductImage {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model ProductMaterial {
+  id            String   @id @default(cuid())
+  productId     String
+  materialId    String
+  priceModifier Decimal? @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, materialId])
+  @@map("product_materials")
+}
+
+model ProductPrintMethod {
+  id            String   @id @default(cuid())
+  productId     String
+  printMethodId String
+  createdAt     DateTime @default(now())
+
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  printMethod PrintMethod @relation(fields: [printMethodId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, printMethodId])
+  @@map("product_print_methods")
+}
+
+model ProductFinishing {
+  id           String   @id @default(cuid())
+  productId    String
+  finishingId  String
+  priceModifier Decimal? @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  finishing FinishingOperation @relation(fields: [finishingId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, finishingId])
+  @@map("product_finishing")
 }
 
 model Customer {
@@ -397,6 +459,7 @@ model Material {
   updatedAt   DateTime        @updatedAt
 
   consumption MaterialUsage[]
+  productMaterials ProductMaterial[]
 
   @@map("materials")
 }
@@ -630,6 +693,8 @@ model PrintMethod {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  productPrintMethods ProductPrintMethod[]
+
   @@map("print_methods")
 }
 
@@ -647,6 +712,8 @@ model FinishingOperation {
   active                  Boolean  @default(true)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+
+  productFinishing ProductFinishing[]
 
   @@map("finishing_operations")
 }

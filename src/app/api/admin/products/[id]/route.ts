@@ -15,7 +15,7 @@ export async function GET(
     const { id } = await params;
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -74,7 +74,7 @@ export async function PATCH(
     const { id } = await params;
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -82,7 +82,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, slug, description, price, categoryId } = body;
+    const { name, slug, sku, description, type, price, categoryId, active } = body;
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
@@ -131,9 +131,12 @@ export async function PATCH(
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (slug !== undefined) updateData.slug = slug;
+    if (sku !== undefined) updateData.sku = sku;
     if (description !== undefined) updateData.description = description;
+    if (type !== undefined) updateData.type = type;
     if (price !== undefined) updateData.price = price;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (active !== undefined) updateData.active = active;
 
     const product = await prisma.product.update({
       where: { id },
