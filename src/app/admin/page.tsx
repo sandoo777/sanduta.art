@@ -18,6 +18,9 @@ export default function AdminPage() {
     { title: 'Customers', description: 'Manage customer information', icon: '👥', link: '/admin/customers' },
     { title: 'Production', description: 'Track production status', icon: '🏭', link: '/admin/production' },
     { title: 'Materials', description: 'Manage inventory and materials', icon: '📦', link: '/admin/materials' },
+    { title: 'Print Methods', description: 'Configure printing methods and costs', icon: '🖨️', link: '/admin/print-methods' },
+    { title: 'Finishing Operations', description: 'Manage finishing and post-processing', icon: '✂️', link: '/admin/finishing' },
+    { title: 'Machines & Equipment', description: 'Manage production equipment', icon: '⚙️', link: '/admin/machines' },
     { title: 'Reports', description: 'View business reports', icon: '📈', link: '/admin/reports' },
     { title: 'Site Settings', description: 'Configure site preferences', icon: '⚙️', link: '/admin/settings' },
   ];

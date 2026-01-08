@@ -25,7 +25,7 @@ export function Header() {
   }, []);
 
   const navLinks = [
-    { href: '/products', label: 'Produse' },
+    { href: '/produse', label: 'Produse' },
     { href: '/about', label: 'Despre noi' },
     { href: '/contact', label: 'Contact' },
   ];

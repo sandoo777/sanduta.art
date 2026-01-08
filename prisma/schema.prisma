@@ -614,3 +614,57 @@ model UserPreferences {
   @@index([userId])
   @@map("user_preferences")
 }
+
+model PrintMethod {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // Digital, Offset, Inkjet, UV, Latex, Serigrafie, etc.
+  costPerM2        Decimal? @db.Decimal(10, 2)
+  costPerSheet     Decimal? @db.Decimal(10, 2)
+  speed            String?  // Viteza de producție (ex: "100 m²/oră")
+  maxWidth         Int?     // în mm
+  maxHeight        Int?     // în mm
+  description      String?  @db.Text
+  active           Boolean  @default(true)
+  materialIds      String[] @default([]) // IDs materiale compatibile
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("print_methods")
+}
+
+model FinishingOperation {
+  id                      String   @id @default(cuid())
+  name                    String
+  type                    String   // Tăiere, Laminare, Băgăuire, Capsare, etc.
+  costFix                 Decimal? @db.Decimal(10, 2)
+  costPerUnit             Decimal? @db.Decimal(10, 2)
+  costPerM2               Decimal? @db.Decimal(10, 2)
+  timeSeconds             Int?     // Timp execuție în secunde
+  compatibleMaterialIds   String[] @default([]) // IDs materiale compatibile
+  compatiblePrintMethodIds String[] @default([]) // IDs metode tipărire compatibile
+  description             String?  @db.Text
+  active                  Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@map("finishing_operations")
+}
+
+model Machine {
+  id                       String   @id @default(cuid())
+  name                     String
+  type                     String   // Digital Printer, Offset Press, Large Format, etc.
+  costPerHour              Decimal? @db.Decimal(10, 2)
+  speed                    String?  // ex: "100 ppm", "50 m²/oră"
+  maxWidth                 Int?     // în mm
+  maxHeight                Int?     // în mm
+  compatibleMaterialIds    String[] @default([]) // IDs materiale compatibile
+  compatiblePrintMethodIds String[] @default([]) // IDs metode tipărire compatibile
+  description              String?  @db.Text
+  active                   Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@map("machines")
+}

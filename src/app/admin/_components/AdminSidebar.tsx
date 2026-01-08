@@ -12,6 +12,9 @@ import {
   Boxes, 
   BarChart3, 
   Settings,
+  Printer,
+  Scissors,
+  Gauge,
   X
 } from 'lucide-react';
 
@@ -31,6 +34,9 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Production', href: '/admin/production', icon: Factory },
     { name: 'Materials', href: '/admin/materials', icon: Boxes },
+    { name: 'Print Methods', href: '/admin/print-methods', icon: Printer },
+    { name: 'Finishing', href: '/admin/finishing', icon: Scissors },
+    { name: 'Machines', href: '/admin/machines', icon: Gauge },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
