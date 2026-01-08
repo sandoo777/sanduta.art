@@ -1,13 +1,14 @@
 import { ProductForm } from '@/components/admin/products/builder/ProductForm';
 
 interface EditProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function EditProductPage({ params }: EditProductPageProps) {
+export default async function EditProductPage({ params }: EditProductPageProps) {
+  const { id } = await params;
   return (
     <div className="py-6">
-      <ProductForm mode="edit" productId={params.id} />
+      <ProductForm mode="edit" productId={id} />
     </div>
   );
 }

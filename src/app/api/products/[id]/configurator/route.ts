@@ -7,10 +7,10 @@ const TAG = 'API:Products:Configurator';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const identifier = params.id;
+    const { id: identifier } = await params;
     if (!identifier) {
       return createErrorResponse('ID-ul produsului este obligatoriu', 400);
     }

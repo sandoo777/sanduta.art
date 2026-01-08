@@ -4,12 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { Configurator } from '@/components/configurator/Configurator';
 
 interface ProductPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
   const product = await prisma.product.findFirst({
-    where: { slug: params.slug, active: true },
+    where: { slug, active: true },
     select: { name: true, metaTitle: true, metaDescription: true, ogImage: true },
   });
 
@@ -29,8 +30,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
   const product = await prisma.product.findFirst({
-    where: { slug: params.slug, active: true },
+    where: { slug, active: true },
     select: { id: true, slug: true, name: true },
   });
 

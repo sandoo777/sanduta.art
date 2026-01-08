@@ -199,7 +199,8 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
 
       loadProduct();
     }
-  }, [mode, productId, fetchFullProduct]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, productId]);
 
   useEffect(() => {
     if (activeTab === 'options' && formData.type !== 'CONFIGURABLE') {

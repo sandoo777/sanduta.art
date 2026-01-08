@@ -1,21 +1,7 @@
 import dynamic from 'next/dynamic';
-import { Hero } from '@/components/public/home';
+import { Hero, PopularProducts } from '@/components/public/home';
 
 // Lazy load heavy components for better performance
-const PopularProducts = dynamic(
-  () => import('@/components/public/home').then((mod) => ({ default: mod.PopularProducts })),
-  {
-    loading: () => (
-      <div className="flex min-h-[400px] items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p className="mt-4 text-gray-600">Se încarcă...</p>
-        </div>
-      </div>
-    ),
-  }
-);
-
 const WhyChooseUs = dynamic(
   () => import('@/components/public/home').then((mod) => ({ default: mod.WhyChooseUs })),
   {
