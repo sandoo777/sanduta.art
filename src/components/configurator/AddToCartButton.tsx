@@ -9,6 +9,9 @@ interface AddToCartButtonProps {
   product: ConfiguratorProduct;
   selections: ConfiguratorSelections;
   priceSummary?: ExtendedPriceSummary;
+  projectId?: string;
+  previewImage?: string;
+  finalFileUrl?: string;
   onValidate: () => string[];
 }
 
@@ -16,6 +19,9 @@ export function AddToCartButton({
   product,
   selections,
   priceSummary,
+  projectId,
+  previewImage,
+  finalFileUrl,
   onValidate,
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +35,15 @@ export function AddToCartButton({
       return;
     }
 
+    // Check if product requires a project (CUSTOM products)
+    if (product.type === 'CUSTOM' && !projectId) {
+      setShowErrors(true);
+      return;
+    }
+
     setIsLoading(true);
 
-    // Generate cart item payload
+    // Generate cart item payload with project data
     const cartItem = {
       productId: product.id,
       name: product.name,
@@ -45,6 +57,10 @@ export function AddToCartButton({
         finishingIds: selections.finishingIds,
         options: selections.options,
       },
+      // Project data (if available)
+      projectId,
+      previewImage,
+      finalFileUrl,
       // Metadata for display
       metadata: {
         material: selections.materialId,
@@ -71,17 +87,23 @@ export function AddToCartButton({
 
   // Compute validation errors for display (with safety check)
   const validationErrors = onValidate?.() || [];
+  
+  // Add project requirement error for CUSTOM products
+  const allErrors = [...validationErrors];
+  if (product.type === 'CUSTOM' && !projectId) {
+    allErrors.push('Trebuie să creezi o machetă în editor înainte de a adăuga în coș');
+  }
 
   return (
     <div className="space-y-3">
       {/* Validation errors */}
-      {showErrors && validationErrors.length > 0 && (
+      {showErrors && allErrors.length > 0 && (
         <div className="rounded-lg border-2 border-red-200 bg-red-50 p-3">
           <div className="mb-2 text-sm font-medium text-red-900">
             Corectează următoarele erori:
           </div>
           <ul className="list-inside list-disc space-y-1 text-sm text-red-700">
-            {validationErrors.map((error, index) => (
+            {allErrors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
           </ul>
@@ -91,7 +113,7 @@ export function AddToCartButton({
       {/* Add to cart button */}
       <Button
         onClick={handleAddToCart}
-        disabled={isLoading || validationErrors.length > 0}
+        disabled={isLoading || allErrors.length > 0}
         className="w-full"
         size="lg"
       >

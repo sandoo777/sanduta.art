@@ -30,6 +30,9 @@ type ConfiguratorStore = {
   finishing: FinishingFilterResult['finishing'];
   priceSummary?: ExtendedPriceSummary;
   errors: string[];
+  projectId?: string;
+  previewImage?: string;
+  projectValidated: boolean;
   loadProduct: (productId: string) => Promise<void>;
   setOption: (optionId: string, value: string | string[]) => void;
   setMaterial: (materialId: string | undefined) => void;
@@ -37,6 +40,9 @@ type ConfiguratorStore = {
   setFinishing: (finishingIds: string | string[]) => void;
   setQuantity: (quantity: number) => void;
   setDimension: (dimension: ConfiguratorSelections['dimension']) => void;
+  setProject: (projectId: string, previewImage: string) => void;
+  clearProject: () => void;
+  validateProject: () => boolean;
   calculatePrice: () => ExtendedPriceSummary | undefined;
   validateSelections: () => string[];
 };
@@ -295,6 +301,27 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
       );
       set({ errors: mergedErrors });
       return mergedErrors;
+    },
+
+    setProject: (projectId: string, previewImage: string) => {
+      set({
+        projectId,
+        previewImage,
+        projectValidated: true,
+      });
+    },
+
+    clearProject: () => {
+      set({
+        projectId: undefined,
+        previewImage: undefined,
+        projectValidated: false,
+      });
+    },
+
+    validateProject: () => {
+      const { projectId, projectValidated } = get();
+      return !!projectId && projectValidated;
     },
   };
 });

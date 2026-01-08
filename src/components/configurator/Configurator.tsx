@@ -13,12 +13,16 @@ import { QuantitySection } from './sections/QuantitySection';
 import { ProductPreview } from './sections/ProductPreview';
 import { PriceSummary } from './sections/PriceSummary';
 import { AddToCartButton } from './AddToCartButton';
+import { ProjectSection } from './sections/ProjectSection';
+import { useSearchParams } from 'next/navigation';
+import { handleEditorReturn } from '@/lib/editor/returnToConfigurator';
 
 interface ConfiguratorProps {
   productId: string;
 }
 
 export function Configurator({ productId }: ConfiguratorProps) {
+  const searchParams = useSearchParams();
   const {
     loading,
     product,
@@ -29,6 +33,8 @@ export function Configurator({ productId }: ConfiguratorProps) {
     finishing,
     priceSummary,
     errors,
+    projectId,
+    previewImage,
     loadProduct,
     setOption,
     setMaterial,
@@ -36,12 +42,26 @@ export function Configurator({ productId }: ConfiguratorProps) {
     setFinishing,
     setQuantity,
     setDimension,
+    setProject,
+    clearProject,
     validateSelections,
   } = useConfigurator();
 
   useEffect(() => {
     loadProduct(productId);
   }, [productId, loadProduct]);
+
+  // Handle return from editor
+  useEffect(() => {
+    if (searchParams) {
+      handleEditorReturn(
+        searchParams,
+        (returnedProjectId, returnedPreview) => {
+          setProject(returnedProjectId, returnedPreview);
+        }
+      );
+    }
+  }, [searchParams, setProject]);
 
   if (loading) {
     return (
@@ -136,6 +156,28 @@ export function Configurator({ productId }: ConfiguratorProps) {
             />
           )}
 
+          {/* Project Section - Editor Integration */}
+          <ProjectSection
+            projectId={projectId}
+            previewImage={previewImage}
+            productId={product.id}
+            dimensions={
+              selections.dimension?.width &&
+              selections.dimension?.height &&
+              selections.dimension?.unit
+                ? {
+                    width: selections.dimension.width,
+                    height: selections.dimension.height,
+                    unit: selections.dimension.unit,
+                  }
+                : undefined
+            }
+            materialId={selections.materialId}
+            printMethodId={selections.printMethodId}
+            finishingIds={selections.finishingIds}
+            onClearProject={clearProject}
+          />
+
           <QuantitySection
             quantity={selections.quantity}
             onChange={setQuantity}
@@ -169,6 +211,9 @@ export function Configurator({ productId }: ConfiguratorProps) {
             product={product}
             selections={selections}
             priceSummary={priceSummary}
+            projectId={projectId}
+            previewImage={previewImage}
+            finalFileUrl={undefined} // TODO: Get from project metadata
             onValidate={validateSelections}
           />
         </aside>
