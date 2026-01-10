@@ -65,10 +65,8 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
     const defaults = product.defaults || {};
     const selections: ConfiguratorSelections = {
       ...defaultSelections,
-      ...get().selections,
-      ...incomingSelections,
-      materialId: defaults.materialId ?? get().selections.materialId ?? incomingSelections?.materialId,
-      printMethodId: defaults.printMethodId ?? get().selections.printMethodId ?? incomingSelections?.printMethodId,
+      materialId: defaults.materialId ?? incomingSelections?.materialId ?? get().selections.materialId,
+      printMethodId: defaults.printMethodId ?? incomingSelections?.printMethodId ?? get().selections.printMethodId,
       finishingIds: defaults.finishingIds?.length ? defaults.finishingIds : (incomingSelections?.finishingIds ?? get().selections.finishingIds ?? []),
       options: {
         ...(defaults.optionValues ?? {}),
@@ -82,12 +80,14 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
     selections.quantity = Math.max(1, selections.quantity || 1);
 
     const materialResult = filterMaterialsByProduct(product, selections);
-    if (!materialResult.selectedMaterial && materialResult.materials[0]) {
+    // Auto-select first material if none selected and defaults don't specify one
+    if (!materialResult.selectedMaterial && materialResult.materials[0] && !selections.materialId) {
       selections.materialId = materialResult.materials[0].id;
     }
 
     const printMethodResult = filterPrintMethodsByProduct(product, selections);
-    if (!printMethodResult.selectedPrintMethod && printMethodResult.printMethods[0]) {
+    // Auto-select first print method if none selected and defaults don't specify one
+    if (!printMethodResult.selectedPrintMethod && printMethodResult.printMethods[0] && !selections.printMethodId) {
       selections.printMethodId = printMethodResult.printMethods[0].id;
     }
 
@@ -153,13 +153,21 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
         }
 
         const product = (await response.json()) as ConfiguratorProduct;
+        
+        // Build initial selections with all defaults including dimensions
+        const initialDimension = product.dimensions ? {
+          width: product.dimensions.widthMin ?? 100,
+          height: product.dimensions.heightMin ?? 100,
+        } : undefined;
+
         const selections: ConfiguratorSelections = {
           ...defaultSelections,
-          quantity: product.defaults.quantity,
+          quantity: product.defaults.quantity || 1,
           materialId: product.defaults.materialId,
           printMethodId: product.defaults.printMethodId,
           finishingIds: product.defaults.finishingIds ?? [],
           options: product.defaults.optionValues ?? {},
+          dimension: initialDimension,
         };
 
         set({ product, selections, loading: false });

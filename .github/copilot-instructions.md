@@ -63,7 +63,7 @@ if (error) return error;
 
 ### Разработка
 ```bash
-npm run dev              # http://localhost:3001 (не 3000!)
+npm run dev              # http://localhost:3000
 npm run prisma:studio    # БД UI
 npm run lint             # ESLint проверка
 ```
@@ -244,7 +244,7 @@ src/modules/
 ### Быстрый старт для новичков
 1. Запустить: `npm run dev` (не забыть `.env`)
 2. Логин: `admin@sanduta.art` / `admin123`
-3. Админка: http://localhost:3001/admin
+3. Админка: http://localhost:3000/admin
 4. Prisma Studio: `npm run prisma:studio`
 5. Тесты: `npm test`
 

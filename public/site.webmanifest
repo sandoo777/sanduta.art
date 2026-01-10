@@ -1,0 +1,11 @@
+{
+  "name": "Sanduta.art",
+  "short_name": "Sanduta",
+  "description": "Platforma de comenzi personalizate pentru printare și broderie",
+  "icons": [],
+  "theme_color": "#0066FF",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
