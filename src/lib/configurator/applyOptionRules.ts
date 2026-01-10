@@ -205,6 +205,7 @@ export function applyOptionRules(
   const result = { priceAdjustment: 0, errors: [] as string[] };
   const ctx: RuleContext = { product, selections };
 
+  // Apply rules from product options
   for (const option of product.options) {
     if (!option.rules) {
       continue;
@@ -216,6 +217,29 @@ export function applyOptionRules(
       }
       if (evaluateCondition(rule.condition, ctx)) {
         applyAction(rule.action, hiddenOptionIds, disabledValueMap, result);
+      }
+    }
+  }
+
+  // Calculate price adjustments from selected option values
+  for (const option of product.options) {
+    const selectedValue = selections.options?.[option.id];
+    if (!selectedValue) {
+      continue;
+    }
+
+    if (option.type === 'checkbox') {
+      const values = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
+      for (const val of values) {
+        const optionValue = option.values.find((v) => v.value === val);
+        if (optionValue?.priceModifier) {
+          result.priceAdjustment += optionValue.priceModifier;
+        }
+      }
+    } else {
+      const optionValue = option.values.find((v) => v.value === selectedValue);
+      if (optionValue?.priceModifier) {
+        result.priceAdjustment += optionValue.priceModifier;
       }
     }
   }
@@ -234,6 +258,21 @@ export function applyOptionRules(
         };
       }),
     }));
+
+  // Validate required options
+  for (const option of visibleOptions) {
+    if (option.required) {
+      const selectedValue = selections.options?.[option.id];
+      if (!selectedValue) {
+        result.errors.push(`Opțiunea "${option.name}" este obligatorie`);
+      } else if (option.type === 'checkbox') {
+        const values = Array.isArray(selectedValue) ? selectedValue : [];
+        if (values.length === 0) {
+          result.errors.push(`Selectează cel puțin o valoare pentru "${option.name}"`);
+        }
+      }
+    }
+  }
 
   return {
     visibleOptions,

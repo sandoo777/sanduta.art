@@ -159,7 +159,7 @@ export function calculateProductPrice(
   selections: ConfiguratorSelections,
   context: PriceCalculationContext = {}
 ): ExtendedPriceSummary {
-  const quantity = Math.max(1, selections.quantity || 1);
+  const quantity = selections.quantity ?? 1;
   const dimensionUnit = selections.dimension?.unit ?? product.dimensions?.unit ?? 'mm';
   const area = calculateAreaInSquareMeters(
     selections.dimension?.width,
@@ -210,6 +210,7 @@ export function calculateProductPrice(
       base = unitBase * quantity;
       break;
     case 'formula':
+    case 'custom': // Support both 'formula' and 'custom' for backward compatibility
       base = evaluateFormula(pricing.formula, variables) ?? unitBase * quantity;
       break;
     default:

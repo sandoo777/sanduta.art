@@ -1,0 +1,13 @@
+
+> sanduta.art@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.1.36:3000
+- Environments: .env
+- Experiments (use with caution):
+  · optimizePackageImports
+
+✓ Starting...
+✓ Ready in 2s

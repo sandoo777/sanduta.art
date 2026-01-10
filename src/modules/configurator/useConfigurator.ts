@@ -267,17 +267,22 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
       const errors: string[] = [];
       const { selections, visibleOptions } = get();
 
-      if (product.type !== 'STANDARD' && !selections.materialId) {
+      // Only validate material if product requires it (not STANDARD) AND no default is set
+      if (product.type !== 'STANDARD' && !selections.materialId && !product.defaults?.materialId) {
         errors.push('Selectează un material compatibil');
       }
 
-      if (!selections.printMethodId && product.printMethods.length > 0) {
+      // Only validate print method if required AND no default is set
+      if (!selections.printMethodId && product.printMethods.length > 0 && !product.defaults?.printMethodId) {
         errors.push('Selectează o metodă de tipărire');
       }
 
+      // Validate required options
       for (const option of visibleOptions) {
         const selectedValue = selections.options?.[option.id];
-        if (option.required) {
+        const hasDefault = product.defaults?.optionValues?.[option.id];
+        
+        if (option.required && !hasDefault) {
           if (option.type === 'checkbox') {
             const values = Array.isArray(selectedValue) ? selectedValue : [];
             if (values.length === 0) {
@@ -289,6 +294,7 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
         }
       }
 
+      // Validate dimensions only if they exist and are outside bounds
       if (product.dimensions && selections.dimension) {
         const { widthMin, widthMax, heightMin, heightMax } = product.dimensions;
         const width = selections.dimension.width ?? 0;
