@@ -1,0 +1,183 @@
+{
+  "steps": {
+    "selectProduct": {
+      "ro": "Selectează produsul",
+      "en": "Select Product",
+      "ru": "Выберите продукт"
+    },
+    "configure": {
+      "ro": "Configurează",
+      "en": "Configure",
+      "ru": "Настроить"
+    },
+    "design": {
+      "ro": "Design",
+      "en": "Design",
+      "ru": "Дизайн"
+    },
+    "review": {
+      "ro": "Revizuire",
+      "en": "Review",
+      "ru": "Проверка"
+    }
+  },
+  "options": {
+    "material": {
+      "ro": "Material",
+      "en": "Material",
+      "ru": "Материал"
+    },
+    "size": {
+      "ro": "Dimensiune",
+      "en": "Size",
+      "ru": "Размер"
+    },
+    "color": {
+      "ro": "Culoare",
+      "en": "Color",
+      "ru": "Цвет"
+    },
+    "finish": {
+      "ro": "Finisaj",
+      "en": "Finish",
+      "ru": "Отделка"
+    },
+    "printMethod": {
+      "ro": "Metodă tipărire",
+      "en": "Print Method",
+      "ru": "Метод печати"
+    },
+    "quantity": {
+      "ro": "Cantitate",
+      "en": "Quantity",
+      "ru": "Количество"
+    }
+  },
+  "actions": {
+    "continue": {
+      "ro": "Continuă",
+      "en": "Continue",
+      "ru": "Продолжить"
+    },
+    "back": {
+      "ro": "Înapoi",
+      "en": "Back",
+      "ru": "Назад"
+    },
+    "addToCart": {
+      "ro": "Adaugă în coș",
+      "en": "Add to Cart",
+      "ru": "В корзину"
+    },
+    "saveDesign": {
+      "ro": "Salvează design",
+      "en": "Save Design",
+      "ru": "Сохранить дизайн"
+    },
+    "reset": {
+      "ro": "Resetează",
+      "en": "Reset",
+      "ru": "Сбросить"
+    }
+  },
+  "pricing": {
+    "basePrice": {
+      "ro": "Preț de bază",
+      "en": "Base Price",
+      "ru": "Базовая цена"
+    },
+    "optionsPrice": {
+      "ro": "Opțiuni",
+      "en": "Options",
+      "ru": "Опции"
+    },
+    "total": {
+      "ro": "Total",
+      "en": "Total",
+      "ru": "Итого"
+    },
+    "estimatedPrice": {
+      "ro": "Preț estimat",
+      "en": "Estimated Price",
+      "ru": "Ориентировочная цена"
+    },
+    "pricePerUnit": {
+      "ro": "Preț pe unitate",
+      "en": "Price per unit",
+      "ru": "Цена за единицу"
+    }
+  },
+  "production": {
+    "estimatedTime": {
+      "ro": "Timp estimat producție",
+      "en": "Estimated Production Time",
+      "ru": "Расчетное время производства"
+    },
+    "businessDays": {
+      "ro": "zile lucrătoare",
+      "en": "business days",
+      "ru": "рабочих дней"
+    },
+    "rushAvailable": {
+      "ro": "Disponibil producție urgentă",
+      "en": "Rush production available",
+      "ru": "Доступно срочное производство"
+    }
+  },
+  "validation": {
+    "selectMaterial": {
+      "ro": "Te rugăm să selectezi un material",
+      "en": "Please select a material",
+      "ru": "Пожалуйста, выберите материал"
+    },
+    "selectSize": {
+      "ro": "Te rugăm să selectezi o dimensiune",
+      "en": "Please select a size",
+      "ru": "Пожалуйста, выберите размер"
+    },
+    "minQuantity": {
+      "ro": "Cantitatea minimă este {{min}}",
+      "en": "Minimum quantity is {{min}}",
+      "ru": "Минимальное количество {{min}}"
+    },
+    "invalidConfiguration": {
+      "ro": "Configurație invalidă",
+      "en": "Invalid configuration",
+      "ru": "Неверная конфигурация"
+    }
+  },
+  "messages": {
+    "configurationSaved": {
+      "ro": "Configurația a fost salvată",
+      "en": "Configuration saved",
+      "ru": "Конфигурация сохранена"
+    },
+    "addedToCart": {
+      "ro": "Produsul a fost adăugat în coș",
+      "en": "Product added to cart",
+      "ru": "Товар добавлен в корзину"
+    },
+    "errorOccurred": {
+      "ro": "A apărut o eroare",
+      "en": "An error occurred",
+      "ru": "Произошла ошибка"
+    }
+  },
+  "tooltips": {
+    "materialInfo": {
+      "ro": "Alege materialul potrivit pentru produsul tău",
+      "en": "Choose the right material for your product",
+      "ru": "Выберите подходящий материал для вашего продукта"
+    },
+    "sizeInfo": {
+      "ro": "Selectează dimensiunea dorită",
+      "en": "Select your desired size",
+      "ru": "Выберите желаемый размер"
+    },
+    "quantityDiscount": {
+      "ro": "Cantități mai mari = preț mai mic per bucată",
+      "en": "Larger quantities = lower price per piece",
+      "ru": "Большие количества = более низкая цена за штуку"
+    }
+  }
+}

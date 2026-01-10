@@ -1,0 +1,265 @@
+{
+  "toolbar": {
+    "text": {
+      "ro": "Text",
+      "en": "Text",
+      "ru": "Текст"
+    },
+    "image": {
+      "ro": "Imagine",
+      "en": "Image",
+      "ru": "Изображение"
+    },
+    "shape": {
+      "ro": "Forme",
+      "en": "Shapes",
+      "ru": "Фигуры"
+    },
+    "upload": {
+      "ro": "Încarcă",
+      "en": "Upload",
+      "ru": "Загрузить"
+    },
+    "layers": {
+      "ro": "Layere",
+      "en": "Layers",
+      "ru": "Слои"
+    }
+  },
+  "actions": {
+    "undo": {
+      "ro": "Anulează",
+      "en": "Undo",
+      "ru": "Отменить"
+    },
+    "redo": {
+      "ro": "Refă",
+      "en": "Redo",
+      "ru": "Повторить"
+    },
+    "delete": {
+      "ro": "Șterge",
+      "en": "Delete",
+      "ru": "Удалить"
+    },
+    "duplicate": {
+      "ro": "Duplică",
+      "en": "Duplicate",
+      "ru": "Дублировать"
+    },
+    "copy": {
+      "ro": "Copiază",
+      "en": "Copy",
+      "ru": "Копировать"
+    },
+    "paste": {
+      "ro": "Lipește",
+      "en": "Paste",
+      "ru": "Вставить"
+    },
+    "cut": {
+      "ro": "Decupează",
+      "en": "Cut",
+      "ru": "Вырезать"
+    }
+  },
+  "align": {
+    "left": {
+      "ro": "Aliniere stânga",
+      "en": "Align Left",
+      "ru": "Выровнять влево"
+    },
+    "center": {
+      "ro": "Aliniere centru",
+      "en": "Align Center",
+      "ru": "Выровнять по центру"
+    },
+    "right": {
+      "ro": "Aliniere dreapta",
+      "en": "Align Right",
+      "ru": "Выровнять вправо"
+    },
+    "top": {
+      "ro": "Aliniere sus",
+      "en": "Align Top",
+      "ru": "Выровнять сверху"
+    },
+    "middle": {
+      "ro": "Aliniere mijloc",
+      "en": "Align Middle",
+      "ru": "Выровнять посередине"
+    },
+    "bottom": {
+      "ro": "Aliniere jos",
+      "en": "Align Bottom",
+      "ru": "Выровнять снизу"
+    }
+  },
+  "arrange": {
+    "bringToFront": {
+      "ro": "Adu în față",
+      "en": "Bring to Front",
+      "ru": "На передний план"
+    },
+    "sendToBack": {
+      "ro": "Trimite în spate",
+      "en": "Send to Back",
+      "ru": "На задний план"
+    },
+    "bringForward": {
+      "ro": "Adu mai în față",
+      "en": "Bring Forward",
+      "ru": "Поднять выше"
+    },
+    "sendBackward": {
+      "ro": "Trimite mai în spate",
+      "en": "Send Backward",
+      "ru": "Опустить ниже"
+    }
+  },
+  "properties": {
+    "fill": {
+      "ro": "Umplere",
+      "en": "Fill",
+      "ru": "Заливка"
+    },
+    "stroke": {
+      "ro": "Contur",
+      "en": "Stroke",
+      "ru": "Обводка"
+    },
+    "opacity": {
+      "ro": "Opacitate",
+      "en": "Opacity",
+      "ru": "Прозрачность"
+    },
+    "rotation": {
+      "ro": "Rotație",
+      "en": "Rotation",
+      "ru": "Поворот"
+    },
+    "fontSize": {
+      "ro": "Dimensiune text",
+      "en": "Font Size",
+      "ru": "Размер шрифта"
+    },
+    "fontFamily": {
+      "ro": "Font",
+      "en": "Font Family",
+      "ru": "Шрифт"
+    },
+    "bold": {
+      "ro": "Bold",
+      "en": "Bold",
+      "ru": "Жирный"
+    },
+    "italic": {
+      "ro": "Italic",
+      "en": "Italic",
+      "ru": "Курсив"
+    },
+    "underline": {
+      "ro": "Subliniat",
+      "en": "Underline",
+      "ru": "Подчеркнутый"
+    }
+  },
+  "save": {
+    "saveProject": {
+      "ro": "Salvează proiect",
+      "en": "Save Project",
+      "ru": "Сохранить проект"
+    },
+    "export": {
+      "ro": "Exportă",
+      "en": "Export",
+      "ru": "Экспорт"
+    },
+    "exportPNG": {
+      "ro": "Exportă PNG",
+      "en": "Export PNG",
+      "ru": "Экспорт PNG"
+    },
+    "exportPDF": {
+      "ro": "Exportă PDF",
+      "en": "Export PDF",
+      "ru": "Экспорт PDF"
+    },
+    "exportSVG": {
+      "ro": "Exportă SVG",
+      "en": "Export SVG",
+      "ru": "Экспорт SVG"
+    }
+  },
+  "messages": {
+    "projectSaved": {
+      "ro": "Proiectul a fost salvat",
+      "en": "Project saved successfully",
+      "ru": "Проект успешно сохранен"
+    },
+    "exportSuccess": {
+      "ro": "Export realizat cu succes",
+      "en": "Export successful",
+      "ru": "Экспорт выполнен успешно"
+    },
+    "errorSaving": {
+      "ro": "Eroare la salvare",
+      "en": "Error saving",
+      "ru": "Ошибка сохранения"
+    },
+    "noSelection": {
+      "ro": "Nu este selectat niciun element",
+      "en": "No element selected",
+      "ru": "Элемент не выбран"
+    },
+    "uploadFailed": {
+      "ro": "Încărcarea a eșuat",
+      "en": "Upload failed",
+      "ru": "Загрузка не удалась"
+    }
+  },
+  "tooltips": {
+    "addText": {
+      "ro": "Adaugă text pe design",
+      "en": "Add text to design",
+      "ru": "Добавить текст в дизайн"
+    },
+    "uploadImage": {
+      "ro": "Încarcă o imagine",
+      "en": "Upload an image",
+      "ru": "Загрузить изображение"
+    },
+    "lockLayer": {
+      "ro": "Blochează layer-ul",
+      "en": "Lock layer",
+      "ru": "Заблокировать слой"
+    },
+    "unlockLayer": {
+      "ro": "Deblochează layer-ul",
+      "en": "Unlock layer",
+      "ru": "Разблокировать слой"
+    }
+  },
+  "layers": {
+    "newLayer": {
+      "ro": "Layer nou",
+      "en": "New Layer",
+      "ru": "Новый слой"
+    },
+    "deleteLayer": {
+      "ro": "Șterge layer",
+      "en": "Delete Layer",
+      "ru": "Удалить слой"
+    },
+    "renameLayer": {
+      "ro": "Redenumește layer",
+      "en": "Rename Layer",
+      "ru": "Переименовать слой"
+    },
+    "duplicateLayer": {
+      "ro": "Duplică layer",
+      "en": "Duplicate Layer",
+      "ru": "Дублировать слой"
+    }
+  }
+}

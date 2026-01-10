@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { i18nMiddleware } from "@/lib/i18n/middleware";
 
 console.log("[Middleware File] Loaded!");
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  
+  // Check i18n routing first
+  const i18nResponse = i18nMiddleware(req);
+  if (i18nResponse) {
+    return i18nResponse;
+  }
   
   console.log(`[Middleware] ==================`);
   console.log(`[Middleware] Path: ${path}`);
@@ -68,9 +75,12 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    // Protected routes
     "/admin/:path*",
     "/manager/:path*",
     "/operator/:path*",
     "/account/:path*",
+    // Public routes that need i18n
+    "/((?!api|_next|static|.*\\.).*)",
   ],
 };
