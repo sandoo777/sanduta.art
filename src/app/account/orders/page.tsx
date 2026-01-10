@@ -29,12 +29,15 @@ interface Order {
   orderItems: OrderItem[];
 }
 
+type FilterType = 'all' | 'processing' | 'production' | 'completed' | 'cancelled';
+
 export default function OrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterType>('all');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -63,6 +66,46 @@ export default function OrdersPage() {
       setLoading(false);
     }
   };
+
+  const filterOrders = (orders: Order[]) => {
+    if (filter === 'all') return orders;
+    
+    return orders.filter(order => {
+      const status = order.status.toUpperCase();
+      
+      if (filter === 'processing') {
+        return ['PENDING', 'IN_PREPRODUCTION', 'IN_DESIGN'].includes(status);
+      }
+      
+      if (filter === 'production') {
+        return ['IN_PRODUCTION', 'IN_PRINTING', 'QUALITY_CHECK'].includes(status);
+      }
+      
+      if (filter === 'completed') {
+        return status === 'DELIVERED' || status === 'READY_FOR_DELIVERY';
+      }
+      
+      if (filter === 'cancelled') {
+        return status === 'CANCELLED';
+      }
+      
+      return true;
+    });
+  };
+
+  const filteredOrders = filterOrders(orders);
+
+  const getFilterCounts = () => {
+    return {
+      all: orders.length,
+      processing: orders.filter(o => ['PENDING', 'IN_PREPRODUCTION', 'IN_DESIGN'].includes(o.status.toUpperCase())).length,
+      production: orders.filter(o => ['IN_PRODUCTION', 'IN_PRINTING', 'QUALITY_CHECK'].includes(o.status.toUpperCase())).length,
+      completed: orders.filter(o => ['DELIVERED', 'READY_FOR_DELIVERY'].includes(o.status.toUpperCase())).length,
+      cancelled: orders.filter(o => o.status.toUpperCase() === 'CANCELLED').length,
+    };
+  };
+
+  const counts = getFilterCounts();
 
   if (status === 'loading' || loading) {
     return (
@@ -94,6 +137,79 @@ export default function OrdersPage() {
             </div>
           )}
 
+          {/* Filter Tabs */}
+          {!loading && orders.length > 0 && (
+            <div className="mb-6 border-b border-gray-200">
+              <nav className="flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    filter === 'all'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Все заказы
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {counts.all}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilter('processing')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    filter === 'processing'
+                      ? 'border-yellow-500 text-yellow-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  В обработке
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {counts.processing}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilter('production')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    filter === 'production'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  В производстве
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {counts.production}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilter('completed')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    filter === 'completed'
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Завершенные
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {counts.completed}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setFilter('cancelled')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                    filter === 'cancelled'
+                      ? 'border-red-500 text-red-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Отмененные
+                  <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {counts.cancelled}
+                  </span>
+                </button>
+              </nav>
+            </div>
+          )}
+
           {!loading && orders.length === 0 ? (
             <Card className="text-center">
               <p className="text-gray-600 mb-4">У вас пока нет заказов</p>
@@ -101,9 +217,13 @@ export default function OrdersPage() {
                 <Button>Перейти к покупкам</Button>
               </a>
             </Card>
+          ) : filteredOrders.length === 0 ? (
+            <Card className="text-center">
+              <p className="text-gray-600">Нет заказов в этой категории</p>
+            </Card>
           ) : (
             <div className="space-y-6">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <Card key={order.id} padding="lg">
                   <div className="flex flex-wrap justify-between items-start mb-4">
                     <div>
