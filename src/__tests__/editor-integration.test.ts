@@ -3,7 +3,7 @@
  * Tests the complete flow from configurator → editor → save → return → cart
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateEditorUrl, parseEditorUrl } from '@/lib/editor/generateEditorUrl';
 import { generateReturnUrl, parseReturnParams } from '@/lib/editor/returnToConfigurator';
 import { validateProject, needsRevalidation } from '@/lib/editor/validateProject';
@@ -118,7 +118,7 @@ describe('Project Validation', () => {
   });
 
   it('should detect missing dimensions', () => {
-    const invalidProject = { ...validProject, dimensions: undefined } as any;
+    const invalidProject = { ...validProject, dimensions: undefined } as ProjectData;
     
     const result = validateProject(invalidProject);
     

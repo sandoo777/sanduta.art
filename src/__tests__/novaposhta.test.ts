@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Mock NovaPoshtaClient for testing
 class NovaPoshtaClient {
@@ -7,7 +7,7 @@ class NovaPoshtaClient {
     apiUrl: 'https://api.novaposhta.test/v2.0/json',
   };
 
-  async searchCities(searchTerm: string): Promise<any[]> {
+  async searchCities(searchTerm: string): Promise<Record<string, unknown>[]> {
     if (!searchTerm || searchTerm.length < 2) {
       return [];
     }
@@ -26,7 +26,7 @@ class NovaPoshtaClient {
     );
   }
 
-  async getPickupPoints(cityRef: string): Promise<any[]> {
+  async getPickupPoints(cityRef: string): Promise<Record<string, unknown>[]> {
     if (!cityRef) {
       throw new Error('City reference is required');
     }

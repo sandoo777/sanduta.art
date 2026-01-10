@@ -131,11 +131,11 @@ async function testSettings() {
         },
       });
       console.log("✗ Duplicate email was not rejected");
-    } catch (error: any) {
+    } catch (error) {
       if (error.code === "P2002") {
         console.log("✓ Duplicate email correctly rejected");
       } else {
-        console.log("✗ Unexpected error:", error.message);
+        console.log("✗ Unexpected error:", (error as Error).message);
       }
     }
     console.log("");
@@ -206,7 +206,7 @@ async function testSettings() {
 
     // Test 12: Role-based checks (logic simulation)
     console.log("Test 12: Role-Based Permission Checks");
-    const roles: UserRole[] = ["ADMIN", "MANAGER", "OPERATOR", "VIEWER"];
+    const _roles: UserRole[] = ["ADMIN", "MANAGER", "OPERATOR", "VIEWER"];
     console.log("Permission matrix:");
     console.log("  ADMIN:");
     console.log("    - Manage users: ✓");

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { prisma } from "@/lib/prisma";
+import { Material, ProductionJob, Order } from "@prisma/client";
 
 const hasDatabaseCredentials = Boolean(
   process.env.DATABASE_URL ||
@@ -16,9 +17,9 @@ if (!hasDatabaseCredentials) {
 }
 
 describeMaterials("Materials & Inventory Backend", () => {
-  let testMaterial: any;
-  let testJob: any;
-  let testOrder: any;
+  let testMaterial: Material | null = null;
+  let testJob: ProductionJob | null = null;
+  let testOrder: Order | null = null;
 
   beforeAll(async () => {
     // Create test order and job for consumption tests

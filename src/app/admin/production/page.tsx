@@ -21,7 +21,7 @@ const statusColumns: Array<{
 export default function ProductionPage() {
   const { loading, error, getJobs, createJob } = useProduction();
   const [jobs, setJobs] = useState<ProductionJob[]>([]);
-  const [filters, setFilters] = useState<JobFilters>({});
+  const [_filters, setFilters] = useState<JobFilters>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 

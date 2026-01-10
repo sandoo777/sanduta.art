@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Activity, Filter, Download, Search, Calendar, User, CheckCircle, XCircle } from "lucide-react";
+import { Activity, Filter, Download, Search } from "lucide-react";
 import { ActivityType } from "@prisma/client";
 
 interface AuditLog {
@@ -11,7 +11,7 @@ interface AuditLog {
   ip: string;
   userAgent: string;
   success: boolean;
-  metadata: any;
+  metadata: Record<string, unknown>;
   createdAt: string;
   user: {
     id: string;

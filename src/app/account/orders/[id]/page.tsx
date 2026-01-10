@@ -43,17 +43,6 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session) {
-      router.push('/login?callbackUrl=/account/orders');
-      return;
-    }
-
-    fetchOrder();
-  }, [session, status, router, params.id]);
-
   const fetchOrder = async () => {
     try {
       const response = await fetch(`/api/orders/${params.id}`);
@@ -73,6 +62,17 @@ export default function OrderDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/login?callbackUrl=/account/orders');
+      return;
+    }
+
+    fetchOrder();
+  }, [session, status, router, params.id, fetchOrder]);
 
   const handleReorder = () => {
     if (!order) return;

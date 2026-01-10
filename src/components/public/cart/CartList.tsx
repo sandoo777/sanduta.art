@@ -4,6 +4,7 @@ import React from 'react';
 import { CartItem } from './CartItem';
 import { useCartStore } from '@/modules/cart/cartStore';
 
+export default function CartList() {
   const { items, removeItem, duplicateItem, updateItem } = useCartStore();
 
   const handleRemove = (itemId: string) => {

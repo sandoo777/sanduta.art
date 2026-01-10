@@ -6,12 +6,13 @@
  */
 
 import { prisma } from "../src/lib/prisma";
+import { Material, ProductionJob, Order, MaterialUsage } from "@prisma/client";
 
 interface TestResult {
   test: string;
   passed: boolean;
   message?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 const results: TestResult[] = [];
@@ -19,9 +20,9 @@ const results: TestResult[] = [];
 async function runTests() {
   console.log("🧪 Starting Materials & Inventory Backend Tests\n");
 
-  let testMaterial: any;
-  let testJob: any;
-  let testOrder: any;
+  let testMaterial: Material | null = null;
+  let testJob: ProductionJob | null = null;
+  let testOrder: Order | null = null;
 
   try {
     // Setup: Create test order and job
@@ -64,13 +65,13 @@ async function runTests() {
         data: { id: testMaterial.id, name: testMaterial.name },
       });
       console.log("✅ PASSED: Material created\n");
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Create Material",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 2: Update Material
@@ -99,13 +100,13 @@ async function runTests() {
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
 
       testMaterial = updated;
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Update Material",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 3: Delete Material (should fail with consumption)
@@ -130,13 +131,13 @@ async function runTests() {
         message: `Material has ${consumptionCount} consumption records (should not be deletable)`,
       });
       console.log(`✅ PASSED: Material has consumption (${consumptionCount} records)\n`);
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Delete Material with Consumption",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 4: Consume Material
@@ -151,7 +152,7 @@ async function runTests() {
       }
 
       // Create material usage and update stock
-      const [materialUsage, updatedMaterial] = await prisma.$transaction([
+      const [, updatedMaterial] = await prisma.$transaction([
         prisma.materialUsage.create({
           data: {
             materialId: testMaterial.id,
@@ -189,13 +190,13 @@ async function runTests() {
       }
 
       testMaterial = updatedMaterial;
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Consume Material",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 5: Get Material with Consumption History
@@ -243,13 +244,13 @@ async function runTests() {
       });
 
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Get Material with History",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 6: List Materials with Metrics
@@ -294,13 +295,13 @@ async function runTests() {
       });
 
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "List Materials with Metrics",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // TEST 7: Validation - Insufficient Stock
@@ -321,13 +322,13 @@ async function runTests() {
       });
 
       console.log(!hasEnoughStock ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: "Insufficient Stock Validation",
         passed: false,
-        message: error.message,
+        message: (error as Error).message,
       });
-      console.log("❌ FAILED:", error.message, "\n");
+      console.log("❌ FAILED:", (error as Error).message, "\n");
     }
 
     // Summary

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
@@ -45,13 +45,13 @@ async function main() {
       where: { email: userData.email },
       update: {
         password: hashedPassword,
-        role: userData.role as any,
+        role: userData.role as UserRole,
       },
       create: {
         email: userData.email,
         name: userData.name,
         password: hashedPassword,
-        role: userData.role as any,
+        role: userData.role as UserRole,
       },
     });
 

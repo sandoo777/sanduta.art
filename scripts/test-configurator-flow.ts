@@ -178,7 +178,7 @@ async function testConfiguratorFlow() {
             productsWithPriceBreaks++;
             console.log(`   - ${product.name}: ${pricing.priceBreaks.length} price breaks`);
           }
-        } catch (error) {
+        } catch {
           // Ignore parsing errors
         }
       }
