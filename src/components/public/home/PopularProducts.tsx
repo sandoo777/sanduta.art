@@ -19,7 +19,7 @@ export async function PopularProducts() {
       images: {
         take: 1,
         orderBy: {
-          order: 'asc',
+          createdAt: 'asc',
         },
         select: {
           url: true,

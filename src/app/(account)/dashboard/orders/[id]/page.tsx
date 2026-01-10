@@ -1,3 +1,4 @@
+// This file is being removed to resolve dynamic path slug names issue.
 "use client";
 
 import { useEffect } from "react";
@@ -17,7 +18,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = params?.orderId as string;
+  const orderId = params?.id as string;
   const { order, loading, error, fetchOrder, generateTimeline, generateHistory } = useOrderDetails();
 
   useEffect(() => {

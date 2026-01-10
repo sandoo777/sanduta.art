@@ -17,6 +17,7 @@ interface OpenEditorButtonProps {
   templateId?: string;
   projectId?: string;
   disabled?: boolean;
+  errors?: string[];
   onOpen?: () => void;
 }
 
@@ -29,12 +30,23 @@ export function OpenEditorButton({
   templateId,
   projectId,
   disabled,
+  errors = [],
   onOpen,
 }: OpenEditorButtonProps) {
   const router = useRouter();
 
-  // Check if required fields are present
-  const canOpenEditor = dimensions && materialId && printMethodId;
+  // Check if required fields are present and no blocking errors
+  const hasRequired = dimensions && materialId && printMethodId;
+  // Считаем блокирующими только ошибки по материалу, методу печати и размерам
+  const blockingErrorPatterns = [
+    /material/i,
+    /metod[ăa] de imprimare/i,
+    /dimensiun/i,
+    /l[ăa]țime/i,
+    /înalțime/i,
+  ];
+  const hasBlockingErrors = errors.some(err => blockingErrorPatterns.some(pat => pat.test(err)));
+  const canOpenEditor = hasRequired && !hasBlockingErrors;
 
   const handleOpenEditor = () => {
     if (!canOpenEditor) {

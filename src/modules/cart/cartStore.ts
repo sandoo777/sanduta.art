@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { recalculateItemPrice } from '@/lib/cart/recalculateItemPrice';
 
 export interface CartItemSpecifications {
   dimensions: {
@@ -94,9 +95,26 @@ export const useCartStore = create<CartState>()(
 
       updateItem: (itemId, updates) => {
         set((state) => ({
-          items: state.items.map((item) =>
-            item.id === itemId ? { ...item, ...updates } : item
-          ),
+          items: state.items.map((item) => {
+            if (item.id !== itemId) return item;
+            // Обновляем спецификации, если есть
+            let newSpecs = item.specifications;
+            if (updates.specifications) {
+              newSpecs = { ...item.specifications, ...updates.specifications };
+            }
+            // Пересчитываем цену
+            const { priceBreakdown, totalPrice } = recalculateItemPrice(
+              { ...item, specifications: newSpecs },
+              { quantity: newSpecs.quantity }
+            );
+            return {
+              ...item,
+              ...updates,
+              specifications: newSpecs,
+              priceBreakdown,
+              totalPrice,
+            };
+          }),
         }));
       },
 

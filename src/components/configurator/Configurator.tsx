@@ -175,6 +175,7 @@ export function Configurator({ productId }: ConfiguratorProps) {
             materialId={selections.materialId}
             printMethodId={selections.printMethodId}
             finishingIds={selections.finishingIds}
+            errors={errors}
             onClearProject={clearProject}
           />
 

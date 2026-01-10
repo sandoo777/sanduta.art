@@ -22,8 +22,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/overview");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch overview");
+        let errorMessage = "Failed to fetch overview";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;
@@ -44,8 +50,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/sales");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch sales");
+        let errorMessage = "Failed to fetch sales";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;
@@ -66,8 +78,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/products");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch products");
+        let errorMessage = "Failed to fetch products";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;
@@ -88,8 +106,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/customers");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch customers");
+        let errorMessage = "Failed to fetch customers";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;
@@ -110,8 +134,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/operators");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch operators");
+        let errorMessage = "Failed to fetch operators";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;
@@ -132,8 +162,14 @@ export function useReports() {
     try {
       const res = await fetch("/api/admin/reports/materials");
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to fetch materials");
+        let errorMessage = "Failed to fetch materials";
+        try {
+          const error = await res.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response body might not be JSON
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
       return data;

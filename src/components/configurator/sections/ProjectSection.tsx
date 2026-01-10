@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import { OpenEditorButton } from '../OpenEditorButton';
+import { UploadDesignButton } from '../UploadDesignButton';
 
 interface ProjectSectionProps {
   projectId?: string;
@@ -17,6 +18,7 @@ interface ProjectSectionProps {
   materialId?: string;
   printMethodId?: string;
   finishingIds?: string[];
+  errors?: string[];
   onClearProject?: () => void;
 }
 
@@ -28,9 +30,16 @@ export function ProjectSection({
   materialId,
   printMethodId,
   finishingIds,
+  errors = [],
   onClearProject,
 }: ProjectSectionProps) {
   const hasProject = projectId && previewImage;
+
+  const handleUpload = (file: File) => {
+    // TODO: реализовать загрузку файла на сервер и обновление projectId/previewImage
+    // Например, вызвать API /api/projects/upload, получить projectId и preview, вызвать onSetProject
+    alert(`Fișierul ${file.name} a fost selectat pentru upload (mock)`);
+  };
 
   return (
     <Card>
@@ -74,6 +83,7 @@ export function ProjectSection({
                 printMethodId={printMethodId}
                 finishingIds={finishingIds}
                 projectId={projectId}
+                errors={errors}
               />
               {onClearProject && (
                 <Button
@@ -87,7 +97,7 @@ export function ProjectSection({
             </div>
           </div>
         ) : (
-          /* No project - show editor button */
+          /* No project - show editor button + upload */
           <div className="space-y-4">
             <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
               <svg
@@ -107,17 +117,21 @@ export function ProjectSection({
                 Nicio machetă creată
               </h3>
               <p className="text-sm text-slate-600">
-                Deschide editorul pentru a crea macheta produsului
+                Deschide editorul pentru a crea macheta produsului sau încarcă fișierul tău pregătit pentru tipar.
               </p>
             </div>
 
-            <OpenEditorButton
-              productId={productId}
-              dimensions={dimensions}
-              materialId={materialId}
-              printMethodId={printMethodId}
-              finishingIds={finishingIds}
-            />
+            <div className="flex flex-col gap-2">
+              <OpenEditorButton
+                productId={productId}
+                dimensions={dimensions}
+                materialId={materialId}
+                printMethodId={printMethodId}
+                finishingIds={finishingIds}
+                errors={errors}
+              />
+              <UploadDesignButton onUpload={handleUpload} />
+            </div>
           </div>
         )}
       </CardContent>

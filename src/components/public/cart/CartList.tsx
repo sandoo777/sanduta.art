@@ -4,8 +4,7 @@ import React from 'react';
 import { CartItem } from './CartItem';
 import { useCartStore } from '@/modules/cart/cartStore';
 
-export function CartList() {
-  const { items, removeItem, duplicateItem } = useCartStore();
+  const { items, removeItem, duplicateItem, updateItem } = useCartStore();
 
   const handleRemove = (itemId: string) => {
     if (confirm('Sigur vrei să ștergi acest produs din coș?')) {
@@ -15,6 +14,10 @@ export function CartList() {
 
   const handleDuplicate = (itemId: string) => {
     duplicateItem(itemId);
+  };
+
+  const handleQuantityChange = (itemId: string, newQty: number) => {
+    updateItem(itemId, { specifications: { ...items.find(i => i.id === itemId)?.specifications, quantity: newQty } });
   };
 
   if (items.length === 0) {
@@ -59,6 +62,7 @@ export function CartList() {
           item={item}
           onRemove={handleRemove}
           onDuplicate={handleDuplicate}
+          onQuantityChange={handleQuantityChange}
         />
       ))}
     </div>

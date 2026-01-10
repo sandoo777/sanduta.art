@@ -60,15 +60,23 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
       return undefined;
     }
 
+
+    // --- Preselect all defaults as valid ---
+    const defaults = product.defaults || {};
     const selections: ConfiguratorSelections = {
       ...defaultSelections,
       ...get().selections,
       ...incomingSelections,
-      finishingIds: incomingSelections?.finishingIds ?? get().selections.finishingIds ?? [],
+      materialId: defaults.materialId ?? get().selections.materialId ?? incomingSelections?.materialId,
+      printMethodId: defaults.printMethodId ?? get().selections.printMethodId ?? incomingSelections?.printMethodId,
+      finishingIds: defaults.finishingIds?.length ? defaults.finishingIds : (incomingSelections?.finishingIds ?? get().selections.finishingIds ?? []),
       options: {
+        ...(defaults.optionValues ?? {}),
         ...(get().selections.options ?? {}),
         ...(incomingSelections?.options ?? {}),
       },
+      quantity: defaults.quantity ?? incomingSelections?.quantity ?? get().selections.quantity ?? 1,
+      dimension: incomingSelections?.dimension ?? get().selections.dimension,
     };
 
     selections.quantity = Math.max(1, selections.quantity || 1);
@@ -245,7 +253,6 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
     validateSelections: () => {
       const product = get().product;
       if (!product) {
-        set({ errors: ['Produsul nu este încărcat'] });
         return ['Produsul nu este încărcat'];
       }
 
@@ -299,8 +306,13 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
       const mergedErrors = Array.from(
         new Set([...(get().errors?.filter(Boolean) ?? []), ...errors])
       );
-      set({ errors: mergedErrors });
       return mergedErrors;
+    },
+
+    updateErrors: () => {
+      const errors = get().validateSelections();
+      set({ errors });
+      return errors;
     },
 
     setProject: (projectId: string, previewImage: string) => {

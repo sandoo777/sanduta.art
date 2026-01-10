@@ -35,7 +35,9 @@ export function ProductCard({
   specifications,
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const finalPrice = discount > 0 ? basePrice * (1 - discount / 100) : basePrice;
+  const safeBasePrice = typeof basePrice === 'number' && !isNaN(basePrice) ? basePrice : 0;
+  const safeDiscount = typeof discount === 'number' && !isNaN(discount) ? discount : 0;
+  const finalPrice = safeDiscount > 0 ? safeBasePrice * (1 - safeDiscount / 100) : safeBasePrice;
 
   const badgeConfig = {
     bestseller: {
@@ -132,9 +134,9 @@ export function ProductCard({
           <div>
             <p className="text-sm text-gray-500 mb-1">De la</p>
             <div className="flex items-baseline gap-2">
-              {discount > 0 && (
+              {safeDiscount > 0 && (
                 <span className="text-sm text-gray-400 line-through">
-                  {basePrice.toFixed(2)} MDL
+                  {safeBasePrice.toFixed(2)} MDL
                 </span>
               )}
               <span className="text-xl font-bold text-gray-900">

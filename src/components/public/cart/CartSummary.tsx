@@ -4,11 +4,13 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/modules/cart/cartStore';
+import { validateCart } from '@/lib/cart/validateCart';
 
 export function CartSummary() {
   const router = useRouter();
   const { items, getTotals } = useCartStore();
   const totals = getTotals();
+  const errors = validateCart(items);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ro-RO', {
@@ -20,6 +22,7 @@ export function CartSummary() {
   };
 
   const handleCheckout = () => {
+    if (errors.length > 0) return;
     router.push('/checkout');
   };
 
@@ -29,6 +32,16 @@ export function CartSummary() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24">
+      {errors.length > 0 && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3">
+          <div className="font-semibold mb-1">Corectează următoarele erori:</div>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {errors.map((err) => (
+              <li key={err.itemId + err.message}>{err.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <ShoppingBag className="w-5 h-5 text-[#0066FF]" />
         Sumar comandă
@@ -81,7 +94,9 @@ export function CartSummary() {
       {/* Checkout Button */}
       <button
         onClick={handleCheckout}
-        className="w-full bg-[#0066FF] text-white rounded-lg py-4 px-6 font-semibold text-lg hover:bg-[#0052CC] transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+        className={`w-full rounded-lg py-4 px-6 font-semibold text-lg flex items-center justify-center gap-2 shadow-lg transition-colors
+          ${errors.length > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0066FF] text-white hover:bg-[#0052CC] hover:shadow-xl'}`}
+        disabled={errors.length > 0}
       >
         Finalizează comanda
         <ArrowRight className="w-5 h-5" />

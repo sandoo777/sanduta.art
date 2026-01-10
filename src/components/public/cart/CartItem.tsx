@@ -5,14 +5,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, Edit2, Copy } from 'lucide-react';
 import type { CartItem as CartItemType } from '@/modules/cart/cartStore';
+import { QuantitySelector } from './QuantitySelector';
+
 
 interface CartItemProps {
   item: CartItemType;
   onRemove: (itemId: string) => void;
   onDuplicate: (itemId: string) => void;
+  onQuantityChange?: (itemId: string, newQty: number) => void;
 }
 
-export function CartItem({ item, onRemove, onDuplicate }: CartItemProps) {
+export function CartItem({ item, onRemove, onDuplicate, onQuantityChange }: CartItemProps) {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ro-RO', {
       style: 'currency',
@@ -117,7 +120,12 @@ export function CartItem({ item, onRemove, onDuplicate }: CartItemProps) {
               </svg>
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">Cantitate</div>
-                <div className="text-sm font-medium text-gray-900">{item.specifications.quantity} buc</div>
+                <QuantitySelector
+                  value={item.specifications.quantity}
+                  min={1}
+                  max={999}
+                  onChange={(qty) => onQuantityChange?.(item.id, qty)}
+                />
               </div>
             </div>
           </div>
