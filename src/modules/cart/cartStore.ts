@@ -43,6 +43,9 @@ export interface CartItem {
   name: string;
   previewUrl?: string;
   fileUrl?: string;
+  // Editor project integration
+  projectId?: string; // ✅ Added
+  finalFileUrl?: string; // ✅ Added
   specifications: CartItemSpecifications;
   upsells: CartItemUpsell[];
   priceBreakdown: CartItemPriceBreakdown;

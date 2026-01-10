@@ -357,6 +357,7 @@ model CustomerTag {
 
 model Order {
   id                   String        @id @default(cuid())
+  orderNumber          String?       @unique // Număr comandă unic pentru clienți
   customerId           String?
   customerName         String
   customerEmail        String
@@ -370,12 +371,21 @@ model Order {
   deliveryMethod       String?       // novaposhta, courier, pickup
   deliveryAddress      String?
   city                 String?
+  country              String?       // Țara pentru adresă
+  postalCode           String?       // Cod poștal
   novaPoshtaWarehouse  String?
   trackingNumber       String?
   paynetSessionId      String?
   totalPrice           Decimal       @default(0) @db.Decimal(10, 2)
+  subtotal             Decimal?      @db.Decimal(10, 2) // Subtotal fără taxe
+  discount             Decimal?      @default(0) @db.Decimal(10, 2) // Discount aplicat
+  vat                  Decimal?      @db.Decimal(10, 2) // TVA
+  shippingCost         Decimal?      @default(0) @db.Decimal(10, 2) // Cost livrare
   currency             String        @default("MDL")
   dueDate              DateTime?
+  notes                String?       @db.Text // Note despre comandă
+  companyName          String?       // Pentru comenzi B2B
+  taxId                String?       // CUI/VAT pentru firme
   userId               String?
   assignedToUserId     String?
   createdAt            DateTime      @default(now())
@@ -391,6 +401,7 @@ model Order {
   @@index([userId])
   @@index([customerId])
   @@index([customerEmail])
+  @@index([orderNumber])
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
@@ -413,6 +424,7 @@ model OrderItem {
   previewImage   String? // Project preview URL
   finalFileUrl   String? // Final file for printing
   configuration  Json?   // Configurator selections
+  specifications Json?   // Product specifications (dimensions, material, etc.)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)

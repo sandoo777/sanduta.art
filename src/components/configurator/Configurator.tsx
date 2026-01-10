@@ -181,9 +181,10 @@ export function Configurator({ productId }: ConfiguratorProps) {
 
           <QuantitySection
             quantity={selections.quantity}
+            minQuantity={1}
+            maxQuantity={10000}
+            priceBreaks={product.pricing.priceBreaks ?? []}
             onChange={setQuantity}
-            pricingType={product.pricing.type}
-            priceBreaks={product.pricing.priceBreaks}
           />
         </div>
 
@@ -214,7 +215,7 @@ export function Configurator({ productId }: ConfiguratorProps) {
             priceSummary={priceSummary}
             projectId={projectId}
             previewImage={previewImage}
-            finalFileUrl={undefined} // TODO: Get from project metadata
+            finalFileUrl={projectId ? `/projects/${projectId}/final.pdf` : undefined}
             onValidate={validateSelections}
           />
         </aside>

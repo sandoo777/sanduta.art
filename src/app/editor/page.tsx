@@ -66,9 +66,38 @@ function EditorContent() {
             Anulează
           </button>
           <button
-            onClick={() => {
-              // TODO: Implement save and return
-              alert('Salvare implementată în curând');
+            onClick={async () => {
+              try {
+                // Save project
+                const response = await fetch('/api/projects/save', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    projectId: editorParams?.projectId,
+                    productId: editorParams?.productId,
+                    previewImage: '/placeholder-preview.png', // TODO: Generate from canvas
+                    finalFile: '/placeholder-final.pdf', // TODO: Generate PDF
+                    layers: [], // TODO: Get from editor state
+                    metadata: {
+                      dimensions: editorParams?.dimensions,
+                      bleed: editorParams?.bleed,
+                      dpi: 300,
+                    },
+                  }),
+                });
+
+                if (response.ok) {
+                  const data = await response.json();
+                  // Return to configurator with project data
+                  const returnUrl = `/products/${searchParams.get('productSlug') || 'poster'}?projectId=${data.projectId}&previewImage=${encodeURIComponent(data.previewUrl)}&editorStatus=saved`;
+                  window.location.href = returnUrl;
+                } else {
+                  alert('Eroare la salvarea proiectului');
+                }
+              } catch (error) {
+                console.error('Save error:', error);
+                alert('Eroare la salvarea proiectului');
+              }
             }}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >

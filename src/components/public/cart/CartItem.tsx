@@ -1,11 +1,10 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, Edit2, Copy } from 'lucide-react';
 import type { CartItem as CartItemType } from '@/modules/cart/cartStore';
 import { QuantitySelector } from './QuantitySelector';
+import { CartItemProjectPreview } from '@/components/cart/CartItemProjectPreview';
 
 
 interface CartItemProps {
@@ -144,6 +143,22 @@ export function CartItem({ item, onRemove, onDuplicate, onQuantityChange }: Cart
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Project Preview - dacă există machetă */}
+          {item.fileUrl && (
+            <div className="mb-4">
+              <CartItemProjectPreview
+                projectId={item.fileUrl} // TODO: Use actual projectId field
+                previewImage={item.previewUrl || '/placeholder-preview.png'}
+                productSlug={item.productSlug}
+                dimensions={{
+                  width: item.specifications.dimensions.width,
+                  height: item.specifications.dimensions.height,
+                  unit: 'cm',
+                }}
+              />
             </div>
           )}
 

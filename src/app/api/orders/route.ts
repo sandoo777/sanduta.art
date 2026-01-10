@@ -116,6 +116,13 @@ export const POST = withAuth(
           orderId: order.id,
           productId: item.product.id,
           quantity: item.quantity,
+          unitPrice: item.price || 0,
+          lineTotal: (item.price || 0) * item.quantity,
+          // Editor project integration
+          projectId: item.projectId || null,
+          previewImage: item.previewImage || null,
+          finalFileUrl: item.finalFileUrl || null,
+          configuration: item.configuration || null,
         },
         include: {
           product: true,
