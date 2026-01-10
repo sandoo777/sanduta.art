@@ -16,3 +16,6 @@ export type { BadgeProps, StatusBadgeProps } from './Badge';
 
 export { SectionTitle, PageTitle } from './SectionTitle';
 export type { SectionTitleProps, PageTitleProps } from './SectionTitle';
+
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
+export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './tabs';
