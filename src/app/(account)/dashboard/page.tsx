@@ -98,7 +98,7 @@ export default async function DashboardPage() {
         </h3>
         <p className="text-blue-800">
           Poți salva proiectele tale în editor și le poți accesa oricând din
-          secțiunea "Proiectele mele". Astfel, nu vei pierde niciodată munca ta!
+          secțiunea &quot;Proiectele mele&quot;. Astfel, nu vei pierde niciodată munca ta!
         </p>
       </div>
     </div>

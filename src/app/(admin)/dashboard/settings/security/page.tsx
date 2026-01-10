@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  Lock,
+  AlertTriangle,
+  CheckCircle,
+  Shield,
+  Key,
+} from "lucide-react";
 
 interface SecuritySettings {
   twoFactorEnabled: boolean;

@@ -17,11 +17,13 @@ import {
   Globe,
 } from "lucide-react";
 
+import { LucideIcon } from "lucide-react";
+
 interface SettingsSection {
   id: string;
   title: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   href: string;
   color: string;
   requiresAdmin?: boolean;

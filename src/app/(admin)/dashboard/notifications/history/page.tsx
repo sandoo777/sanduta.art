@@ -23,7 +23,7 @@ export default function NotificationHistoryPage() {
 
   const handleApplyFilters = () => {
     setFilters({
-      type: localFilters.type as any,
+      type: localFilters.type as NotificationType | undefined,
       status: localFilters.status,
       startDate: localFilters.startDate ? new Date(localFilters.startDate) : undefined,
       endDate: localFilters.endDate ? new Date(localFilters.endDate) : undefined,
@@ -51,7 +51,7 @@ export default function NotificationHistoryPage() {
     // Export to CSV
     const csv = [
       ['Dată', 'Tip', 'Utilizator', 'Status', 'Canal', 'Mesaj'].join(','),
-      ...history.map((item: any) =>
+      ...history.map((item: NotificationHistory) =>
         [
           new Date(item.createdAt).toLocaleString('ro-RO'),
           getNotificationTypeName(item.type),
