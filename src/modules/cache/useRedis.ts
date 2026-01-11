@@ -1,17 +1,16 @@
 /**
  * Redis Cache Module
  * Using Upstash Redis for distributed caching
- * 
- * TODO: Install dependency with: npm install @upstash/redis
  */
 
-// @ts-ignore - Dependency not installed yet
-// import { Redis } from '@upstash/redis';
-type Redis = any;
+import { Redis } from '@upstash/redis';
 
 // Initialize Redis client
 const redis = process.env.UPSTASH_REDIS_REST_URL
-  ? null // Will be initialized after dependency install
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+    })
   : null;
 
 
@@ -48,7 +47,6 @@ export class RedisCache {
     if (!this.client) return null;
 
     try {
-      // @ts-ignore - Redis client type will be available after dependency install
       const value = await this.client.get<T>(this.buildKey(key));
       return value;
     } catch (error) {
@@ -158,7 +156,6 @@ export class RedisCache {
 
     try {
       const cacheKeys = keys.map((k) => this.buildKey(k));
-      // @ts-ignore - Redis client type will be available after dependency install
       const values = await this.client.mget<T[]>(...cacheKeys);
       return values;
     } catch (error) {
