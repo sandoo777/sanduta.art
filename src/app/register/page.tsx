@@ -99,20 +99,46 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      console.log(`[Register] Creating account for: ${email}`);
+      
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
 
+      const data = await res.json();
+      console.log(`[Register] API response:`, { status: res.status, ok: res.ok });
+
       if (res.ok) {
+        console.log(`[Register] Account created successfully, redirecting to login`);
+        // Success - redirect to login with success message
         router.push("/login?registered=true");
       } else {
-        const data = await res.json();
-        setGeneralError(data.message || "Înregistrarea a eșuat");
+        console.error(`[Register] Registration failed:`, data);
+        
+        // Handle specific API errors with user-friendly messages
+        if (res.status === 400) {
+          if (data.message?.includes('already exists')) {
+            setEmailError("Acest email este deja înregistrat");
+            setGeneralError("Un cont cu acest email există deja. Te poți autentifica.");
+          } else if (data.message?.includes('required')) {
+            setGeneralError("Toate câmpurile sunt obligatorii");
+          } else if (data.message?.includes('Password')) {
+            setPasswordError(data.message);
+            setGeneralError("Parola nu îndeplinește cerințele");
+          } else {
+            setGeneralError(data.message || "Înregistrarea a eșuat");
+          }
+        } else if (res.status === 500) {
+          setGeneralError("Înregistrarea a eșuat. Te rugăm să încerci mai târziu.");
+        } else {
+          setGeneralError(data.message || "A apărut o eroare neașteptată");
+        }
       }
     } catch (err) {
-      setGeneralError("A apărut o eroare. Încearcă din nou.");
+      console.error('[Register] Network error:', err);
+      setGeneralError("Nu s-a putut conecta la server. Verifică conexiunea internet.");
     } finally {
       setLoading(false);
     }

@@ -101,20 +101,44 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log(`[Login] Attempting sign in for: ${email}`);
+      
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log(`[Login] Sign in result:`, result);
+
       if (result?.error) {
-        setGeneralError("Email sau parolă incorectă");
+        console.error(`[Login] Sign in failed:`, result.error);
+        
+        // Parse error message for better user feedback
+        if (result.error.includes('email or password')) {
+          setGeneralError("Email sau parolă incorectă");
+        } else if (result.error.includes('required')) {
+          setGeneralError("Email și parola sunt obligatorii");
+        } else if (result.error.includes('Invalid')) {
+          setGeneralError("Credentiale invalide. Verifică datele introduse.");
+        } else {
+          setGeneralError("Autentificarea a eșuat. Încearcă din nou.");
+        }
         setLoading(false);
       } else if (result?.ok) {
+        console.log(`[Login] Sign in successful, updating session...`);
+        // Force session update to get the latest data with role
         await update();
+        // Keep loading state - useEffect will handle redirect
+        // Don't set loading to false, component will unmount during navigation
+      } else {
+        console.error('[Login] Unexpected result:', result);
+        setGeneralError("Autentificarea a eșuat. Te rugăm să încerci din nou.");
+        setLoading(false);
       }
     } catch (err) {
-      setGeneralError("A apărut o eroare. Încearcă din nou.");
+      console.error('[Login] Sign in error:', err);
+      setGeneralError("Nu s-a putut conecta la server. Verifică conexiunea internet.");
       setLoading(false);
     }
   };
