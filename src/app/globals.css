@@ -190,3 +190,84 @@ h3 {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+@keyframes success-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.animate-success {
+  animation: success-bounce 0.6s ease-out;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Enhanced Focus States */
+*:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* Smooth Hover Transitions */
+a, button {
+  transition: all 0.2s ease-in-out;
+}
+
+a:hover, button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+a:active, button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Input Focus Enhancement */
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #3B82F6;
+}
+
+/* Checkbox Hover */
+input[type="checkbox"]:hover:not(:disabled) {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  animation: success-bounce 0.3s ease-out;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Gradient Animation */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}

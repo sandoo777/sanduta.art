@@ -309,15 +309,15 @@ export default function RegisterPage() {
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
                 required 
-                className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 cursor-pointer" 
+                className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-transform hover:scale-110" 
               />
               <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                 Sunt de acord cu{" "}
-                <a href="/terms" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline">
+                <a href="/terms" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline inline-block hover:scale-105 transition-all">
                   Termenii și condițiile
                 </a>
                 {" "}și{" "}
-                <a href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline">
+                <a href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline inline-block hover:scale-105 transition-all">
                   Politica de confidențialitate
                 </a>
               </span>
@@ -349,7 +349,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <p className="text-gray-600 dark:text-gray-400">
               Ai deja cont?{" "}
-              <a href="/login" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors hover:underline">
+              <a href="/login" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-all hover:underline inline-block hover:scale-105">
                 Conectează-te
               </a>
             </p>

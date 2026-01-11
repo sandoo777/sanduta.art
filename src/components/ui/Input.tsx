@@ -26,8 +26,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
-    const baseStyles = 'px-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed';
-    const errorStyles = error ? 'border-red-500 focus:ring-red-500 dark:border-red-600' : 'border-gray-300 dark:border-gray-600';
+    const baseStyles = 'px-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-gray-400 dark:hover:border-gray-500';
+    const errorStyles = error ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-600 animate-shake' : 'border-gray-300 dark:border-gray-600';
     const iconPaddingLeft = leftIcon ? 'pl-11' : 'px-4';
     const iconPaddingRight = rightIcon ? 'pr-11' : 'px-4';
     const widthStyles = fullWidth ? 'w-full' : '';

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input, Button } from "@/components/ui";
 
 // Validation helpers
@@ -19,11 +19,13 @@ const validatePassword = (password: string): string | null => {
 };
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false });
@@ -31,6 +33,15 @@ export default function LoginPage() {
   const router = useRouter();
   const { data: session, status, update } = useSession();
   const hasRedirected = useRef(false);
+
+  // Check for registration success
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccessMessage("Cont creat cu succes! Te poți autentifica acum.");
+      // Clear after 5 seconds
+      setTimeout(() => setSuccessMessage(""), 5000);
+    }
+  }, [searchParams]);
 
   // Real-time validation
   useEffect(() => {
@@ -134,6 +145,17 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-blue-100/50 dark:shadow-gray-900/50 p-8 backdrop-blur-sm border border-gray-100 dark:border-gray-700 animate-slide-up">
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl animate-success">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-green-700 dark:text-green-300 text-sm font-medium">{successMessage}</p>
+              </div>
+            </div>
+          )}
+          
           {generalError && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl animate-shake">
               <div className="flex items-center gap-3">
@@ -204,13 +226,13 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input 
                   type="checkbox" 
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 cursor-pointer" 
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 cursor-pointer transition-transform hover:scale-110" 
                 />
                 <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Ține-mă minte</span>
               </label>
               <a 
                 href="/reset-password" 
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors hover:underline"
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-all hover:underline hover:scale-105 inline-block"
               >
                 Ai uitat parola?
               </a>
@@ -242,7 +264,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 group"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 group hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -259,7 +281,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center">
             <p className="text-gray-600 dark:text-gray-400">
               Nu ai cont?{" "}
-              <a href="/register" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors hover:underline">
+              <a href="/register" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-all hover:underline inline-block hover:scale-105">
                 Creează unul acum
               </a>
             </p>
