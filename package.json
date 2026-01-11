@@ -14,7 +14,16 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "backup:full": "tsx src/modules/backup/cli.ts create --type=full",
+    "backup:db": "tsx src/modules/backup/cli.ts create --type=database",
+    "backup:files": "tsx src/modules/backup/cli.ts create --type=files",
+    "backup:config": "tsx src/modules/backup/cli.ts create --type=config",
+    "backup:list": "tsx src/modules/backup/cli.ts list",
+    "backup:restore": "tsx src/modules/backup/cli.ts restore",
+    "backup:test": "tsx src/modules/backup/testBackupRestore.ts",
+    "backup:health": "tsx src/modules/backup/cli.ts health",
+    "backup:cleanup": "tsx src/modules/backup/cli.ts cleanup"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
