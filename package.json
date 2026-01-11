@@ -48,6 +48,12 @@
     "monitoring:test": "vitest src/__tests__/monitoring.test.ts --run",
     "monitoring:dashboard": "echo 'Open http://localhost:3000/dashboard/monitoring'",
     "pre-launch:audit": "tsx scripts/pre-launch-audit.ts",
+    "pre-launch:performance": "tsx scripts/performance-test.ts",
+    "launch": "tsx scripts/launch.ts",
+    "smoke-tests:full": "tsx scripts/smoke-tests.ts",
+    "monitor:post-launch": "tsx scripts/post-launch-monitor.ts",
+    "hotfix": "tsx scripts/hotfix.ts",
+    "rollback": "tsx scripts/hotfix.ts rollback",
     "pre-launch:performance": "tsx scripts/performance-test.ts"
   },
   "prisma": {
