@@ -18,6 +18,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         _count: {
           select: { products: true },
         },
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+        children: {
+          select: { id: true, name: true, slug: true },
+        },
       },
     });
 
@@ -41,42 +47,71 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     const { id } = await params;
-    const { name, slug, color, icon } = await request.json();
+    const { 
+      name, 
+      slug, 
+      description, 
+      image, 
+      color, 
+      icon, 
+      parentId, 
+      order, 
+      active, 
+      featured,
+      metaTitle,
+      metaDescription 
+    } = await request.json();
 
-    // Check if name or slug already exists (excluding current category)
-    if (name || slug) {
+    // Check if slug already exists (excluding current category)
+    if (slug) {
       const existing = await prisma.category.findFirst({
         where: {
           AND: [
             { id: { not: id } },
-            {
-              OR: [
-                name ? { name } : {},
-                slug ? { slug } : {},
-              ].filter(obj => Object.keys(obj).length > 0),
-            },
+            { slug },
           ],
         },
       });
 
       if (existing) {
         return NextResponse.json({ 
-          error: existing.name === name ? "Category name already exists" : "Category slug already exists" 
+          error: "Category slug already exists" 
         }, { status: 400 });
       }
+    }
+
+    // Prevent category from being its own parent
+    if (parentId === id) {
+      return NextResponse.json({ 
+        error: "Category cannot be its own parent" 
+      }, { status: 400 });
     }
 
     const category = await prisma.category.update({
       where: { id },
       data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
+        ...(name !== undefined && { name }),
+        ...(slug !== undefined && { slug }),
+        ...(description !== undefined && { description }),
+        ...(image !== undefined && { image }),
         ...(color !== undefined && { color }),
         ...(icon !== undefined && { icon }),
+        ...(parentId !== undefined && { parentId }),
+        ...(order !== undefined && { order }),
+        ...(active !== undefined && { active }),
+        ...(featured !== undefined && { featured }),
+        ...(metaTitle !== undefined && { metaTitle }),
+        ...(metaDescription !== undefined && { metaDescription }),
       },
       include: {
         _count: {
           select: { products: true },
+        },
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+        children: {
+          select: { id: true, name: true, slug: true },
         },
       },
     });

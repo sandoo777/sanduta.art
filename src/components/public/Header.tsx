@@ -8,6 +8,8 @@ import { useCartStore } from '@/modules/cart/cartStore';
 import { useSession } from 'next-auth/react';
 import NotificationsDropdown from '@/components/account/notifications/NotificationsDropdown';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { CategoriesMegaMenu } from '@/components/public/navigation/CategoriesMegaMenu';
+import { MobileCategoriesMenu } from '@/components/public/navigation/MobileCategoriesMenu';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,6 +52,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-8 md:flex">
+            <CategoriesMegaMenu />
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -133,6 +136,10 @@ export function Header() {
                   </span>
                 )}
               </Link>
+              
+              {/* Mobile Categories Menu */}
+              <MobileCategoriesMenu onLinkClick={() => setIsMenuOpen(false)} />
+              
               {navLinks.map((link) => (
                 <Link
                   key={link.href}

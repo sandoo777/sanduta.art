@@ -1,15 +1,23 @@
 import Link from 'next/link';
 import { Facebook, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 
+// Featured categories for footer - manually curated for better control
+const featuredCategories = [
+  { href: '/produse/carti-de-vizita', label: '🎴 Cărți de vizită', slug: 'carti-de-vizita' },
+  { href: '/produse/marketing', label: '📢 Marketing', slug: 'marketing' },
+  { href: '/produse/foto-arta', label: '🖼️ Foto & Artă', slug: 'foto-arta' },
+  { href: '/produse/textile-merch', label: '👕 Textile & Merch', slug: 'textile-merch' },
+];
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
+    categories: featuredCategories,
     products: [
       { href: '/products', label: 'Toate produsele' },
-      { href: '/products?category=prints', label: 'Fotografii' },
-      { href: '/products?category=canvas', label: 'Tablouri canvas' },
-      { href: '/products?category=gifts', label: 'Cadouri personalizate' },
+      { href: '/products?featured=true', label: 'Produse populare' },
+      { href: '/products?new=true', label: 'Produse noi' },
     ],
     info: [
       { href: '/about', label: 'Despre noi' },
@@ -75,6 +83,33 @@ export function Footer() {
                 );
               })}
             </div>
+          </div>
+
+          {/* Categories column */}
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-secondary">
+              Categorii
+            </h3>
+            <ul className="space-y-3">
+              {footerLinks.categories.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-gray-600 transition-colors hover:text-primary"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link
+                  href="/products"
+                  className="text-sm font-medium text-primary transition-colors hover:underline"
+                >
+                  Vezi toate →
+                </Link>
+              </li>
+            </ul>
           </div>
 
           {/* Products column */}

@@ -1,0 +1,561 @@
+{
+  "meta": {
+    "version": "1.0",
+    "status": "PROPOSAL",
+    "date": "2026-01-11",
+    "author": "GitHub Copilot",
+    "awaiting_approval": "Andrei (@sandoo777)",
+    "inspired_by": "VistaPrint model"
+  },
+  "categories": [
+    {
+      "id": "carti-vizita",
+      "name": "Cărți de Vizită",
+      "name_en": "Business Cards",
+      "slug": "carti-de-vizita",
+      "description": "Cărți de vizită personalizate pentru profesioniști și afaceri",
+      "icon": "🎴",
+      "priority": "HIGH",
+      "order": 1,
+      "subcategories": [
+        {
+          "name": "Cărți de vizită standard",
+          "slug": "standard",
+          "specs": "85×55mm, 300-400gsm"
+        },
+        {
+          "name": "Cărți de vizită premium",
+          "slug": "premium",
+          "specs": "Finisaje speciale, soft-touch, spot UV"
+        },
+        {
+          "name": "Cărți de vizită mini",
+          "slug": "mini",
+          "specs": "85×35mm"
+        },
+        {
+          "name": "Cărți de vizită pătrate",
+          "slug": "patrate",
+          "specs": "55×55mm sau 85×85mm"
+        },
+        {
+          "name": "Cărți de vizită cu colțuri rotunjite",
+          "slug": "colturi-rotunjite",
+          "specs": "Radie 3-5mm"
+        },
+        {
+          "name": "Cărți de vizită texturate",
+          "slug": "texturate",
+          "specs": "Carton texturat special"
+        },
+        {
+          "name": "Cărți de vizită transparente",
+          "slug": "transparente",
+          "specs": "PVC transparent"
+        },
+        {
+          "name": "Cărți de vizită magnetice",
+          "slug": "magnetice",
+          "specs": "Cu magnet pe spate"
+        }
+      ]
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing",
+      "slug": "marketing",
+      "description": "Materiale promoționale pentru campanii și publicitate",
+      "icon": "📢",
+      "priority": "HIGH",
+      "order": 2,
+      "subcategories": [
+        {
+          "name": "Flyere A6",
+          "slug": "flyere-a6",
+          "specs": "105×148mm, 130-250gsm"
+        },
+        {
+          "name": "Flyere A5",
+          "slug": "flyere-a5",
+          "specs": "148×210mm, 130-250gsm"
+        },
+        {
+          "name": "Flyere A4",
+          "slug": "flyere-a4",
+          "specs": "210×297mm, 130-250gsm"
+        },
+        {
+          "name": "Flyere DL",
+          "slug": "flyere-dl",
+          "specs": "99×210mm, 130-250gsm"
+        },
+        {
+          "name": "Pliante în 2",
+          "slug": "pliante-bifold",
+          "specs": "170-300gsm, bifold"
+        },
+        {
+          "name": "Pliante în 3",
+          "slug": "pliante-trifold",
+          "specs": "170-300gsm, trifold"
+        },
+        {
+          "name": "Broșuri capsate",
+          "slug": "brosuri",
+          "specs": "8-32 pagini"
+        },
+        {
+          "name": "Postere A3",
+          "slug": "postere-a3",
+          "specs": "297×420mm, 150-200gsm"
+        },
+        {
+          "name": "Postere A2",
+          "slug": "postere-a2",
+          "specs": "420×594mm, 150-200gsm"
+        },
+        {
+          "name": "Postere A1",
+          "slug": "postere-a1",
+          "specs": "594×841mm, 150-200gsm"
+        },
+        {
+          "name": "Roll-up banner",
+          "slug": "rollup",
+          "specs": "85×200cm, PVC 440gsm"
+        },
+        {
+          "name": "X-banner",
+          "slug": "x-banner",
+          "specs": "60×160cm sau 80×180cm"
+        },
+        {
+          "name": "Banner outdoor",
+          "slug": "banner-outdoor",
+          "specs": "PVC sau mesh, custom"
+        },
+        {
+          "name": "Banner fabric",
+          "slug": "banner-fabric",
+          "specs": "240gsm textile"
+        },
+        {
+          "name": "Afișe evenimente",
+          "slug": "afise-evenimente",
+          "specs": "Diverse formate"
+        }
+      ]
+    },
+    {
+      "id": "materiale-birou",
+      "name": "Materiale de Birou",
+      "slug": "materiale-de-birou",
+      "description": "Papetărie corporativă și materiale administrative",
+      "icon": "📁",
+      "priority": "MEDIUM",
+      "order": 3,
+      "subcategories": [
+        {
+          "name": "Plicuri C4",
+          "slug": "plicuri-c4",
+          "specs": "229×324mm, 90-120gsm"
+        },
+        {
+          "name": "Plicuri C5",
+          "slug": "plicuri-c5",
+          "specs": "162×229mm, 90-120gsm"
+        },
+        {
+          "name": "Plicuri DL",
+          "slug": "plicuri-dl",
+          "specs": "110×220mm, 90-120gsm"
+        },
+        {
+          "name": "Hârtie cu antet",
+          "slug": "hartie-antet",
+          "specs": "A4, 80-100gsm"
+        },
+        {
+          "name": "Mapă prezentare",
+          "slug": "mapa-prezentare",
+          "specs": "300-350gsm, plastifiere"
+        },
+        {
+          "name": "Dosare personalizate",
+          "slug": "dosare",
+          "specs": "Carton 300gsm"
+        },
+        {
+          "name": "Blocnotes",
+          "slug": "blocnotes",
+          "specs": "A4/A5, 50-100 file"
+        },
+        {
+          "name": "Calendare birou",
+          "slug": "calendare-birou",
+          "specs": "10×15cm sau 15×20cm"
+        },
+        {
+          "name": "Calendare perete",
+          "slug": "calendare-perete",
+          "specs": "A3/A4, 12 pagini"
+        },
+        {
+          "name": "Certificate și diplome",
+          "slug": "certificate",
+          "specs": "A4, hârtie premium"
+        }
+      ]
+    },
+    {
+      "id": "produse-promotionale",
+      "name": "Produse Promoționale",
+      "slug": "produse-promotionale",
+      "description": "Gadget-uri și accesorii personalizabile pentru brand awareness",
+      "icon": "🎁",
+      "priority": "MEDIUM",
+      "order": 4,
+      "subcategories": [
+        {
+          "name": "Pixuri personalizate",
+          "slug": "pixuri",
+          "specs": "Metal sau plastic"
+        },
+        {
+          "name": "USB-uri cu logo",
+          "slug": "usb",
+          "specs": "4GB-64GB"
+        },
+        {
+          "name": "Mousepad-uri",
+          "slug": "mousepad",
+          "specs": "Diverse dimensiuni"
+        },
+        {
+          "name": "Căni ceramice",
+          "slug": "cani-ceramice",
+          "specs": "300-350ml, sublimation"
+        },
+        {
+          "name": "Căni termice",
+          "slug": "cani-termice",
+          "specs": "Inox, 300-500ml"
+        },
+        {
+          "name": "Sticle de apă",
+          "slug": "sticle-apa",
+          "specs": "500-750ml, sport"
+        },
+        {
+          "name": "Brelocuri",
+          "slug": "brelocuri",
+          "specs": "Metal, plastic, lemn"
+        },
+        {
+          "name": "Ecusoane badge",
+          "slug": "ecusoane",
+          "specs": "Rotunde 25-75mm"
+        },
+        {
+          "name": "Lanyard-uri",
+          "slug": "lanyard",
+          "specs": "Serigrafie sau sublimation"
+        },
+        {
+          "name": "Magneti frigider",
+          "slug": "magneti",
+          "specs": "Diverse forme"
+        },
+        {
+          "name": "Suporturi telefon",
+          "slug": "suporturi-telefon",
+          "specs": "Birou sau auto"
+        },
+        {
+          "name": "Termosuri",
+          "slug": "termosuri",
+          "specs": "500ml-1L, inox"
+        }
+      ]
+    },
+    {
+      "id": "foto-arta",
+      "name": "Foto & Artă",
+      "slug": "foto-arta",
+      "description": "Produse foto și decorațiuni personalizate",
+      "icon": "🖼️",
+      "priority": "MEDIUM",
+      "order": 5,
+      "subcategories": [
+        {
+          "name": "Tablouri canvas",
+          "slug": "canvas",
+          "specs": "20×30cm - 100×150cm, 380gsm"
+        },
+        {
+          "name": "Tablouri poster cu ramă",
+          "slug": "poster-rama",
+          "specs": "A4-A1, ramă lemn/aluminiu"
+        },
+        {
+          "name": "Foto pe forex",
+          "slug": "forex",
+          "specs": "PVC rigid 3-5mm"
+        },
+        {
+          "name": "Foto pe aluminiu dibond",
+          "slug": "dibond",
+          "specs": "3mm aluminiu"
+        },
+        {
+          "name": "Foto pe sticlă acrilică",
+          "slug": "acrilic",
+          "specs": "3-4mm acrylic"
+        },
+        {
+          "name": "Foto pe lemn",
+          "slug": "lemn",
+          "specs": "Lemn natural 10mm"
+        },
+        {
+          "name": "Puzzle personalizate",
+          "slug": "puzzle",
+          "specs": "120-1000 piese"
+        },
+        {
+          "name": "Calendare foto perete",
+          "slug": "calendar-foto-perete",
+          "specs": "A3/A4, 12 luni"
+        },
+        {
+          "name": "Calendare foto birou",
+          "slug": "calendar-foto-birou",
+          "specs": "10×15cm, 12 luni"
+        },
+        {
+          "name": "Albume foto",
+          "slug": "albume",
+          "specs": "20-60 pagini, premium"
+        }
+      ]
+    },
+    {
+      "id": "textile-merch",
+      "name": "Textile & Merch",
+      "slug": "textile-merch",
+      "description": "Îmbrăcăminte și textile personalizate",
+      "icon": "👕",
+      "priority": "LOW-MEDIUM",
+      "order": 6,
+      "subcategories": [
+        {
+          "name": "Tricouri bărbați",
+          "slug": "tricouri-barbati",
+          "specs": "100% bumbac 150-180gsm, DTG"
+        },
+        {
+          "name": "Tricouri femei",
+          "slug": "tricouri-femei",
+          "specs": "100% bumbac 150-180gsm, DTG"
+        },
+        {
+          "name": "Tricouri copii",
+          "slug": "tricouri-copii",
+          "specs": "100% bumbac 150gsm"
+        },
+        {
+          "name": "Hanorace cu glugă",
+          "slug": "hanorace-gluga",
+          "specs": "280-320gsm, DTG sau broderie"
+        },
+        {
+          "name": "Bluze fără glugă",
+          "slug": "bluze",
+          "specs": "280-320gsm"
+        },
+        {
+          "name": "Bluze polo",
+          "slug": "polo",
+          "specs": "180-200gsm, broderie"
+        },
+        {
+          "name": "Șepci",
+          "slug": "sepci",
+          "specs": "6 paneluri, broderie sau print"
+        },
+        {
+          "name": "Genți shopper",
+          "slug": "genti-shopper",
+          "specs": "Bumbac 140gsm, serigrafie"
+        },
+        {
+          "name": "Genți tote",
+          "slug": "genti-tote",
+          "specs": "Canvas, serigrafie"
+        },
+        {
+          "name": "Perne decorative",
+          "slug": "perne",
+          "specs": "40×40cm, sublimation"
+        },
+        {
+          "name": "Prosoape personalizate",
+          "slug": "prosoape",
+          "specs": "50×100cm, sublimation"
+        },
+        {
+          "name": "Șorțuri",
+          "slug": "sorturi",
+          "specs": "Bucătărie/grădină, serigrafie"
+        }
+      ]
+    },
+    {
+      "id": "packaging",
+      "name": "Packaging",
+      "slug": "packaging",
+      "description": "Ambalaje personalizate pentru produse și cadouri",
+      "icon": "📦",
+      "priority": "LOW-MEDIUM",
+      "order": 7,
+      "subcategories": [
+        {
+          "name": "Cutii carton personalizate",
+          "slug": "cutii-carton",
+          "specs": "E-flute/B-flute, custom"
+        },
+        {
+          "name": "Pungi hârtie cu mâner",
+          "slug": "pungi-hartie",
+          "specs": "110-150gsm kraft"
+        },
+        {
+          "name": "Pungi plastic",
+          "slug": "pungi-plastic",
+          "specs": "HDPE/LDPE"
+        },
+        {
+          "name": "Sacoșe kraft",
+          "slug": "sacose-kraft",
+          "specs": "90-120gsm"
+        },
+        {
+          "name": "Cutii postale e-commerce",
+          "slug": "cutii-postale",
+          "specs": "Carton ondulat B-flute"
+        },
+        {
+          "name": "Hârtie împachetat",
+          "slug": "hartie-cadou",
+          "specs": "Custom print"
+        },
+        {
+          "name": "Benzi adezive cu logo",
+          "slug": "banda-adeziva",
+          "specs": "48mm lățime"
+        },
+        {
+          "name": "Sigilii și stickere",
+          "slug": "sigilii",
+          "specs": "Rotunde/custom"
+        }
+      ]
+    },
+    {
+      "id": "etichete-stickere",
+      "name": "Etichete & Stickere",
+      "slug": "etichete-stickere",
+      "description": "Etichete adezive și stickere pentru diverse utilizări",
+      "icon": "🏷️",
+      "priority": "MEDIUM",
+      "order": 8,
+      "subcategories": [
+        {
+          "name": "Stickere pe foi A4",
+          "slug": "stickere-foi",
+          "specs": "Hârtie autoadezivă, mat/lucios"
+        },
+        {
+          "name": "Stickere în rulou",
+          "slug": "stickere-roll",
+          "specs": "Roll format, custom"
+        },
+        {
+          "name": "Etichete produse",
+          "slug": "etichete-produse",
+          "specs": "Diverse forme și materiale"
+        },
+        {
+          "name": "Etichete prețuri",
+          "slug": "etichete-preturi",
+          "specs": "Standard format"
+        },
+        {
+          "name": "Stickere vinil outdoor",
+          "slug": "stickere-vinil",
+          "specs": "Rezistent UV și apă"
+        },
+        {
+          "name": "Stickere pentru ferestre",
+          "slug": "stickere-ferestre",
+          "specs": "Vinil transparent/static"
+        },
+        {
+          "name": "Stickere holografice",
+          "slug": "stickere-holografice",
+          "specs": "Efect holografic"
+        },
+        {
+          "name": "Etichete de securitate",
+          "slug": "etichete-securitate",
+          "specs": "Void/tamper-proof"
+        },
+        {
+          "name": "Stickere podea",
+          "slug": "stickere-podea",
+          "specs": "Anti-alunecare, laminat"
+        },
+        {
+          "name": "Stickere decupate custom",
+          "slug": "stickere-custom",
+          "specs": "Die-cut, forme personalizate"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_categories": 8,
+    "total_subcategories": 85,
+    "high_priority": 2,
+    "medium_priority": 4,
+    "low_medium_priority": 2
+  },
+  "implementation_phases": {
+    "phase_1_mvp": {
+      "categories": [
+        "carti-vizita",
+        "marketing (flyere, pliante, postere)",
+        "etichete-stickere (populare)",
+        "textile-merch (tricouri, hanorace)"
+      ],
+      "estimated_products": "25-30"
+    },
+    "phase_2_expansion": {
+      "categories": [
+        "materiale-birou",
+        "marketing (bannere)",
+        "produse-promotionale",
+        "foto-arta (canvas, calendare)"
+      ],
+      "estimated_products": "20-25"
+    },
+    "phase_3_full": {
+      "categories": [
+        "all_remaining_subcategories",
+        "seasonal_products",
+        "advanced_customization"
+      ],
+      "estimated_products": "30-40"
+    }
+  }
+}

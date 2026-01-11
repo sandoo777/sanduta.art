@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+interface Category {
+  id: number;
+  name: string;
+  icon?: string;
+  parentId?: number | null;
+}
 
 interface FiltersProps {
   onFilterChange: (filters: FilterState) => void;
-  categories: { id: number; name: string }[];
+  categories: Category[];
 }
 
 export interface FilterState {
@@ -78,6 +85,15 @@ export function Filters({ onFilterChange, categories }: FiltersProps) {
     handleFilterChange({ materials: updated });
   };
 
+  // Organizează categoriile în ierarhie
+  const categoriesHierarchy = useMemo(() => {
+    const parentCategories = categories.filter((cat) => !cat.parentId);
+    return parentCategories.map((parent) => ({
+      ...parent,
+      children: categories.filter((cat) => cat.parentId === parent.id),
+    }));
+  }, [categories]);
+
   const FilterContent = () => (
     <div className="space-y-6">
       {/* Header */}
@@ -106,10 +122,20 @@ export function Filters({ onFilterChange, categories }: FiltersProps) {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="">Toate categoriile</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
+          {categoriesHierarchy.map((parentCategory) => (
+            <optgroup
+              key={parentCategory.id}
+              label={`${parentCategory.icon || ''} ${parentCategory.name}`}
+            >
+              <option value={parentCategory.id}>
+                {parentCategory.name} (toate)
+              </option>
+              {parentCategory.children.map((subcat) => (
+                <option key={subcat.id} value={subcat.id}>
+                  └─ {subcat.name}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </div>

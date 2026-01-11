@@ -16,10 +16,17 @@ export async function GET() {
         _count: {
           select: { products: true },
         },
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+        children: {
+          select: { id: true, name: true, slug: true },
+        },
       },
-      orderBy: {
-        name: 'asc', // Alfabetic order
-      },
+      orderBy: [
+        { order: 'asc' }, // Sortare după order custom
+        { name: 'asc' },  // Apoi alfabetic
+      ],
     });
 
     return NextResponse.json(categories);
@@ -37,28 +44,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, slug, color, icon } = await request.json();
+    const { 
+      name, 
+      slug, 
+      description, 
+      image, 
+      color, 
+      icon, 
+      parentId, 
+      order, 
+      active, 
+      featured,
+      metaTitle,
+      metaDescription 
+    } = await request.json();
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     // Generate slug from name if not provided
-    const finalSlug = slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    // Remove diacritics for Romanian characters
+    const finalSlug = slug || name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/ă/g, 'a')
+      .replace(/â/g, 'a')
+      .replace(/î/g, 'i')
+      .replace(/ș/g, 's')
+      .replace(/ț/g, 't')
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
 
-    // Check if name or slug already exists
-    const existing = await prisma.category.findFirst({
-      where: {
-        OR: [
-          { name },
-          { slug: finalSlug },
-        ],
-      },
+    // Check if slug already exists (unique constraint)
+    const existing = await prisma.category.findUnique({
+      where: { slug: finalSlug },
     });
 
     if (existing) {
       return NextResponse.json({ 
-        error: existing.name === name ? "Category name already exists" : "Category slug already exists" 
+        error: "Category slug already exists" 
       }, { status: 400 });
     }
 
@@ -66,12 +92,23 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         slug: finalSlug,
+        description,
+        image,
         color: color || '#3B82F6',
         icon: icon || '📦',
+        parentId: parentId || null,
+        order: order ?? 0,
+        active: active ?? true,
+        featured: featured ?? false,
+        metaTitle,
+        metaDescription,
       },
       include: {
         _count: {
           select: { products: true },
+        },
+        parent: {
+          select: { id: true, name: true, slug: true },
         },
       },
     });

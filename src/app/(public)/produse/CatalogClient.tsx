@@ -23,16 +23,22 @@ interface Product {
 interface Category {
   id: number;
   name: string;
+  icon?: string;
+  parentId?: number | null;
 }
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function CatalogClient() {
+interface CatalogClientProps {
+  initialCategoryId?: number;
+}
+
+export default function CatalogClient({ initialCategoryId }: CatalogClientProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
-    categoryId: null,
+    categoryId: initialCategoryId || null,
     minPrice: 0,
     maxPrice: 10000,
     productTypes: [],

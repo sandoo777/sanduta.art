@@ -117,12 +117,33 @@ export function GeneralTab({
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Selectează categoria</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.icon} {category.name}
-                </option>
-              ))}
+              {categories
+                .filter((cat) => !cat.parentId) // Doar categorii principale
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .map((parentCategory) => {
+                  const subcategories = categories
+                    .filter((cat) => cat.parentId === parentCategory.id)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+                  
+                  return (
+                    <optgroup key={parentCategory.id} label={`${parentCategory.icon || ''} ${parentCategory.name}`}>
+                      {/* Opțiune pentru categoria principală */}
+                      <option value={parentCategory.id}>
+                        {parentCategory.name} (categoria principală)
+                      </option>
+                      {/* Subcategorii indentate */}
+                      {subcategories.map((subcat) => (
+                        <option key={subcat.id} value={subcat.id}>
+                          └─ {subcat.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
             </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Poți selecta atât categoria principală cât și subcategoriile
+            </p>
           </div>
         </div>
       </div>

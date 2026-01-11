@@ -1,0 +1,54 @@
+🌱 Seeding categorii principale...
+
+📊 Categorii principale existente: 0
+
+✨ Creat: Cărți de vizită (carti-de-vizita)
+✨ Creat: Marketing (marketing)
+✨ Creat: Materiale de birou (materiale-de-birou)
+✨ Creat: Produse promoționale (produse-promotionale)
+✨ Creat: Foto & Artă (foto-arta)
+✨ Creat: Textile & Merch (textile-merch)
+✨ Creat: Packaging (packaging)
+✨ Creat: Etichete & Stickere (etichete-stickere)
+
+📈 Rezumat seeding:
+   ✨ Create: 8
+   🔄 Actualizate: 0
+   ⏭️  Sărite: 0
+
+📋 Categorii principale în baza de date:
+
+   ⭐ ✅ 1. 🎴 Cărți de vizită
+      Slug: carti-de-vizita
+      Cărți de vizită personalizate pentru profesioniști și afaceri. Standard, premium...
+
+   ⭐ ✅ 2. 📢 Marketing
+      Slug: marketing
+      Materiale promoționale pentru campanii și publicitate: flyere, pliante, broșuri,...
+
+      ✅ 3. 📁 Materiale de birou
+      Slug: materiale-de-birou
+      Papetărie corporativă și materiale administrative: plicuri, hârtie cu antet, map...
+
+      ✅ 4. 🎁 Produse promoționale
+      Slug: produse-promotionale
+      Gadget-uri și accesorii personalizabile pentru brand awareness: căni, pixuri, US...
+
+      ✅ 5. 🖼️ Foto & Artă
+      Slug: foto-arta
+      Produse foto și decorațiuni personalizate: tablouri canvas, foto pe forex, dibon...
+
+      ✅ 6. 👕 Textile & Merch
+      Slug: textile-merch
+      Îmbrăcăminte și textile personalizate: tricouri, hanorace, șepci, genți, perne, ...
+
+      ✅ 7. 📦 Packaging
+      Slug: packaging
+      Ambalaje personalizate pentru produse și cadouri: cutii carton, pungi hârtie, sa...
+
+   ⭐ ✅ 8. 🏷️ Etichete & Stickere
+      Slug: etichete-stickere
+      Etichete adezive și stickere pentru diverse utilizări: stickere pe foi, roll, vi...
+
+✅ Seeding completat cu succes!
+

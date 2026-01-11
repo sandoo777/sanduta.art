@@ -188,16 +188,38 @@ model VerificationToken {
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  color     String?   @default("#3B82F6")
-  icon      String?   @default("📦")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  image       String?   // URL imagine categorie
+  color       String?   @default("#3B82F6")
+  icon        String?   @default("📦")
+  
+  // Ierarhie categorii (parent-child pentru subcategorii)
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryHierarchy")
+  
+  // Management vizibilitate și ordine
+  order       Int       @default(0)  // Ordinea de afișare
+  active      Boolean   @default(true)  // Status activ/inactiv
+  featured    Boolean   @default(false) // Categorie featured pentru homepage
+  
+  // SEO și metadata
+  metaTitle       String?
+  metaDescription String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  products Product[]
+  products    Product[]
 
+  @@unique([name, parentId]) // Nume unic în cadrul aceluiași părinte
+  @@index([parentId])
+  @@index([slug])
+  @@index([active])
+  @@index([order])
   @@map("categories")
 }
 

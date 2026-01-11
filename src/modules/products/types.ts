@@ -10,8 +10,13 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  description?: string;
   color?: string;
   icon?: string;
+  parentId?: string | null;
+  order?: number;
+  active?: boolean;
+  featured?: boolean;
 }
 
 export interface Product {
