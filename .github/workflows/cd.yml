@@ -1,0 +1,511 @@
+name: CD Pipeline - Deploy & Rollback
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline - QA & Testing"]
+    types:
+      - completed
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      rollback:
+        description: 'Rollback to previous version'
+        required: false
+        type: boolean
+        default: false
+      version:
+        description: 'Version to rollback to (if rollback is true)'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Job 1: Prepare Deployment
+  prepare:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      environment: ${{ steps.environment.outputs.environment }}
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate version
+        id: version
+        run: |
+          if [ "${{ github.event.inputs.rollback }}" == "true" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Semantic versioning based on commits
+            VERSION=$(node scripts/generateVersion.js)
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+      - name: Determine environment
+        id: environment
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            ENV="production"
+          else
+            ENV="staging"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "Deploying to: $ENV"
+
+      - name: Check if should deploy
+        id: check
+        run: |
+          if [ "${{ github.event.inputs.rollback }}" == "true" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "Rollback requested"
+          elif [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "CI passed, ready to deploy"
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "CI not passed, skipping deploy"
+          fi
+
+      - name: Create deployment tag
+        if: steps.check.outputs.should_deploy == 'true' && github.event.inputs.rollback != 'true'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+  # Job 2: Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.should_deploy == 'true' && needs.prepare.outputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.sanduta.art
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Run database migrations (staging)
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
+
+      - name: Deploy to Vercel (Staging)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--env DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }} --env NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET_STAGING }}'
+
+      - name: Update deployment record
+        run: |
+          node scripts/recordDeployment.js \
+            --environment=staging \
+            --version=${{ needs.prepare.outputs.version }} \
+            --url=${{ steps.deploy.outputs.preview-url }} \
+            --commit=${{ github.sha }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
+
+      - name: Create deployment comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: `🚀 Deployed to **Staging**\n\n📦 Version: v${{ needs.prepare.outputs.version }}\n🔗 URL: ${{ steps.deploy.outputs.preview-url }}`
+            })
+
+  # Job 3: Smoke Tests (Staging)
+  smoke-tests-staging:
+    name: Smoke Tests (Staging)
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-staging]
+    if: needs.prepare.outputs.should_deploy == 'true' && needs.prepare.outputs.environment == 'staging'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke tests
+        run: node scripts/smokeTests.js --environment=staging
+        env:
+          BASE_URL: https://staging.sanduta.art
+          STAGING_API_KEY: ${{ secrets.STAGING_API_KEY }}
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-tests-staging
+          path: smoke-test-results/
+          retention-days: 7
+
+  # Job 4: Deploy to Production (Manual Approval)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [prepare, smoke-tests-staging]
+    if: |
+      needs.prepare.outputs.should_deploy == 'true' && 
+      (needs.prepare.outputs.environment == 'production' || github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://sanduta.art
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        if: github.event.inputs.rollback != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .next/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create database backup
+        run: |
+          node scripts/backupDatabase.js \
+            --environment=production \
+            --type=pre-deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Run database migrations (production)
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --env DATABASE_URL=${{ secrets.DATABASE_URL }} --env NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}'
+
+      - name: Invalidate CDN cache
+        run: |
+          node scripts/invalidateCache.js --environment=production
+        env:
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+      - name: Trigger ISR regeneration
+        run: |
+          node scripts/regenerateISR.js --environment=production
+        env:
+          BASE_URL: https://sanduta.art
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+
+      - name: Update deployment record
+        run: |
+          node scripts/recordDeployment.js \
+            --environment=production \
+            --version=${{ needs.prepare.outputs.version }} \
+            --url=https://sanduta.art \
+            --commit=${{ github.sha }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Create GitHub Release
+        if: github.event.inputs.rollback != 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          release_name: Release v${{ needs.prepare.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+
+  # Job 5: Smoke Tests (Production)
+  smoke-tests-production:
+    name: Smoke Tests (Production)
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-production]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke tests
+        run: node scripts/smokeTests.js --environment=production
+        env:
+          BASE_URL: https://sanduta.art
+          PRODUCTION_API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-tests-production
+          path: smoke-test-results/
+          retention-days: 30
+
+      - name: Check smoke tests status
+        run: |
+          if [ -f smoke-test-results/failed.json ]; then
+            echo "❌ Smoke tests failed!"
+            node scripts/notifyDeploymentIssue.js \
+              --environment=production \
+              --issue="Smoke tests failed" \
+              --version=${{ needs.prepare.outputs.version }}
+            exit 1
+          else
+            echo "✅ Smoke tests passed!"
+          fi
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Job 6: Post-Deploy Checks
+  post-deploy-checks:
+    name: Post-Deploy Checks
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-production, smoke-tests-production]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check application health
+        run: |
+          node scripts/healthCheck.js --environment=production
+        env:
+          BASE_URL: https://sanduta.art
+
+      - name: Monitor deployment metrics
+        run: |
+          node scripts/monitorDeployment.js \
+            --environment=production \
+            --version=${{ needs.prepare.outputs.version }} \
+            --duration=5m
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Send deployment notification
+        run: |
+          node scripts/notifyDeployment.js \
+            --environment=production \
+            --version=${{ needs.prepare.outputs.version }} \
+            --status=${{ needs.smoke-tests-production.result }} \
+            --url=https://sanduta.art
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+  # Job 7: Rollback (if needed)
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [prepare, post-deploy-checks]
+    if: |
+      always() && 
+      (github.event.inputs.rollback == 'true' || needs.post-deploy-checks.result == 'failure')
+    environment:
+      name: production
+      url: https://sanduta.art
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get previous version
+        id: previous
+        run: |
+          if [ "${{ github.event.inputs.rollback }}" == "true" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(node scripts/getPreviousVersion.js)
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Rolling back to version: $VERSION"
+
+      - name: Rollback database
+        run: |
+          node scripts/rollbackDatabase.js \
+            --environment=production \
+            --version=${{ steps.previous.outputs.version }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Rollback deployment
+        run: |
+          node scripts/rollbackDeployment.js \
+            --environment=production \
+            --version=${{ steps.previous.outputs.version }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Verify rollback
+        run: |
+          node scripts/verifyRollback.js \
+            --environment=production \
+            --version=${{ steps.previous.outputs.version }}
+        env:
+          BASE_URL: https://sanduta.art
+
+      - name: Notify rollback
+        run: |
+          node scripts/notifyRollback.js \
+            --environment=production \
+            --from-version=${{ needs.prepare.outputs.version }} \
+            --to-version=${{ steps.previous.outputs.version }} \
+            --reason="Post-deploy checks failed"
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+  # Job 8: Deployment Summary
+  summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-staging, deploy-production, smoke-tests-production, post-deploy-checks, rollback]
+    if: always()
+    
+    steps:
+      - name: Generate deployment report
+        run: |
+          echo "# Deployment Summary" > deployment-summary.md
+          echo "" >> deployment-summary.md
+          echo "**Version:** v${{ needs.prepare.outputs.version }}" >> deployment-summary.md
+          echo "**Environment:** ${{ needs.prepare.outputs.environment }}" >> deployment-summary.md
+          echo "**Status:** ${{ job.status }}" >> deployment-summary.md
+          echo "" >> deployment-summary.md
+          echo "## Jobs Status" >> deployment-summary.md
+          echo "- Deploy Staging: ${{ needs.deploy-staging.result || 'skipped' }}" >> deployment-summary.md
+          echo "- Deploy Production: ${{ needs.deploy-production.result || 'skipped' }}" >> deployment-summary.md
+          echo "- Smoke Tests: ${{ needs.smoke-tests-production.result || 'skipped' }}" >> deployment-summary.md
+          echo "- Post-Deploy Checks: ${{ needs.post-deploy-checks.result || 'skipped' }}" >> deployment-summary.md
+          echo "- Rollback: ${{ needs.rollback.result || 'skipped' }}" >> deployment-summary.md
+
+      - name: Upload deployment summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-summary
+          path: deployment-summary.md
+          retention-days: 90
+
+      - name: Comment deployment summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('deployment-summary.md', 'utf8');
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: summary
+            })

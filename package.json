@@ -33,7 +33,18 @@
     "backup:restore": "tsx src/modules/backup/cli.ts restore",
     "backup:test": "tsx src/modules/backup/testBackupRestore.ts",
     "backup:health": "tsx src/modules/backup/cli.ts health",
-    "backup:cleanup": "tsx src/modules/backup/cli.ts cleanup"
+    "backup:cleanup": "tsx src/modules/backup/cli.ts cleanup",
+    "version:generate": "node scripts/generateVersion.js",
+    "version:update": "node scripts/generateVersion.js --update-package",
+    "changelog:generate": "tsx scripts/generateChangelog.ts",
+    "smoke-tests": "node scripts/smokeTests.js",
+    "health-check": "node scripts/healthCheck.js",
+    "deploy:monitor": "node scripts/monitorDeployment.js",
+    "deploy:notify": "node scripts/notifyDeployment.js",
+    "flags:list": "tsx src/modules/flags/useFeatureFlags.ts list",
+    "flags:enable": "tsx src/modules/flags/useFeatureFlags.ts enable",
+    "flags:disable": "tsx src/modules/flags/useFeatureFlags.ts disable",
+    "flags:rollout": "tsx src/modules/flags/useFeatureFlags.ts rollout"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
