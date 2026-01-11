@@ -1,6 +1,9 @@
 import dynamic from 'next/dynamic';
 import { Hero, PopularProducts } from '@/components/public/home';
 
+// ISR: Revalidate homepage every 60 seconds
+export const revalidate = 60;
+
 // Lazy load heavy components for better performance
 const WhyChooseUs = dynamic(
   () => import('@/components/public/home').then((mod) => ({ default: mod.WhyChooseUs })),

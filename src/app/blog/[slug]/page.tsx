@@ -8,6 +8,9 @@ import Link from 'next/link';
 import { Calendar, Eye, ArrowLeft, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
+// ISR: Revalidate blog posts every 1 hour
+export const revalidate = 3600;
+
 interface BlogPost {
   id: string;
   title: string;

@@ -5,6 +5,9 @@
 import { Locale } from '@/i18n/config';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
+// ISR: Revalidate multilingual homepage every 60 seconds
+export const revalidate = 60;
+
 interface HomePageProps {
   params: {
     lang: Locale;

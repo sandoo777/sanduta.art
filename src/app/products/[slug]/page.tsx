@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { Configurator } from '@/components/configurator/Configurator';
 
+// ISR: Revalidate product pages every 5 minutes
+export const revalidate = 300;
+
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
