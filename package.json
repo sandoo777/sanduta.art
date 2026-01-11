@@ -46,7 +46,9 @@
     "flags:disable": "tsx src/modules/flags/useFeatureFlags.ts disable",
     "flags:rollout": "tsx src/modules/flags/useFeatureFlags.ts rollout",
     "monitoring:test": "vitest src/__tests__/monitoring.test.ts --run",
-    "monitoring:dashboard": "echo 'Open http://localhost:3000/dashboard/monitoring'"
+    "monitoring:dashboard": "echo 'Open http://localhost:3000/dashboard/monitoring'",
+    "pre-launch:audit": "tsx scripts/pre-launch-audit.ts",
+    "pre-launch:performance": "tsx scripts/performance-test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
