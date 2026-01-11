@@ -15,9 +15,9 @@ const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
 interface RootLayoutProps {
   children: ReactNode;
-  params: {
+  params: Promise<{
     lang: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -29,7 +29,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: RootLayoutProps) {
-  const locale = params.lang as Locale;
+  const { lang } = await params;
+  const locale = lang as Locale;
   
   const titles = {
     ro: 'Sanduta.art - Produse personalizate tipărite',
@@ -58,12 +59,14 @@ export async function generateMetadata({ params }: RootLayoutProps) {
 }
 
 export default async function RootLayout({ children, params }: RootLayoutProps) {
+  const { lang } = await params;
+  
   // Validare locale
-  if (!isValidLocale(params.lang)) {
+  if (!isValidLocale(lang)) {
     notFound();
   }
 
-  const locale = params.lang as Locale;
+  const locale = lang as Locale;
   
   // Încarcă traducerile pentru limba curentă
   const translations = await loadTranslations(locale);

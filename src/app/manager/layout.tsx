@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
-import { LogoutButton } from "@/modules/auth/LogoutButton";
 
 interface ManagerLayoutProps {
   children: ReactNode;
@@ -74,10 +73,6 @@ export function ManagerLayout({ children }: ManagerLayoutProps) {
               </Link>
             ))}
           </nav>
-
-          <div className="absolute bottom-4 left-4 right-4">
-            <LogoutButton className="w-full" />
-          </div>
         </aside>
 
         {/* Main content */}

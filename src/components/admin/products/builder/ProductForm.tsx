@@ -162,6 +162,20 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
           fetch('/api/admin/machines', { credentials: 'include' }),
         ]);
 
+        // Check if all responses are OK before parsing JSON
+        const allOk = [categoriesRes, materialsRes, printMethodsRes, finishingRes, machinesRes].every(r => r.ok);
+        
+        if (!allOk) {
+          const failedRequests = [];
+          if (!categoriesRes.ok) failedRequests.push('categories');
+          if (!materialsRes.ok) failedRequests.push('materials');
+          if (!printMethodsRes.ok) failedRequests.push('print-methods');
+          if (!finishingRes.ok) failedRequests.push('finishing');
+          if (!machinesRes.ok) failedRequests.push('machines');
+          
+          throw new Error(`Failed to load resources: ${failedRequests.join(', ')}`);
+        }
+
         const [categories, materials, printMethods, finishing, machines] = await Promise.all([
           categoriesRes.json(),
           materialsRes.json(),

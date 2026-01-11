@@ -11,27 +11,24 @@ export async function GET(req: NextRequest) {
 
     logger.info('API:Account', 'Fetching invoices', { userId: user.id });
 
-    // Get orders with payment information
+    // Get orders - no separate payment table, payment info is in Order
     const orders = await prisma.order.findMany({
       where: { userId: user.id },
-      include: {
-        payment: true,
-      },
       orderBy: { createdAt: 'desc' },
     });
 
     // Transform to invoice format
-    const invoices = orders
-      .filter(order => order.payment)
-      .map(order => ({
-        id: order.payment!.id,
-        invoiceNumber: `INV-${order.payment!.id.slice(-8).toUpperCase()}`,
-        orderId: order.id,
-        date: order.createdAt.toISOString(),
-        amount: order.total,
-        status: order.payment!.status === 'COMPLETED' ? 'PAID' : 'PENDING',
-        downloadUrl: `/api/account/invoices/${order.payment!.id}/download`,
-      }));
+    const invoices = orders.map(order => ({
+      id: order.id,
+      invoiceNumber: order.orderNumber || `INV-${order.id.slice(-8).toUpperCase()}`,
+      orderId: order.id,
+      date: order.createdAt.toISOString(),
+      amount: Number(order.totalPrice),
+      status: order.paymentStatus === 'COMPLETED' ? 'PAID' as const : 
+              order.paymentStatus === 'PENDING' ? 'PENDING' as const : 
+              'OVERDUE' as const,
+      downloadUrl: `/api/account/invoices/${order.id}/download`,
+    }));
 
     return NextResponse.json(invoices);
   } catch (err) {

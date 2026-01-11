@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Header Duplication - Visual Check</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test-frame { border: 2px solid #ccc; margin: 20px 0; }
+        iframe { width: 100%; height: 800px; border: none; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Duplicare Header - Verificare Vizuală</h1>
+    
+    <div class="info">
+        <h2>Instrucțiuni:</h2>
+        <ol>
+            <li>Verifică că <strong>fiecare iframe</strong> afișează <strong>UN SINGUR HEADER</strong></li>
+            <li>Scroll în fiecare iframe pentru a verifica layout-ul complet</li>
+            <li>Deschide Developer Tools (F12) și caută după <code>&lt;header</code> tag-uri</li>
+        </ol>
+    </div>
+
+    <div class="test-frame">
+        <h2>✅ Homepage (trebuie să aibă 1 header public)</h2>
+        <iframe src="http://localhost:3000/"></iframe>
+    </div>
+
+    <div class="test-frame">
+        <h2>✅ Produse (trebuie să aibă 1 header public)</h2>
+        <iframe src="http://localhost:3000/produse"></iframe>
+    </div>
+
+    <div class="test-frame">
+        <h2>❗ User Panel /account (trebuie să aibă 1 header custom)</h2>
+        <p><strong>IMPORTANT:</strong> Dacă vezi 2 headere aici, problema există!</p>
+        <iframe src="http://localhost:3000/account"></iframe>
+    </div>
+
+    <div class="test-frame">
+        <h2>✅ Cart (trebuie să aibă 1 header public)</h2>
+        <iframe src="http://localhost:3000/cart"></iframe>
+    </div>
+
+    <script>
+        // Count headers after all iframes load
+        setTimeout(() => {
+            const frames = document.querySelectorAll('iframe');
+            frames.forEach((frame, index) => {
+                try {
+                    const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                    const headers = frameDoc.querySelectorAll('header');
+                    console.log(`Frame ${index}: ${headers.length} headers found`);
+                    
+                    if (headers.length > 1) {
+                        alert(`⚠️ DUPLICARE GĂSITĂ în frame ${index}! ${headers.length} headere!`);
+                    }
+                } catch (e) {
+                    console.log(`Cannot access frame ${index}:`, e);
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

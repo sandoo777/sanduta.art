@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/Footer';
 
 interface OrderItem {
   id: string;
@@ -131,12 +129,8 @@ export default function OrderDetailPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-600">Загрузка...</div>
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-gray-600">Загрузка...</div>
       </div>
     );
   }
@@ -147,22 +141,16 @@ export default function OrderDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <div className="flex-1">
-          <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-              <p className="font-medium">{error}</p>
-              <button
-                onClick={() => router.push('/account/orders')}
-                className="mt-4 text-sm underline hover:no-underline"
-              >
-                ← Вернуться к заказам
-              </button>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+          <p className="font-medium">{error}</p>
+          <button
+            onClick={() => router.push('/account/orders')}
+            className="mt-4 text-sm underline hover:no-underline"
+          >
+            ← Вернуться к заказам
+          </button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -172,13 +160,9 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      
-      <div className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {/* Back button */}
-          <button
+    <div className="container mx-auto px-4 py-8 max-w-5xl">
+      {/* Back button */}
+      <button
             onClick={() => router.push('/account/orders')}
             className="mb-6 text-blue-600 hover:text-blue-700 flex items-center gap-2"
           >
@@ -364,9 +348,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      <Footer />
     </div>
   );
 }

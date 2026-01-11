@@ -59,7 +59,7 @@ export function Hero() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full border-2 border-gray-300 bg-white hover:border-primary sm:w-auto"
+                  className="w-full border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-white sm:w-auto"
                 >
                   Vezi produsele
                 </Button>

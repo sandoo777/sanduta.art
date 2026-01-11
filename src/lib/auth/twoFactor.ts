@@ -24,7 +24,7 @@
 import * as OTPAuth from 'otplib';
 import QRCode from 'qrcode';
 import crypto from 'crypto';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 // ============================================
 // CONFIGURATION

@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { CartList } from '@/components/public/cart/CartList';
+import CartList from '@/components/public/cart/CartList';
 import { CartSummary } from '@/components/public/cart/CartSummary';
 import { useCartStore } from '@/modules/cart/cartStore';
 

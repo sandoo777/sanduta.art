@@ -4,4 +4,6 @@
  * with different naming conventions.
  */
 
-export { CartList as CartItemsList } from './CartList';
+import CartList from './CartList';
+export { CartList as CartItemsList };
+export default CartList;

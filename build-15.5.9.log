@@ -1,0 +1,48 @@
+
+> sanduta.art@0.1.0 build
+> next build
+
+ ⚠ Invalid next.config.ts options detected: 
+ ⚠     Unrecognized key(s) in object: 'reactCompiler'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+   ▲ Next.js 15.5.9
+   - Environments: .env.production, .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+
+
+Retrying 1/3...
+Failed to compile.
+
+./src/app/account/orders/[id]/page.tsx
+Error:   [31mx[0m Unterminated regexp literal
+     ,-[[36;1;4m/workspaces/sanduta.art/src/app/account/orders/[id]/page.tsx[0m:351:1]
+ [2m348[0m |             </div>
+ [2m349[0m |           </div>
+ [2m350[0m |         </div>
+ [2m351[0m |     </div>
+     : [35;1m     ^^^^^[0m
+ [2m352[0m |   );
+ [2m353[0m | }
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/account/orders/[id]/page.tsx
+
+./src/app/api/admin/qa/export-report/route.ts
+Module not found: Can't resolve 'pdfkit'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/app/api/health/route.ts
+Module not found: Can't resolve '@/lib/db'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

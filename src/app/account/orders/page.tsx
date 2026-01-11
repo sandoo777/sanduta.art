@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/Footer';
 import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
 
 interface OrderItem {
@@ -109,12 +107,8 @@ export default function OrdersPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-600">Загрузка...</div>
-        </div>
-        <Footer />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-gray-600">Загрузка...</div>
       </div>
     );
   }
@@ -124,11 +118,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      
-      <div className="flex-1">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
           <PageTitle>Мои заказы</PageTitle>
 
           {error && (
@@ -307,9 +297,5 @@ export default function OrdersPage() {
             </div>
           )}
         </div>
-      </div>
-
-      <Footer />
-    </div>
   );
 }

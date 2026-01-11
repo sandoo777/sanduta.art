@@ -28,10 +28,23 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     try {
       const response = await fetch('/api/account/invoices');
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch invoices: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setInvoices(data);
+      
+      // Ensure data is an array before setting state
+      if (Array.isArray(data)) {
+        setInvoices(data);
+      } else {
+        console.error('Invalid data format received:', data);
+        setInvoices([]);
+      }
     } catch (error) {
       console.error('Error fetching invoices:', error);
+      setInvoices([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

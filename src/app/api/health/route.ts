@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { useDbMonitoring } from '@/modules/monitoring/useDbMonitoring';
 import { useQueueMonitoring } from '@/modules/monitoring/useQueueMonitoring';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
