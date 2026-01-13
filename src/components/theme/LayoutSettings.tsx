@@ -19,7 +19,7 @@ interface LayoutSettingsProps {
 export function LayoutSettings({ value, onChange }: LayoutSettingsProps) {
   const [layout, setLayout] = useState<LayoutConfig>(value);
 
-  const updateHeader = (field: string, value: unknown) => {
+  const updateHeader = (field: string, value: any) => {
     const newLayout = {
       ...layout,
       header: {
@@ -31,7 +31,7 @@ export function LayoutSettings({ value, onChange }: LayoutSettingsProps) {
     onChange(newLayout);
   };
 
-  const updateFooter = (field: string, value: unknown) => {
+  const updateFooter = (field: string, value: any) => {
     const newLayout = {
       ...layout,
       footer: {
@@ -43,7 +43,7 @@ export function LayoutSettings({ value, onChange }: LayoutSettingsProps) {
     onChange(newLayout);
   };
 
-  const updateContainer = (field: string, value: unknown) => {
+  const updateContainer = (field: string, value: any) => {
     const newLayout = {
       ...layout,
       container: {

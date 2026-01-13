@@ -7,9 +7,6 @@ import { Calendar, Eye, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 
-// ISR: Revalidate blog listing every 30 minutes
-export const revalidate = 1800;
-
 interface BlogPost {
   id: string;
   title: string;

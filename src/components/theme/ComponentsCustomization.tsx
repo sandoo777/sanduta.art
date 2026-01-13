@@ -20,7 +20,7 @@ interface ComponentsCustomizationProps {
 export function ComponentsCustomization({ value, onChange }: ComponentsCustomizationProps) {
   const [components, setComponents] = useState<ComponentsConfig>(value);
 
-  const updateButton = (field: string, value: unknown) => {
+  const updateButton = (field: string, value: any) => {
     const newComponents = {
       ...components,
       button: {
@@ -32,7 +32,7 @@ export function ComponentsCustomization({ value, onChange }: ComponentsCustomiza
     onChange(newComponents);
   };
 
-  const updateCard = (field: string, value: unknown) => {
+  const updateCard = (field: string, value: any) => {
     const newComponents = {
       ...components,
       card: {
@@ -44,7 +44,7 @@ export function ComponentsCustomization({ value, onChange }: ComponentsCustomiza
     onChange(newComponents);
   };
 
-  const updateInput = (field: string, value: unknown) => {
+  const updateInput = (field: string, value: any) => {
     const newComponents = {
       ...components,
       input: {
@@ -56,7 +56,7 @@ export function ComponentsCustomization({ value, onChange }: ComponentsCustomiza
     onChange(newComponents);
   };
 
-  const updateBadge = (field: string, value: unknown) => {
+  const updateBadge = (field: string, value: any) => {
     const newComponents = {
       ...components,
       badge: {
@@ -68,7 +68,7 @@ export function ComponentsCustomization({ value, onChange }: ComponentsCustomiza
     onChange(newComponents);
   };
 
-  const updateAlert = (field: string, value: unknown) => {
+  const updateAlert = (field: string, value: any) => {
     const newComponents = {
       ...components,
       alert: {
@@ -80,7 +80,7 @@ export function ComponentsCustomization({ value, onChange }: ComponentsCustomiza
     onChange(newComponents);
   };
 
-  const updateModal = (field: string, value: unknown) => {
+  const updateModal = (field: string, value: any) => {
     const newComponents = {
       ...components,
       modal: {

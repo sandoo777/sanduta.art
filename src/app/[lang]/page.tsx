@@ -5,38 +5,33 @@
 import { Locale } from '@/i18n/config';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
-// ISR: Revalidate multilingual homepage every 60 seconds
-export const revalidate = 60;
-
 interface HomePageProps {
-  params: Promise<{
+  params: {
     lang: Locale;
-  }>;
+  };
 }
 
-export default async function HomePage({ params }: HomePageProps) {
-  const { lang } = await params;
-  
+export default function HomePage({ params }: HomePageProps) {
   return (
     <div className="min-h-screen">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Sanduta.art</h1>
-          <LanguageSwitcher currentLocale={lang} />
+          <LanguageSwitcher currentLocale={params.lang} />
         </div>
       </header>
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            {lang === 'ro' && 'Bine ai venit!'}
-            {lang === 'en' && 'Welcome!'}
-            {lang === 'ru' && 'Добро пожаловать!'}
+            {params.lang === 'ro' && 'Bine ai venit!'}
+            {params.lang === 'en' && 'Welcome!'}
+            {params.lang === 'ru' && 'Добро пожаловать!'}
           </h2>
           <p className="text-xl text-gray-600">
-            {lang === 'ro' && 'Sistemul multilingv este funcțional'}
-            {lang === 'en' && 'The multilingual system is functional'}
-            {lang === 'ru' && 'Многоязычная система работает'}
+            {params.lang === 'ro' && 'Sistemul multilingv este funcțional'}
+            {params.lang === 'en' && 'The multilingual system is functional'}
+            {params.lang === 'ru' && 'Многоязычная система работает'}
           </p>
         </div>
       </main>

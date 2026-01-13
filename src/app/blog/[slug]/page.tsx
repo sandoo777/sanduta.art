@@ -8,9 +8,6 @@ import Link from 'next/link';
 import { Calendar, Eye, ArrowLeft, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
-// ISR: Revalidate blog posts every 1 hour
-export const revalidate = 3600;
-
 interface BlogPost {
   id: string;
   title: string;
@@ -49,9 +46,8 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getBlogPost(slug);
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await getBlogPost(params.slug);
 
   if (!post) {
     return {
@@ -70,9 +66,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const post = await getBlogPost(slug);
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getBlogPost(params.slug);
 
   if (!post) {
     notFound();

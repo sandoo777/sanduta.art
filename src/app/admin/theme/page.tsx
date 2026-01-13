@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { BrandingSettings } from '@/components/theme/BrandingSettings';
 import { ColorSettings } from '@/components/theme/ColorSettings';
@@ -303,7 +304,7 @@ export default function ThemeCustomizerPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Theme Customizer</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Customize your site&apos;s appearance and layout
+                Customize your site's appearance and layout
                 {lastSaved && (
                   <span className="ml-2">
                     • Last saved: {lastSaved.toLocaleTimeString()}

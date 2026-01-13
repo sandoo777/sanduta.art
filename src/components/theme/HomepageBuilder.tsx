@@ -5,7 +5,7 @@
  * Drag & drop interface pentru construirea paginii principale
  */
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -26,6 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import type { HomepageBlock } from '@/types/theme';
 
 interface HomepageBuilderProps {
@@ -47,9 +48,6 @@ const BLOCK_TEMPLATES = [
 export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
   const [blocks, setBlocks] = useState<HomepageBlock[]>(value);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-  
-  // Counter simplu - se incrementează la fiecare adăugare
-  const blockIdCounter = useRef(1);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -71,10 +69,8 @@ export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
   };
 
   const addBlock = (type: HomepageBlock['type']) => {
-    blockIdCounter.current += 1;
-    const blockId = `block-${blockIdCounter.current}`;
     const newBlock: HomepageBlock = {
-      id: blockId,
+      id: `block-${Date.now()}`,
       type,
       enabled: true,
       order: blocks.length,
@@ -106,11 +102,9 @@ export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
   const duplicateBlock = (id: string) => {
     const block = blocks.find((b) => b.id === id);
     if (block) {
-      blockIdCounter.current += 1;
-      const blockId = `block-${blockIdCounter.current}`;
       const newBlock = {
         ...block,
-        id: blockId,
+        id: `block-${Date.now()}`,
         order: blocks.length,
       };
       const newBlocks = [...blocks, newBlock];
@@ -324,7 +318,7 @@ interface BlockEditorProps {
 }
 
 function BlockEditor({ block, onUpdate }: BlockEditorProps) {
-  const updateConfig = (key: string, value: unknown) => {
+  const updateConfig = (key: string, value: any) => {
     onUpdate({
       config: {
         ...block.config,
@@ -341,7 +335,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Title</label>
             <Input
-              value={(block.config as Record<string, unknown>).title || ''}
+              value={(block.config as any).title || ''}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Hero title"
             />
@@ -349,7 +343,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Subtitle</label>
             <Input
-              value={(block.config as Record<string, unknown>).subtitle || ''}
+              value={(block.config as any).subtitle || ''}
               onChange={(e) => updateConfig('subtitle', e.target.value)}
               placeholder="Hero subtitle"
             />
@@ -357,7 +351,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Background Image URL</label>
             <Input
-              value={(block.config as Record<string, unknown>).backgroundImage || ''}
+              value={(block.config as any).backgroundImage || ''}
               onChange={(e) => updateConfig('backgroundImage', e.target.value)}
               placeholder="https://..."
             />
@@ -365,7 +359,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">CTA Text</label>
             <Input
-              value={(block.config as Record<string, unknown>).ctaText || ''}
+              value={(block.config as any).ctaText || ''}
               onChange={(e) => updateConfig('ctaText', e.target.value)}
               placeholder="Shop Now"
             />
@@ -373,7 +367,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">CTA Link</label>
             <Input
-              value={(block.config as Record<string, unknown>).ctaLink || ''}
+              value={(block.config as any).ctaLink || ''}
               onChange={(e) => updateConfig('ctaLink', e.target.value)}
               placeholder="/products"
             />
@@ -387,7 +381,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Section Title</label>
             <Input
-              value={(block.config as Record<string, unknown>).title || ''}
+              value={(block.config as any).title || ''}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Featured Products"
             />
@@ -395,7 +389,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Product IDs (comma-separated)</label>
             <Input
-              value={(block.config as Record<string, unknown>).productIds || ''}
+              value={(block.config as any).productIds || ''}
               onChange={(e) => updateConfig('productIds', e.target.value)}
               placeholder="1,2,3,4"
             />
@@ -404,7 +398,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <label className="block text-sm font-medium mb-2">Limit</label>
             <Input
               type="number"
-              value={(block.config as Record<string, unknown>).limit || 8}
+              value={(block.config as any).limit || 8}
               onChange={(e) => updateConfig('limit', parseInt(e.target.value))}
             />
           </div>
@@ -417,7 +411,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Title</label>
             <Input
-              value={(block.config as Record<string, unknown>).title || ''}
+              value={(block.config as any).title || ''}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Subscribe to our newsletter"
             />
@@ -427,7 +421,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <textarea
               className="w-full px-3 py-2 border rounded-lg"
               rows={3}
-              value={(block.config as Record<string, unknown>).description || ''}
+              value={(block.config as any).description || ''}
               onChange={(e) => updateConfig('description', e.target.value)}
               placeholder="Get updates about new products..."
             />
@@ -435,7 +429,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Button Text</label>
             <Input
-              value={(block.config as Record<string, unknown>).buttonText || ''}
+              value={(block.config as any).buttonText || ''}
               onChange={(e) => updateConfig('buttonText', e.target.value)}
               placeholder="Subscribe"
             />
@@ -451,7 +445,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <textarea
               className="w-full px-3 py-2 border rounded-lg font-mono text-sm"
               rows={10}
-              value={(block.config as Record<string, unknown>).html || ''}
+              value={(block.config as any).html || ''}
               onChange={(e) => updateConfig('html', e.target.value)}
               placeholder="<div>Custom HTML...</div>"
             />
@@ -469,8 +463,8 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
 }
 
 // Get default config for each block type
-function getDefaultConfig(type: HomepageBlock['type']): Record<string, unknown> {
-  const defaults: Record<string, Record<string, unknown>> = {
+function getDefaultConfig(type: HomepageBlock['type']): any {
+  const defaults: Record<string, any> = {
     hero: {
       title: 'Welcome to Our Store',
       subtitle: 'Discover amazing products',

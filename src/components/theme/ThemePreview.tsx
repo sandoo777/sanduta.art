@@ -275,9 +275,10 @@ export function ThemePreview({ theme, previewUrl = '/' }: ThemePreviewProps) {
                   <strong>Device Mode:</strong> {deviceMode} ({device.width} × {device.height})
                 </p>
                 <p className="text-xs font-mono mb-2">
-                  <strong>Theme Version:</strong> {'version' in theme ? String((theme as { version?: string }).version) : 'draft'}
+                  <strong>Theme Version:</strong> {(theme as any).version || 'draft'}
                 </p>
-                <p className="text-xs font-mono">\n                  <strong>Last Updated:</strong> {new Date().toLocaleString()}
+                <p className="text-xs font-mono">
+                  <strong>Last Updated:</strong> {new Date().toLocaleString()}
                 </p>
               </div>
             </div>
@@ -300,8 +301,7 @@ export function ThemePreviewPage() {
     if (themeParam) {
       try {
         const parsedTheme = JSON.parse(decodeURIComponent(themeParam));
-        // Defer setState to avoid cascading renders
-        setTimeout(() => setTheme(parsedTheme), 0);
+        setTheme(parsedTheme);
       } catch (error) {
         console.error('Failed to parse theme:', error);
       }

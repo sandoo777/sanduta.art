@@ -16,10 +16,29 @@ interface TypographySettingsProps {
   onChange: (typography: TypographyConfig) => void;
 }
 
+const POPULAR_FONTS = [
+  'Inter',
+  'Roboto',
+  'Open Sans',
+  'Lato',
+  'Montserrat',
+  'Poppins',
+  'Raleway',
+  'Nunito',
+  'Playfair Display',
+  'Merriweather',
+  'Source Sans Pro',
+  'PT Sans',
+  'Ubuntu',
+  'Work Sans',
+];
+
 const FONT_WEIGHTS = ['300', '400', '500', '600', '700', '800', '900'];
 
 export function TypographySettings({ value, onChange }: TypographySettingsProps) {
   const [typography, setTypography] = useState<TypographyConfig>(value);
+  const [fontSearch, setFontSearch] = useState('');
+  const [availableFonts, setAvailableFonts] = useState<string[]>(POPULAR_FONTS);
 
   useEffect(() => {
     onChange(typography);
