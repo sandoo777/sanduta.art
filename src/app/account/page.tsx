@@ -265,18 +265,18 @@ export default function AccountDashboardPage() {
               Explorează ghidul nostru sau contactează echipa de suport pentru asistență
             </p>
             <div className="flex gap-3">
-              <a
+              <Link
                 href="/help"
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 Ghid Utilizator →
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 Contact Suport →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

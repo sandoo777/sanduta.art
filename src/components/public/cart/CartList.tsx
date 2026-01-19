@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { CartItem } from './CartItem';
 import { useCartStore } from '@/modules/cart/cartStore';
 
@@ -44,12 +45,12 @@ export default function CartList() {
           <p className="text-gray-600 mb-6">
             Începe configurarea unui produs pentru a-l adăuga în coș.
           </p>
-          <a
+          <Link
             href="/produse"
             className="inline-flex items-center justify-center px-6 py-3 bg-[#0066FF] text-white rounded-lg hover:bg-[#0052CC] transition-colors font-medium"
           >
             Explorează produsele
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/modules/cart/cartStore';
 
@@ -139,12 +140,12 @@ export function CheckoutSummary({
       </button>
 
       {/* Continue Shopping Link */}
-      <a
+      <Link
         href="/products"
         className="w-full text-center text-[#0066FF] hover:text-blue-700 font-medium text-sm py-2 block transition-colors"
       >
         ← Continua cumpărăturile
-      </a>
+      </Link>
 
       {/* Trust Badges */}
       <div className="mt-6 pt-6 border-t border-gray-200 space-y-2 text-center text-xs text-gray-500">

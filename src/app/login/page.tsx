@@ -255,12 +255,12 @@ export default function LoginPage() {
                 />
                 <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Ține-mă minte</span>
               </label>
-              <a 
+              <Link 
                 href="/reset-password" 
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-all hover:underline hover:scale-105 inline-block"
               >
                 Ai uitat parola?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}

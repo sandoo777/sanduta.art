@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { Configurator } from '@/components/configurator/Configurator';
 
@@ -48,13 +49,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="mb-6 flex items-center gap-2 text-sm text-slate-600">
-          <a href="/" className="hover:text-slate-900 transition-colors">
+          <Link href="/" className="hover:text-slate-900 transition-colors">
             Acasă
-          </a>
+          </Link>
           <span>/</span>
-          <a href="/products" className="hover:text-slate-900 transition-colors">
+          <Link href="/products" className="hover:text-slate-900 transition-colors">
             Produse
-          </a>
+          </Link>
           <span>/</span>
           <span className="font-medium text-slate-900">{product.name}</span>
         </nav>
