@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
+import crypto from 'crypto';
 
 /**
  * CSRF token configuration
@@ -17,7 +18,6 @@ const CSRF_HEADER_NAME = 'x-csrf-token';
  * Generate CSRF token
  */
 export function generateCsrfToken(): string {
-  const crypto = require('crypto');
   return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
 }
 

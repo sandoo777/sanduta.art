@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
 
 interface OrderItem {
@@ -203,9 +204,9 @@ export default function OrdersPage() {
           {!loading && orders.length === 0 ? (
             <Card className="text-center">
               <p className="text-gray-600 mb-4">У вас пока нет заказов</p>
-              <a href="/products">
+              <Link href="/products">
                 <Button>Перейти к покупкам</Button>
-              </a>
+              </Link>
             </Card>
           ) : filteredOrders.length === 0 ? (
             <Card className="text-center">
@@ -288,9 +289,9 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="border-t pt-4 mt-4">
-                    <a href={`/account/orders/${order.id}`}>
+                    <Link href={`/account/orders/${order.id}`}>
                       <Button fullWidth>Просмотреть детали заказа</Button>
-                    </a>
+                    </Link>
                   </div>
                 </Card>
               ))}

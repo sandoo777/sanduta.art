@@ -2,10 +2,10 @@
 // Smoke tests post-deployment
 // scripts/smokeTests.js
 
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Smoke Tests - Post-Deploy Validation

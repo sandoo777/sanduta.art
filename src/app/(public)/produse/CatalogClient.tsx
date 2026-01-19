@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { Filters, FilterState } from '@/components/public/catalog/Filters';
 import { SortBar, SortOption } from '@/components/public/catalog/SortBar';
 import { ProductGrid } from '@/components/public/catalog/ProductGrid';
@@ -204,18 +205,18 @@ export default function CatalogClient({ initialCategoryId }: CatalogClientProps 
               Echipa noastră este gata să te ajute!
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
+              <Link
                 href="/contact"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
               >
                 Contactează-ne
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/despre"
                 className="bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-3 rounded-lg border border-gray-300 transition-colors"
               >
                 Despre noi
-              </a>
+              </Link>
             </div>
           </div>
         </div>

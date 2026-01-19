@@ -64,7 +64,7 @@ export default function ConfigureProductPage() {
         });
       }
     }
-  }, [editItemId, getItem]);
+  }, [editItemId]); // Remove getItem from dependencies to avoid circular updates
 
   const mobileTotal = useMemo(() => calculator.calcTotal(selection).total, [selection, calculator]);
 

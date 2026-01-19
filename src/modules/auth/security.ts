@@ -8,6 +8,7 @@ import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import crypto from 'crypto';
 
 /**
  * Argon2id configuration (OWASP recommended)
@@ -304,7 +305,6 @@ export class SessionSecurity {
    * Generate secure session token
    */
   static generateSessionToken(): string {
-    const crypto = require('crypto');
     return crypto.randomBytes(32).toString('hex');
   }
 
@@ -359,7 +359,6 @@ export class RefreshTokenManager {
    * Generate refresh token
    */
   static generateRefreshToken(): string {
-    const crypto = require('crypto');
     return crypto.randomBytes(64).toString('hex');
   }
 

@@ -5,7 +5,7 @@
  * Folosește Puppeteer pentru a verifica numărul de headere în pagină
  */
 
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 async function testHeaderDuplication() {
     console.log('🚀 Pornire test duplicare Header...\n');

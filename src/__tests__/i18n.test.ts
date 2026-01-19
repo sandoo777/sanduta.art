@@ -167,8 +167,8 @@ describe('Email Templates', () => {
 });
 
 describe('Middleware I18n', () => {
-  it('should detect locale from path', () => {
-    const { getLocaleFromPath } = require('@/lib/i18n/middleware');
+  it('should detect locale from path', async () => {
+    const { getLocaleFromPath } = await import('@/lib/i18n/middleware');
     
     expect(getLocaleFromPath('/ro/products')).toBe('ro');
     expect(getLocaleFromPath('/en/about')).toBe('en');
@@ -176,16 +176,16 @@ describe('Middleware I18n', () => {
     expect(getLocaleFromPath('/products')).toBeNull();
   });
 
-  it('should strip locale from path', () => {
-    const { stripLocaleFromPath } = require('@/lib/i18n/middleware');
+  it('should strip locale from path', async () => {
+    const { stripLocaleFromPath } = await import('@/lib/i18n/middleware');
     
     expect(stripLocaleFromPath('/ro/products')).toBe('/products');
     expect(stripLocaleFromPath('/en/about')).toBe('/about');
     expect(stripLocaleFromPath('/products')).toBe('/products');
   });
 
-  it('should add locale to path', () => {
-    const { addLocaleToPath } = require('@/lib/i18n/middleware');
+  it('should add locale to path', async () => {
+    const { addLocaleToPath } = await import('@/lib/i18n/middleware');
     
     expect(addLocaleToPath('/products', 'ro')).toBe('/ro/products');
     expect(addLocaleToPath('/ro/products', 'en')).toBe('/en/products');

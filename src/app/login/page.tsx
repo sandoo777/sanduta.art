@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from 'next/link';
 import { Input, Button } from "@/components/ui";
 
 // Validation helpers
@@ -305,9 +306,9 @@ export default function LoginPage() {
           <div className="mt-6 sm:mt-8 text-center">
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
               Nu ai cont?{" "}
-              <a href="/register" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-all hover:underline inline-block hover:scale-105">
+              <Link href="/register" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-all hover:underline inline-block hover:scale-105">
                 Creează unul acum
-              </a>
+              </Link>
             </p>
           </div>
         </div>

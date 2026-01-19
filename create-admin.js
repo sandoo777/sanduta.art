@@ -1,5 +1,5 @@
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
+import { Pool } from 'pg';
+import bcrypt from 'bcryptjs';
 
 async function createAdmin() {
   const pool = new Pool({

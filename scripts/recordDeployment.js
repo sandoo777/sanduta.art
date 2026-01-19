@@ -2,7 +2,7 @@
 // Record deployment to database
 // scripts/recordDeployment.js
 
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
