@@ -68,7 +68,7 @@ export default function SendNotificationModal({
 
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
 
-  const handleTemplateSelect = (template: any) => {
+  const handleTemplateSelect = (template: unknown) => {
     setSelectedTemplate(template);
     
     if (template.id === 'custom') {

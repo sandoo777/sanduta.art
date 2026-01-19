@@ -31,7 +31,7 @@ describe('GET /api/orders (User Orders)', () => {
 
     if (response.body.length > 0) {
       // Verifică că toate comenzile aparțin utilizatorului curent
-      response.body.forEach((order: any) => {
+      response.body.forEach((order: unknown) => {
         expect(order).toHaveProperty('userId');
         // userId ar trebui să fie al utilizatorului autentificat
       });
@@ -190,7 +190,7 @@ describe('GET /api/admin/orders (Admin)', () => {
     expect(response.status).toBe(200);
 
     if (response.body.length > 0) {
-      response.body.forEach((order: any) => {
+      response.body.forEach((order: unknown) => {
         expect(order.status).toBe('PENDING');
       });
     }

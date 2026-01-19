@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 interface LineChartProps {
-  data: any[];
+  data: Array<Record<string, unknown>>;
   xKey: string;
   lines: Array<{
     key: string;

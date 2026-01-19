@@ -48,7 +48,7 @@ describe('GET /api/products', () => {
     expect(response.status).toBe(200);
     
     if (response.body.length > 0) {
-      response.body.forEach((product: any) => {
+      response.body.forEach((product: unknown) => {
         expect(product.status).toBe('ACTIVE');
       });
     }

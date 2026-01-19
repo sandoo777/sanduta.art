@@ -278,7 +278,7 @@ export interface BlockConfig {
   margin?: string;
   
   // Specific per block type
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface HeroBlockConfig extends BlockConfig {

@@ -21,7 +21,7 @@ export const EditorPreferences = () => {
     }
   };
 
-  const handleSelect = async (field: string, value: any) => {
+  const handleSelect = async (field: string, value: unknown) => {
     try {
       setSaving(true);
       await updateEditorPreferences({ [field]: value });

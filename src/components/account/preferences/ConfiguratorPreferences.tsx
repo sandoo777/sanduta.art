@@ -10,7 +10,7 @@ export const ConfiguratorPreferences = () => {
   const { t } = useTranslations();
   const [saving, setSaving] = useState(false);
 
-  const handleChange = async (field: string, value: any) => {
+  const handleChange = async (field: string, value: unknown) => {
     try {
       setSaving(true);
       await updateConfiguratorPreferences({ [field]: value });

@@ -4,7 +4,7 @@ export interface Product {
   price: number;
   category: string;
   image_url?: string;
-  options?: any;
+  options?: Record<string, unknown>;
 }
 
 export interface CartItem {

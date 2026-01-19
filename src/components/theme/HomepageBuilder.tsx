@@ -318,7 +318,7 @@ interface BlockEditorProps {
 }
 
 function BlockEditor({ block, onUpdate }: BlockEditorProps) {
-  const updateConfig = (key: string, value: any) => {
+  const updateConfig = (key: string, value: unknown) => {
     onUpdate({
       config: {
         ...block.config,
