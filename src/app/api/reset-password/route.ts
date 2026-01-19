@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       success: true,
       message: 'Parola a fost resetată cu succes',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Password reset error:', error);
     return NextResponse.json(
       { error: 'Eroare la resetarea parolei' },

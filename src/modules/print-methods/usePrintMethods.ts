@@ -64,7 +64,7 @@ export function usePrintMethods() {
       const printMethod = await response.json();
       toast.success("Metoda de tipărire a fost creată cu succes");
       return printMethod;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating print method:", error);
       toast.error(error.message || "Eroare la crearea metodei de tipărire");
       return null;
@@ -93,7 +93,7 @@ export function usePrintMethods() {
       const printMethod = await response.json();
       toast.success("Metoda de tipărire a fost actualizată cu succes");
       return printMethod;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating print method:", error);
       toast.error(error.message || "Eroare la actualizarea metodei de tipărire");
       return null;

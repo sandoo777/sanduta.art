@@ -114,7 +114,7 @@ async function retry<T>(
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
-    } catch (error) {
+    } catch (_error) {
       if (i === maxRetries - 1) throw error;
       log(`Retry ${i + 1}/${maxRetries} after ${delay}ms...`, 'warning');
       await sleep(delay);
@@ -195,7 +195,7 @@ async function step3_DatabaseBackup(): Promise<void> {
     // Using backup system
     await execAsync('npm run backup:db');
     log('Database backup created', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('Database backup failed, but continuing...', 'warning');
     // Don't fail the launch, but log it
   }
@@ -208,7 +208,7 @@ async function step4_DatabaseMigration(): Promise<void> {
     const { stdout } = await execAsync('npx prisma migrate deploy');
     log('Database migrations applied', 'success');
     log(stdout, 'info');
-  } catch (error) {
+  } catch (_error) {
     throw new Error(`Database migration failed: ${error}`);
   }
 }
@@ -219,7 +219,7 @@ async function step5_BuildApplication(): Promise<void> {
   try {
     const { stdout } = await execAsync('npm run build');
     log('Application built successfully', 'success');
-  } catch (error) {
+  } catch (_error) {
     throw new Error(`Build failed: ${error}`);
   }
 }
@@ -238,7 +238,7 @@ async function step6_DeployToProduction(): Promise<void> {
   try {
     await execAsync('pm2 restart sanduta-art || pm2 start npm --name sanduta-art -- start');
     log('Application deployed with PM2', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('PM2 deployment failed, assuming manual deployment', 'warning');
   }
 }
@@ -258,7 +258,7 @@ async function step7_ISRRegeneration(): Promise<void> {
       if (response.ok) {
         log(`Regenerated: ${page}`, 'success');
       }
-    } catch (error) {
+    } catch (_error) {
       log(`Failed to regenerate ${page}`, 'warning');
     }
   }
@@ -271,7 +271,7 @@ async function step8_CacheInvalidation(): Promise<void> {
   try {
     // This would be your cache invalidation logic
     log('Cache invalidated', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('Cache invalidation skipped', 'warning');
   }
 }
@@ -303,7 +303,7 @@ async function step10_SmokeTests(): Promise<void> {
   try {
     await execAsync('npm run smoke-tests', { timeout: CONFIG.smokeTestTimeout });
     log('Smoke tests passed', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('Smoke tests failed, check logs', 'warning');
     // Don't fail launch, but log it
   }
@@ -333,7 +333,7 @@ async function step11_MonitoringActivation(): Promise<void> {
       });
       
       log('Launch notification sent', 'success');
-    } catch (error) {
+    } catch (_error) {
       log('Failed to send notification', 'warning');
     }
   }
@@ -418,7 +418,7 @@ async function executeLaunch(): Promise<LaunchReport> {
       step.duration = step.endTime.getTime() - step.startTime.getTime();
       
       log(`Completed: ${step.name} (${step.duration}ms)`, 'success');
-    } catch (error) {
+    } catch (_error) {
       step.status = 'failed';
       step.endTime = new Date();
       step.duration = step.endTime.getTime() - step.startTime.getTime();
@@ -577,7 +577,7 @@ async function main() {
       process.exit(1);
     }
     
-  } catch (error) {
+  } catch (_error) {
     log(`Fatal error: ${error}`, 'error');
     process.exit(1);
   }

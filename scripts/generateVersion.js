@@ -18,7 +18,7 @@ import path from 'path';
 function getLastTag() {
   try {
     return execSync('git describe --tags --abbrev=0', { encoding: 'utf-8' }).trim();
-  } catch (error) {
+  } catch (_error) {
     return 'v0.0.0';
   }
 }
@@ -41,14 +41,14 @@ function getCommitsSinceTag(tag) {
       encoding: 'utf-8',
     }).split('\n').filter(Boolean);
     return commits;
-  } catch (error) {
+  } catch (_error) {
     // If no tag exists, get all commits
     try {
       const commits = execSync('git log --pretty=format:"%s"', {
         encoding: 'utf-8',
       }).split('\n').filter(Boolean);
       return commits;
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   }
@@ -164,7 +164,7 @@ function main() {
 
     // Output version (for CI/CD scripts)
     console.log(newVersion);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error generating version:', error.message);
     process.exit(1);
   }

@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       admin: adminResult.rows[0] || null,
       message: 'Database connection successful',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({
       success: false,
       error: error.message,

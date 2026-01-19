@@ -105,7 +105,7 @@ export async function sendEmail(
     }
     
     return { success: true, messageId: data?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to send email:', error);
     return { success: false, error: error.message };
   }
@@ -133,7 +133,7 @@ export async function sendEmailWithTemplate(
       htmlBody: rendered.htmlBody,
       textBody: rendered.textBody,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to send email with template:', error);
     return { success: false, error: error.message };
   }

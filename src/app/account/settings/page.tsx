@@ -70,7 +70,7 @@ export default function SettingsPage() {
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error changing password:', error);
       alert(error.message || 'Eroare la schimbarea parolei');
     } finally {

@@ -49,7 +49,7 @@ export function useProducts() {
       const product = await response.json();
       toast.success('Produs creat cu succes');
       return product;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating product:', error);
       toast.error(error.message || 'Eroare la crearea produsului');
       throw error;
@@ -79,7 +79,7 @@ export function useProducts() {
       const product = await response.json();
       toast.success('Produs actualizat cu succes');
       return product;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating product:', error);
       toast.error(error.message || 'Eroare la actualizarea produsului');
       throw error;

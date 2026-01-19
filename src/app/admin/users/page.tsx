@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
 
       await fetchUsers();
       alert('User deleted successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting user:', error);
       alert(error.message || 'Failed to delete user');
     }

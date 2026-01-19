@@ -144,7 +144,7 @@ export class FileUploadValidator {
         sanitizedFilename,
         detectedMimeType: file.type,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('FileValidator', 'File validation error', { error });
       return {
         isValid: false,
@@ -184,7 +184,7 @@ export class FileUploadValidator {
 
       // If no magic number defined, allow (not all types have magic numbers)
       return true;
-    } catch (error) {
+    } catch (_error) {
       logger.error('FileValidator', 'MIME type verification error', { error });
       return false;
     }
@@ -217,7 +217,7 @@ export class FileUploadValidator {
       }
 
       return false;
-    } catch (error) {
+    } catch (_error) {
       // If we can't read as text, it's probably binary, so skip check
       return false;
     }
@@ -302,7 +302,7 @@ export class AntivirusScanner {
         isClean: true,
         scanDate: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('AntivirusScanner', 'Scan failed', { error });
       return {
         isClean: false,

@@ -42,7 +42,7 @@ class ChangelogGenerator {
   private getLastTag(): string {
     try {
       return execSync('git describe --tags --abbrev=0', { encoding: 'utf-8' }).trim();
-    } catch (error) {
+    } catch (_error) {
       return '';
     }
   }
@@ -61,7 +61,7 @@ class ChangelogGenerator {
         encoding: 'utf-8',
       });
       return commits.split('\n').filter(Boolean);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting commits:', error);
       return [];
     }

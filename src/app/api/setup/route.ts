@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         role: admin.role,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Setup error:', error);
     
     if (error.code === 'P2002') {

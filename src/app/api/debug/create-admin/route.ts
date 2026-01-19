@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         password: 'admin123',
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({
       success: false,
       error: error.message,

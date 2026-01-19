@@ -64,7 +64,7 @@ export function useMaterials() {
       const material = await response.json();
       toast.success("Material creat cu succes");
       return material;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating material:", error);
       toast.error(error.message || "Eroare la crearea materialului");
       return null;
@@ -93,7 +93,7 @@ export function useMaterials() {
       const material = await response.json();
       toast.success("Material actualizat cu succes");
       return material;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating material:", error);
       toast.error(error.message || "Eroare la actualizarea materialului");
       return null;
@@ -116,7 +116,7 @@ export function useMaterials() {
 
       toast.success("Material șters cu succes");
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting material:", error);
       toast.error(error.message || "Eroare la ștergerea materialului");
       return false;
@@ -151,7 +151,7 @@ export function useMaterials() {
       }
       
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error consuming material:", error);
       toast.error(error.message || "Eroare la consumul materialului");
       return null;
