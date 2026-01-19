@@ -1,8 +1,8 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 
@@ -13,6 +13,14 @@ interface UserLayoutProps {
 export function UserLayout({ children }: UserLayoutProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login');
+    }
+  }, [status, router]);
 
   // Show loading state
   if (status === 'loading') {
@@ -23,17 +31,11 @@ export function UserLayout({ children }: UserLayoutProps) {
     );
   }
 
-  // Middleware handles redirect, just show unauthorized here
+  // Redirect in progress, show loading
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Please Log In</h1>
-          <p className="text-gray-600">You need to be logged in to access your account.</p>
-          <Link href="/login" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
-            Go to Login
-          </Link>
-        </div>
+        <div className="text-gray-600">Redirecting to login...</div>
       </div>
     );
   }

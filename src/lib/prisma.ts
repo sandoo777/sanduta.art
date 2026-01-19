@@ -6,13 +6,17 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Create PostgreSQL connection pool
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Parse DATABASE_URL to avoid issues with password
+const databaseUrl = process.env.DATABASE_URL || '';
+const pool = new Pool({ 
+  connectionString: databaseUrl,
+});
+
 const adapter = new PrismaPg(pool);
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ 
   adapter,
-  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;

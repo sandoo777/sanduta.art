@@ -33,6 +33,14 @@ export function ConditionalHeader() {
     '/account',   // Header propriu (User Panel)
     '/setup',     // Setup wizard
     '/editor',    // Editor full-screen
+    '/',          // Homepage are propriul header din (public) layout
+    '/produse',   // Catalog are propriul header din (public) layout
+    '/products',  // Products catalog are propriul header din products layout
+    '/cart',      // Cart are propriul header din (public) layout
+    '/checkout',  // Checkout are propriul header din (public) layout
+    '/about',     // About are propriul header din (public) layout
+    '/contact',   // Contact are propriul header din (public) layout
+    '/blog',      // Blog are propriul header din (public) layout
   ];
 
   // Verifică dacă path-ul începe cu unul din cele excluse

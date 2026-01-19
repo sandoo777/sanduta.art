@@ -7,8 +7,10 @@ import { ro } from 'date-fns/locale';
 import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useNotificationsStore } from '@/modules/notifications/notificationsStore';
 import { NotificationType } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 
 export default function NotificationsDropdown() {
+  const { data: session } = useSession();
   const { 
     notifications, 
     unreadCount, 
@@ -21,6 +23,9 @@ export default function NotificationsDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Only fetch if user is authenticated
+    if (!session?.user) return;
+    
     // Fetch unread count on mount
     fetchUnreadCount();
 
@@ -30,13 +35,13 @@ export default function NotificationsDropdown() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
+  }, [session?.user, fetchUnreadCount]);
 
   useEffect(() => {
-    if (isOpen && notifications.length === 0) {
+    if (isOpen && notifications.length === 0 && session?.user) {
       fetchNotifications(true);
     }
-  }, [isOpen]);
+  }, [isOpen, session?.user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

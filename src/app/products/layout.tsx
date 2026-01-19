@@ -1,10 +1,7 @@
 import { Header } from '@/components/public/Header';
 import { Footer } from '@/components/public/Footer';
-import { generateMetadata } from './seo';
 
-export const metadata = generateMetadata();
-
-export default function PublicLayout({
+export default function ProductsLayout({
   children,
 }: {
   children: React.ReactNode;

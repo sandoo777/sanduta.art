@@ -1,0 +1,39 @@
+                 List of relations
+ Schema |         Name          | Type  |  Owner   
+--------+-----------------------+-------+----------
+ public | _prisma_migrations    | table | postgres
+ public | accounts              | table | postgres
+ public | addresses             | table | postgres
+ public | categories            | table | postgres
+ public | customer_notes        | table | postgres
+ public | customer_tags         | table | postgres
+ public | customers             | table | postgres
+ public | editor_projects       | table | postgres
+ public | file_versions         | table | postgres
+ public | finishing_operations  | table | postgres
+ public | machines              | table | postgres
+ public | material_usages       | table | postgres
+ public | materials             | table | postgres
+ public | notifications         | table | postgres
+ public | order_files           | table | postgres
+ public | order_items           | table | postgres
+ public | orders                | table | postgres
+ public | print_methods         | table | postgres
+ public | product_finishing     | table | postgres
+ public | product_images        | table | postgres
+ public | product_materials     | table | postgres
+ public | product_print_methods | table | postgres
+ public | product_variants      | table | postgres
+ public | production_jobs       | table | postgres
+ public | products              | table | postgres
+ public | project_folders       | table | postgres
+ public | security_activity     | table | postgres
+ public | sessions              | table | postgres
+ public | system_settings       | table | postgres
+ public | user_files            | table | postgres
+ public | user_preferences      | table | postgres
+ public | user_sessions         | table | postgres
+ public | users                 | table | postgres
+ public | verificationtokens    | table | postgres
+(34 rows)
+
