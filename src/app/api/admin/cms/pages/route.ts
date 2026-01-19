@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // Mock data
-let mockPages = [
+const mockPages = [
   {
     id: '1',
     title: 'Despre Noi',

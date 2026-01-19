@@ -221,7 +221,7 @@ export function ModalSizesExample() {
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-4">Modal Size: {size}</h2>
           <p className="text-gray-600">
-            Acest modal folosește size="{size}"
+            Acest modal folosește size=&quot;{size}&quot;
           </p>
         </div>
       </Modal>

@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // Mock data
-let mockMedia = [
+const mockMedia = [
   {
     id: '1',
     name: 'banner-hero.jpg',

@@ -13,7 +13,7 @@ const mockCategories = [
   { id: '3', name: 'Ghiduri', slug: 'ghiduri', postCount: 4 },
 ];
 
-let mockPosts = [
+const mockPosts = [
   {
     id: '1',
     title: 'Ghid Complet Produse Personalizate 2025',

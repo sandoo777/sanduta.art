@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-let mockSegments = [
+const mockSegments = [
   {
     id: '1',
     name: 'Clienți Noi',

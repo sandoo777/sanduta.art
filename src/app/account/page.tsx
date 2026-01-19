@@ -235,7 +235,7 @@ export default function AccountDashboardPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">
-                Ai salvat un nou proiect: "Fluturași Promo"
+                Ai salvat un nou proiect: &quot;Fluturași Promo&quot;
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 Acum 5 zile

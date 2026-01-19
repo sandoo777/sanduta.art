@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // Mock data (shared with route.ts in production would use DB)
-let mockPages: any[] = [];
+const mockPages: any[] = [];
 
 // PATCH /api/admin/cms/pages/[id]
 export async function PATCH(

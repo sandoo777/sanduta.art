@@ -24,4 +24,4 @@ export const products: Product[] = [
   },
 ];
 
-export let orders: Order[] = [];
+export const orders: Order[] = [];

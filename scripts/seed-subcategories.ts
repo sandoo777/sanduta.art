@@ -598,7 +598,7 @@ async function seedSubcategories() {
   try {
     let totalCreated = 0;
     let totalUpdated = 0;
-    let totalSkipped = 0;
+    const totalSkipped = 0;
     let errors = 0;
 
     for (const categoryData of subcategoriesData) {

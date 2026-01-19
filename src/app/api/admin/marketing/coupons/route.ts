@@ -9,7 +9,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // Mock data pentru demo (în viitor: Prisma)
-let mockCoupons = [
+const mockCoupons = [
   {
     id: '1',
     code: 'WELCOME10',

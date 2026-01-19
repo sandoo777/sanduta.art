@@ -9,7 +9,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // Mock data pentru demo
-let mockCampaigns = [
+const mockCampaigns = [
   {
     id: '1',
     name: 'Flash Sale Weekend',

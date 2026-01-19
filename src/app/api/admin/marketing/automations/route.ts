@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-let mockAutomations = [
+const mockAutomations = [
   {
     id: '1',
     name: 'Welcome Email',
