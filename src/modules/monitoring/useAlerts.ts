@@ -205,7 +205,7 @@ class AlertingSystem {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.SYSTEM,
         'Failed to send Slack alert',
@@ -234,7 +234,7 @@ class AlertingSystem {
       if (!response.ok) {
         throw new Error(`Email API returned ${response.status}`);
       }
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.SYSTEM,
         'Failed to send email alert',
@@ -266,7 +266,7 @@ class AlertingSystem {
       if (!response.ok) {
         throw new Error(`SMS API returned ${response.status}`);
       }
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.SYSTEM,
         'Failed to send SMS alert',

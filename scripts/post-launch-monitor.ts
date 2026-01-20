@@ -156,7 +156,7 @@ async function fetchMetrics(): Promise<MetricSnapshot> {
         delayedOrders: 0,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching metrics:', error);
     
     // Return empty snapshot on error
@@ -489,7 +489,7 @@ async function sendSlackAlert(alert: Alert) {
         text: `🚨 *${alert.severity.toUpperCase()} ALERT*\n\n*Metric*: ${alert.metric}\n*Message*: ${alert.message}\n*Time*: ${alert.timestamp.toLocaleString()}`,
       }),
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to send Slack alert:', error);
   }
 }

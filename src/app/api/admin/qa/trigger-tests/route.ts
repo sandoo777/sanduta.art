@@ -10,7 +10,7 @@ const execAsync = promisify(exec);
  * POST /api/admin/qa/trigger-tests
  * Trigger a new test run (requires GitHub Actions API token or local test execution)
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     // Check authorization
     const { user, error } = await requireRole(['ADMIN']);

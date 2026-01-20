@@ -29,7 +29,7 @@ export default function ManagerOrdersPage() {
       const response = await fetch('/api/admin/orders');
       const data = await response.json();
       setOrders(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
@@ -44,7 +44,7 @@ export default function ManagerOrdersPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       fetchOrders();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating order status:', error);
     }
   };

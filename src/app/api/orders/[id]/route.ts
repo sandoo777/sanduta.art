@@ -99,7 +99,7 @@ export async function GET(
     });
 
     return NextResponse.json({ order: formattedOrder });
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:Orders:GetById', error, { action: 'fetch_order' });
     return createErrorResponse('Eroare la încărcarea comenzii', 500);
   }

@@ -36,7 +36,7 @@ export default function MachinesPage() {
       setLoadingData(true);
       const data = await getMachines();
       setMachines(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error loading machines:', error);
     } finally {
       setLoadingData(false);

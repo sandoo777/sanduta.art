@@ -38,7 +38,7 @@ function validatePayload(data: Partial<CreateFullProductInput>) {
   return errors;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(serializeFullProduct(fullProduct), { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating full product:', error);
     return NextResponse.json(
       { error: 'Failed to create product' },

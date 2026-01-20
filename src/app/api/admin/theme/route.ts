@@ -8,7 +8,7 @@ import type { ThemeConfig } from '@/types/theme';
  * GET /api/admin/theme
  * Obține tema curentă (published sau draft)
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
  * POST /api/admin/theme
  * Salvează tema ca draft
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
  * PUT /api/admin/theme/publish
  * Publică tema (draft -> published)
  */
-export async function PUT(req: NextRequest) {
+export async function PUT(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
@@ -169,7 +169,7 @@ export async function PUT(req: NextRequest) {
  * DELETE /api/admin/theme
  * Resetează tema la default
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;

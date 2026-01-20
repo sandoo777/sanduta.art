@@ -40,7 +40,7 @@ export const ThemeSettings = () => {
     try {
       setSaving(true);
       await updateTheme(theme);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update theme:", error);
     } finally {
       setSaving(false);

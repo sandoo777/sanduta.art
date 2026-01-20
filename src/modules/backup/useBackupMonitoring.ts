@@ -169,7 +169,7 @@ export class BackupMonitoring {
       });
 
       return health;
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupMonitoring', 'Health check failed', { error });
 
       return {
@@ -219,7 +219,7 @@ export class BackupMonitoring {
       });
 
       return isValid;
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupMonitoring', 'Integrity check failed', { error, backupId });
       return false;
     }
@@ -270,7 +270,7 @@ export class BackupMonitoring {
       const storageAvailable = parseInt(parts[3], 10);
 
       return { storageUsed, storageAvailable };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupMonitoring', 'Failed to get storage info', { error });
       return { storageUsed: 0, storageAvailable: 0 };
     }
@@ -286,7 +286,7 @@ export class BackupMonitoring {
     if (MONITORING_CONFIG.slackWebhookUrl) {
       try {
         await this.sendSlackAlert(alerts);
-      } catch (error) {
+      } catch (_error) {
         logger.error('BackupMonitoring', 'Failed to send Slack alert', { error });
       }
     }

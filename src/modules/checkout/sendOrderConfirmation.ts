@@ -109,7 +109,7 @@ export async function sendOrderConfirmation(
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending order confirmation email:', error);
     return {
       success: false,
@@ -178,7 +178,7 @@ export async function sendAdminOrderNotification(
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending admin notification:', error);
     return {
       success: false,

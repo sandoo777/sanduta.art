@@ -41,7 +41,7 @@ export default function PermissionsPage() {
       setPermissions(data.permissions || []);
       setGroups(data.groups || {});
       setMatrix(data.rolePermissionMatrix || []);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch permissions:", error);
     } finally {
       setLoading(false);

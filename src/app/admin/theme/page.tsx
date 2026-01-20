@@ -222,7 +222,7 @@ export default function ThemeCustomizerPage() {
           setLastSaved(new Date(data.updatedAt));
         }
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load theme:', error);
     } finally {
       setIsLoading(false);
@@ -246,7 +246,7 @@ export default function ThemeCustomizerPage() {
       } else {
         alert('❌ Failed to save theme');
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to save theme:', error);
       alert('❌ Failed to save theme');
     } finally {
@@ -271,7 +271,7 @@ export default function ThemeCustomizerPage() {
       } else {
         alert('❌ Failed to publish theme');
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to publish theme:', error);
       alert('❌ Failed to publish theme');
     } finally {

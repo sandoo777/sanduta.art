@@ -117,7 +117,7 @@ export class BackupRestoreTester {
       logger.info('BackupTest', 'Test suite completed', { passed, failed, duration });
 
       return suite;
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupTest', 'Test suite failed', { error });
       throw error;
     }
@@ -192,7 +192,7 @@ export class BackupRestoreTester {
           dataIntegrity: errors.length === 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -265,7 +265,7 @@ export class BackupRestoreTester {
           dataIntegrity: errors.length === 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -342,7 +342,7 @@ export class BackupRestoreTester {
           dataIntegrity: errors.length === 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -388,7 +388,7 @@ export class BackupRestoreTester {
           dataIntegrity: testResult,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -473,7 +473,7 @@ export class BackupRestoreTester {
           dataIntegrity: errors.length === 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -541,7 +541,7 @@ export class BackupRestoreTester {
           dataIntegrity: errors.length === 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -614,7 +614,7 @@ export class BackupRestoreTester {
           },
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -663,7 +663,7 @@ export class BackupRestoreTester {
           dataIntegrity: integrity,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -724,7 +724,7 @@ export class BackupRestoreTester {
           restoredItems: deleted,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -775,7 +775,7 @@ export class BackupRestoreTester {
           dataIntegrity: health.status === 'healthy',
         },
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Exception: ${error instanceof Error ? error.message : String(error)}`);
       return {
         testName,
@@ -895,7 +895,7 @@ export async function runBackupTests() {
       console.log('✅ All tests passed!');
       process.exit(0);
     }
-  } catch (error) {
+  } catch (_error) {
     console.error('Test suite failed:', error);
     process.exit(1);
   }

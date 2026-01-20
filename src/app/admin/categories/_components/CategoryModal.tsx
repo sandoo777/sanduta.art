@@ -54,7 +54,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       });
     }
     setErrors({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [category, isOpen]);
 
   const generateSlug = (name: string) => {

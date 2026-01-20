@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
@@ -37,7 +37,7 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -67,7 +67,7 @@ export async function PATCH(request: Request) {
       company: user.company,
       cui: user.cui,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },

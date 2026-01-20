@@ -8,7 +8,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { RestoreEngine, RestoreMode } from '@/modules/backup/useRestore';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     // Only ADMIN can restore backups
     const { user, error } = await requireRole(['ADMIN']);

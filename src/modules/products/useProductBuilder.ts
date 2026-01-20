@@ -20,7 +20,7 @@ export function useProductBuilder() {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching product:', error);
       toast.error('Eroare la încărcarea produsului');
       throw error;
@@ -49,7 +49,7 @@ export function useProductBuilder() {
       const product = await response.json();
       toast.success('Produs creat cu succes');
       return product;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating product:', error);
       const message = error instanceof Error ? error.message : 'Eroare la crearea produsului';
       toast.error(message);
@@ -80,7 +80,7 @@ export function useProductBuilder() {
       const product = await response.json();
       toast.success('Produs actualizat cu succes');
       return product;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating product:', error);
       const message = error instanceof Error ? error.message : 'Eroare la actualizarea produsului';
       toast.error(message);

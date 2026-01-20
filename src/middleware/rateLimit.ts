@@ -131,7 +131,7 @@ export async function checkRateLimit(
       reset,
       limit: config.requests,
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('RateLimit', 'Rate limit check error', { error });
     // On error, allow the request
     return {

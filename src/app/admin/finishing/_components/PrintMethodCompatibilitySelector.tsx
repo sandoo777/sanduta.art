@@ -35,7 +35,7 @@ export function PrintMethodCompatibilitySelector({
         const data = await response.json();
         setPrintMethods(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching print methods:', error);
     } finally {
       setLoading(false);

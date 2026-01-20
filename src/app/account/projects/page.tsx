@@ -29,7 +29,7 @@ export default function ProjectsPage() {
       const response = await fetch('/api/account/projects');
       const data = await response.json();
       setProjects(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching projects:', error);
     } finally {
       setLoading(false);
@@ -47,7 +47,7 @@ export default function ProjectsPage() {
       if (!response.ok) throw new Error('Failed to delete project');
 
       await fetchProjects();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error deleting project:', error);
       alert('Eroare la ștergerea proiectului');
     }
@@ -62,7 +62,7 @@ export default function ProjectsPage() {
       if (!response.ok) throw new Error('Failed to duplicate project');
 
       await fetchProjects();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error duplicating project:', error);
       alert('Eroare la duplicarea proiectului');
     }
@@ -83,7 +83,7 @@ export default function ProjectsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error exporting project:', error);
       alert('Eroare la exportarea proiectului');
     }

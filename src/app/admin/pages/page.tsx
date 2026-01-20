@@ -54,7 +54,7 @@ export default function AdminPagesPage() {
         },
       ];
       setPages(mockPages);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching pages:', error);
     } finally {
       setLoading(false);

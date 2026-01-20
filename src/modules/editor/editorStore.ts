@@ -474,7 +474,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         }
       }, 2000);
       
-    } catch (error) {
+    } catch (_error) {
       console.error('Save error:', error);
       set({ saveStatus: 'error' as SaveStatus });
       

@@ -33,7 +33,7 @@ export async function GET(
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (_error) {
     console.error('Error tracking shipment:', error);
     return NextResponse.json(
       { error: 'Failed to get tracking information' },

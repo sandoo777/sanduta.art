@@ -69,7 +69,7 @@ export async function GET(
     };
 
     return NextResponse.json(orderData);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching order:", error);
     return NextResponse.json(
       { error: "Failed to fetch order" },

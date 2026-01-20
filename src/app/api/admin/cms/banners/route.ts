@@ -55,7 +55,7 @@ const mockBanners = [
 ];
 
 // GET /api/admin/cms/banners
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/admin/cms/banners
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;

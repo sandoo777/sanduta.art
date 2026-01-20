@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error marking all notifications as read:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

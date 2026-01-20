@@ -34,7 +34,7 @@ export async function GET(
     };
     
     return NextResponse.json(parsedProject);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error loading project:', error);
     return NextResponse.json(
       { error: 'Failed to load project' },
@@ -89,7 +89,7 @@ export async function PUT(
     };
     
     return NextResponse.json(parsedProject);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error saving project:', error);
     return NextResponse.json(
       { error: 'Failed to save project' },
@@ -129,7 +129,7 @@ export async function DELETE(
     });
     
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error deleting project:', error);
     return NextResponse.json(
       { error: 'Failed to delete project' },

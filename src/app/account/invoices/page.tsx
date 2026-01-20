@@ -42,7 +42,7 @@ export default function InvoicesPage() {
         console.error('Invalid data format received:', data);
         setInvoices([]);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching invoices:', error);
       setInvoices([]); // Set empty array on error
     } finally {
@@ -65,7 +65,7 @@ export default function InvoicesPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error downloading invoice:', error);
       alert('Eroare la descărcarea facturii');
     }

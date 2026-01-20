@@ -9,7 +9,7 @@ import { getCurrentMonthRange, getCachedData, setCachedData } from "@/modules/re
 import type { OverviewKPIs } from "@/modules/reports/types";
 import { subMonths } from "date-fns";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
     setCachedData(cacheKey, result);
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching overview report:", error);
     return NextResponse.json(
       { error: "Failed to fetch overview report" },

@@ -30,13 +30,13 @@ export async function GET() {
     });
 
     return NextResponse.json(categories);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(category, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating category:', error);
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
   }

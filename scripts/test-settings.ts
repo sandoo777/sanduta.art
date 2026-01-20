@@ -131,7 +131,7 @@ async function testSettings() {
         },
       });
       console.log("✗ Duplicate email was not rejected");
-    } catch (error) {
+    } catch (_error) {
       if (error.code === "P2002") {
         console.log("✓ Duplicate email correctly rejected");
       } else {
@@ -239,7 +239,7 @@ async function testSettings() {
     console.log("========================================");
     console.log("All Tests Completed Successfully!");
     console.log("========================================");
-  } catch (error) {
+  } catch (_error) {
     console.error("Test failed with error:", error);
     
     // Cleanup

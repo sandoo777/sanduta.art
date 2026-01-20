@@ -47,7 +47,7 @@ export class PasswordSecurity {
     try {
       const hashedPassword = await hash(password, ARGON2_CONFIG);
       return hashedPassword;
-    } catch (error) {
+    } catch (_error) {
       logger.error('PasswordSecurity', 'Failed to hash password', { error });
       throw new Error('Password hashing failed');
     }
@@ -60,7 +60,7 @@ export class PasswordSecurity {
     try {
       const isValid = await verify(hash, password, ARGON2_CONFIG);
       return isValid;
-    } catch (error) {
+    } catch (_error) {
       logger.error('PasswordSecurity', 'Failed to verify password', { error });
       return false;
     }
@@ -156,7 +156,7 @@ export class TwoFactorAuth {
     try {
       const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
       return qrCodeDataUrl;
-    } catch (error) {
+    } catch (_error) {
       logger.error('TwoFactorAuth', 'Failed to generate QR code', { error });
       throw new Error('QR code generation failed');
     }
@@ -174,7 +174,7 @@ export class TwoFactorAuth {
         window: 2, // Allow 2 time steps before/after
       });
       return verified;
-    } catch (error) {
+    } catch (_error) {
       logger.error('TwoFactorAuth', 'Failed to verify token', { error });
       return false;
     }
@@ -193,7 +193,7 @@ export class TwoFactorAuth {
         },
       });
       logger.info('TwoFactorAuth', '2FA enabled', { userId });
-    } catch (error) {
+    } catch (_error) {
       logger.error('TwoFactorAuth', 'Failed to enable 2FA', { error, userId });
       throw new Error('Failed to enable 2FA');
     }
@@ -212,7 +212,7 @@ export class TwoFactorAuth {
         },
       });
       logger.info('TwoFactorAuth', '2FA disabled', { userId });
-    } catch (error) {
+    } catch (_error) {
       logger.error('TwoFactorAuth', 'Failed to disable 2FA', { error, userId });
       throw new Error('Failed to disable 2FA');
     }
@@ -318,7 +318,7 @@ export class SessionSecurity {
       // TODO: Implement session validation with database
       // For now, return basic validation
       return { valid: false, expired: true };
-    } catch (error) {
+    } catch (_error) {
       logger.error('SessionSecurity', 'Failed to validate session', { error });
       return { valid: false };
     }
@@ -331,7 +331,7 @@ export class SessionSecurity {
     try {
       // TODO: Implement session invalidation
       logger.info('SessionSecurity', 'Session invalidated', { token: token.substring(0, 8) });
-    } catch (error) {
+    } catch (_error) {
       logger.error('SessionSecurity', 'Failed to invalidate session', { error });
       throw new Error('Failed to invalidate session');
     }
@@ -344,7 +344,7 @@ export class SessionSecurity {
     try {
       // TODO: Implement all sessions invalidation
       logger.info('SessionSecurity', 'All sessions invalidated', { userId });
-    } catch (error) {
+    } catch (_error) {
       logger.error('SessionSecurity', 'Failed to invalidate all sessions', { error });
       throw new Error('Failed to invalidate all sessions');
     }
@@ -369,7 +369,7 @@ export class RefreshTokenManager {
     try {
       // TODO: Store in database with expiration
       logger.info('RefreshTokenManager', 'Refresh token stored', { userId });
-    } catch (error) {
+    } catch (_error) {
       logger.error('RefreshTokenManager', 'Failed to store refresh token', { error });
       throw new Error('Failed to store refresh token');
     }
@@ -384,7 +384,7 @@ export class RefreshTokenManager {
     try {
       // TODO: Implement validation and rotation
       return { valid: false };
-    } catch (error) {
+    } catch (_error) {
       logger.error('RefreshTokenManager', 'Failed to validate refresh token', { error });
       return { valid: false };
     }
@@ -397,7 +397,7 @@ export class RefreshTokenManager {
     try {
       // TODO: Revoke in database
       logger.info('RefreshTokenManager', 'Refresh token revoked');
-    } catch (error) {
+    } catch (_error) {
       logger.error('RefreshTokenManager', 'Failed to revoke refresh token', { error });
       throw new Error('Failed to revoke refresh token');
     }

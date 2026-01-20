@@ -14,7 +14,7 @@ export const CommunicationSettings = () => {
     try {
       setSaving(true);
       await updateCommunicationPreferences({ [field]: value });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update communication preferences:", error);
     } finally {
       setSaving(false);

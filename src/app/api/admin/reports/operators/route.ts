@@ -19,7 +19,7 @@ import type {
   CompletionTimes 
 } from "@/modules/reports/types";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest) {
     setCachedData(cacheKey, result);
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching operators report:", error);
     return NextResponse.json(
       { error: "Failed to fetch operators report" },

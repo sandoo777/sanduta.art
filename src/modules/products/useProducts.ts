@@ -24,7 +24,7 @@ export function useProducts() {
 
       const data = await response.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching products:', error);
       toast.error('Eroare la încărcarea produselor');
       throw error;
@@ -49,7 +49,7 @@ export function useProducts() {
       const product = await response.json();
       toast.success('Produs creat cu succes');
       return product;
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       console.error('Error creating product:', error);
       toast.error(error.message || 'Eroare la crearea produsului');
       throw error;
@@ -79,7 +79,7 @@ export function useProducts() {
       const product = await response.json();
       toast.success('Produs actualizat cu succes');
       return product;
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       console.error('Error updating product:', error);
       toast.error(error.message || 'Eroare la actualizarea produsului');
       throw error;
@@ -101,7 +101,7 @@ export function useProducts() {
       }
 
       toast.success('Produs șters cu succes');
-    } catch (error) {
+    } catch (_error) {
       console.error('Error deleting product:', error);
       toast.error('Eroare la ștergerea produsului');
       throw error;
@@ -125,7 +125,7 @@ export function useProducts() {
       const product = await response.json();
       toast.success('Produs duplicat cu succes');
       return product;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error duplicating product:', error);
       toast.error('Eroare la duplicarea produsului');
       throw error;

@@ -14,7 +14,7 @@ export const EditorPreferences = () => {
     try {
       setSaving(true);
       await updateEditorPreferences({ [field]: value });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update editor preferences:", error);
     } finally {
       setSaving(false);
@@ -25,7 +25,7 @@ export const EditorPreferences = () => {
     try {
       setSaving(true);
       await updateEditorPreferences({ [field]: value });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update editor preferences:", error);
     } finally {
       setSaving(false);

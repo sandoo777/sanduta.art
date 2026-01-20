@@ -46,7 +46,7 @@ export function sanitizeHtml(html: string): string {
     });
 
     return clean;
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Failed to sanitize HTML', { error });
     return '';
   }
@@ -72,7 +72,7 @@ export function sanitizePlainText(text: string): string {
     });
 
     return clean.trim();
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Failed to sanitize plain text', { error });
     return '';
   }
@@ -111,7 +111,7 @@ export function sanitizeUrl(url: string): string | null {
       }
       return null;
     }
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Failed to sanitize URL', { error });
     return null;
   }
@@ -171,7 +171,7 @@ export function sanitizeEmail(email: string): string | null {
     // Remove any HTML
     const clean = sanitizePlainText(trimmed);
     return clean;
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Failed to sanitize email', { error });
     return null;
   }
@@ -198,7 +198,7 @@ export function sanitizeFilename(filename: string): string {
     }
 
     return clean || 'unnamed_file';
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Failed to sanitize filename', { error });
     return 'unnamed_file';
   }
@@ -294,7 +294,7 @@ export function validateAndSanitize(
       sanitized,
       errors,
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('Sanitize', 'Validation failed', { error });
     return {
       isValid: false,

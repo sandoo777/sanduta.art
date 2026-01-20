@@ -14,7 +14,7 @@ export function useMachines() {
       });
       if (!response.ok) throw new Error('Failed to fetch machines');
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Eroare la încărcarea echipamentelor');
       throw error;
     }
@@ -38,7 +38,7 @@ export function useMachines() {
       const machine = await response.json();
       toast.success('Echipament creat cu succes!');
       return machine;
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la creare');
       throw error;
     } finally {
@@ -67,7 +67,7 @@ export function useMachines() {
       const machine = await response.json();
       toast.success('Echipament actualizat cu succes!');
       return machine;
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la actualizare');
       throw error;
     } finally {
@@ -89,7 +89,7 @@ export function useMachines() {
       }
 
       toast.success('Echipament șters cu succes!');
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la ștergere');
       throw error;
     } finally {

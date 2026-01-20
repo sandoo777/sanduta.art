@@ -68,7 +68,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
       setIsDraft(true);
       
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Save draft error:', error);
       return false;
     } finally {
@@ -97,7 +97,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
       setLastSaved(new Date(data.updatedAt));
       
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Publish theme error:', error);
       return false;
     } finally {
@@ -127,7 +127,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
       setHasChanges(false);
       
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Rollback theme error:', error);
       return false;
     } finally {
@@ -148,7 +148,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
 
       const data = await response.json();
       setVersions(data.versions || []);
-    } catch (error) {
+    } catch (_error) {
       console.error('Load versions error:', error);
     }
   }, []);
@@ -167,7 +167,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       console.error('Compare versions error:', error);
       return null;
     }
@@ -191,7 +191,7 @@ export function useThemePublishing(): UseThemePublishingReturn {
       setIsPublished(false);
       
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Reset theme error:', error);
       return false;
     }

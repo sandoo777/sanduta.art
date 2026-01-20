@@ -73,7 +73,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         hasMore: data.hasMore,
         loading: false
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching notifications:', error);
       set({ loading: false });
     }
@@ -89,7 +89,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
       const data = await response.json();
       set({ unreadCount: data.unreadCount });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching unread count:', error);
     }
   },
@@ -113,7 +113,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         notifications: updated,
         unreadCount: Math.max(0, unreadCount - 1)
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error marking notification as read:', error);
     }
   },
@@ -135,7 +135,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         notifications: updated,
         unreadCount: 0
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error marking all notifications as read:', error);
     }
   },
@@ -154,7 +154,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       const filtered = notifications.filter(n => n.id !== notificationId);
 
       set({ notifications: filtered });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error archiving notification:', error);
     }
   },
@@ -177,7 +177,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
         notifications: filtered,
         unreadCount: notification && !notification.read ? Math.max(0, unreadCount - 1) : unreadCount
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error deleting notification:', error);
     }
   },

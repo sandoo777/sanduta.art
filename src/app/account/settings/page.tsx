@@ -70,7 +70,7 @@ export default function SettingsPage() {
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       console.error('Error changing password:', error);
       alert(error.message || 'Eroare la schimbarea parolei');
     } finally {
@@ -93,7 +93,7 @@ export default function SettingsPage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating notifications:', error);
       alert('Eroare la actualizarea preferințelor de notificare');
     } finally {
@@ -116,7 +116,7 @@ export default function SettingsPage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating preferences:', error);
       alert('Eroare la actualizarea preferințelor');
     } finally {

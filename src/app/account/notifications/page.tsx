@@ -51,7 +51,7 @@ export default function NotificationsPage() {
     } else {
       setFilteredNotifications(notifications);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [filter, notifications, unreadNotifications, readNotifications]);
 
   const getNotificationIcon = (type: string) => {

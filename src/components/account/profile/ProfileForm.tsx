@@ -30,7 +30,7 @@ export default function ProfileForm() {
         cui: profile.cui || "",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {

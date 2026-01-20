@@ -73,10 +73,10 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
       };
       setStatus(nextStatus);
       onStatusChange?.(nextStatus);
-    } catch (error) {
+    } catch (_error) {
       console.error('Cannot parse editorDesignPayload', error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams, onStatusChange]);
 
   const handleFileSelect = (selected: File, meta?: UploadMeta) => {

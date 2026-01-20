@@ -52,7 +52,7 @@ export async function requireRole(
     return authResult;
   }
 
-  const { user } = authResult;
+  const { user: _user } = authResult;
 
   if (!allowedRoles.includes(user.role)) {
     return NextResponse.json(
@@ -96,7 +96,7 @@ export async function requireOwnershipOrAdmin(
     return authResult;
   }
 
-  const { user } = authResult;
+  const { user: _user } = authResult;
 
   const isOwner = user.id === resourceUserId;
   const isAdminOrManager = [UserRole.ADMIN, UserRole.MANAGER].includes(user.role);

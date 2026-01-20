@@ -57,7 +57,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending order confirmation email:', error);
     return { success: false, error };
   }
@@ -81,7 +81,7 @@ export async function sendAdminNewOrderEmail(data: OrderEmailData) {
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending admin notification email:', error);
     return { success: false, error };
   }
@@ -176,7 +176,7 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusUpdateData) {
     }
 
     return { success: true };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending order status update email:', error);
     return { success: false, error };
   }

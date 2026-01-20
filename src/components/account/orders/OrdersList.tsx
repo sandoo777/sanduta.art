@@ -45,7 +45,7 @@ export default function OrdersList() {
     } else {
       setFilteredOrders(orders.filter((order) => order.status === statusFilter));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [orders, statusFilter]);
 
   const formatDate = (dateString: string) => {

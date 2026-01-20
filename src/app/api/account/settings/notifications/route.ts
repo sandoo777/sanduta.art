@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, createErrorResponse } from '@/lib/logger';
 
-export async function PUT(req: NextRequest) {
+export async function PUT(_req: NextRequest) {
   try {
     const { user, error } = await requireAuth();
     if (error) return error;

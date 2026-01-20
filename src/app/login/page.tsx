@@ -42,7 +42,7 @@ export default function LoginPage() {
       // Clear after 5 seconds
       setTimeout(() => setSuccessMessage(""), 5000);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams]);
 
   // Real-time validation
@@ -50,14 +50,14 @@ export default function LoginPage() {
     if (touched.email) {
       setEmailError(validateEmail(email));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [email, touched.email]);
 
   useEffect(() => {
     if (touched.password) {
       setPasswordError(validatePassword(password));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [password, touched.password]);
 
   // Redirect authenticated users

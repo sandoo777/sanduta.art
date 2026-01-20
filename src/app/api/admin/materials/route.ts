@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/admin/materials
  * List all materials with low stock indicators and total consumption
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(materialsWithMetrics);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching materials:", error);
     return NextResponse.json(
       { error: "Eroare la preluarea materialelor" },
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
  * POST /api/admin/materials
  * Create a new material
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(material, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating material:", error);
     return NextResponse.json(
       { error: "Eroare la crearea materialului" },

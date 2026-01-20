@@ -4,7 +4,7 @@ import { requireRole, canManageSystemSettings } from "@/lib/auth-helpers";
 import { UserRole } from "@prisma/client";
 
 // GET /api/admin/settings/system - Get all system settings
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
   
   if (error) {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       settings: settingsObject,
       raw: settings // Also include raw array for reference
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching system settings:", error);
     return NextResponse.json(
       { error: "Failed to fetch system settings" },
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH /api/admin/settings/system - Update system settings
-export async function PATCH(request: NextRequest) {
+export async function PATCH(_request: NextRequest) {
   const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
   
   if (error) {
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
       settings: settingsObject,
       updated: results.length
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error updating system settings:", error);
     return NextResponse.json(
       { error: "Failed to update system settings" },

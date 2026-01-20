@@ -4,7 +4,7 @@ import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
 
 // POST /api/editor/projects - Create new project
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     };
     
     return NextResponse.json(parsedProject, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating project:', error);
     return NextResponse.json(
       { error: 'Failed to create project' },
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET /api/editor/projects - List user's projects
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     });
     
     return NextResponse.json(projects);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching projects:', error);
     return NextResponse.json(
       { error: 'Failed to fetch projects' },

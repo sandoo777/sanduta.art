@@ -67,7 +67,7 @@ export async function renderNotificationTemplate(
       htmlBody: renderTemplate(template.emailBodyHtml || '', data),
       textBody: renderTemplate(template.emailBodyText || '', data),
     };
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to render template:', error);
     return null;
   }
@@ -105,7 +105,7 @@ export async function sendEmail(
     }
     
     return { success: true, messageId: data?.id };
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     console.error('Failed to send email:', error);
     return { success: false, error: error.message };
   }
@@ -133,7 +133,7 @@ export async function sendEmailWithTemplate(
       htmlBody: rendered.htmlBody,
       textBody: rendered.textBody,
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     console.error('Failed to send email with template:', error);
     return { success: false, error: error.message };
   }

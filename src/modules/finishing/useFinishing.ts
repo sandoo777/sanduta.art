@@ -14,7 +14,7 @@ export function useFinishing() {
       });
       if (!response.ok) throw new Error('Failed to fetch finishing operations');
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       toast.error('Eroare la încărcarea operațiunilor de finisare');
       throw error;
     }
@@ -38,7 +38,7 @@ export function useFinishing() {
       const operation = await response.json();
       toast.success('Operațiune de finisare creată cu succes!');
       return operation;
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la crearea operațiunii');
       throw error;
     } finally {
@@ -67,7 +67,7 @@ export function useFinishing() {
       const operation = await response.json();
       toast.success('Operațiune actualizată cu succes!');
       return operation;
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la actualizare');
       throw error;
     } finally {
@@ -89,7 +89,7 @@ export function useFinishing() {
       }
 
       toast.success('Operațiune ștearsă cu succes!');
-    } catch (error) {
+    } catch (_error) {
       toast.error(error instanceof Error ? error.message : 'Eroare la ștergere');
       throw error;
     } finally {

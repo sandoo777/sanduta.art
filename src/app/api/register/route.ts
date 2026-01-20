@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { name, email, password } = await req.json();
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     logger.info('API:Register', 'User created successfully', { userId: user.id, email: user.email });
 
     return NextResponse.json({ message: "User created", user: { id: user.id, name: user.name, email: user.email } });
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:Register', error, { action: 'create_user' });
     return createErrorResponse('Registration failed. Please try again later.', 500);
   }

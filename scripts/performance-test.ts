@@ -259,7 +259,7 @@ async function testBundleSize(): Promise<PerformanceMetric[]> {
         category: 'assets',
       });
     }
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la analiza bundle size:', error);
   }
   
@@ -322,7 +322,7 @@ async function runPerformanceTests(baseUrl: string = 'http://localhost:3000'): P
     // const imageMetrics = await testImageOptimization(baseUrl);
     // allMetrics.push(...imageMetrics);
     
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la rularea testelor:', error);
   }
   
@@ -480,7 +480,7 @@ async function main() {
     }
     
     process.exit(0);
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la rularea testelor:', error);
     process.exit(1);
   }

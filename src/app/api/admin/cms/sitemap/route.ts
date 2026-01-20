@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
 // POST /api/admin/cms/sitemap
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;

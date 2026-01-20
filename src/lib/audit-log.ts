@@ -38,7 +38,7 @@ export async function logAuditAction(entry: AuditLogEntry): Promise<void> {
         ...entry,
       });
     }
-  } catch (error) {
+  } catch (_error) {
     console.error('[AUDIT ERROR]', error);
     // Nu throw error pentru a nu întrerupe flow-ul principal
   }
@@ -146,7 +146,7 @@ export function withAuditLog(
   handler: (context: any) => Promise<Response>
 ) {
   return async (request: Request, context: any): Promise<Response> => {
-    const { user } = context;
+    const { user: _user } = context;
     const metadata = getRequestMetadata(request);
 
     try {
@@ -164,7 +164,7 @@ export function withAuditLog(
       }
 
       return response;
-    } catch (error) {
+    } catch (_error) {
       // Log failed attempt
       await logAuditAction({
         userId: user.id,

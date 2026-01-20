@@ -23,7 +23,7 @@ export default function RevokeAccess() {
       setTimeout(() => {
         signOut({ callbackUrl: '/' });
       }, 1000);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error revoking access:', error);
       setIsRevoking(false);
     }

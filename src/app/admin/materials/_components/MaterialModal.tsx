@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { Material, CreateMaterialInput, UpdateMaterialInput } from "@/modules/materials/types";

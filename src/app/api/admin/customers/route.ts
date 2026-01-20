@@ -86,7 +86,7 @@ export const GET = withRole(
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching customers:", error);
       return NextResponse.json(
         { error: "Eroare la obținerea clienților" },
@@ -172,7 +172,7 @@ export const POST = withRole(
       });
 
       return NextResponse.json(customer, { status: 201 });
-    } catch (error) {
+    } catch (_error) {
       console.error("Error creating customer:", error);
       return NextResponse.json(
         { error: "Eroare la crearea clientului" },

@@ -32,7 +32,7 @@ async function uploadFile(file: Blob, filename: string, contentType: string): Pr
     }
 
     return data.url as string;
-  } catch (error) {
+  } catch (_error) {
     console.warn('[uploadExport] Falling back to local URL', error);
     // Fallback: createObjectURL so flow keeps working in dev
     return URL.createObjectURL(file);

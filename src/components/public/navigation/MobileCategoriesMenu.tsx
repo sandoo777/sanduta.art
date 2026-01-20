@@ -29,7 +29,7 @@ export function MobileCategoriesMenu({ onLinkClick }: MobileCategoriesMenuProps)
           const data = await res.json();
           setCategories(data);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Error fetching categories:', error);
       }
     };

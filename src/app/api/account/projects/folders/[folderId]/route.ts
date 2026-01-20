@@ -51,7 +51,7 @@ export async function PATCH(
       name: updatedFolder.name,
       createdAt: updatedFolder.createdAt.toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error updating folder:", error);
     return NextResponse.json(
       { error: "Failed to update folder" },
@@ -101,7 +101,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error deleting folder:", error);
     return NextResponse.json(
       { error: "Failed to delete folder" },

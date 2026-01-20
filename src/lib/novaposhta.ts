@@ -65,7 +65,7 @@ class NovaPoshtaClient {
       }
 
       return result.data;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error calling Nova Poshta API:', error);
       throw error;
     }
@@ -106,7 +106,7 @@ class NovaPoshtaClient {
         status: 'created',
         reference: result[0]?.Ref || '',
       };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating Nova Poshta shipment:', error);
       throw error;
     }
@@ -124,7 +124,7 @@ class NovaPoshtaClient {
       });
 
       return result?.[0] || null;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error tracking Nova Poshta shipment:', error);
       throw error;
     }
@@ -139,7 +139,7 @@ class NovaPoshtaClient {
       });
 
       return Array.isArray(result) ? result : [];
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting Nova Poshta pickup points:', error);
       throw error;
     }
@@ -153,7 +153,7 @@ class NovaPoshtaClient {
       });
 
       return Array.isArray(result) ? result : [];
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting Nova Poshta cities:', error);
       throw error;
     }

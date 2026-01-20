@@ -283,7 +283,7 @@ class DatabaseMonitor {
       }
 
       return health;
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.DATABASE,
         'Failed to check database health',
@@ -333,7 +333,7 @@ class DatabaseMonitor {
         unusedIndexes: unusedIndexes.map(i => i.indexname),
         missingIndexes: [...new Set(missingIndexes)], // Remove duplicates
       };
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.DATABASE,
         'Failed to analyze index efficiency',
@@ -384,7 +384,7 @@ class DatabaseMonitor {
       }
 
       return deadlocks;
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.DATABASE,
         'Failed to detect deadlocks',
@@ -430,7 +430,7 @@ class DatabaseMonitor {
         totalSize: result[0]?.size || '0',
         tablesSizes: tables,
       };
-    } catch (error) {
+    } catch (_error) {
       await this.logger.error(
         LogCategory.DATABASE,
         'Failed to get database size',

@@ -73,7 +73,7 @@ async function createBackup() {
     console.log(`   Path: ${result.path}`);
     console.log(`   Encrypted: ${result.encrypted ? 'Yes' : 'No'}`);
     console.log(`   Compressed: ${result.compressed ? 'Yes' : 'No'}`);
-  } catch (error) {
+  } catch (_error) {
     console.error(`❌ Backup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     process.exit(1);
   }

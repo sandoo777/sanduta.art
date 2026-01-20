@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { logger, createErrorResponse } from '@/lib/logger';
 
 // GET /api/account/invoices - Fetch all user invoices
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireAuth();
     if (error) return error;

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/admin/print-methods - Get all print methods
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(formatted);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching print methods:", error);
     return NextResponse.json(
       { error: "Failed to fetch print methods" },
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/print-methods - Create new print method
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating print method:", error);
     return NextResponse.json(
       { error: "Failed to create print method" },

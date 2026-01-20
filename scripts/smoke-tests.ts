@@ -55,7 +55,7 @@ async function fetchWithTimeout(url: string, timeout: number = TIMEOUT): Promise
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     return response;
-  } catch (error) {
+  } catch (_error) {
     clearTimeout(timeoutId);
     throw error;
   }
@@ -277,7 +277,7 @@ async function runSmokeTests(): Promise<SmokeTestReport> {
           duration,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       const endTime = performance.now();
       const duration = Math.round(endTime - startTime);
       
@@ -380,7 +380,7 @@ async function main() {
     }
     
     process.exit(0);
-  } catch (error) {
+  } catch (_error) {
     console.error('Fatal error:', error);
     process.exit(1);
   }

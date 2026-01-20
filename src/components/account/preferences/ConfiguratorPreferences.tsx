@@ -14,7 +14,7 @@ export const ConfiguratorPreferences = () => {
     try {
       setSaving(true);
       await updateConfiguratorPreferences({ [field]: value });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update configurator preferences:", error);
     } finally {
       setSaving(false);

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { hash, compare } from 'bcryptjs';
 import { logger, createErrorResponse } from '@/lib/logger';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireAuth();
     if (error) return error;

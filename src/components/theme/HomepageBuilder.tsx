@@ -5,7 +5,7 @@
  * Drag & drop interface pentru construirea paginii principale
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   DndContext,
   closestCenter,

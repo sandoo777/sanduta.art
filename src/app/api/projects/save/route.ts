@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       previewUrl: project.previewImage,
       finalFileUrl: project.finalFile,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error saving project:', error);
     return NextResponse.json(
       { error: 'Failed to save project' },
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -142,7 +142,7 @@ export async function GET(request: Request) {
         updatedAt: project.updatedAt,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error loading project:', error);
     return NextResponse.json(
       { error: 'Failed to load project' },

@@ -61,7 +61,7 @@ export async function POST(
     });
 
     return NextResponse.json(file, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error adding file:", error);
     return NextResponse.json(
       { error: "Failed to add file" },

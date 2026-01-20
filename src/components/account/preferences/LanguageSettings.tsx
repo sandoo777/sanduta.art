@@ -21,7 +21,7 @@ export const LanguageSettings = () => {
       setSaving(true);
       await updateLanguage(language);
       // UI se va actualiza automat prin i18n store
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update language:", error);
     } finally {
       setSaving(false);

@@ -34,7 +34,7 @@ const mockPosts = [
 ];
 
 // GET /api/cms/blog
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     logger.info('API:CMS:Blog:Public', 'Listing blog posts');
 

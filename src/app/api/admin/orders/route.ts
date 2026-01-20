@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/admin/orders
  * List all orders with relations
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(orders);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
  *   dueDate?: string
  * }
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(order, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating order:", error);
     return NextResponse.json(
       { error: "Failed to create order" },

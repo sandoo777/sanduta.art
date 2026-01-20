@@ -14,7 +14,7 @@ export const NotificationSettings = () => {
     try {
       setSaving(true);
       await updateNotificationPreferences({ [field]: value });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to update notification preferences:", error);
     } finally {
       setSaving(false);

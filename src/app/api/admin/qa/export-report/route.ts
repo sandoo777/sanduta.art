@@ -7,7 +7,7 @@ import PDFDocument from 'pdfkit';
  * GET /api/admin/qa/export-report
  * Export QA report as PDF
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Check authorization
     const { user, error } = await requireRole(['ADMIN']);

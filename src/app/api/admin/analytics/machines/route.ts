@@ -6,7 +6,7 @@ import { logger, logApiError, createErrorResponse } from "@/lib/logger";
  * GET /api/admin/analytics/machines
  * Obține utilizarea echipamentelor (mock data - va fi integrat cu sistemul real)
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error: authError } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
     if (authError) return authError;

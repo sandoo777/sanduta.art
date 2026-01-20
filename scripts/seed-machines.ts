@@ -197,7 +197,7 @@ async function main() {
         data: machine,
       });
       console.log(`✅ Created: ${machine.name} (${machine.type})`);
-    } catch (error) {
+    } catch (_error) {
       console.error(`❌ Error creating ${machine.name}:`, error);
     }
   }

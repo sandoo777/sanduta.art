@@ -33,7 +33,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching overview:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch overview");
       return null;
@@ -61,7 +61,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching sales:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch sales");
       return null;
@@ -89,7 +89,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching products:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch products");
       return null;
@@ -117,7 +117,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching customers:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch customers");
       return null;
@@ -145,7 +145,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching operators:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch operators");
       return null;
@@ -173,7 +173,7 @@ export function useReports() {
       }
       const data = await res.json();
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching materials:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch materials");
       return null;

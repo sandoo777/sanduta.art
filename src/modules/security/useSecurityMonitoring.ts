@@ -234,7 +234,7 @@ export class SecurityMonitoring {
       });
 
       logger.info('SecurityMonitoring', 'Slack alert sent', { type: event.type });
-    } catch (error) {
+    } catch (_error) {
       logger.error('SecurityMonitoring', 'Failed to send Slack alert', { error });
     }
   }
@@ -249,7 +249,7 @@ export class SecurityMonitoring {
 
       // TODO: Implement email sending
       logger.info('SecurityMonitoring', 'Email alert sent', { type: event.type, to: adminEmail });
-    } catch (error) {
+    } catch (_error) {
       logger.error('SecurityMonitoring', 'Failed to send email alert', { error });
     }
   }
@@ -270,7 +270,7 @@ export class SecurityMonitoring {
           userAgent: event.userAgent,
         },
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error('SecurityMonitoring', 'Failed to save to audit log', { error });
     }
   }

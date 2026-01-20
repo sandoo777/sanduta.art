@@ -9,7 +9,7 @@ import { Notification } from '@prisma/client';
  * GET /api/notifications
  * Fetch notifications for the authenticated user
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
  * POST /api/notifications
  * Create a new notification (admin/system only)
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     

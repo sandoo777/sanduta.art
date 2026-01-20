@@ -157,7 +157,7 @@ class Profiler {
       const result = await fn();
       await this.end(id);
       return result;
-    } catch (error) {
+    } catch (_error) {
       await this.end(id);
       throw error;
     }
@@ -178,7 +178,7 @@ class Profiler {
       const result = await fn();
       await this.end(id);
       return result;
-    } catch (error) {
+    } catch (_error) {
       await this.end(id);
       throw error;
     }

@@ -48,7 +48,7 @@ export default function OverviewPanel() {
         const data = await response.json();
         setStats(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch production stats:', error);
     } finally {
       setLoading(false);

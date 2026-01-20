@@ -93,7 +93,7 @@ export async function GET(
     };
 
     return NextResponse.json(customerWithStats);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching customer:", error);
     return NextResponse.json(
       { error: "Eroare la obținerea clientului" },
@@ -173,7 +173,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(customer);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error updating customer:", error);
     return NextResponse.json(
       { error: "Eroare la actualizarea clientului" },
@@ -239,7 +239,7 @@ export async function DELETE(
       success: true, 
       message: "Clientul a fost șters cu succes" 
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error deleting customer:", error);
     return NextResponse.json(
       { error: "Eroare la ștergerea clientului" },

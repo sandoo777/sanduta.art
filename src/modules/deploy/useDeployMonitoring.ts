@@ -274,7 +274,7 @@ export class DeployMonitoring {
       if (alert.severity === 'critical' && process.env.RESEND_API_KEY) {
         // TODO: Send email alert
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error('Deploy:Monitor:Alert:Failed', 'Failed to send alert', {
         error,
         alert,
@@ -293,7 +293,7 @@ export class DeployMonitoring {
       logger.info('Deploy:Monitor:SaveMetrics', 'Saving deployment metrics', {
         metrics: this.metrics,
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Deploy:Monitor:SaveMetrics:Failed', 'Failed to save metrics', {
         error,
       });
@@ -340,7 +340,7 @@ ${this.metrics.warnings.length > 0 ? `⚠️ Warnings: ${this.metrics.warnings.l
       }
 
       logger.info('Deploy:Monitor:Notify', 'Deployment notification sent');
-    } catch (error) {
+    } catch (_error) {
       logger.error('Deploy:Monitor:Notify:Failed', 'Failed to send notification', {
         error,
       });
@@ -377,7 +377,7 @@ ${this.metrics.warnings.length > 0 ? `⚠️ Warnings: ${this.metrics.warnings.l
 
       await fs.writeFile(filePath, logContent, 'utf-8');
       logger.info('Deploy:Monitor:ExportLogs', 'Logs exported', { filePath });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Deploy:Monitor:ExportLogs:Failed', 'Failed to export logs', {
         error,
       });
@@ -400,7 +400,7 @@ export async function getDeploymentHistory(
     });
 
     return [];
-  } catch (error) {
+  } catch (_error) {
     logger.error('Deploy:Monitor:History:Failed', 'Failed to fetch history', {
       error,
     });
@@ -423,7 +423,7 @@ export async function getDeploymentMetrics(
     });
 
     return null;
-  } catch (error) {
+  } catch (_error) {
     logger.error('Deploy:Monitor:GetMetrics:Failed', 'Failed to fetch metrics', {
       error,
     });
@@ -454,7 +454,7 @@ export async function getAverageDeploymentTime(
       avgDeployTime: 0,
       avgTotalTime: 0,
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('Deploy:Monitor:AvgTime:Failed', 'Failed to calculate average', {
       error,
     });

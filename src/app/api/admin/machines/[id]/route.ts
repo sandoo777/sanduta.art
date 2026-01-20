@@ -36,7 +36,7 @@ export async function GET(
       ...machine,
       costPerHour: machine.costPerHour ? Number(machine.costPerHour) : null,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching machine:', error);
     return NextResponse.json(
       { error: 'Failed to fetch machine' },
@@ -92,7 +92,7 @@ export async function PATCH(
       ...machine,
       costPerHour: machine.costPerHour ? Number(machine.costPerHour) : null,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error updating machine:', error);
     return NextResponse.json(
       { error: 'Failed to update machine' },
@@ -118,7 +118,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error deleting machine:', error);
     return NextResponse.json(
       { error: 'Failed to delete machine' },

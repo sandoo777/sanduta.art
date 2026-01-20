@@ -205,7 +205,7 @@ export async function optimizeApiRoute<T>(
       cache: options.cache,
       etag: options.etag,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('API route error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

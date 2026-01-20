@@ -196,7 +196,7 @@ export class FeatureFlagsSystem {
     try {
       // await prisma.featureFlag.findUnique({ where: { key: flagKey } });
       logger.debug('FeatureFlags:GetFlag', 'Loading flag from database', { flagKey });
-    } catch (error) {
+    } catch (_error) {
       logger.error('FeatureFlags:GetFlag:Failed', 'Failed to load flag', {
         error,
         flagKey,
@@ -279,7 +279,7 @@ export class FeatureFlagsSystem {
         key: flag.key,
         enabled: flag.enabled,
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error('FeatureFlags:SetFlag:Failed', 'Failed to update flag', {
         error,
         flag,
@@ -455,7 +455,7 @@ export function useFeatureFlags() {
       }
 
       setFlags(flagsState);
-    } catch (error) {
+    } catch (_error) {
       logger.error('useFeatureFlags', 'Failed to load flags', { error });
     } finally {
       setLoading(false);

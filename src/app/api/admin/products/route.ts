@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/admin/products
  * List all products with relations
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(products);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching products:", error);
     return NextResponse.json(
       { error: "Failed to fetch products" },
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
  *   variants?: [{ name: string, price: number, stock: number }]
  * }
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(completeProduct, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating product:", error);
     return NextResponse.json(
       { error: "Failed to create product" },

@@ -52,7 +52,7 @@ export function useSecurity() {
       }
 
       return { success: true, message: data.message };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error changing password:', error);
       throw error;
     } finally {
@@ -75,7 +75,7 @@ export function useSecurity() {
 
       setTwoFactorSetup(data);
       return data;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error generating 2FA:', error);
       throw error;
     } finally {
@@ -100,7 +100,7 @@ export function useSecurity() {
 
       setTwoFactorSetup(null);
       return { success: true, message: data.message };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error enabling 2FA:', error);
       throw error;
     } finally {
@@ -124,7 +124,7 @@ export function useSecurity() {
       }
 
       return { success: true, message: data.message };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error disabling 2FA:', error);
       throw error;
     } finally {
@@ -144,7 +144,7 @@ export function useSecurity() {
 
       setSessions(data.sessions);
       return data.sessions;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching sessions:', error);
       throw error;
     } finally {
@@ -168,7 +168,7 @@ export function useSecurity() {
       // Remove from local state
       setSessions(prev => prev.filter(s => s.id !== sessionId));
       return { success: true, message: data.message };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error revoking session:', error);
       throw error;
     } finally {
@@ -191,7 +191,7 @@ export function useSecurity() {
 
       setSessions([]);
       return { success: true, message: data.message };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error revoking all sessions:', error);
       throw error;
     } finally {
@@ -211,7 +211,7 @@ export function useSecurity() {
 
       setActivity(data.activities);
       return data.activities;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching activity:', error);
       throw error;
     } finally {

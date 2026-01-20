@@ -49,7 +49,7 @@ export default function SecuritySettingsPage() {
       // API call to save settings
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert("Setările de securitate au fost salvate!");
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to save security settings:", error);
       alert("Eroare la salvarea setărilor!");
     } finally {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     const body = await request.json();
     const { email, newPassword } = body;
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       success: true,
       message: 'Parola a fost resetată cu succes',
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     console.error('Password reset error:', error);
     return NextResponse.json(
       { error: 'Eroare la resetarea parolei' },

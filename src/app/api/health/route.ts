@@ -50,7 +50,7 @@ async function checkDatabase() {
         slowQueries: health.slowQueries.length,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       status: 'unhealthy',
       message: `Database check failed: ${(error as Error).message}`,
@@ -71,7 +71,7 @@ async function checkQueue() {
       message: health.healthy ? 'Queue is operational' : health.issues.join(', '),
       metrics: health.stats,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       status: 'unhealthy',
       message: `Queue check failed: ${(error as Error).message}`,
@@ -103,7 +103,7 @@ async function checkStorage() {
       status: 'healthy',
       message: 'Storage check skipped (not configured)',
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       status: 'unhealthy',
       message: `Storage check failed: ${(error as Error).message}`,
@@ -177,7 +177,7 @@ async function checkExternalServices() {
  * GET /api/health
  * Main health check endpoint
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const uptime = Date.now() - startTime;
     
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
     const statusCode = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 200 : 503;
     
     return NextResponse.json(healthCheck, { status: statusCode });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       {
         status: 'unhealthy',

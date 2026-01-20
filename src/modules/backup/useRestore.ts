@@ -99,7 +99,7 @@ export class RestoreEngine {
           config: true,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Full restore failed', { error, backupId });
 
       return {
@@ -142,7 +142,7 @@ export class RestoreEngine {
         duration,
         details: { database: true },
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         mode: RestoreMode.DATABASE_ONLY,
@@ -183,7 +183,7 @@ export class RestoreEngine {
         duration,
         details: { files: true },
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         mode: RestoreMode.FILES_ONLY,
@@ -287,7 +287,7 @@ export class RestoreEngine {
         duration,
         details: { granular: restoredItems },
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Granular restore failed', { error, backupId });
 
       return {
@@ -331,7 +331,7 @@ export class RestoreEngine {
       await fs.unlink(decompressedFile);
 
       logger.info('RestoreEngine', 'Database restored successfully');
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Database restore failed', { error });
       throw error;
     }
@@ -363,7 +363,7 @@ export class RestoreEngine {
       await fs.unlink(decompressedArchive);
 
       logger.info('RestoreEngine', 'Files restored successfully');
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Files restore failed', { error });
       throw error;
     }
@@ -430,7 +430,7 @@ export class RestoreEngine {
       await fs.unlink(decompressedFile);
 
       logger.info('RestoreEngine', 'Config restored successfully');
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Config restore failed', { error });
       throw error;
     }
@@ -467,7 +467,7 @@ export class RestoreEngine {
 
       logger.info('RestoreEngine', 'Restore test passed', { backupId });
       return true;
-    } catch (error) {
+    } catch (_error) {
       logger.error('RestoreEngine', 'Restore test failed', { error, backupId });
       return false;
     }

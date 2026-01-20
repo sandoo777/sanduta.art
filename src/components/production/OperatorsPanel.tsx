@@ -42,7 +42,7 @@ export default function OperatorsPanel() {
         const data = await response.json();
         setOperators(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch operators:', error);
     } finally {
       setLoading(false);

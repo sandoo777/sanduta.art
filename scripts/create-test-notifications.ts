@@ -131,7 +131,7 @@ async function createTestNotifications() {
     console.log('  2. Check the notifications dropdown in the header');
     console.log('  3. Test filtering by category and read status');
 
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating test notifications:', error);
   } finally {
     await prisma.$disconnect();

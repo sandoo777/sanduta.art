@@ -42,7 +42,7 @@ export default function ProfilePage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating profile:', error);
       alert('Eroare la actualizarea profilului');
     } finally {
@@ -66,7 +66,7 @@ export default function ProfilePage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating company info:', error);
       alert('Eroare la actualizarea informațiilor companiei');
     } finally {

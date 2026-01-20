@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/admin/analytics/kpis
  * Obține KPI-urile principale pentru dashboard
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Verificare rol
     const { user, error: authError } = await requireRole(["ADMIN", "MANAGER"]);

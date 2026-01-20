@@ -21,7 +21,7 @@ function EditorContent() {
       setError(err instanceof Error ? err.message : 'Failed to parse editor parameters');
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams]);
 
   if (isLoading) {
@@ -95,7 +95,7 @@ function EditorContent() {
                 } else {
                   alert('Eroare la salvarea proiectului');
                 }
-              } catch (error) {
+              } catch (_error) {
                 console.error('Save error:', error);
                 alert('Eroare la salvarea proiectului');
               }

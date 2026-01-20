@@ -36,7 +36,7 @@ export default function RolesManagementPage() {
       const data = await response.json();
       setRoles(data.roles || []);
       setPermissionGroups(data.permissionGroups || {});
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch roles:", error);
     } finally {
       setLoading(false);

@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getCachedData, setCachedData } from "@/modules/reports/utils";
 import type { ProductsReport, TopProduct, CategoryRevenue, ProductRevenue, ProductPerformance } from "@/modules/reports/types";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -236,7 +236,7 @@ export async function GET(request: NextRequest) {
     setCachedData(cacheKey, result);
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching products report:", error);
     return NextResponse.json(
       { error: "Failed to fetch products report" },

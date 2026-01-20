@@ -47,7 +47,7 @@ export const LanguageSwitcher = ({ variant = "default" }: LanguageSwitcherProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language: newLanguage }),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to save language preference:", error);
     }
   };

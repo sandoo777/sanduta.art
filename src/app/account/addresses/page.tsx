@@ -40,7 +40,7 @@ export default function AddressesPage() {
       const response = await fetch('/api/account/addresses');
       const data = await response.json();
       setAddresses(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching addresses:', error);
     } finally {
       setLoading(false);
@@ -65,7 +65,7 @@ export default function AddressesPage() {
 
       await fetchAddresses();
       resetForm();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error saving address:', error);
       alert('Eroare la salvarea adresei');
     }
@@ -82,7 +82,7 @@ export default function AddressesPage() {
       if (!response.ok) throw new Error('Failed to delete address');
 
       await fetchAddresses();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error deleting address:', error);
       alert('Eroare la ștergerea adresei');
     }
@@ -97,7 +97,7 @@ export default function AddressesPage() {
       if (!response.ok) throw new Error('Failed to set default');
 
       await fetchAddresses();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error setting default:', error);
       alert('Eroare la setarea adresei implicite');
     }

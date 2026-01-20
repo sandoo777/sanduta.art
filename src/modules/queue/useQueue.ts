@@ -58,7 +58,7 @@ export class QueueManager {
       });
 
       return response.messageId;
-    } catch (error) {
+    } catch (_error) {
       console.error('Queue enqueue error:', error);
       return null;
     }
@@ -87,7 +87,7 @@ export class QueueManager {
       });
 
       return response.scheduleId;
-    } catch (error) {
+    } catch (_error) {
       console.error('Queue schedule error:', error);
       return null;
     }
@@ -102,7 +102,7 @@ export class QueueManager {
     try {
       await this.client.schedules.delete(scheduleId);
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Queue cancel error:', error);
       return false;
     }

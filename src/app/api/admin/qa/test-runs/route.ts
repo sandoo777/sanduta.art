@@ -8,7 +8,7 @@ import path from 'path';
  * GET /api/admin/qa/test-runs
  * Fetch recent test runs from CI/CD artifacts or local test results
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Check authorization
     const { user, error } = await requireRole(['ADMIN']);

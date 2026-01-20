@@ -36,7 +36,7 @@ const mockCoupons = [
   },
 ];
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const body = await req.json();
     const { code, userId, cartTotal, productIds, categoryIds } = body;

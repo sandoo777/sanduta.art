@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Test connection without Prisma adapter
     const pool = new Pool({
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       admin: adminResult.rows[0] || null,
       message: 'Database connection successful',
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     return NextResponse.json({
       success: false,
       error: error.message,

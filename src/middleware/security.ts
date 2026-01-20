@@ -244,7 +244,7 @@ export async function securityMiddleware(req: NextRequest): Promise<NextResponse
 
     // If all checks pass, return null to continue
     return null;
-  } catch (error) {
+  } catch (_error) {
     logger.error('SecurityMiddleware', 'Security check error', { error });
     return NextResponse.json({ error: 'Security check failed' }, { status: 500 });
   }

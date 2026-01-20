@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { useLogger, LogLevel, LogCategory } from '@/modules/monitoring/useLogger';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const body = await request.json();
     const { level, category, message, context, timestamp } = body;
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to process client log:', error);
     return NextResponse.json(
       { error: 'Failed to process log' },

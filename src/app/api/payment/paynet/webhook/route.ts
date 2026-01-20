@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { paynetClient } from '@/lib/paynet';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const signature = request.headers.get('x-signature') || '';
     const body = await request.text();
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ message: 'Webhook processed' }, { status: 200 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error processing Paynet webhook:', error);
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }

@@ -25,7 +25,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user.addresses);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching addresses:", error);
     return NextResponse.json(
       { error: "Failed to fetch addresses" },
@@ -34,7 +34,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(newAddress);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating address:", error);
     return NextResponse.json(
       { error: "Failed to create address" },

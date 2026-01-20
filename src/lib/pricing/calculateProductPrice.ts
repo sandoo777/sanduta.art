@@ -120,11 +120,11 @@ function evaluateFormula(
   }
 
   try {
-    // eslint-disable-next-line no-new-func
+     
     const fn = new Function(`return (${sanitized});`);
     const value = fn();
     return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-  } catch (error) {
+  } catch (_error) {
     console.warn('Failed to evaluate pricing formula', error);
     return undefined;
   }

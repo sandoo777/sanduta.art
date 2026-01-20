@@ -152,7 +152,7 @@ export async function enforcePermission(
         role: userRole,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('PermissionEnforcement', 'Permission check error', { error });
     return {
       authorized: false,
@@ -203,7 +203,7 @@ export async function enforceAnyPermission(
         role: userRole,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('PermissionEnforcement', 'Permission check error', { error });
     return {
       authorized: false,
@@ -292,7 +292,7 @@ export async function enforceResourceOwnership(
         role: userRole,
       },
     };
-  } catch (error) {
+  } catch (_error) {
     logger.error('PermissionEnforcement', 'Ownership check error', { error });
     return {
       authorized: false,

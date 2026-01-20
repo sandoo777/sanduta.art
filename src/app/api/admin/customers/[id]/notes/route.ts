@@ -69,7 +69,7 @@ export async function POST(
     });
 
     return NextResponse.json(note, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating customer note:", error);
     return NextResponse.json(
       { error: "Eroare la adăugarea notei" },

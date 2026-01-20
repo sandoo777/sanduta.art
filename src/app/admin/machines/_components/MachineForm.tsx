@@ -62,7 +62,7 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
         active: formData.active,
       });
       onClose();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error submitting form:', error);
     } finally {
       setSubmitting(false);

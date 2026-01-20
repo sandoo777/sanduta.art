@@ -35,7 +35,7 @@ export function MaterialCompatibilitySelector({
         const data = await response.json();
         setMaterials(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching materials:', error);
     } finally {
       setLoading(false);

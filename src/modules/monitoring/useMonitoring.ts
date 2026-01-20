@@ -63,7 +63,7 @@ export class MonitoringManager {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
 
       this.trackMetric('api.request.duration', duration, {
@@ -100,7 +100,7 @@ export class MonitoringManager {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
 
       this.trackMetric('db.query.duration', duration, {
@@ -266,7 +266,7 @@ export class UptimeMonitor {
       }
 
       return { status, duration, healthy };
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - start;
 
       logger.error('Monitoring', 'Endpoint check failed', { url, error, duration });

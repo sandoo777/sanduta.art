@@ -77,7 +77,7 @@ export function AddToCartButton({
       await new Promise((resolve) => setTimeout(resolve, 500));
       console.log('Added to cart:', cartItem);
       // TODO: Add toast notification
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to add to cart:', error);
       // TODO: Show error notification
     } finally {

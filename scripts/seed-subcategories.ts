@@ -654,7 +654,7 @@ async function seedSubcategories() {
             console.log(`   ✨ Creat: ${subcat.name}`);
             totalCreated++;
           }
-        } catch (error) {
+        } catch (_error) {
           console.error(`   ❌ Eroare la ${subcat.name}:`, error);
           errors++;
         }
@@ -689,7 +689,7 @@ async function seedSubcategories() {
 
     console.log('\n✅ Seeding subcategorii completat cu succes!\n');
 
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la seeding subcategorii:', error);
     throw error;
   } finally {

@@ -31,7 +31,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(serializedMachines);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching machines:', error);
     return NextResponse.json(
       { error: 'Failed to fetch machines' },
@@ -41,7 +41,7 @@ export async function GET() {
 }
 
 // POST /api/admin/machines - Create new machine
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       ...machine,
       costPerHour: machine.costPerHour ? Number(machine.costPerHour) : null,
     }, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating machine:', error);
     return NextResponse.json(
       { error: 'Failed to create machine' },

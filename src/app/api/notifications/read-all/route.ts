@@ -8,7 +8,7 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
  * PATCH /api/notifications/read-all
  * Mark all notifications as read for the authenticated user
  */
-export async function PATCH(req: NextRequest) {
+export async function PATCH(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     

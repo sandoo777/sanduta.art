@@ -125,7 +125,7 @@ export async function POST(
     await recalculateOrderTotal(id);
 
     return NextResponse.json(item, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error adding item:", error);
     return NextResponse.json(
       { error: "Failed to add item" },

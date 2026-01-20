@@ -8,7 +8,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger } from '@/lib/logger';
 import prisma from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;

@@ -19,7 +19,7 @@ export function usePrintMethods() {
         throw new Error("Failed to fetch print methods");
       }
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching print methods:", error);
       toast.error("Eroare la încărcarea metodelor de tipărire");
       return [];
@@ -36,7 +36,7 @@ export function usePrintMethods() {
         throw new Error("Failed to fetch print method");
       }
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching print method:", error);
       toast.error("Eroare la încărcarea metodei de tipărire");
       return null;
@@ -64,7 +64,7 @@ export function usePrintMethods() {
       const printMethod = await response.json();
       toast.success("Metoda de tipărire a fost creată cu succes");
       return printMethod;
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       console.error("Error creating print method:", error);
       toast.error(error.message || "Eroare la crearea metodei de tipărire");
       return null;
@@ -93,7 +93,7 @@ export function usePrintMethods() {
       const printMethod = await response.json();
       toast.success("Metoda de tipărire a fost actualizată cu succes");
       return printMethod;
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       console.error("Error updating print method:", error);
       toast.error(error.message || "Eroare la actualizarea metodei de tipărire");
       return null;
@@ -115,7 +115,7 @@ export function usePrintMethods() {
 
       toast.success("Metoda de tipărire a fost ștearsă cu succes");
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error("Error deleting print method:", error);
       toast.error("Eroare la ștergerea metodei de tipărire");
       return false;

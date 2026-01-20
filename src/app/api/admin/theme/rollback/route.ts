@@ -7,7 +7,7 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
  * POST /api/admin/theme/rollback
  * Rollback la o versiune anterioară
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;

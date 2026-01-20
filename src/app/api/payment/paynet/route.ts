@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { paynetClient } from '@/lib/paynet';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     logger.info('API:Paynet', 'Creating payment session');
     
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         { fallback: 'cod_available' }
       );
     }
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:Paynet', error, { action: 'create_payment_session' });
     return createErrorResponse('Failed to create payment session. Please try again later.', 500);
   }

@@ -302,11 +302,11 @@ export function ThemePreviewPage() {
       try {
         const parsedTheme = JSON.parse(decodeURIComponent(themeParam));
         setTheme(parsedTheme);
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to parse theme:', error);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   if (!theme) {

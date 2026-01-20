@@ -131,7 +131,7 @@ export async function validateInput<T>(
   try {
     const validated = await schema.parseAsync(data);
     return { success: true, data: validated };
-  } catch (error) {
+  } catch (_error) {
     if (error instanceof z.ZodError) {
       const errors: Record<string, string> = {};
       error.errors.forEach((err) => {

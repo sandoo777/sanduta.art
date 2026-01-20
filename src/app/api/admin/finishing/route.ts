@@ -34,7 +34,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(serializedOperations);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching finishing operations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch finishing operations' },
@@ -44,7 +44,7 @@ export async function GET() {
 }
 
 // POST /api/admin/finishing - Create new finishing operation
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       costPerUnit: operation.costPerUnit ? Number(operation.costPerUnit) : null,
       costPerM2: operation.costPerM2 ? Number(operation.costPerM2) : null,
     }, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error creating finishing operation:', error);
     return NextResponse.json(
       { error: 'Failed to create finishing operation' },

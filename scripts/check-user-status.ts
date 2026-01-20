@@ -59,7 +59,7 @@ async function checkUserStatus() {
     console.log(`  Admins: ${users.filter(u => u.role === "ADMIN").length}`);
     console.log(`  Managers: ${users.filter(u => u.role === "MANAGER").length}`);
     
-  } catch (error) {
+  } catch (_error) {
     console.error("Error checking user status:", error);
   } finally {
     await prisma.$disconnect();

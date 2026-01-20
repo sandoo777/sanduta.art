@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { novaPoshtaClient } from '@/lib/novaposhta';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     logger.info('API:NovaPoshta', 'Creating shipment');
     
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         { orderId, fallback: 'manual_processing' }
       );
     }
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:NovaPoshta', error, { action: 'create_shipment' });
     return createErrorResponse(
       'Failed to create shipment. Please contact support with your order number.',

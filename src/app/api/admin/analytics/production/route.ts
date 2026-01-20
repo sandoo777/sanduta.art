@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/admin/analytics/production
  * Obține statistici de producție
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error: authError } = await requireRole(["ADMIN", "MANAGER"]);
     if (authError) return authError;

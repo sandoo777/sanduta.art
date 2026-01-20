@@ -25,7 +25,7 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
         const data = await response.json();
         setCategories(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);

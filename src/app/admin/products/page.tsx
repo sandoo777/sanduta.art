@@ -36,7 +36,7 @@ export default function ProductsPage() {
       setLoadingData(true);
       const data = await getProducts();
       setProducts(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error loading products:', error);
     } finally {
       setLoadingData(false);
@@ -78,7 +78,7 @@ export default function ProductsPage() {
     try {
       await duplicateProduct(id);
       await loadProducts();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error duplicating product:', error);
     }
   };
@@ -87,7 +87,7 @@ export default function ProductsPage() {
     try {
       await toggleProductStatus(id, active);
       await loadProducts();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error toggling product status:', error);
     }
   };

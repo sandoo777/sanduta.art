@@ -62,7 +62,7 @@ export default function OrdersListPage() {
 
   useEffect(() => {
     loadOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [loadOrders]);
 
   // Use useMemo for filtering to avoid cascading renders

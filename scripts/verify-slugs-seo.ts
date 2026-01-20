@@ -255,7 +255,7 @@ async function verifySlugsSEO() {
 
     return { categories, issues, slugCounts };
 
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la verificare:', error);
     throw error;
   } finally {

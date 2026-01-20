@@ -46,7 +46,7 @@ export async function POST(
     });
 
     return NextResponse.json({ success: true, id: duplicate.id });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error duplicating project:", error);
     return NextResponse.json(
       { error: "Failed to duplicate project" },

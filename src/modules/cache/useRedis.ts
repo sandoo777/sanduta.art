@@ -49,7 +49,7 @@ export class RedisCache {
     try {
       const value = await this.client.get<T>(this.buildKey(key));
       return value;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis get error:', error);
       return null;
     }
@@ -71,7 +71,7 @@ export class RedisCache {
       }
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis set error:', error);
       return false;
     }
@@ -86,7 +86,7 @@ export class RedisCache {
     try {
       await this.client.del(this.buildKey(key));
       return true;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis del error:', error);
       return false;
     }
@@ -106,7 +106,7 @@ export class RedisCache {
 
       await this.client.del(...keys);
       return keys.length;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis invalidate error:', error);
       return 0;
     }
@@ -127,7 +127,7 @@ export class RedisCache {
       }
 
       return value;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis incr error:', error);
       return 0;
     }
@@ -142,7 +142,7 @@ export class RedisCache {
     try {
       const result = await this.client.exists(this.buildKey(key));
       return result === 1;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis exists error:', error);
       return false;
     }
@@ -158,7 +158,7 @@ export class RedisCache {
       const cacheKeys = keys.map((k) => this.buildKey(k));
       const values = await this.client.mget<T[]>(...cacheKeys);
       return values;
-    } catch (error) {
+    } catch (_error) {
       console.error('Redis mget error:', error);
       return keys.map(() => null);
     }

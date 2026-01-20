@@ -32,7 +32,7 @@ export default function WorkQueue() {
         const data = await response.json();
         setJobs(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch jobs:', error);
     } finally {
       setLoading(false);
@@ -49,7 +49,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to start job:', error);
     }
   };
@@ -64,7 +64,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to pause job:', error);
     }
   };
@@ -82,7 +82,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to complete job:', error);
     }
   };

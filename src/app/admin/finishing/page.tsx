@@ -36,7 +36,7 @@ export default function FinishingPage() {
       setLoadingData(true);
       const data = await getFinishingOperations();
       setOperations(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error loading operations:', error);
     } finally {
       setLoadingData(false);

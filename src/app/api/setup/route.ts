@@ -13,13 +13,13 @@ export async function GET() {
       needsSetup: adminCount === 0,
       adminCount 
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Setup check error:', error);
     return NextResponse.json({ error: 'Failed to check setup status' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     // Check if any admin exists
     const adminCount = await prisma.user.count({
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         role: admin.role,
       },
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     console.error('Setup error:', error);
     
     if (error.code === 'P2002') {

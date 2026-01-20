@@ -282,7 +282,7 @@ async function seedDemoProducts() {
           console.log(`      └─ Categorie: ${category.parent?.name || category.name} → ${category.name}`);
           created++;
         }
-      } catch (error) {
+      } catch (_error) {
         console.error(`   ❌ Eroare la ${productData.name}:`, error);
         errors++;
       }
@@ -333,7 +333,7 @@ async function seedDemoProducts() {
 
     console.log('\n✅ Seeding produse demo completat cu succes!\n');
 
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la seeding produse:', error);
     throw error;
   } finally {

@@ -30,7 +30,7 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
         const data = await response.json();
         setJobs(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error("Error loading jobs:", error);
     }
   };

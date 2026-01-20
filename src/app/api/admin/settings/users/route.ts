@@ -5,7 +5,7 @@ import { requireRole, canManageUsers } from "@/lib/auth-helpers";
 import { UserRole } from "@prisma/client";
 
 // GET /api/admin/settings/users - List all users
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const { user, error } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
   
   if (error) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(users);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
       { error: "Failed to fetch users" },
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/settings/users - Create new user
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
   
   if (error) {
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(newUser, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating user:", error);
     return NextResponse.json(
       { error: "Failed to create user" },

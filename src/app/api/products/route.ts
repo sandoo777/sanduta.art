@@ -15,7 +15,7 @@ export async function GET() {
     const response = NextResponse.json(products);
     response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=7200');
     return response;
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:Products', error, { action: 'fetch_products' });
     return createErrorResponse('Failed to fetch products. Please try again later.', 500);
   }

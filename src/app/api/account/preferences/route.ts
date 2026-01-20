@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     return NextResponse.json(preferences);
-  } catch (error) {
+  } catch (_error) {
     console.error("[PREFERENCES_GET]", error);
     return NextResponse.json(
       { error: "Internal server error" },
@@ -36,7 +36,7 @@ export async function GET() {
 }
 
 // PATCH /api/account/preferences - Actualizează preferințele
-export async function PATCH(req: Request) {
+export async function PATCH(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -79,7 +79,7 @@ export async function PATCH(req: Request) {
     }
 
     return NextResponse.json(preferences);
-  } catch (error) {
+  } catch (_error) {
     console.error("[PREFERENCES_PATCH]", error);
     return NextResponse.json(
       { error: "Internal server error" },

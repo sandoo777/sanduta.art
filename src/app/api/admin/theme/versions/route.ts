@@ -7,7 +7,7 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
  * GET /api/admin/theme/versions
  * Obține toate versiunile salvate ale temei
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
  * POST /api/admin/theme/versions/restore
  * Restaurează o versiune anterioară
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;

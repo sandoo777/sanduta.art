@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NotificationType } from '@prisma/client';
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
       unreadCount,
       hasMore: offset + notifications.length < totalCount
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching notifications:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -132,7 +132,7 @@ export default function ExportPanel({ isOpen, onClose }: ExportPanelProps) {
         onClose();
       }, 1000);
 
-    } catch (error) {
+    } catch (_error) {
       console.error('Export error:', error);
       toast.error('Eroare la export. Încearcă din nou.');
     } finally {

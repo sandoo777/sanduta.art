@@ -7,7 +7,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { useSecurityMonitoring } from '@/modules/monitoring/useSecurityMonitoring';
 
 // GET /api/admin/monitoring/security
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const { user, error } = await requireRole(['ADMIN']);
   if (error) return error;
 

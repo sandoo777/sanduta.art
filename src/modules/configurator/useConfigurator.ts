@@ -172,7 +172,7 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
 
         set({ product, selections, loading: false });
         recompute(selections);
-      } catch (error) {
+      } catch (_error) {
         console.error('Configurator: unable to load product', error);
         set({ loading: false, errors: ['Nu am reușit să încărcăm produsul'], product: undefined });
         throw error;

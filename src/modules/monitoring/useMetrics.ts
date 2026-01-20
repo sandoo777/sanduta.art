@@ -367,7 +367,7 @@ class MetricsCollector {
             }],
           }),
         });
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to send metric to Datadog:', error);
       }
     }
@@ -382,7 +382,7 @@ class MetricsCollector {
           },
           body: JSON.stringify(metric),
         });
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to send metric to custom endpoint:', error);
       }
     }
@@ -424,7 +424,7 @@ export function useClientMetrics() {
           timestamp: new Date().toISOString(),
         }),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to send metric:', error);
     }
   };

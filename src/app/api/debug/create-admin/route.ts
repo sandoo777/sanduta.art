@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const pool = new Pool({
       host: 'localhost',
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         password: 'admin123',
       },
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     return NextResponse.json({
       success: false,
       error: error.message,

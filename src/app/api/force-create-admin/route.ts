@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 // Force create admin - useful for initial setup
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   try {
     const body = await request.json();
     const { email, password, name, secret } = body;
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         role: admin.role,
       },
     });
-  } catch (error: unknown) {
+  } catch (_error: unknown) {
     console.error('Force create admin error:', error);
     return NextResponse.json(
       { 

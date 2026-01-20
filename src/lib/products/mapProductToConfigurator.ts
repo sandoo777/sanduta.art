@@ -64,7 +64,7 @@ function sanitizePricing(product: Product): ProductPricing {
       formula: parsed.formula,
       discounts: parsed.discounts,
     };
-  } catch (error) {
+  } catch (_error) {
     console.warn('Failed to parse pricing payload', error);
     return fallback;
   }
@@ -81,7 +81,7 @@ function parseJsonField<T>(value?: unknown): T | undefined {
     }
 
     return value as T;
-  } catch (error) {
+  } catch (_error) {
     console.warn('Failed to parse JSON field', error);
     return undefined;
   }
@@ -112,7 +112,7 @@ function parseJsonNotes<T>(payload?: string | null): T | undefined {
 
   try {
     return JSON.parse(trimmed) as T;
-  } catch (error) {
+  } catch (_error) {
     console.warn('Unable to parse notes payload as JSON', error);
     return undefined;
   }

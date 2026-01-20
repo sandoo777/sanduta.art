@@ -60,7 +60,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedAddress);
-  } catch (error) {
+  } catch (_error) {
     console.error("Error updating address:", error);
     return NextResponse.json(
       { error: "Failed to update address" },
@@ -106,7 +106,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error deleting address:", error);
     return NextResponse.json(
       { error: "Failed to delete address" },

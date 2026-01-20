@@ -64,7 +64,7 @@ export default function AuditLogsPage() {
       const data = await response.json();
       setLogs(data.logs || []);
       setTotalPages(data.pagination?.totalPages || 1);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch audit logs:", error);
     } finally {
       setLoading(false);

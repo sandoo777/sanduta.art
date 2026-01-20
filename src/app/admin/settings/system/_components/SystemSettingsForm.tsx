@@ -49,7 +49,7 @@ export function SystemSettingsForm() {
         timezone: settings.timezone || "Europe/Chisinau",
         low_stock_threshold: settings.low_stock_threshold || "10",
       });
-    } catch (error) {
+    } catch (_error) {
       console.error("Error loading settings:", error);
     }
   };
@@ -63,7 +63,7 @@ export function SystemSettingsForm() {
       await updateSystemSettings(formData);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
+    } catch (_error) {
       console.error("Error saving settings:", error);
     } finally {
       setIsSaving(false);

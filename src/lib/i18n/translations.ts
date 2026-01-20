@@ -24,7 +24,7 @@ export async function loadTranslations(locale: Locale): Promise<TranslationDicti
     const data = translations.default || translations;
     translationsCache.set(locale, data);
     return data;
-  } catch (error) {
+  } catch (_error) {
     console.error(`Failed to load translations for ${locale}:`, error);
     
     // Fallback la limba implicită

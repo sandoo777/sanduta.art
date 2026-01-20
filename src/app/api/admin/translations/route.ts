@@ -10,7 +10,7 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import { SUPPORTED_LOCALES, type Locale } from '@/i18n/config';
 import { loadTranslations } from '@/lib/i18n/translations';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PUT(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;

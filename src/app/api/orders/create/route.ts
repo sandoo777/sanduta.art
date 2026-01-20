@@ -10,7 +10,7 @@ import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
  * Creează o comandă nouă cu datele din checkout
  * Acest endpoint este folosit de useCheckout hook
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (_error) {
     logApiError('API:Orders:Create', error, { action: 'create_order' });
     return createErrorResponse(
       'Eroare la crearea comenzii. Te rugăm să încerci din nou sau contactează suportul.',

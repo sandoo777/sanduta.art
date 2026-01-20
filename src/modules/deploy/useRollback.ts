@@ -158,7 +158,7 @@ export class RollbackSystem {
       await this.notifyRollback(options, result);
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(error instanceof Error ? error.message : String(error));
       result.errors = this.errors;
       result.duration = Date.now() - this.startTime;
@@ -205,7 +205,7 @@ export class RollbackSystem {
         databaseSnapshot: `db-snapshot-${version}`,
         storageSnapshot: `storage-snapshot-${version}`,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:GetRecordFailed', 'Failed to get deployment record', {
         error,
       });
@@ -251,7 +251,7 @@ export class RollbackSystem {
       });
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`Deployment rollback failed: ${error}`);
       logger.error('Rollback:Deployment:Failed', 'Deployment rollback failed', {
         error,
@@ -289,7 +289,7 @@ export class RollbackSystem {
       });
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`Database rollback failed: ${error}`);
       logger.error('Rollback:Database:Failed', 'Database rollback failed', {
         error,
@@ -324,7 +324,7 @@ export class RollbackSystem {
       });
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`Storage rollback failed: ${error}`);
       logger.error('Rollback:Storage:Failed', 'Storage rollback failed', {
         error,
@@ -351,7 +351,7 @@ export class RollbackSystem {
       logger.info('Rollback:Theme:Success', 'Theme settings rolled back');
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`Theme rollback failed: ${error}`);
       logger.error('Rollback:Theme:Failed', 'Theme rollback failed', { error });
       return false;
@@ -376,7 +376,7 @@ export class RollbackSystem {
       logger.info('Rollback:CMS:Success', 'CMS content rolled back');
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.errors.push(`CMS rollback failed: ${error}`);
       logger.error('Rollback:CMS:Failed', 'CMS rollback failed', { error });
       return false;
@@ -403,7 +403,7 @@ export class RollbackSystem {
       }
 
       logger.info('Rollback:Verify:Success', 'Rollback verified successfully');
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:Verify:Failed', 'Rollback verification failed', {
         error,
       });
@@ -424,7 +424,7 @@ export class RollbackSystem {
         deploymentId,
         status,
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:UpdateStatus:Failed', 'Failed to update status', {
         error,
       });
@@ -465,7 +465,7 @@ Steps:
       }
 
       logger.info('Rollback:Notify', 'Notification sent');
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:Notify:Failed', 'Failed to send notification', {
         error,
       });
@@ -534,7 +534,7 @@ Error: ${error instanceof Error ? error.message : String(error)}
       });
 
       return [];
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:History:Failed', 'Failed to get history', {
         error,
       });
@@ -572,7 +572,7 @@ Error: ${error instanceof Error ? error.message : String(error)}
       });
 
       return { databaseSnapshot, storageSnapshot };
-    } catch (error) {
+    } catch (_error) {
       logger.error('Rollback:CreateSnapshot:Failed', 'Failed to create snapshot', {
         error,
       });
@@ -595,7 +595,7 @@ export function useRollback() {
       const result = await rollbackSystem.rollback(options);
       setRollbackResult(result);
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error('useRollback', 'Rollback failed', { error });
       throw error;
     } finally {

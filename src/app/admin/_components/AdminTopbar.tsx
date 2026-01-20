@@ -10,7 +10,7 @@ interface AdminTopbarProps {
 }
 
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
-  const { user } = useCurrentUser();
+  const { user: _user } = useCurrentUser();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = async () => {

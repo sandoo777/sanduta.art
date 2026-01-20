@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ activities });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching security activity:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -74,7 +74,7 @@ export async function hashPassword(password: string): Promise<string> {
     });
     
     return hash;
-  } catch (error) {
+  } catch (_error) {
     console.error('Argon2 hashing error:', error);
     throw new Error('Failed to hash password');
   }
@@ -111,7 +111,7 @@ export async function verifyPassword(
       console.error('Unknown hash format');
       return false;
     }
-  } catch (error) {
+  } catch (_error) {
     console.error('Password verification error:', error);
     return false;
   }

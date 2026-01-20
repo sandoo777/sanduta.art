@@ -67,7 +67,7 @@ export default function CatalogClient({ initialCategoryId }: CatalogClientProps 
           const productsData = await productsRes.json();
           setProducts(productsData);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);

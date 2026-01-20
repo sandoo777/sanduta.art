@@ -97,7 +97,7 @@ export class BackupVersioning {
 
       // Sort by version (newest first)
       return versions.sort((a, b) => b.version - a.version);
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to list versions', { error, filter });
       throw error;
     }
@@ -128,7 +128,7 @@ export class BackupVersioning {
         category: backup.category,
         metadata: backup,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to get version', { error, backupId });
       throw error;
     }
@@ -176,7 +176,7 @@ export class BackupVersioning {
         },
         similarity,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to compare versions', {
         error,
         version1Id,
@@ -212,7 +212,7 @@ export class BackupVersioning {
       await fs.writeFile(metadataFile, JSON.stringify(metadata, null, 2));
 
       logger.info('BackupVersioning', 'Version tagged', { backupId, tag });
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to tag version', { error, backupId, tag });
       throw error;
     }
@@ -276,7 +276,7 @@ export class BackupVersioning {
           const backupDir = path.join(BackupEngine['config'].basePath, backupId);
           await fs.rm(backupDir, { recursive: true, force: true });
           logger.info('BackupVersioning', 'Version deleted', { backupId });
-        } catch (error) {
+        } catch (_error) {
           const err = error instanceof Error ? error.message : String(error);
           errors.push(`Failed to delete ${backupId}: ${err}`);
           logger.error('BackupVersioning', 'Failed to delete version', { error, backupId });
@@ -294,7 +294,7 @@ export class BackupVersioning {
         kept: toKeep.length,
         errors,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to enforce retention policy', { error });
       throw error;
     }
@@ -307,7 +307,7 @@ export class BackupVersioning {
     try {
       const versions = await this.listVersions();
       return versions.slice(0, limit);
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupVersioning', 'Failed to get version history', { error });
       throw error;
     }
@@ -343,7 +343,7 @@ export class BackupVersioning {
       } else {
         throw new Error(result.error || 'Rollback failed');
       }
-    } catch (error) {
+    } catch (_error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('BackupVersioning', 'Rollback failed', { error, backupId });
       return {

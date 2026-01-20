@@ -8,7 +8,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { BackupEngine } from '@/modules/backup/useBackupEngine';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Only ADMIN can access backups
     const { user, error } = await requireRole(['ADMIN']);
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
  * API: Create Manual Backup
  * POST /api/admin/backups
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     // Only ADMIN can create backups
     const { user, error } = await requireRole(['ADMIN']);

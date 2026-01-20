@@ -36,7 +36,7 @@ export function CategoriesMegaMenu() {
           const data = await res.json();
           setCategories(data);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Error fetching categories:', error);
       } finally {
         setLoading(false);

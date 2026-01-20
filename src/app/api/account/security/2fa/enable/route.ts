@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       success: true, 
       message: 'Autentificarea în doi pași a fost activată cu succes' 
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error enabling 2FA:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -8,7 +8,7 @@ import path from 'path';
  * GET /api/admin/qa/performance-metrics
  * Fetch Lighthouse performance metrics from recent runs
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Check authorization
     const { user, error } = await requireRole(['ADMIN']);

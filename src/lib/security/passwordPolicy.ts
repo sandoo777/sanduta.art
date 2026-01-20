@@ -217,7 +217,7 @@ export class PasswordPolicy {
       );
 
       return daysSinceChange > PASSWORD_POLICY.expirationDays;
-    } catch (error) {
+    } catch (_error) {
       logger.error('PasswordPolicy', 'Failed to check password expiration', { error, userId });
       return false;
     }
@@ -235,7 +235,7 @@ export class PasswordPolicy {
       // TODO: Implement password history table
       // For now, return false
       return false;
-    } catch (error) {
+    } catch (_error) {
       logger.error('PasswordPolicy', 'Failed to check password history', { error, userId });
       return false;
     }
@@ -252,7 +252,7 @@ export class PasswordPolicy {
       //   data: { passwordExpired: true },
       // });
       logger.info('PasswordPolicy', 'Password change forced', { userId });
-    } catch (error) {
+    } catch (_error) {
       logger.error('PasswordPolicy', 'Failed to force password change', { error, userId });
       throw new Error('Failed to force password change');
     }

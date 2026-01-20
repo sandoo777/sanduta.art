@@ -10,7 +10,7 @@ import { join } from "path";
  * 
  * @see docs/IMAGE_UPLOAD.md for migration guide
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       type: file.type,
       name: fileName
     });
-  } catch (error) {
+  } catch (_error) {
     console.error("Upload error:", error);
     return NextResponse.json({ 
       error: "Upload failed", 

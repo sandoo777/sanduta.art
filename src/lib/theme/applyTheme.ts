@@ -247,7 +247,7 @@ export async function loadPublishedTheme(): Promise<ThemeConfig | null> {
     
     const data = await response.json();
     return data.theme;
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to load theme:', error);
     return null;
   }

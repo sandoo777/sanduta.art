@@ -77,7 +77,7 @@ class PaynetClient {
 
       const result = await response.json();
       return result;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating Paynet session:', error);
       throw error;
     }
@@ -102,7 +102,7 @@ class PaynetClient {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting Paynet session status:', error);
       throw error;
     }

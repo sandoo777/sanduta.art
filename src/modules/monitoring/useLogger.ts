@@ -226,7 +226,7 @@ class Logger {
       if (this.config.lokiUrl) {
         await this.sendToLoki(logsToFlush);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to flush logs:', error);
       // Re-add logs to buffer for retry
       this.buffer.unshift(...logsToFlush);
@@ -246,7 +246,7 @@ class Logger {
         },
         body: JSON.stringify(logs),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Logtail error:', error);
     }
   }
@@ -269,7 +269,7 @@ class Logger {
           ...log,
         }))),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Datadog error:', error);
     }
   }
@@ -291,7 +291,7 @@ class Logger {
         },
         body: bulkBody.map(item => JSON.stringify(item)).join('\n') + '\n',
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Elastic error:', error);
     }
   }
@@ -321,7 +321,7 @@ class Logger {
           ],
         }),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Loki error:', error);
     }
   }
@@ -563,7 +563,7 @@ export function useClientLogger() {
           timestamp: new Date().toISOString(),
         }),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to send log:', error);
     }
   };

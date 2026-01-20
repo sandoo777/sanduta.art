@@ -47,7 +47,7 @@ export default function ChangePasswordForm() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message || 'A apărut o eroare' });
     }
   };

@@ -394,7 +394,7 @@ describeMaterials("Materials & Inventory Backend", () => {
         await prisma.material.delete({
           where: { id: material.id },
         });
-      } catch (error) {
+      } catch (_error) {
         // Clean up on error
         await prisma.materialUsage.deleteMany({
           where: { materialId: material.id },

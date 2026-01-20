@@ -202,7 +202,7 @@ async function testConfiguratorFlow() {
     console.log('\n🎉 Toate testele au trecut cu succes!');
     console.log('✅ Sistemul de sincronizare Admin Panel → Configurator este functional!\n');
 
-  } catch (error) {
+  } catch (_error) {
     console.error('\n❌ Test failed:', error);
     process.exit(1);
   } finally {

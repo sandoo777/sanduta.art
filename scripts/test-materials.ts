@@ -65,7 +65,7 @@ async function runTests() {
         data: { id: testMaterial.id, name: testMaterial.name },
       });
       console.log("✅ PASSED: Material created\n");
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Create Material",
         passed: false,
@@ -100,7 +100,7 @@ async function runTests() {
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
 
       testMaterial = updated;
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Update Material",
         passed: false,
@@ -131,7 +131,7 @@ async function runTests() {
         message: `Material has ${consumptionCount} consumption records (should not be deletable)`,
       });
       console.log(`✅ PASSED: Material has consumption (${consumptionCount} records)\n`);
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Delete Material with Consumption",
         passed: false,
@@ -190,7 +190,7 @@ async function runTests() {
       }
 
       testMaterial = updatedMaterial;
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Consume Material",
         passed: false,
@@ -244,7 +244,7 @@ async function runTests() {
       });
 
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Get Material with History",
         passed: false,
@@ -295,7 +295,7 @@ async function runTests() {
       });
 
       console.log(passed ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "List Materials with Metrics",
         passed: false,
@@ -322,7 +322,7 @@ async function runTests() {
       });
 
       console.log(!hasEnoughStock ? "✅ PASSED\n" : "❌ FAILED\n");
-    } catch (error) {
+    } catch (_error) {
       results.push({
         test: "Insufficient Stock Validation",
         passed: false,
@@ -355,7 +355,7 @@ async function runTests() {
     );
     console.log("═══════════════════════════════════════\n");
 
-  } catch (error) {
+  } catch (_error) {
     console.error("❌ Fatal error during testing:", error);
   } finally {
     // Cleanup
@@ -380,7 +380,7 @@ async function runTests() {
         });
       }
       console.log("✅ Cleanup completed\n");
-    } catch (error) {
+    } catch (_error) {
       console.error("⚠️  Warning: Cleanup failed:", error);
     }
 

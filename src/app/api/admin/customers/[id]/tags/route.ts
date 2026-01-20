@@ -61,7 +61,7 @@ export async function POST(
     });
 
     return NextResponse.json(tag, { status: 201 });
-  } catch (error) {
+  } catch (_error) {
     console.error("Error creating customer tag:", error);
     return NextResponse.json(
       { error: "Eroare la adăugarea tag-ului" },

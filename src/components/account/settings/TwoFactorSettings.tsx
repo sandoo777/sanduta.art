@@ -34,7 +34,7 @@ export default function TwoFactorSettings() {
     try {
       await generate2FA();
       setShowSetup(true);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -59,7 +59,7 @@ export default function TwoFactorSettings() {
       setShowSetup(false);
       setVerificationCode('');
       setShowBackupCodes(true);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -78,7 +78,7 @@ export default function TwoFactorSettings() {
       setMessage({ type: 'success', text: result.message });
       setIs2FAEnabled(false);
       setDisableCode('');
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };

@@ -58,7 +58,7 @@ export default function UsersManagementPage() {
       const response = await fetch(`/api/admin/settings/users?${params}`);
       const data = await response.json();
       setUsers(data.users || []);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch users:", error);
     } finally {
       setLoading(false);

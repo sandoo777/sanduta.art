@@ -37,7 +37,7 @@ export function AssignOperator({
           const data = await response.json();
           setOperators(Array.isArray(data) ? data : data.data || []);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to fetch operators:', error);
         toast.error('Eroare la încărcarea operatorilor');
       } finally {

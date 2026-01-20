@@ -180,7 +180,7 @@ async function seedMainCategories() {
 
     console.log('✅ Seeding completat cu succes!\n');
 
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la seeding:', error);
     throw error;
   } finally {

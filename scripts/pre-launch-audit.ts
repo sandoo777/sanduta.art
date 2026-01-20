@@ -74,7 +74,7 @@ const auditChecks = {
         details: checks,
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Next.js Configuration',
         category: 'performance',
@@ -98,7 +98,7 @@ const auditChecks = {
         details: { count: imageImports.length },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Image Optimization',
         category: 'performance',
@@ -122,7 +122,7 @@ const auditChecks = {
         details: { count: revalidateDeclarations.length },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'ISR Revalidation',
         category: 'performance',
@@ -149,7 +149,7 @@ const auditChecks = {
         details: { indexes: indexCount, unique: uniqueCount },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Database Indexes',
         category: 'performance',
@@ -185,7 +185,7 @@ const auditChecks = {
         details: checks,
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Middleware Protection',
         category: 'security',
@@ -218,7 +218,7 @@ const auditChecks = {
         details: { found, missing: headers.filter(h => !found.includes(h)) },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Security Headers',
         category: 'security',
@@ -256,7 +256,7 @@ const auditChecks = {
         details: { files },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Auth Implementation',
         category: 'security',
@@ -296,7 +296,7 @@ const auditChecks = {
         details: { found, total: files.length },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'UI Components',
         category: 'ux',
@@ -333,7 +333,7 @@ const auditChecks = {
           : 'Lipsesc breakpoints custom',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Responsive Design',
         category: 'ux',
@@ -371,7 +371,7 @@ const auditChecks = {
           : 'Lipsește export metadata',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Metadata API',
         category: 'seo',
@@ -395,7 +395,7 @@ const auditChecks = {
           : 'Lipsește sitemap.ts',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Sitemap',
         category: 'seo',
@@ -422,7 +422,7 @@ const auditChecks = {
           : 'Lipsește robots.txt',
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Robots.txt',
         category: 'seo',
@@ -450,7 +450,7 @@ const auditChecks = {
         details: { models, enums },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Prisma Schema',
         category: 'data',
@@ -486,7 +486,7 @@ const auditChecks = {
         details: { functions },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Validation Library',
         category: 'data',
@@ -522,7 +522,7 @@ const auditChecks = {
         details: { count: routeCount },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'API Routes',
         category: 'workflow',
@@ -557,7 +557,7 @@ const auditChecks = {
         details: { files: testFiles },
         timestamp: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         name: 'Test Coverage',
         category: 'workflow',
@@ -594,7 +594,7 @@ async function findInDirectory(dir: string, pattern: RegExp): Promise<string[]> 
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Skip inaccessible directories
     }
   }
@@ -620,7 +620,7 @@ async function countFilesRecursive(dir: string, pattern: RegExp): Promise<number
           count++;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Skip inaccessible directories
     }
   }
@@ -824,7 +824,7 @@ async function main() {
     }
     
     process.exit(0);
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la rularea auditului:', error);
     process.exit(1);
   }

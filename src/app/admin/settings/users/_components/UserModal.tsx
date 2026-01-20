@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useSettings, User } from "@/modules/settings/useSettings";
@@ -86,7 +86,7 @@ export function UserModal({ user, onClose, canManageRoles }: UserModalProps) {
       }
 
       onClose(true);
-    } catch (error) {
+    } catch (_error) {
       // Error is handled by the hook
       console.error("Error saving user:", error);
     }

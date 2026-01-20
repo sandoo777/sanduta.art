@@ -185,7 +185,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
         ]);
 
         setResources({ categories, materials, printMethods, finishing, machines });
-      } catch (error) {
+      } catch (_error) {
         console.error('Error loading builder resources:', error);
         toast.error('Nu am putut încărca resursele necesare pentru builder');
       } finally {
@@ -204,7 +204,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
           const product = await fetchFullProduct(productId);
           setFormData(mapProductToForm(product));
           setSlugLocked(true);
-        } catch (error) {
+        } catch (_error) {
           console.error('Error loading product:', error);
         } finally {
           setInitialLoading(false);
@@ -295,7 +295,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
       } else if (productId) {
         await updateFullProduct(productId, payload);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Error saving product:', error);
     }
   };

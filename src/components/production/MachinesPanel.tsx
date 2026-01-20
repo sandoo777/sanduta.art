@@ -44,7 +44,7 @@ export default function MachinesPanel() {
         const data = await response.json();
         setMachines(data);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to fetch machines:', error);
     } finally {
       setLoading(false);

@@ -38,7 +38,7 @@ export async function GET(
       costPerUnit: operation.costPerUnit ? Number(operation.costPerUnit) : null,
       costPerM2: operation.costPerM2 ? Number(operation.costPerM2) : null,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching finishing operation:', error);
     return NextResponse.json(
       { error: 'Failed to fetch finishing operation' },
@@ -96,7 +96,7 @@ export async function PATCH(
       costPerUnit: operation.costPerUnit ? Number(operation.costPerUnit) : null,
       costPerM2: operation.costPerM2 ? Number(operation.costPerM2) : null,
     });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error updating finishing operation:', error);
     return NextResponse.json(
       { error: 'Failed to update finishing operation' },
@@ -122,7 +122,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error deleting finishing operation:', error);
     return NextResponse.json(
       { error: 'Failed to delete finishing operation' },

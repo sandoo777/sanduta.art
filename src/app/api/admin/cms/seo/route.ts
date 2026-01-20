@@ -34,7 +34,7 @@ Sitemap: https://sanduta.art/sitemap.xml`,
 };
 
 // GET /api/admin/cms/seo
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 }
 
 // PATCH /api/admin/cms/seo
-export async function PATCH(req: NextRequest) {
+export async function PATCH(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;

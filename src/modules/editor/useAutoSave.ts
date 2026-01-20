@@ -39,7 +39,7 @@ export function useAutoSave() {
       try {
         await saveProject();
         lastSaveRef.current = currentSnapshot;
-      } catch (error) {
+      } catch (_error) {
         console.error('Auto-save failed:', error);
       }
     }, AUTO_SAVE_DELAY);

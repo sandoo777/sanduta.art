@@ -136,7 +136,7 @@ export class BackupEngine {
       });
 
       return metadata;
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Full backup failed', { error, backupId });
       throw error;
     }
@@ -180,7 +180,7 @@ export class BackupEngine {
       });
 
       return { size: stats.size, path: encryptedFile };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Database backup failed', { error });
       throw error;
     }
@@ -229,7 +229,7 @@ export class BackupEngine {
       logger.info('BackupEngine', 'Files backup completed', { size: stats.size });
 
       return { size: stats.size, path: encryptedArchive };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Files backup failed', { error });
       throw error;
     }
@@ -314,7 +314,7 @@ export class BackupEngine {
       logger.info('BackupEngine', 'Config backup completed', { size: stats.size });
 
       return { size: stats.size, path: encryptedFile };
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Config backup failed', { error });
       throw error;
     }
@@ -460,7 +460,7 @@ export class BackupEngine {
       return backups.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Failed to list backups', { error });
       return [];
     }
@@ -507,7 +507,7 @@ export class BackupEngine {
       }
 
       logger.info('BackupEngine', 'Backup cleanup completed');
-    } catch (error) {
+    } catch (_error) {
       logger.error('BackupEngine', 'Backup cleanup failed', { error });
     }
   }

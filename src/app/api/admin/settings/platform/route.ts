@@ -100,7 +100,7 @@ let platformSettings: PlatformSettings = {
  * GET /api/admin/settings/platform
  * Obține toate setările platformei
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
     if (error) return error;
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
  * PUT /api/admin/settings/platform
  * Actualizează setările platformei
  */
-export async function PUT(req: NextRequest) {
+export async function PUT(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN"]);
     if (error) return error;
@@ -175,7 +175,7 @@ export async function PUT(req: NextRequest) {
  * PATCH /api/admin/settings/platform
  * Actualizează parțial setările platformei
  */
-export async function PATCH(req: NextRequest) {
+export async function PATCH(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN"]);
     if (error) return error;

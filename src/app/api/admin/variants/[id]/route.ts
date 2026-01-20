@@ -29,7 +29,7 @@ export async function GET(
     }
 
     return NextResponse.json(variant);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching variant:', error);
     return NextResponse.json(
       { error: "Failed to fetch variant" },
@@ -94,7 +94,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(variant);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error updating variant:', error);
     return NextResponse.json(
       { error: "Failed to update variant" },
@@ -130,7 +130,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "Variant deleted successfully" });
-  } catch (error) {
+  } catch (_error) {
     console.error('Error deleting variant:', error);
     return NextResponse.json(
       { error: "Failed to delete variant" },

@@ -26,7 +26,7 @@ export default function ActiveSessions() {
     try {
       const result = await revokeSession(sessionId);
       setMessage({ type: 'success', text: result.message });
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -42,7 +42,7 @@ export default function ActiveSessions() {
       setMessage({ type: 'success', text: result.message });
       // Reload after short delay
       setTimeout(() => window.location.reload(), 2000);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };

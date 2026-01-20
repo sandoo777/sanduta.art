@@ -163,7 +163,7 @@ export function DynamicQuickViewExample() {
       const data = await response.json();
       setProduct(data);
       setIsOpen(true);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error fetching product:', error);
     } finally {
       setLoading(false);

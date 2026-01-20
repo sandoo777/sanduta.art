@@ -118,7 +118,7 @@ export default function EditorTopbar() {
 
       const slug = resolveProductSlugFromPath();
       router.push(`/produse/${slug}/configure?fromEditor=true&projectId=${payload.projectId}`);
-    } catch (error) {
+    } catch (_error) {
       console.error('Finalize error:', error);
       toast.error('Exportul a eșuat. Încearcă din nou.');
       setFinalizeMessage('');

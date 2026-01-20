@@ -8,7 +8,7 @@ import { requireRole } from '@/lib/auth-helpers';
 import { BackupMonitoring } from '@/modules/backup/useBackupMonitoring';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Only ADMIN can access backup health
     const { user, error } = await requireRole(['ADMIN']);

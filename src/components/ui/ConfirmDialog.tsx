@@ -42,7 +42,7 @@ export function ConfirmDialog({
     try {
       await onConfirm();
       onClose();
-    } catch (error) {
+    } catch (_error) {
       console.error('Confirmation error:', error);
     } finally {
       setLoading(false);

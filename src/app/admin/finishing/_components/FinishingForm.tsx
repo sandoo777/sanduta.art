@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { MaterialCompatibilitySelector } from './MaterialCompatibilitySelector';
 import { PrintMethodCompatibilitySelector } from './PrintMethodCompatibilitySelector';
@@ -62,7 +62,7 @@ export function FinishingForm({ operation, onSubmit, onClose }: FinishingFormPro
         active: formData.active,
       });
       onClose();
-    } catch (error) {
+    } catch (_error) {
       console.error('Error submitting form:', error);
     } finally {
       setSubmitting(false);

@@ -68,7 +68,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to fetch orders');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to fetch order');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -100,7 +100,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update status');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -118,7 +118,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update payment status');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to assign operator');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -154,7 +154,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to add item');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -172,7 +172,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update item');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -187,7 +187,7 @@ export function useOrders() {
       });
       if (!response.ok) throw new Error('Failed to delete item');
       return { success: true };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -205,7 +205,7 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to add file');
       const data = await response.json();
       return { success: true, data };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -220,7 +220,7 @@ export function useOrders() {
       });
       if (!response.ok) throw new Error('Failed to delete file');
       return { success: true };
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       return { success: false, error: error.message };
     } finally {
       setLoading(false);

@@ -72,7 +72,7 @@ async function verifyCategory() {
     console.log('5. ✓ Date test șterse\n');
     
     console.log('✅ Toate verificările au trecut! Modelul Category este funcțional.\n');
-  } catch (error) {
+  } catch (_error) {
     console.error('❌ Eroare la verificare:', error);
     throw error;
   } finally {

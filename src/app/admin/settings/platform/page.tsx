@@ -64,7 +64,7 @@ export default function PlatformSettingsPage() {
       const response = await fetch("/api/admin/settings/platform");
       const data = await response.json();
       setSettings(data);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch platform settings:", error);
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export default function PlatformSettingsPage() {
         setSettings(result.settings);
         alert("Setările au fost salvate cu succes!");
       }
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to save settings:", error);
       alert("Eroare la salvarea setărilor!");
     } finally {

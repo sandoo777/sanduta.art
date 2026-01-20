@@ -78,7 +78,7 @@ export const GET = withRole(
       }
 
       return NextResponse.json(job);
-    } catch (error) {
+    } catch (_error) {
       console.error("Error fetching production job:", error);
       return NextResponse.json(
         { error: "Failed to fetch production job" },
@@ -215,7 +215,7 @@ export const PATCH = withRole(
       }
 
       return NextResponse.json(updatedJob);
-    } catch (error) {
+    } catch (_error) {
       console.error("Error updating production job:", error);
       return NextResponse.json(
         { error: "Failed to update production job" },
@@ -280,7 +280,7 @@ export const DELETE = withRole(
       });
 
       return NextResponse.json({ message: "Production job deleted successfully" });
-    } catch (error) {
+    } catch (_error) {
       console.error("Error deleting production job:", error);
       return NextResponse.json(
         { error: "Failed to delete production job" },

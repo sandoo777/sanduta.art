@@ -8,7 +8,7 @@ import { ActivityType } from "@prisma/client";
  * GET /api/admin/settings/audit-logs
  * Obține audit logs cu filtrare și paginare
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
     if (error) return error;
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
  * POST /api/admin/settings/audit-logs
  * Creează un nou audit log entry (pentru acțiuni custom)
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
     if (error) return error;
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
  * GET /api/admin/settings/audit-logs/stats
  * Obține statistici despre audit logs
  */
-export async function getAuditStats(req: NextRequest) {
+export async function getAuditStats(_req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN"]);
     if (error) return error;

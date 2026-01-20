@@ -90,7 +90,7 @@ async function retry<T>(
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
-    } catch (error) {
+    } catch (_error) {
       if (i === retries - 1) throw error;
       log(`Retry ${i + 1}/${retries} after ${delay}ms...`, 'warn');
       await sleep(delay);
@@ -182,7 +182,7 @@ async function step3_BuildAndTest() {
   try {
     await execAsync('npm run smoke-tests', { timeout: 30000 });
     log('Smoke tests passed', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('Smoke tests failed - continuing anyway (hotfix mode)', 'warn');
   }
 }
@@ -232,7 +232,7 @@ async function step6_DeployToProduction() {
   try {
     await execAsync('npx prisma migrate deploy');
     log('Database migrations applied', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('No migrations to apply', 'info');
   }
   
@@ -295,7 +295,7 @@ async function step8_NotifyTeam(commitHash: string, message: string) {
     });
     
     log('Team notified via Slack', 'success');
-  } catch (error) {
+  } catch (_error) {
     log('Failed to send Slack notification', 'warn');
   }
 }
@@ -324,7 +324,7 @@ async function rollback(targetCommit: string) {
     
     // Notify team
     await step8_NotifyTeam('ROLLBACK', `Rolled back commit ${targetCommit.substring(0, 8)}`);
-  } catch (error) {
+  } catch (_error) {
     log(`❌ ROLLBACK FAILED: ${error}`, 'error');
     log('🚨 MANUAL INTERVENTION REQUIRED', 'error');
     throw error;
@@ -430,7 +430,7 @@ async function executeHotfix(commitMessage: string): Promise<HotfixReport> {
     };
     
     return report;
-  } catch (error) {
+  } catch (_error) {
     const errorMsg = String(error);
     
     log(`\n❌ HOTFIX FAILED: ${errorMsg}`, 'error');
@@ -501,7 +501,7 @@ async function main() {
     console.log('\n📊 Monitor the platform closely for the next 30 minutes\n');
     
     process.exit(0);
-  } catch (error) {
+  } catch (_error) {
     console.error('\n❌ Hotfix deployment failed\n');
     process.exit(1);
   }

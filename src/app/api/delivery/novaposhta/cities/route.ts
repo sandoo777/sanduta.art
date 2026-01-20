@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { novaPoshtaClient } from '@/lib/novaposhta';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (_error) {
     console.error('Error getting cities:', error);
     return NextResponse.json(
       { error: 'Failed to get cities' },
