@@ -47,7 +47,7 @@ export default function CustomerTimeline({ customer }: CustomerTimelineProps) {
 
     // Notes added events
     if (customer.notes && customer.notes.length > 0) {
-      customer.notes.slice(0, 3).forEach((note, index) => {
+      customer.notes.slice(0, 3).forEach((note, _index) => {
         events.push({
           id: `note-${note.id}`,
           type: "note",

@@ -15,7 +15,11 @@ import {
   Printer,
   Scissors,
   Gauge,
-  X
+  X,
+  UserCog,
+  Briefcase,
+  Wrench,
+  ExternalLink
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -26,23 +30,152 @@ interface AdminSidebarProps {
 export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
-  const navigation = [
+  // 1. Administrarea Site-ului / Vitrină
+  const storeManagement = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Categories', href: '/admin/categories', icon: Tag },
     { name: 'Customers', href: '/admin/customers', icon: Users },
-    { name: 'Production', href: '/admin/production', icon: Factory },
-    { name: 'Materials', href: '/admin/materials', icon: Boxes },
+  ];
+
+  // 2. Administrarea Tipografiei
+  const productionManagement = [
+    { name: 'Production Orders', href: '/admin/production', icon: Factory },
     { name: 'Print Methods', href: '/admin/print-methods', icon: Printer },
     { name: 'Finishing', href: '/admin/finishing', icon: Scissors },
+    { name: 'Materials', href: '/admin/materials', icon: Boxes },
     { name: 'Machines', href: '/admin/machines', icon: Gauge },
+  ];
+
+  // 3. Administrare Angajați & Utilizatori
+  const staffManagement = [
+    { name: 'Users & Roles', href: '/admin/users', icon: UserCog },
+    { name: 'Manager Dashboard', href: '/manager', icon: Briefcase, external: true },
+    { name: 'Operator Dashboard', href: '/operator', icon: Wrench, external: true },
+  ];
+
+  // 4. Rapoarte & Comenzi
+  const reportsManagement = [
+    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
+  ];
+
+  // 5. Setări
+  const systemManagement = [
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   const isActive = (href: string) => {
     return pathname === href || pathname?.startsWith(href + '/');
+  };
+
+  const renderNavSection = (
+    title: string, 
+    emoji: string,
+    items: Array<{ name: string; href: string; icon: any; external?: boolean }>,
+    accentColor: string = 'purple'
+  ) => {
+    const colorClasses = {
+      purple: {
+        bg: 'bg-gradient-to-r from-purple-50 to-purple-100/50',
+        active: 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md shadow-purple-200',
+        hover: 'hover:bg-purple-50/80',
+        icon: 'text-purple-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-purple-500',
+        title: 'text-purple-700'
+      },
+      blue: {
+        bg: 'bg-gradient-to-r from-blue-50 to-blue-100/50',
+        active: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-200',
+        hover: 'hover:bg-blue-50/80',
+        icon: 'text-blue-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-blue-500',
+        title: 'text-blue-700'
+      },
+      green: {
+        bg: 'bg-gradient-to-r from-green-50 to-green-100/50',
+        active: 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md shadow-green-200',
+        hover: 'hover:bg-green-50/80',
+        icon: 'text-green-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-green-500',
+        title: 'text-green-700'
+      },
+      orange: {
+        bg: 'bg-gradient-to-r from-orange-50 to-orange-100/50',
+        active: 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md shadow-orange-200',
+        hover: 'hover:bg-orange-50/80',
+        icon: 'text-orange-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-orange-500',
+        title: 'text-orange-700'
+      },
+      slate: {
+        bg: 'bg-gradient-to-r from-slate-50 to-slate-100/50',
+        active: 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-md shadow-slate-200',
+        hover: 'hover:bg-slate-50/80',
+        icon: 'text-slate-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-slate-500',
+        title: 'text-slate-700'
+      }
+    };
+
+    const colors = colorClasses[accentColor as keyof typeof colorClasses] || colorClasses.purple;
+
+    return (
+      <div className="mb-5">
+        <div className={`mx-2 mb-3 px-3 py-2 rounded-lg ${colors.bg} border-l-4 ${colors.border.replace('border-l-4 ', '')}`}>
+          <p className={`text-xs font-bold ${colors.title} uppercase tracking-wide flex items-center gap-2`}>
+            <span className="text-base">{emoji}</span>
+            {title}
+          </p>
+        </div>
+        <div className="space-y-1 px-2">
+          {items.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
+                className={`
+                  group flex items-center gap-3 px-3 py-2.5 rounded-lg
+                  transition-all duration-200 ease-in-out
+                  ${active 
+                    ? `${colors.active} font-semibold ${colors.border}` 
+                    : `text-gray-700 ${colors.hover} hover:shadow-sm hover:translate-x-1`
+                  }
+                `}
+              >
+                <div className={`
+                  flex items-center justify-center w-8 h-8 rounded-lg
+                  transition-all duration-200
+                  ${active 
+                    ? 'bg-white/20' 
+                    : `${colors.bg} group-hover:scale-110`
+                  }
+                `}>
+                  <Icon className={`w-4 h-4 ${active ? colors.iconActive : colors.icon}`} />
+                </div>
+                <span className={`text-sm flex-1 ${active ? 'font-semibold' : 'font-medium'}`}>
+                  {item.name}
+                </span>
+                {item.external && (
+                  <ExternalLink className={`w-3.5 h-3.5 ${active ? 'opacity-70' : 'opacity-40 group-hover:opacity-70'}`} />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -59,18 +192,21 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-white border-r border-gray-200
+          w-64 bg-gradient-to-b from-white to-gray-50/50 border-r border-gray-200 shadow-lg
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-          <Link href="/admin" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/80 bg-white/80 backdrop-blur-sm">
+          <Link href="/admin" className="flex items-center space-x-2.5 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-200 group-hover:shadow-lg group-hover:shadow-purple-300 transition-all duration-200 group-hover:scale-105">
               <span className="text-white font-bold text-sm">SA</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">Admin</span>
+            <div>
+              <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Admin</span>
+              <p className="text-[10px] text-gray-500 font-medium">Control Panel</p>
+            </div>
           </Link>
           
           {/* Close button for mobile */}
@@ -83,43 +219,42 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={onClose}
-                className={`
-                  flex items-center space-x-3 px-4 py-3 rounded-lg
-                  transition-all duration-200
-                  ${active 
-                    ? 'bg-purple-600/10 text-purple-600 font-semibold' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }
-                `}
-              >
-                <Icon className={`w-5 h-5 ${active ? 'text-purple-600' : ''}`} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+        <nav className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          {/* 1. Administrarea Site-ului / Vitrină */}
+          {renderNavSection('Administrare Site', '🏪', storeManagement, 'purple')}
+
+          {/* 2. Administrarea Tipografiei */}
+          {renderNavSection('Administrare Tipografie', '🏭', productionManagement, 'blue')}
+
+          {/* 3. Administrare Angajați */}
+          {renderNavSection('Angajați & Utilizatori', '👥', staffManagement, 'green')}
+
+          {/* 4. Rapoarte & Comenzi */}
+          {renderNavSection('Rapoarte & Comenzi', '📊', reportsManagement, 'orange')}
+
+          {/* 5. Setări Sistem */}
+          {renderNavSection('Sistem', '⚙️', systemManagement, 'slate')}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4">
-            <p className="text-sm font-semibold text-gray-900">Need Help?</p>
-            <p className="text-xs text-gray-600 mt-1">Check our documentation</p>
-            <Link 
-              href="/docs" 
-              className="text-xs text-purple-600 hover:text-purple-700 font-medium mt-2 inline-block"
-            >
-              View Docs →
-            </Link>
+        <div className="p-4 border-t border-gray-200/80 bg-white/80">
+          <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 rounded-xl p-4 border border-purple-100/50 shadow-sm">
+            <div className="flex items-start gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-lg">💡</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900">Need Help?</p>
+                <p className="text-xs text-gray-600 mt-0.5">Check our documentation</p>
+                <Link 
+                  href="/docs" 
+                  className="text-xs text-purple-600 hover:text-purple-700 font-semibold mt-2 inline-flex items-center gap-1 hover:gap-2 transition-all"
+                >
+                  View Docs
+                  <span>→</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </aside>

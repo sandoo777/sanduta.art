@@ -87,9 +87,7 @@ export function Hero() {
 
           {/* Image */}
           <div
-            className={`relative transition-all duration-1000 delay-300 ${
-              mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}
+            className="relative animate-fadeInUp"
           >
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 shadow-2xl">
               {/* Placeholder for product showcase */}

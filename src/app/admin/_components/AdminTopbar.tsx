@@ -1,16 +1,17 @@
 'use client';
 
-import { Menu, LogOut, User, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, User, ChevronDown, ExternalLink } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface AdminTopbarProps {
   onMenuClick: () => void;
 }
 
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
-  const { user: _user } = useCurrentUser();
+  const { user } = useCurrentUser();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = async () => {
@@ -36,6 +37,17 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
         {/* Right side - User info and actions */}
         <div className="flex items-center space-x-4">
+          {/* View Site Button */}
+          <Link 
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span className="hidden sm:inline">Vezi site-ul</span>
+          </Link>
+
           {/* User dropdown */}
           <div className="relative">
             <button

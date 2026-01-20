@@ -55,11 +55,9 @@ export default function CustomerModal({
         city: "",
         country: "",
       });
+      setErrors({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer, isOpen]);
-    }
-    setErrors({});
   }, [customer, isOpen]);
 
   // Validate form

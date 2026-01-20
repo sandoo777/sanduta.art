@@ -9,8 +9,6 @@
  * Usage: npm run smoke-tests
  */
 
-import * as https from 'https';
-
 // ============================================
 // CONFIGURATION
 // ============================================

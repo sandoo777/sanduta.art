@@ -52,7 +52,7 @@ export async function requireRole(
     return authResult;
   }
 
-  const { user: _user } = authResult;
+  const { user } = authResult;
 
   if (!allowedRoles.includes(user.role)) {
     return NextResponse.json(

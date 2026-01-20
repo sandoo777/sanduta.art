@@ -133,7 +133,7 @@ export default function JobTimeline(props: JobTimelineProps) {
 
       <div className="space-y-6">
         {events.length > 0 ? (
-          events.map((event, index) => (
+          events.map((event, _index) => (
             <div key={event.id} className="flex gap-4">
               {/* Icon */}
               <div className="flex-shrink-0">

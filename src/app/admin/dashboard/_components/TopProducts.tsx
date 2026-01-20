@@ -1,16 +1,54 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { TrendingUp } from 'lucide-react';
 
-const mockProducts = [
-  { name: "Business Cards", sales: 340 },
-  { name: "Flyers A5", sales: 280 },
-  { name: "Photo Prints", sales: 190 },
-  { name: "Large Format Banner", sales: 120 }
-];
+interface Product {
+  name: string;
+  sales: number;
+}
 
 export function TopProducts() {
-  const maxSales = Math.max(...mockProducts.map(p => p.sales));
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTopProducts();
+  }, []);
+
+  const fetchTopProducts = async () => {
+    try {
+      const response = await fetch('/api/admin/dashboard/top-products');
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.products || []);
+      }
+    } catch (error) {
+      console.error('Error fetching top products:', error);
+      // Fallback to empty array
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const maxSales = products.length > 0 ? Math.max(...products.map((p) => p.sales)) : 1;
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Top Products</h2>
+          <TrendingUp className="w-5 h-5 text-green-600" />
+        </div>
+        <div className="animate-pulse space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-12 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -20,7 +58,7 @@ export function TopProducts() {
       </div>
       
       <div className="space-y-4">
-        {mockProducts.map((product, index) => {
+        {products.map((product, index) => {
           const percentage = (product.sales / maxSales) * 100;
           
           return (

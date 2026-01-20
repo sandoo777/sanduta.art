@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Role } from "@/lib/types-prisma";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 
 interface User {
   id: string;
@@ -37,7 +39,7 @@ export default function AdminUsersPage() {
       const data = await response.json();
       setUsers(data);
     } catch (_error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching users:', _error);
       alert('Failed to fetch users');
     } finally {
       setLoading(false);
@@ -105,6 +107,19 @@ export default function AdminUsersPage() {
       case Role.VIEWER:
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getRoleDashboard = (role: Role) => {
+    switch (role) {
+      case Role.ADMIN:
+        return '/admin';
+      case Role.MANAGER:
+        return '/manager';
+      case Role.OPERATOR:
+        return '/operator';
+      default:
+        return null;
     }
   };
 
@@ -181,12 +196,15 @@ export default function AdminUsersPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Joined
                   </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dashboard
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="b6-white divide-y divide-gray-200">
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
@@ -233,6 +251,19 @@ export default function AdminUsersPage() {
                           month: 'short',
                           day: 'numeric'
                         })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {getRoleDashboard(user.role) && (
+                          <Link
+                            href={getRoleDashboard(user.role)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Open
+                          </Link>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button

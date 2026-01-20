@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/admin/orders
- * List all orders with relations
+ * List all orders with pagination and filters
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -18,7 +18,35 @@ export async function GET(_req: NextRequest) {
       );
     }
 
+    // Pagination parameters
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const skip = (page - 1) * limit;
+
+    // Filter parameters
+    const status = searchParams.get('status');
+    const search = searchParams.get('search');
+
+    // Build where clause
+    const where: any = {};
+    if (status) {
+      where.status = status;
+    }
+    if (search) {
+      where.OR = [
+        { id: { contains: search, mode: 'insensitive' } },
+        { customer: { name: { contains: search, mode: 'insensitive' } } },
+        { customer: { email: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.order.count({ where });
+
+    // Get orders with pagination
     const orders = await prisma.order.findMany({
+      where,
       include: {
         customer: true,
         assignedTo: {
@@ -42,11 +70,23 @@ export async function GET(_req: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
+      skip,
+      take: limit,
     });
 
-    return NextResponse.json(orders);
+    return NextResponse.json({
+      orders,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page < Math.ceil(totalCount / limit),
+        hasPreviousPage: page > 1,
+      },
+    });
   } catch (_error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching orders:", _error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },
       { status: 500 }

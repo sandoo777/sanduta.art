@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // GET /api/admin/production - List production jobs with filters
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({ jobs });
   } catch (_error) {
-    console.error("Error fetching production jobs:", error);
+    console.error("Error fetching production jobs:", _error);
     return NextResponse.json(
       { error: "Failed to fetch production jobs" },
       { status: 500 }
