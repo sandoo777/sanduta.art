@@ -46,20 +46,44 @@ export interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = '' }) => {
+  // Mapping complet pentru toate statusurile din Prisma schema
   const statusConfig: {
     [key: string]: { variant: BadgeProps['variant']; label: string };
   } = {
-    pending: { variant: 'warning', label: 'В ожидании' },
-    processing: { variant: 'info', label: 'В обработке' },
-    completed: { variant: 'success', label: 'Завершен' },
-    cancelled: { variant: 'danger', label: 'Отменен' },
-    paid: { variant: 'success', label: 'Оплачен' },
-    failed: { variant: 'danger', label: 'Ошибка' },
-    shipped: { variant: 'info', label: 'Отправлен' },
-    delivered: { variant: 'success', label: 'Доставлен' },
+    // Order Status
+    'PENDING': { variant: 'warning', label: 'În așteptare' },
+    'IN_DESIGN': { variant: 'info', label: 'În design' },
+    'IN_PREPRODUCTION': { variant: 'info', label: 'Preproducție' },
+    'IN_PRODUCTION': { variant: 'primary', label: 'În producție' },
+    'IN_PRINTING': { variant: 'primary', label: 'Se printează' },
+    'QUALITY_CHECK': { variant: 'primary', label: 'Verificare calitate' },
+    'READY_FOR_DELIVERY': { variant: 'success', label: 'Gata livrare' },
+    'SHIPPED': { variant: 'info', label: 'Expediat' },
+    'DELIVERED': { variant: 'success', label: 'Livrat' },
+    'CANCELLED': { variant: 'danger', label: 'Anulat' },
+    
+    // Payment Status
+    'UNPAID': { variant: 'warning', label: 'Neplătit' },
+    'PAID': { variant: 'success', label: 'Plătit' },
+    'REFUNDED': { variant: 'info', label: 'Refund' },
+    'FAILED': { variant: 'danger', label: 'Plată eșuată' },
+    
+    // Delivery Status
+    'NOT_SHIPPED': { variant: 'default', label: 'Neexpediat' },
+    'OUT_FOR_DELIVERY': { variant: 'info', label: 'În livrare' },
+    
+    // Legacy/fallback
+    'pending': { variant: 'warning', label: 'În așteptare' },
+    'processing': { variant: 'info', label: 'În procesare' },
+    'completed': { variant: 'success', label: 'Finalizat' },
+    'cancelled': { variant: 'danger', label: 'Anulat' },
+    'paid': { variant: 'success', label: 'Plătit' },
+    'failed': { variant: 'danger', label: 'Eșuat' },
+    'shipped': { variant: 'info', label: 'Expediat' },
+    'delivered': { variant: 'success', label: 'Livrat' },
   };
 
-  const config = statusConfig[status.toLowerCase()] || {
+  const config = statusConfig[status] || statusConfig[status.toLowerCase()] || {
     variant: 'default' as const,
     label: status,
   };
