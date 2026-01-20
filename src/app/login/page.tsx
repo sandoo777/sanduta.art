@@ -4,32 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from 'next/link';
-import { Input, Button } from "@/components/ui";
-
-// Validation helpers
-const validateEmail = (email: string): string | null => {
-  if (!email) return null;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) ? null : "Adresa de email nu este validă";
-};
-
-const validatePassword = (password: string): string | null => {
-  if (!password) return null;
-  if (password.length < 6) return "Parola trebuie să aibă minim 6 caractere";
-  return null;
-};
+import { Form, FormField, FormLabel, FormMessage, Input, Button } from "@/components/ui";
+import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState({ email: false, password: false });
   
   const router = useRouter();
   const { data: session, status, update } = useSession();
@@ -39,26 +22,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
       setSuccessMessage("Cont creat cu succes! Te poți autentifica acum.");
-      // Clear after 5 seconds
       setTimeout(() => setSuccessMessage(""), 5000);
     }
-     
   }, [searchParams]);
-
-  // Real-time validation
-  useEffect(() => {
-    if (touched.email) {
-      setEmailError(validateEmail(email));
-    }
-     
-  }, [email, touched.email]);
-
-  useEffect(() => {
-    if (touched.password) {
-      setPasswordError(validatePassword(password));
-    }
-     
-  }, [password, touched.password]);
 
   // Redirect authenticated users
   useEffect(() => {
@@ -83,33 +49,16 @@ export default function LoginPage() {
     }
   }, [status, session]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Mark all fields as touched
-    setTouched({ email: true, password: true });
-    
-    // Validate
-    const emailErr = validateEmail(email);
-    const passwordErr = validatePassword(password);
-    
-    setEmailError(emailErr);
-    setPasswordError(passwordErr);
-    
-    if (emailErr || passwordErr) {
-      setGeneralError("Te rugăm să corectezi erorile de mai sus");
-      return;
-    }
-    
+  const handleSubmit = async (data: LoginFormData) => {
     setGeneralError("");
     setLoading(true);
 
     try {
-      console.log(`[Login] Attempting sign in for: ${email}`);
+      console.log(`[Login] Attempting sign in for: ${data.email}`);
       
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
@@ -118,7 +67,6 @@ export default function LoginPage() {
       if (result?.error) {
         console.error(`[Login] Sign in failed:`, result.error);
         
-        // Parse error message for better user feedback
         if (result.error.includes('email or password')) {
           setGeneralError("Email sau parolă incorectă");
         } else if (result.error.includes('required')) {
@@ -131,10 +79,7 @@ export default function LoginPage() {
         setLoading(false);
       } else if (result?.ok) {
         console.log(`[Login] Sign in successful, updating session...`);
-        // Force session update to get the latest data with role
         await update();
-        // Keep loading state - useEffect will handle redirect
-        // Don't set loading to false, component will unmount during navigation
       } else {
         console.error('[Login] Unexpected result:', result);
         setGeneralError("Autentificarea a eșuat. Te rugăm să încerci din nou.");
@@ -154,8 +99,6 @@ export default function LoginPage() {
       setGeneralError("Nu s-a putut conecta cu Google");
     }
   };
-
-  const isFormValid = email && password && !emailError && !passwordError;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
@@ -195,59 +138,82 @@ export default function LoginPage() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <Form<LoginFormData>
+            schema={loginSchema}
+            onSubmit={handleSubmit}
+            defaultValues={{ email: '', password: '' }}
+            className="space-y-4 sm:space-y-5"
+          >
             {/* Email Input */}
-            <Input
-              type="email"
-              label="Adresa de email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setTouched({ ...touched, email: true })}
-              error={touched.email ? emailError || undefined : undefined}
-              required
-              placeholder="exemplu@email.com"
-              leftIcon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                </svg>
-              }
-            />
+            <FormField<LoginFormData> name="email">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="email" required>
+                    Adresa de email
+                  </FormLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="exemplu@email.com"
+                    leftIcon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                      </svg>
+                    }
+                  />
+                  <FormMessage error={error} />
+                </div>
+              )}
+            </FormField>
 
             {/* Password Input */}
-            <Input
-              type={showPassword ? "text" : "password"}
-              label="Parola"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => setTouched({ ...touched, password: true })}
-              error={touched.password ? passwordError || undefined : undefined}
-              required
-              placeholder="••••••••"
-              leftIcon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              }
-              rightIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="focus:outline-none hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              }
-            />
+            <FormField<LoginFormData> name="password">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="password" required>
+                    Parola
+                  </FormLabel>
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="••••••••"
+                    leftIcon={
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    }
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="focus:outline-none hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    }
+                  />
+                  <FormMessage error={error} />
+                </div>
+              )}
+            </FormField>
             
             {/* Options */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 text-sm">
@@ -271,12 +237,11 @@ export default function LoginPage() {
               type="submit" 
               fullWidth 
               loading={loading}
-              disabled={!isFormValid}
               className="h-11 sm:h-12 text-sm sm:text-base font-semibold"
             >
               {loading ? 'Se conectează...' : 'Autentificare'}
             </Button>
-          </form>
+          </Form>
 
           {/* Divider */}
           <div className="relative my-6 sm:my-8">
