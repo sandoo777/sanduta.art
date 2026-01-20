@@ -14,12 +14,9 @@ import {
   Settings,
   Printer,
   Scissors,
-  Gauge,
-  X,
   UserCog,
-  Briefcase,
-  Wrench,
-  ExternalLink
+  X,
+  type LucideIcon
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -30,39 +27,28 @@ interface AdminSidebarProps {
 export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
-  // 1. Administrarea Site-ului / Vitrină
-  const storeManagement = [
+  // 📦 Secțiunea 1: CATALOG (Produse, Categorii, Clienți)
+  const catalogSection = [
+    { name: 'Produse', href: '/admin/products', icon: Package },
+    { name: 'Categorii', href: '/admin/categories', icon: Tag },
+    { name: 'Clienți', href: '/admin/customers', icon: Users },
+  ];
+
+  // 🏭 Secțiunea 2: PRODUCȚIE (Comenzi, Producție, Materiale, Metode)
+  const productionSection = [
+    { name: 'Comenzi', href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Coadă Producție', href: '/admin/production', icon: Factory },
+    { name: 'Materiale', href: '/admin/materials', icon: Boxes },
+    { name: 'Metode Printare', href: '/admin/print-methods', icon: Printer },
+    { name: 'Finisare', href: '/admin/finishing', icon: Scissors },
+  ];
+
+  // ⚙️ Secțiunea 3: SISTEM (Dashboard, Utilizatori, Rapoarte, Setări)
+  const systemSection = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Products', href: '/admin/products', icon: Package },
-    { name: 'Categories', href: '/admin/categories', icon: Tag },
-    { name: 'Customers', href: '/admin/customers', icon: Users },
-  ];
-
-  // 2. Administrarea Tipografiei
-  const productionManagement = [
-    { name: 'Production Orders', href: '/admin/production', icon: Factory },
-    { name: 'Print Methods', href: '/admin/print-methods', icon: Printer },
-    { name: 'Finishing', href: '/admin/finishing', icon: Scissors },
-    { name: 'Materials', href: '/admin/materials', icon: Boxes },
-    { name: 'Machines', href: '/admin/machines', icon: Gauge },
-  ];
-
-  // 3. Administrare Angajați & Utilizatori
-  const staffManagement = [
-    { name: 'Users & Roles', href: '/admin/users', icon: UserCog },
-    { name: 'Manager Dashboard', href: '/manager', icon: Briefcase, external: true },
-    { name: 'Operator Dashboard', href: '/operator', icon: Wrench, external: true },
-  ];
-
-  // 4. Rapoarte & Comenzi
-  const reportsManagement = [
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-    { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
-  ];
-
-  // 5. Setări
-  const systemManagement = [
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Utilizatori', href: '/admin/users', icon: UserCog },
+    { name: 'Rapoarte', href: '/admin/reports', icon: BarChart3 },
+    { name: 'Setări', href: '/admin/settings', icon: Settings },
   ];
 
   const isActive = (href: string) => {
@@ -72,19 +58,10 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const renderNavSection = (
     title: string, 
     emoji: string,
-    items: Array<{ name: string; href: string; icon: any; external?: boolean }>,
-    accentColor: string = 'purple'
+    items: Array<{ name: string; href: string; icon: LucideIcon }>,
+    accentColor: string = 'blue'
   ) => {
     const colorClasses = {
-      purple: {
-        bg: 'bg-gradient-to-r from-purple-50 to-purple-100/50',
-        active: 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md shadow-purple-200',
-        hover: 'hover:bg-purple-50/80',
-        icon: 'text-purple-600',
-        iconActive: 'text-white',
-        border: 'border-l-4 border-purple-500',
-        title: 'text-purple-700'
-      },
       blue: {
         bg: 'bg-gradient-to-r from-blue-50 to-blue-100/50',
         active: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-200',
@@ -94,6 +71,15 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         border: 'border-l-4 border-blue-500',
         title: 'text-blue-700'
       },
+      purple: {
+        bg: 'bg-gradient-to-r from-purple-50 to-purple-100/50',
+        active: 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md shadow-purple-200',
+        hover: 'hover:bg-purple-50/80',
+        icon: 'text-purple-600',
+        iconActive: 'text-white',
+        border: 'border-l-4 border-purple-500',
+        title: 'text-purple-700'
+      },
       green: {
         bg: 'bg-gradient-to-r from-green-50 to-green-100/50',
         active: 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md shadow-green-200',
@@ -102,28 +88,10 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         iconActive: 'text-white',
         border: 'border-l-4 border-green-500',
         title: 'text-green-700'
-      },
-      orange: {
-        bg: 'bg-gradient-to-r from-orange-50 to-orange-100/50',
-        active: 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md shadow-orange-200',
-        hover: 'hover:bg-orange-50/80',
-        icon: 'text-orange-600',
-        iconActive: 'text-white',
-        border: 'border-l-4 border-orange-500',
-        title: 'text-orange-700'
-      },
-      slate: {
-        bg: 'bg-gradient-to-r from-slate-50 to-slate-100/50',
-        active: 'bg-gradient-to-r from-slate-600 to-slate-500 text-white shadow-md shadow-slate-200',
-        hover: 'hover:bg-slate-50/80',
-        icon: 'text-slate-600',
-        iconActive: 'text-white',
-        border: 'border-l-4 border-slate-500',
-        title: 'text-slate-700'
       }
     };
 
-    const colors = colorClasses[accentColor as keyof typeof colorClasses] || colorClasses.purple;
+    const colors = colorClasses[accentColor as keyof typeof colorClasses] || colorClasses.blue;
 
     return (
       <div className="mb-5">
@@ -143,8 +111,6 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={onClose}
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noopener noreferrer' : undefined}
                 className={`
                   group flex items-center gap-3 px-3 py-2.5 rounded-lg
                   transition-all duration-200 ease-in-out
@@ -167,9 +133,6 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
                 <span className={`text-sm flex-1 ${active ? 'font-semibold' : 'font-medium'}`}>
                   {item.name}
                 </span>
-                {item.external && (
-                  <ExternalLink className={`w-3.5 h-3.5 ${active ? 'opacity-70' : 'opacity-40 group-hover:opacity-70'}`} />
-                )}
               </Link>
             );
           })}
@@ -220,20 +183,14 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          {/* 1. Administrarea Site-ului / Vitrină */}
-          {renderNavSection('Administrare Site', '🏪', storeManagement, 'purple')}
+          {/* 📦 Secțiunea 1: CATALOG */}
+          {renderNavSection('Catalog', '📦', catalogSection, 'blue')}
 
-          {/* 2. Administrarea Tipografiei */}
-          {renderNavSection('Administrare Tipografie', '🏭', productionManagement, 'blue')}
+          {/* 🏭 Secțiunea 2: PRODUCȚIE */}
+          {renderNavSection('Producție', '🏭', productionSection, 'purple')}
 
-          {/* 3. Administrare Angajați */}
-          {renderNavSection('Angajați & Utilizatori', '👥', staffManagement, 'green')}
-
-          {/* 4. Rapoarte & Comenzi */}
-          {renderNavSection('Rapoarte & Comenzi', '📊', reportsManagement, 'orange')}
-
-          {/* 5. Setări Sistem */}
-          {renderNavSection('Sistem', '⚙️', systemManagement, 'slate')}
+          {/* ⚙️ Secțiunea 3: SISTEM */}
+          {renderNavSection('Sistem', '⚙️', systemSection, 'green')}
         </nav>
 
         {/* Footer */}
