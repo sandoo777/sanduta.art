@@ -76,6 +76,7 @@
     "@upstash/redis": "^1.36.1",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
     "framer-motion": "^12.23.26",
     "html2canvas": "^1.4.1",
     "isomorphic-dompurify": "^2.35.0",

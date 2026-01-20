@@ -407,6 +407,7 @@ model Order {
   shippingCost         Decimal?      @default(0) @db.Decimal(10, 2) // Cost livrare
   currency             String        @default("MDL")
   dueDate              DateTime?
+  estimatedDeliveryDate DateTime?    // Data estimată de livrare
   internalNotes        String?       @db.Text // Note interne despre comandă (renumit)
   companyName          String?       // Pentru comenzi B2B
   taxId                String?       // CUI/VAT pentru firme
