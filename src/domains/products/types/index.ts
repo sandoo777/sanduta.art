@@ -79,7 +79,7 @@ export interface ProductsListResponse {
   hasMore: boolean;
 }
 
-export interface ProductServiceResult<T = any> {
+export interface ProductServiceResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

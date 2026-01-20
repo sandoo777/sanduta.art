@@ -103,7 +103,7 @@ export function captureError(
     section?: string;
     userId?: string;
     action?: string;
-    extra?: Record<string, any>;
+    extra?: Record<string, unknown>;
   }
 ) {
   if (!SENTRY_DSN) return;
@@ -131,7 +131,7 @@ export function captureError(
  */
 export function captureEditorError(
   error: Error,
-  editorState?: any,
+  editorState?: unknown,
   userId?: string
 ) {
   captureError(error, {
@@ -149,7 +149,7 @@ export function captureEditorError(
 export function captureConfiguratorError(
   error: Error,
   productId?: string,
-  configuration?: any,
+  configuration?: unknown,
   userId?: string
 ) {
   captureError(error, {
@@ -168,7 +168,7 @@ export function captureConfiguratorError(
 export function captureCheckoutError(
   error: Error,
   step?: string,
-  orderData?: any,
+  orderData?: unknown,
   userId?: string
 ) {
   captureError(error, {
@@ -188,7 +188,7 @@ export function addBreadcrumb(
   message: string,
   category: string,
   level: 'debug' | 'info' | 'warning' | 'error' = 'info',
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 ) {
   if (!SENTRY_DSN) return;
 

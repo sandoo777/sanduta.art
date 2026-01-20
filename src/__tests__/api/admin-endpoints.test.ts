@@ -58,7 +58,7 @@ describe('Revenue Stats API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders as any);
+    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders);
 
     const request = new NextRequest('http://localhost:3000/api/admin/stats/revenue?period=30days');
     const response = await getRevenue(request);
@@ -79,7 +79,7 @@ describe('Revenue Stats API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders as any);
+    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders);
 
     const request = new NextRequest('http://localhost:3000/api/admin/stats/revenue?groupBy=day');
     const response = await getRevenue(request);
@@ -111,7 +111,7 @@ describe('Production Schedule API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders as any);
+    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders);
 
     const request = new NextRequest('http://localhost:3000/api/admin/production/schedule');
     const response = await getSchedule(request);
@@ -151,7 +151,7 @@ describe('Low Stock API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts);
 
     const request = new NextRequest('http://localhost:3000/api/admin/inventory/low-stock?threshold=10');
     const response = await getLowStock(request);

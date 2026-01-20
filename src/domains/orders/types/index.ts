@@ -110,7 +110,7 @@ export interface OrdersListResponse {
   hasMore: boolean;
 }
 
-export interface OrderServiceResult<T = any> {
+export interface OrderServiceResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

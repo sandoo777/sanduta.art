@@ -45,7 +45,7 @@ export const GET = withRole(
     const skip = (page - 1) * limit;
 
     // Construiește filtrul de căutare
-    const where: any = {};
+    const where: Parameters<typeof prisma.customer.findMany>[0]['where'] = {};
 
     if (search) {
       where.OR = [

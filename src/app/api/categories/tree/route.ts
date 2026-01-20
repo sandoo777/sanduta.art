@@ -18,7 +18,16 @@ export async function GET() {
 
     // Build tree structure (assuming parentId field exists)
     const categoryMap = new Map();
-    const rootCategories: any[] = [];
+    const rootCategories: CategoryTreeNode[] = [];
+
+    interface CategoryTreeNode {
+      id: string;
+      name: string;
+      slug: string;
+      description: string | null;
+      productCount: number;
+      children: CategoryTreeNode[];
+    }
 
     // First pass: create map
     categories.forEach(category => {
@@ -35,8 +44,9 @@ export async function GET() {
     // Second pass: build tree
     categories.forEach(category => {
       const node = categoryMap.get(category.id);
-      if ((category as any).parentId) {
-        const parent = categoryMap.get((category as any).parentId);
+      const parentId = (category as { parentId?: string | null }).parentId;
+      if (parentId) {
+        const parent = categoryMap.get(parentId);
         if (parent) {
           parent.children.push(node);
         } else {

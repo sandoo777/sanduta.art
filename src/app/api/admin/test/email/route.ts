@@ -28,21 +28,29 @@ export async function POST() {
       createdAt: new Date()
     };
 
-    const results = {
-      customerEmail: null as any,
-      adminEmail: null as any,
-      errors: [] as string[]
+    interface EmailResult {
+      id: string;
+    }
+
+    const results: {
+      customerEmail: EmailResult | null;
+      adminEmail: EmailResult | null;
+      errors: string[];
+    } = {
+      customerEmail: null,
+      adminEmail: null,
+      errors: []
     };
 
     // Test 1: Customer confirmation email
     try {
       logger.info('API:EmailTest', 'Sending customer confirmation email');
-      results.customerEmail = await sendOrderConfirmationEmail(testOrder as any);
+      results.customerEmail = await sendOrderConfirmationEmail(testOrder);
       logger.info('API:EmailTest', 'Customer email sent', { 
         id: results.customerEmail.id 
       });
-    } catch (err: any) {
-      const errorMsg = `Customer email failed: ${err.message}`;
+    } catch (err) {
+      const errorMsg = `Customer email failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
       logger.error('API:EmailTest', errorMsg, { error: err });
       results.errors.push(errorMsg);
     }
@@ -50,12 +58,12 @@ export async function POST() {
     // Test 2: Admin notification email
     try {
       logger.info('API:EmailTest', 'Sending admin notification email');
-      results.adminEmail = await sendAdminNewOrderEmail(testOrder as any);
+      results.adminEmail = await sendAdminNewOrderEmail(testOrder);
       logger.info('API:EmailTest', 'Admin email sent', { 
         id: results.adminEmail.id 
       });
-    } catch (err: any) {
-      const errorMsg = `Admin email failed: ${err.message}`;
+    } catch (err) {
+      const errorMsg = `Admin email failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
       logger.error('API:EmailTest', errorMsg, { error: err });
       results.errors.push(errorMsg);
     }

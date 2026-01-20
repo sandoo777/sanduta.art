@@ -62,12 +62,12 @@ export default function FinishingPage() {
     };
   }, [operations]);
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: Partial<FinishingOperation>) => {
     await createFinishingOperation(data);
     await loadOperations();
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: Partial<FinishingOperation>) => {
     if (editingOperation) {
       await updateFinishingOperation(editingOperation.id, data);
       await loadOperations();

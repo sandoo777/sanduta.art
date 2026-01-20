@@ -158,7 +158,7 @@ export const projectSelectList = {
 export function buildSearchWhere(
   search: string | undefined,
   fields: string[]
-): any {
+): { OR?: Array<Record<string, { contains: string; mode: 'insensitive' }>> } {
   if (!search || !fields.length) return {};
 
   const searchTerm = search.trim();
@@ -180,7 +180,7 @@ export function buildSearchWhere(
 export function buildOrderBy(
   sortBy?: string,
   sortOrder: 'asc' | 'desc' = 'desc'
-): any {
+): Record<string, 'asc' | 'desc'> {
   if (!sortBy) {
     return { createdAt: sortOrder };
   }

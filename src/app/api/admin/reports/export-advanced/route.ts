@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       format
     });
 
-    let data: any;
+    let data: SalesReportData | OrderReportRow[] | ProductReportRow[] | InventoryReportRow[] | OperatorReportRow[];
     let filename = '';
 
     // Fetch data based on report type
@@ -90,8 +90,81 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper functions
-async function getSalesReport(dateRange?: { start: string; end: string }, filters?: any) {
-  const where: any = {
+
+interface ReportFilters {
+  status?: string;
+  categoryId?: string;
+  active?: boolean;
+  lowStock?: boolean;
+  threshold?: number;
+}
+
+interface SalesReportData {
+  summary: {
+    totalRevenue: number;
+    totalOrders: number;
+    averageOrderValue: number;
+    period: string;
+  };
+  rows: SalesReportRow[];
+}
+
+interface SalesReportRow {
+  orderNumber: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  totalPrice: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: Date;
+  itemsCount: number;
+}
+
+interface OrderReportRow {
+  orderNumber: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  totalPrice: number;
+  status: string;
+  paymentStatus: string;
+  deliveryStatus: string | null;
+  createdAt: Date;
+  items: string;
+}
+
+interface ProductReportRow {
+  name: string;
+  sku: string | null;
+  category: string;
+  price: number;
+  active: boolean;
+  totalOrders: number;
+  createdAt: Date;
+}
+
+interface InventoryReportRow {
+  name: string;
+  sku: string | null;
+  stock: number;
+  minStock: number;
+  unit: string;
+  costPerUnit: number;
+  totalValue: number;
+  status: 'OUT_OF_STOCK' | 'LOW_STOCK' | 'IN_STOCK';
+}
+
+interface OperatorReportRow {
+  name: string | null;
+  email: string | null;
+  role: string;
+  totalJobs: number;
+  completedJobs: number;
+  efficiency: number;
+  assignedOrders: number;
+}
+
+async function getSalesReport(dateRange?: { start: string; end: string }, filters?: ReportFilters): Promise<SalesReportData> {
+  const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {
     status: { in: ['IN_PRODUCTION', 'DELIVERED'] }
   };
 
@@ -139,8 +212,8 @@ async function getSalesReport(dateRange?: { start: string; end: string }, filter
   };
 }
 
-async function getOrdersReport(dateRange?: { start: string; end: string }, filters?: any) {
-  const where: any = {};
+async function getOrdersReport(dateRange?: { start: string; end: string }, filters?: ReportFilters): Promise<OrderReportRow[]> {
+  const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {};
 
   if (dateRange) {
     where.createdAt = {
@@ -179,8 +252,8 @@ async function getOrdersReport(dateRange?: { start: string; end: string }, filte
   }));
 }
 
-async function getProductsReport(filters?: any) {
-  const where: any = {};
+async function getProductsReport(filters?: ReportFilters): Promise<ProductReportRow[]> {
+  const where: Parameters<typeof prisma.product.findMany>[0]['where'] = {};
 
   if (filters?.categoryId) {
     where.categoryId = filters.categoryId;
@@ -210,8 +283,8 @@ async function getProductsReport(filters?: any) {
   }));
 }
 
-async function getInventoryReport(filters?: any) {
-  const where: any = {};
+async function getInventoryReport(filters?: ReportFilters): Promise<InventoryReportRow[]> {
+  const where: Parameters<typeof prisma.material.findMany>[0]['where'] = {};
 
   if (filters?.lowStock) {
     where.stock = { lte: filters.threshold || 10 };
@@ -234,8 +307,8 @@ async function getInventoryReport(filters?: any) {
   }));
 }
 
-async function getOperatorsReport(dateRange?: { start: string; end: string }) {
-  const where: any = {
+async function getOperatorsReport(dateRange?: { start: string; end: string }): Promise<OperatorReportRow[]> {
+  const where: Parameters<typeof prisma.user.findMany>[0]['where'] = {
     role: { in: ['OPERATOR', 'MANAGER'] }
   };
 
@@ -282,13 +355,13 @@ async function getOperatorsReport(dateRange?: { start: string; end: string }) {
   });
 }
 
-async function generateExcel(reportType: string, data: any): Promise<Buffer> {
+async function generateExcel(reportType: string, data: SalesReportData | OrderReportRow[] | ProductReportRow[] | InventoryReportRow[] | OperatorReportRow[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(reportType.charAt(0).toUpperCase() + reportType.slice(1));
 
   // Define columns based on report type
-  let columns: any[] = [];
-  let rows: any[] = [];
+  let columns: ExcelJS.Column[] = [];
+  let rows: Record<string, unknown>[] = [];
 
   if (reportType === 'sales' && data.rows) {
     columns = [
@@ -340,7 +413,7 @@ async function generateExcel(reportType: string, data: any): Promise<Buffer> {
   return await workbook.xlsx.writeBuffer() as Buffer;
 }
 
-async function generateReportPDF(reportType: string, data: any): Promise<Buffer> {
+async function generateReportPDF(reportType: string, data: SalesReportData | OrderReportRow[] | ProductReportRow[] | InventoryReportRow[] | OperatorReportRow[]): Promise<Buffer> {
   // Reuse invoice generator structure for reports
   const PDFDocument = require('pdfkit');
   const doc = new PDFDocument({ margin: 50 });
@@ -370,7 +443,7 @@ async function generateReportPDF(reportType: string, data: any): Promise<Buffer>
     doc.fontSize(12).text('Details', { underline: true });
     doc.moveDown(0.5);
 
-    rows.slice(0, 50).forEach((row: any, index: number) => {
+    rows.slice(0, 50).forEach((row: Record<string, unknown>, index: number) => {
       doc.fontSize(8).text(`${index + 1}. ${JSON.stringify(row).substring(0, 100)}...`);
     });
   }
@@ -382,7 +455,7 @@ async function generateReportPDF(reportType: string, data: any): Promise<Buffer>
   });
 }
 
-function convertToCSV(data: any[]): string {
+function convertToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return '';
 
   const headers = Object.keys(data[0]);

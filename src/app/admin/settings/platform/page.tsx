@@ -71,7 +71,7 @@ export default function PlatformSettingsPage() {
     }
   };
 
-  const saveSettings = async (section: keyof PlatformSettings, data: any) => {
+  const saveSettings = async (section: keyof PlatformSettings, data: Partial<PlatformSettings[keyof PlatformSettings]>) => {
     try {
       setSaving(true);
       const response = await fetch("/api/admin/settings/platform", {
@@ -194,7 +194,22 @@ export default function PlatformSettingsPage() {
 }
 
 // Component pentru General Settings
-function GeneralSettings({ data, onSave, saving }: any) {
+interface SettingsComponentProps {
+  data: {
+    platformName: string;
+    timezone: string;
+    brandColors: {
+      primary: string;
+      secondary: string;
+      accent: string;
+    };
+    [key: string]: unknown;
+  };
+  onSave: (data: unknown) => Promise<void>;
+  saving: boolean;
+}
+
+function GeneralSettings({ data, onSave, saving }: SettingsComponentProps) {
   const [formData, setFormData] = useState(data);
 
   return (
@@ -284,7 +299,7 @@ function GeneralSettings({ data, onSave, saving }: any) {
 }
 
 // Componente similare pentru celelalte secțiuni
-function BusinessSettings({ data, onSave, saving }: any) {
+function BusinessSettings({ data, onSave, saving }: SettingsComponentProps) {
   const [formData, setFormData] = useState(data);
 
   return (
@@ -332,7 +347,7 @@ function BusinessSettings({ data, onSave, saving }: any) {
   );
 }
 
-function FinancialSettings({ data, onSave, saving }: any) {
+function FinancialSettings({ data, onSave, saving }: SettingsComponentProps) {
   const [formData, setFormData] = useState(data);
 
   return (
@@ -373,7 +388,7 @@ function FinancialSettings({ data, onSave, saving }: any) {
   );
 }
 
-function EmailSettings({ data, onSave, saving }: any) {
+function EmailSettings({ data, onSave, saving }: SettingsComponentProps) {
   const [formData, setFormData] = useState(data);
 
   return (
@@ -411,7 +426,7 @@ function EmailSettings({ data, onSave, saving }: any) {
   );
 }
 
-function NotificationSettings({ data, onSave, saving }: any) {
+function NotificationSettings({ data, onSave, saving }: SettingsComponentProps) {
   const [formData, setFormData] = useState(data);
 
   const notifications = [

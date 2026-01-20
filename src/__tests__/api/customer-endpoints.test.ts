@@ -70,7 +70,7 @@ describe('Wishlist API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.wishlistItem.findMany).mockResolvedValue(mockWishlist as any);
+    vi.mocked(prisma.wishlistItem.findMany).mockResolvedValue(mockWishlist);
 
     const request = new NextRequest('http://localhost:3000/api/customer/wishlist');
     const response = await getWishlist(request);
@@ -90,7 +90,7 @@ describe('Wishlist API', () => {
       productId: 'prod1',
       createdAt: new Date(),
       product: { id: 'prod1', name: 'Canvas' }
-    } as any);
+    });
 
     const request = new NextRequest('http://localhost:3000/api/customer/wishlist', {
       method: 'POST',
@@ -109,7 +109,7 @@ describe('Wishlist API', () => {
       userId: 'user1',
       productId: 'prod1',
       createdAt: new Date()
-    } as any);
+    });
 
     const request = new NextRequest('http://localhost:3000/api/customer/wishlist', {
       method: 'POST',
@@ -149,7 +149,7 @@ describe('Reports Export API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders as any);
+    vi.mocked(prisma.order.findMany).mockResolvedValue(mockOrders);
 
     const request = new NextRequest('http://localhost:3000/api/admin/reports/export', {
       method: 'POST',
@@ -179,7 +179,7 @@ describe('Reports Export API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts);
 
     const request = new NextRequest('http://localhost:3000/api/admin/reports/export', {
       method: 'POST',

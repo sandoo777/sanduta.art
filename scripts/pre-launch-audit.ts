@@ -22,7 +22,7 @@ interface AuditResult {
   category: 'performance' | 'security' | 'ux' | 'seo' | 'data' | 'workflow';
   status: 'pass' | 'warning' | 'fail';
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: Date;
 }
 

@@ -47,7 +47,7 @@ function getClientIp(request: NextRequest): string {
 /**
  * Get payload size from request/response
  */
-function getPayloadSize(data: any): number {
+function getPayloadSize(data: unknown): number {
   try {
     return new Blob([JSON.stringify(data)]).size;
   } catch {

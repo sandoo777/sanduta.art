@@ -12,6 +12,7 @@ import {
   OrderServiceResult,
   OrderWithRelations,
 } from '../types';
+import { OrderStatus, PaymentStatus } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -176,7 +177,7 @@ export class OrdersService {
    */
   async updatePaymentStatus(
     id: string,
-    paymentStatus: string,
+    paymentStatus: PaymentStatus,
     updatedByUserId: string
   ): Promise<OrderServiceResult> {
     try {
@@ -187,7 +188,7 @@ export class OrdersService {
 
       const order = await ordersRepository.update(
         id,
-        { paymentStatus: paymentStatus as any },
+        { paymentStatus },
         updatedByUserId
       );
 

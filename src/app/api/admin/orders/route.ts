@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
 
     // Build where clause
-    const where: any = {};
+    const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {};
     if (status) {
       where.status = status;
     }

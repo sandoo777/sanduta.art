@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       format 
     });
 
-    let data: any[] = [];
+    let data: OrderReportData[] | ProductReportData[] | RevenueReportData[] | CustomerReportData[] = [];
     let filename = '';
 
     // Fetch data based on report type
@@ -78,8 +78,59 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function fetchOrdersReport(dateRange?: { start: string; end: string }) {
-  const where: any = {};
+interface OrderReportData {
+  id: string;
+  orderNumber: string | null;
+  totalPrice: string;
+  status: string;
+  paymentStatus: string;
+  createdAt: Date;
+  customer: {
+    name: string | null;
+    email: string | null;
+  } | null;
+  items: {
+    product: {
+      name: string;
+      sku: string | null;
+    };
+  }[];
+}
+
+interface ProductReportData {
+  id: string;
+  name: string;
+  sku: string | null;
+  price: string;
+  active: boolean;
+  category: {
+    name: string;
+  };
+  _count: {
+    orderItems: number;
+  };
+}
+
+interface RevenueReportData {
+  id: string;
+  total: string | null;
+  createdAt: Date;
+  status: string;
+  customerName: string | null;
+}
+
+interface CustomerReportData {
+  id: string;
+  name: string | null;
+  email: string | null;
+  createdAt: Date;
+  _count: {
+    orders: number;
+  };
+}
+
+async function fetchOrdersReport(dateRange?: { start: string; end: string }): Promise<OrderReportData[]> {
+  const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {};
   if (dateRange) {
     where.createdAt = {
       gte: new Date(dateRange.start),
@@ -118,8 +169,8 @@ async function fetchProductsReport() {
   });
 }
 
-async function fetchRevenueReport(dateRange?: { start: string; end: string }) {
-  const where: any = {
+async function fetchRevenueReport(dateRange?: { start: string; end: string }): Promise<RevenueReportData[]> {
+  const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {
     status: {
       in: ['CONFIRMED', 'IN_PRODUCTION', 'DELIVERED']
     }
@@ -162,7 +213,7 @@ async function fetchCustomersReport() {
   });
 }
 
-function convertToCSV(data: any[]): string {
+function convertToCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return '';
 
   // Get headers from first object

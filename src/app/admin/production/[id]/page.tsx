@@ -67,11 +67,11 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   };
 
   const handleStatusChange = async (status: string) => {
-    await handleUpdate({ status: status as any });
+    await handleUpdate({ status });
   };
 
   const handlePriorityChange = async (priority: string) => {
-    await handleUpdate({ priority: priority as any });
+    await handleUpdate({ priority });
   };
 
   const handleAssignOperator = async (userId: string | null) => {

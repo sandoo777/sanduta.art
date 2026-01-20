@@ -10,7 +10,7 @@ export interface AuditLogEntry {
   action: string;
   resourceType: string;
   resourceId?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -143,9 +143,9 @@ export function getRequestMetadata(request: Request): {
 export function withAuditLog(
   action: string,
   resourceType: string,
-  handler: (context: any) => Promise<Response>
+  handler: (context: { user: { id: string }; params?: { id?: string } }) => Promise<Response>
 ) {
-  return async (request: Request, context: any): Promise<Response> => {
+  return async (request: Request, context: { user: { id: string }; params?: { id?: string } }): Promise<Response> => {
     const { user: _user } = context;
     const metadata = getRequestMetadata(request);
 

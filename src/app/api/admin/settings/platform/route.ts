@@ -204,7 +204,7 @@ export async function PATCH(_req: NextRequest) {
 }
 
 // Helper function pentru deep merge
-function deepMerge(target: any, source: any): any {
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   const output = { ...target };
   
   if (isObject(target) && isObject(source)) {
@@ -213,7 +213,7 @@ function deepMerge(target: any, source: any): any {
         if (!(key in target)) {
           Object.assign(output, { [key]: source[key] });
         } else {
-          output[key] = deepMerge(target[key], source[key]);
+          output[key] = deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
         }
       } else {
         Object.assign(output, { [key]: source[key] });
@@ -224,6 +224,6 @@ function deepMerge(target: any, source: any): any {
   return output;
 }
 
-function isObject(item: any): boolean {
-  return item && typeof item === "object" && !Array.isArray(item);
+function isObject(item: unknown): item is Record<string, unknown> {
+  return !!item && typeof item === "object" && !Array.isArray(item);
 }

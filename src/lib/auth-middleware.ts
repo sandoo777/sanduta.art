@@ -118,10 +118,10 @@ export function withRole(
   allowedRoles: UserRole[],
   handler: (
     request: NextRequest,
-    context: { params: any; user: AuthenticatedUser }
+    context: { params: Record<string, string>; user: AuthenticatedUser }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context: { params: any }) => {
+  return async (request: NextRequest, context: { params: Record<string, string> }) => {
     const authResult = await requireRole(request, allowedRoles);
 
     if (authResult instanceof NextResponse) {
@@ -138,10 +138,10 @@ export function withRole(
 export function withAuth(
   handler: (
     request: NextRequest,
-    context: { params: any; user: AuthenticatedUser }
+    context: { params: Record<string, string>; user: AuthenticatedUser }
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context: { params: any }) => {
+  return async (request: NextRequest, context: { params: Record<string, string> }) => {
     const authResult = await requireAuth(request);
 
     if (authResult instanceof NextResponse) {

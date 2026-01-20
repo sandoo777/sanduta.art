@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     logger.info('API:Search', 'Product search', { query, categoryId, minPrice, maxPrice });
 
     // Build where clause
-    const where: any = {
+    const where: Parameters<typeof prisma.product.findMany>[0]['where'] = {
       AND: []
     };
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // Price range
     if (minPrice || maxPrice) {
-      const priceFilter: any = {};
+      const priceFilter: { gte?: number; lte?: number } = {};
       if (minPrice) priceFilter.gte = parseFloat(minPrice);
       if (maxPrice) priceFilter.lte = parseFloat(maxPrice);
       where.AND.push({ price: priceFilter });

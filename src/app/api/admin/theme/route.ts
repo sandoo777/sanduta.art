@@ -74,10 +74,10 @@ export async function POST(_req: NextRequest) {
       },
       create: {
         key: 'theme_draft',
-        value: theme as any,
+        value: JSON.parse(JSON.stringify(theme)),
       },
       update: {
-        value: theme as any,
+        value: JSON.parse(JSON.stringify(theme)),
         updatedAt: new Date(),
       },
     });

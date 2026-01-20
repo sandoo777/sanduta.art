@@ -5,7 +5,7 @@
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 
 interface LogContext {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -87,7 +87,7 @@ export function logApiError(
 export function createErrorResponse(
   message: string,
   statusCode: number = 500,
-  details?: any
+  details?: unknown
 ) {
   return Response.json(
     {

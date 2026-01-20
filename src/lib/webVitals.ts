@@ -3,9 +3,9 @@
  * Automatically sends Core Web Vitals to monitoring system
  */
 
-import { onCLS, onFID, onLCP, onTTFB, onINP } from 'web-vitals';
+import { onCLS, onFID, onLCP, onTTFB, onINP, Metric } from 'web-vitals';
 
-function sendToMonitoring(metric: any) {
+function sendToMonitoring(metric: Metric) {
   // Send to monitoring API
   fetch('/api/metrics', {
     method: 'POST',

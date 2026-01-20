@@ -49,7 +49,7 @@ describe('Product Search API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts as any);
+    vi.mocked(prisma.product.findMany).mockResolvedValue(mockProducts);
     vi.mocked(prisma.product.count).mockResolvedValue(1);
 
     const request = new NextRequest('http://localhost:3000/api/products/search?q=canvas');
@@ -147,7 +147,7 @@ describe('Category Tree API', () => {
     ];
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.category.findMany).mockResolvedValue(mockCategories as any);
+    vi.mocked(prisma.category.findMany).mockResolvedValue(mockCategories);
 
     const response = await getCategoryTree();
     const data = await response.json();
@@ -177,7 +177,7 @@ describe('Order Tracking API', () => {
     };
 
     const { prisma } = await import('@/lib/prisma');
-    vi.mocked(prisma.order.findFirst).mockResolvedValue(mockOrder as any);
+    vi.mocked(prisma.order.findFirst).mockResolvedValue(mockOrder);
 
     const request = new NextRequest('http://localhost:3000/api/orders/track?orderId=order123&email=test@example.com');
     const response = await trackOrder(request);

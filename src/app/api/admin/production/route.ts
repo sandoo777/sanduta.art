@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const orderId = searchParams.get("orderId");
 
     // Build filter object
-    const where: any = {};
+    const where: Parameters<typeof prisma.productionJob.findMany>[0]['where'] = {};
     
     if (status) where.status = status;
     if (priority) where.priority = priority;

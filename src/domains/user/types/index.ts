@@ -21,7 +21,7 @@ export interface ChangePasswordDTO {
   newPassword: string;
 }
 
-export interface UserServiceResult<T = any> {
+export interface UserServiceResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
