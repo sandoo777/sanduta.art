@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
+import * as LucideIcons from 'lucide-react';
 
 export interface SidebarItem {
   href: string;
   label: string;
-  icon: string | ReactNode;
+  icon: string | ReactNode; // string = nume icon din lucide-react, ReactNode = component custom
 }
 
 interface PanelSidebarProps {
@@ -55,18 +56,29 @@ export function PanelSidebar({ title, userInfo, navItems, className = '' }: Pane
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           
+          // Render icon: dacă e string, caută în lucide-react; altfel render direct
+          let IconComponent = null;
+          if (typeof item.icon === 'string') {
+            // @ts-expect-error - dynamic icon lookup from lucide-react
+            IconComponent = LucideIcons[item.icon];
+          }
+          
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`block px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-700 font-medium'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <span className="mr-2">
-                {typeof item.icon === 'string' ? item.icon : item.icon}
+              <span className="mr-3 flex-shrink-0">
+                {IconComponent ? (
+                  <IconComponent size={20} />
+                ) : (
+                  typeof item.icon === 'string' ? item.icon : item.icon
+                )}
               </span>
               {item.label}
             </Link>

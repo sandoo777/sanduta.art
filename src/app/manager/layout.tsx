@@ -37,9 +37,9 @@ export function ManagerLayout({ children }: ManagerLayoutProps) {
   }
 
   const navItems: SidebarItem[] = [
-    { href: '/manager', label: 'Dashboard', icon: '📊' },
-    { href: '/manager/orders', label: 'Orders', icon: '📦' },
-    { href: '/manager/customers', label: 'Customers', icon: '👥' },
+    { href: '/manager', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { href: '/manager/orders', label: 'Comenzi', icon: 'Package' },
+    { href: '/manager/customers', label: 'Clienți', icon: 'Users' },
   ];
 
   return (

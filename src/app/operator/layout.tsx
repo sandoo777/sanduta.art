@@ -37,9 +37,9 @@ export function OperatorLayout({ children }: OperatorLayoutProps) {
   }
 
   const navItems: SidebarItem[] = [
-    { href: '/operator', label: 'Dashboard', icon: '🖨️' },
-    { href: '/operator/production', label: 'Production Queue', icon: '⚙️' },
-    { href: '/operator/jobs', label: 'My Jobs', icon: '📋' },
+    { href: '/operator', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { href: '/operator/production', label: 'Coadă Producție', icon: 'Settings' },
+    { href: '/operator/jobs', label: 'Sarcinile Mele', icon: 'ClipboardList' },
   ];
 
   return (

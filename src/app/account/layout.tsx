@@ -39,9 +39,10 @@ export function UserLayout({ children }: UserLayoutProps) {
   }
 
   const navItems: SidebarItem[] = [
-    { href: '/account', label: 'Dashboard', icon: '🏠' },
-    { href: '/account/orders', label: 'My Orders', icon: '📦' },
-    { href: '/account/profile', label: 'Profile', icon: '👤' },
+    { href: '/account', label: 'Dashboard', icon: 'LayoutDashboard' },
+    { href: '/account/orders', label: 'Comenzile Mele', icon: 'Package' },
+    { href: '/account/profile', label: 'Profil', icon: 'User' },
+    { href: '/account/settings', label: 'Setări', icon: 'Settings' },
   ];
 
   return (
