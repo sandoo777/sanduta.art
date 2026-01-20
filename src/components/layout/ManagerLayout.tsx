@@ -1,10 +1,9 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
+import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
 
 interface ManagerLayoutProps {
   children: ReactNode;
@@ -38,54 +37,43 @@ export function ManagerLayout({ children }: ManagerLayoutProps) {
     );
   }
 
-  const navItems = [
+  const navItems: SidebarItem[] = [
     { href: '/manager/orders', label: 'Orders', icon: '📦' },
   ];
 
   return (
-    <>
-      <Header />
-      <div className="flex min-h-screen bg-gray-100">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200">
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800">Manager Panel</h2>
-            <p className="text-sm text-gray-600 mt-1">Order Management</p>
-          </div>
-          <nav className="px-4 pb-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center px-4 py-3 mb-2 rounded-lg transition ${
-                  pathname === item.href
-                    ? 'bg-green-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3 text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            ))}
-            {session.user.role === 'ADMIN' && (
+    <div className="min-h-screen bg-gray-50">
+      <PanelHeader />
+      
+      <div className="flex">
+        <PanelSidebar
+          title="Manager Panel"
+          userInfo={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+          navItems={navItems}
+        />
+
+        {/* Main content */}
+        <main className="flex-1 p-8">
+          {children}
+          
+          {/* Link to Admin Panel if user is ADMIN */}
+          {session.user.role === 'ADMIN' && (
+            <div className="mt-8 pt-8 border-t border-gray-200">
               <Link
                 href="/admin"
-                className="flex items-center px-4 py-3 mb-2 rounded-lg text-gray-700 hover:bg-gray-100 transition border-t mt-4 pt-4"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                <span className="mr-3 text-xl">⚙️</span>
-                <span className="font-medium">Admin Panel</span>
+                <span className="mr-2">⚙️</span>
+                <span>Go to Admin Panel</span>
               </Link>
-            )}
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-6 py-8">
-            {children}
-          </div>
+            </div>
+          )}
         </main>
       </div>
-    </>
+    </div>
   );
 }

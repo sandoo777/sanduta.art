@@ -1,5 +1,4 @@
-import { Header } from '@/components/public/Header';
-import { Footer } from '@/components/public/Footer';
+import { PublicHeader, PublicFooter } from '@/components/common';
 
 export default function ProductsLayout({
   children,
@@ -8,9 +7,9 @@ export default function ProductsLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <PublicHeader />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <PublicFooter />
     </div>
   );
 }

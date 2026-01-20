@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Header } from '@/components/public/Header';
+import { PublicHeader } from '@/components/common';
 
 /**
  * ConditionalHeader - Afișează headerul pe paginile publice
@@ -46,5 +46,5 @@ export function ConditionalHeader() {
   }
 
   // Afișează headerul pe toate celelalte pagini publice
-  return <Header />;
+  return <PublicHeader />;
 }

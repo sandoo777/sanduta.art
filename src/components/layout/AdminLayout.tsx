@@ -1,10 +1,9 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
+import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -38,7 +37,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  const navItems = [
+  const navItems: SidebarItem[] = [
     { href: '/admin', label: 'Dashboard', icon: '📊' },
     { href: '/admin/products', label: 'Products', icon: '📦' },
     { href: '/admin/categories', label: 'Categories', icon: '🏷️' },
@@ -48,40 +47,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   return (
-    <>
-      <Header />
-      <div className="flex min-h-screen bg-gray-100">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200">
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-800">Admin Panel</h2>
-            <p className="text-sm text-gray-600 mt-1">Management Dashboard</p>
-          </div>
-          <nav className="px-4 pb-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center px-4 py-3 mb-2 rounded-lg transition ${
-                  pathname === item.href
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="mr-3 text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </aside>
+    <div className="min-h-screen bg-gray-50">
+      <PanelHeader />
+      
+      <div className="flex">
+        <PanelSidebar
+          title="Admin Panel"
+          userInfo={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+          navItems={navItems}
+        />
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-6 py-8">
-            {children}
-          </div>
+        {/* Main content */}
+        <main className="flex-1 p-8">
+          {children}
         </main>
       </div>
-    </>
+    </div>
   );
 }
