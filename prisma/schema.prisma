@@ -144,6 +144,8 @@ model User {
   userSessions   UserSession[]
   securityActivity SecurityActivity[]
   preferences    UserPreferences?
+  orderTimeline  OrderTimeline[]  @relation("OrderTimelineEvents")
+  orderNotes     OrderNote[]      @relation("OrderNotes")
 
   @@map("users")
 }
@@ -405,7 +407,7 @@ model Order {
   shippingCost         Decimal?      @default(0) @db.Decimal(10, 2) // Cost livrare
   currency             String        @default("MDL")
   dueDate              DateTime?
-  notes                String?       @db.Text // Note despre comandă
+  internalNotes        String?       @db.Text // Note interne despre comandă (renumit)
   companyName          String?       // Pentru comenzi B2B
   taxId                String?       // CUI/VAT pentru firme
   userId               String?
@@ -419,6 +421,8 @@ model Order {
   orderItems     OrderItem[]
   files          OrderFile[]
   productionJobs ProductionJob[]
+  timeline       OrderTimeline[]
+  notes          OrderNote[]
 
   @@index([userId])
   @@index([customerId])
@@ -429,6 +433,42 @@ model Order {
   @@index([createdAt])
   @@index([assignedToUserId])
   @@map("orders")
+}
+
+model OrderTimeline {
+  id          String   @id @default(cuid())
+  orderId     String
+  eventType   String   // status_change, payment_update, note_added, file_uploaded, etc.
+  eventData   Json?    // Additional event data (old status, new status, etc.)
+  description String   // Human-readable description
+  createdById String?  // User who triggered the event
+  createdAt   DateTime @default(now())
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("OrderTimelineEvents", fields: [createdById], references: [id])
+
+  @@index([orderId])
+  @@index([createdAt])
+  @@index([eventType])
+  @@map("order_timeline")
+}
+
+model OrderNote {
+  id          String   @id @default(cuid())
+  orderId     String
+  content     String   @db.Text
+  isInternal  Boolean  @default(true)  // true = note internal, false = note vizibilă pentru client
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("OrderNotes", fields: [createdById], references: [id])
+
+  @@index([orderId])
+  @@index([createdAt])
+  @@index([isInternal])
+  @@map("order_notes")
 }
 
 model OrderItem {
