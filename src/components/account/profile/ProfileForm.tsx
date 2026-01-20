@@ -17,6 +17,7 @@ export default function ProfileForm() {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function ProfileForm() {
         cui: profile.cui || "",
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -43,27 +43,28 @@ export default function ConfigureProductPage() {
 
   // Load existing cart item data if editing
   useEffect(() => {
-    if (editItemId) {
-      const item = getItem(editItemId);
-      if (item && item.specifications) {
-        // Map cart item specifications to PriceSelection format
-        const dimensions = item.specifications.dimensions;
-        let dimensionKey = 'A5'; // default
-        
-        // Try to determine dimension key from dimensions
-        if (dimensions.width === 210 && dimensions.height === 297) dimensionKey = 'A4';
-        else if (dimensions.width === 148 && dimensions.height === 210) dimensionKey = 'A5';
-        else if (dimensions.width === 105 && dimensions.height === 148) dimensionKey = 'A6';
-        
-        setSelection({
-          dimension: dimensionKey as Dimension,
-          material: (item.specifications.material.id || '170g') as Material,
-          finishes: (item.specifications.finishes?.map(f => f.id) || []) as Finish[],
-          quantity: item.specifications.quantity,
-          productionSpeed: 'standard', // Default if not stored
-        });
-      }
+    if (!editItemId) return;
+    
+    const item = getItem(editItemId);
+    if (item && item.specifications) {
+      // Map cart item specifications to PriceSelection format
+      const dimensions = item.specifications.dimensions;
+      let dimensionKey = 'A5'; // default
+      
+      // Try to determine dimension key from dimensions
+      if (dimensions.width === 210 && dimensions.height === 297) dimensionKey = 'A4';
+      else if (dimensions.width === 148 && dimensions.height === 210) dimensionKey = 'A5';
+      else if (dimensions.width === 105 && dimensions.height === 148) dimensionKey = 'A6';
+      
+      setSelection({
+        dimension: dimensionKey as Dimension,
+        material: (item.specifications.material.id || '170g') as Material,
+        finishes: (item.specifications.finishes?.map(f => f.id) || []) as Finish[],
+        quantity: item.specifications.quantity,
+        productionSpeed: 'standard', // Default if not stored
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editItemId]); // Remove getItem from dependencies to avoid circular updates
 
   const mobileTotal = useMemo(() => calculator.calcTotal(selection).total, [selection, calculator]);

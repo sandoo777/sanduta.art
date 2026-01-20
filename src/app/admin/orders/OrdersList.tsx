@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useOrders } from '@/modules/orders/useOrders';
 import { Search, Eye, ChevronRight } from 'lucide-react';
@@ -42,7 +42,6 @@ const PAYMENT_STATUS_OPTIONS = [
 
 export default function OrdersListPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -63,9 +62,11 @@ export default function OrdersListPage() {
 
   useEffect(() => {
     loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadOrders]);
 
-  useEffect(() => {
+  // Use useMemo for filtering to avoid cascading renders
+  const filteredOrders = useMemo(() => {
     let filtered = orders;
 
     // Search filter
@@ -89,7 +90,7 @@ export default function OrdersListPage() {
       filtered = filtered.filter((order) => order.paymentStatus === paymentStatusFilter);
     }
 
-    setFilteredOrders(filtered);
+    return filtered;
   }, [orders, searchTerm, statusFilter, paymentStatusFilter]);
 
   const getStatusColor = (status: string) => {

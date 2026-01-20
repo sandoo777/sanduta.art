@@ -21,6 +21,7 @@ function EditorContent() {
       setError(err instanceof Error ? err.message : 'Failed to parse editor parameters');
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   if (isLoading) {

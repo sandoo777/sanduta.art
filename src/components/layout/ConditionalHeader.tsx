@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { Header } from '@/components/public/Header';
-import { useEffect, useState } from 'react';
 
 /**
  * ConditionalHeader - Afișează headerul pe paginile publice
@@ -16,13 +15,6 @@ import { useEffect, useState } from 'react';
  */
 export function ConditionalHeader() {
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Așteaptă ca componenta să fie montată pe client
-  // pentru a evita hydration mismatch-uri
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Lista de path-uri unde NU vrem headerul
   // Aceste secțiuni au propriul Header sau Topbar
@@ -47,12 +39,6 @@ export function ConditionalHeader() {
   const shouldHideHeader = excludedPaths.some(path => 
     pathname?.startsWith(path)
   );
-
-  // Nu render-a nimic până când componenta este montată
-  // pentru a evita flash-ul de conținut și hydration issues
-  if (!isMounted) {
-    return null;
-  }
 
   // Nu afișa headerul pe paginile excluse
   if (shouldHideHeader) {

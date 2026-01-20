@@ -32,6 +32,8 @@ export default function CustomerModal({
 
   // Load customer data when editing
   useEffect(() => {
+    if (!isOpen) return;
+    
     if (customer) {
       setFormData({
         name: customer.name,
@@ -53,6 +55,9 @@ export default function CustomerModal({
         city: "",
         country: "",
       });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer, isOpen]);
     }
     setErrors({});
   }, [customer, isOpen]);

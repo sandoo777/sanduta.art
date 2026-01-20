@@ -3,15 +3,8 @@
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { useEffect, useState } from 'react';
 
 export function Hero() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-yellow-50 py-20 lg:py-32">
       {/* Background decorative elements */}
@@ -24,9 +17,7 @@ export function Hero() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Content */}
           <div
-            className={`flex flex-col justify-center transition-all duration-1000 ${
-              mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}
+            className="flex flex-col justify-center animate-fadeInUp"
           >
             {/* Badge */}
             <div className="mb-6 inline-flex items-center gap-2 self-start rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">

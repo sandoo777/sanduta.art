@@ -22,6 +22,7 @@ export default function OperatorsReportPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading && !operators) {

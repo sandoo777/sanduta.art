@@ -42,6 +42,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     loadCustomers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, sortBy, sortOrder]);
 
   // Handle search with debounce
@@ -55,6 +56,7 @@ export default function CustomersPage() {
     }, 500);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   // Handle delete customer

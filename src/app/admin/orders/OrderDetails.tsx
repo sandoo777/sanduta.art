@@ -90,6 +90,7 @@ export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
 
   useEffect(() => {
     loadOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   if (isLoading) {

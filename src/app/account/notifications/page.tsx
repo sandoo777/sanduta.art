@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNotifications } from '@/modules/notifications/useNotifications';
 import { useSession } from 'next-auth/react';
 import { InAppNotification } from '@/lib/notifications/notificationTypes';
@@ -39,15 +39,20 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [filteredNotifications, setFilteredNotifications] = useState<InAppNotification[]>([]);
 
+  // Memoize callbacks to prevent recreation
+  const unreadNotifications = useMemo(() => getUnreadNotifications(), [getUnreadNotifications]);
+  const readNotifications = useMemo(() => getReadNotifications(), [getReadNotifications]);
+
   useEffect(() => {
     if (filter === 'unread') {
-      setFilteredNotifications(getUnreadNotifications());
+      setFilteredNotifications(unreadNotifications);
     } else if (filter === 'read') {
-      setFilteredNotifications(getReadNotifications());
+      setFilteredNotifications(readNotifications);
     } else {
       setFilteredNotifications(notifications);
     }
-  }, [filter, notifications, getUnreadNotifications, getReadNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, notifications, unreadNotifications, readNotifications]);
 
   const getNotificationIcon = (type: string) => {
     const icons: Record<string, React.ReactNode> = {

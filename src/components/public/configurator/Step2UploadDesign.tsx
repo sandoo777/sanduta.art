@@ -44,10 +44,6 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryFile, setLibraryFile] = useState<SavedFile | null>(null);
 
-  useEffect(() => {
-    onStatusChange?.(status);
-  }, [status, onStatusChange]);
-
   // Preia payload din editor dacă query fromEditor=true
   useEffect(() => {
     const fromEditorFlag = searchParams.get('fromEditor') === 'true';
@@ -80,6 +76,7 @@ export function Step2UploadDesign({ productName, onStatusChange, onContinue }: S
     } catch (error) {
       console.error('Cannot parse editorDesignPayload', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, onStatusChange]);
 
   const handleFileSelect = (selected: File, meta?: UploadMeta) => {

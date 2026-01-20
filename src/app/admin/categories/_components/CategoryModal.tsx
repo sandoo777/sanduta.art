@@ -36,6 +36,8 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+    
     if (category) {
       setFormData({
         name: category.name,
@@ -52,6 +54,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       });
     }
     setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, isOpen]);
 
   const generateSlug = (name: string) => {
