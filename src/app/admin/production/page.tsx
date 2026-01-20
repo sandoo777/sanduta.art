@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useProduction, ProductionJob, ProductionStatus, ProductionPriority, JobFilters } from "@/modules/production/useProduction";
 import JobCard from "./_components/JobCard";
 import JobModal from "./_components/JobModal";
+import { productionSearchFormSchema, type ProductionSearchFormData } from "@/lib/validations/admin";
+import { Form, FormField } from "@/components/ui/form";
 
 const statusColumns: Array<{
   status: ProductionStatus;
@@ -21,9 +25,19 @@ const statusColumns: Array<{
 export default function ProductionPage() {
   const { loading, error, getJobs, createJob } = useProduction();
   const [jobs, setJobs] = useState<ProductionJob[]>([]);
-  const [filters, setFilters] = useState<JobFilters>({});
-  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const form = useForm<ProductionSearchFormData>({
+    resolver: zodResolver(productionSearchFormSchema),
+    defaultValues: {
+      search: "",
+      priority: "",
+    },
+  });
+  
+  const { watch } = form;
+  const searchQuery = watch("search");
+  const priorityFilter = watch("priority");
 
   useEffect(() => {
     loadJobs();
@@ -31,10 +45,16 @@ export default function ProductionPage() {
 
   const loadJobs = async () => {
     try {
-      const allFilters: JobFilters = { ...filters };
-      if (searchQuery) {
-        allFilters.search = searchQuery;
+      const values = form.getValues();
+      const allFilters: JobFilters = {};
+      
+      if (values.search) {
+        allFilters.search = values.search;
       }
+      if (values.priority) {
+        allFilters.priority = values.priority as ProductionPriority;
+      }
+      
       const data = await getJobs(allFilters);
       setJobs(data);
     } catch (err) {
@@ -52,9 +72,8 @@ export default function ProductionPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadJobs();
+  const onSubmit = async () => {
+    await loadJobs();
   };
 
   const getJobsByStatus = (status: ProductionStatus): ProductionJob[] => {
@@ -83,56 +102,63 @@ export default function ProductionPage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4">
+          <Form form={form} onSubmit={onSubmit} className="flex flex-col md:flex-row gap-4">
             {/* Search */}
-            <form onSubmit={handleSearch} className="flex-1">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by job name, order ID, or customer..."
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </form>
+            <div className="flex-1">
+              <FormField
+                name="search"
+                render={({ field }) => (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      {...field}
+                      placeholder="Search by job name, order ID, or customer..."
+                      className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        loadJobs();
+                      }}
+                    />
+                    <svg
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                )}
+              />
+            </div>
 
             {/* Priority Filter */}
-            <select
-              value={filters.priority || ""}
-              onChange={(e) => {
-                const newFilters = { ...filters };
-                if (e.target.value) {
-                  newFilters.priority = e.target.value as ProductionPriority;
-                } else {
-                  delete newFilters.priority;
-                }
-                setFilters(newFilters);
-                loadJobs();
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Priorities</option>
-              <option value="LOW">Low</option>
-              <option value="NORMAL">Normal</option>
-              <option value="HIGH">High</option>
-              <option value="URGENT">Urgent</option>
-            </select>
+            <FormField
+              name="priority"
+              render={({ field }) => (
+                <select
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    loadJobs();
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">All Priorities</option>
+                  <option value="LOW">Low</option>
+                  <option value="NORMAL">Normal</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              )}
+            />
 
             {/* Clear Filters */}
-            {(filters.priority || searchQuery) && (
+            {(priorityFilter || searchQuery) && (
               <button
+                type="button"
                 onClick={() => {
-                  setFilters({});
-                  setSearchQuery("");
+                  form.reset();
                   loadJobs();
                 }}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -140,7 +166,7 @@ export default function ProductionPage() {
                 Clear Filters
               </button>
             )}
-          </div>
+          </Form>
         </div>
       </div>
 

@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Package, Calendar, AlertCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { MaterialWithDetails } from "@/modules/materials/types";
+import { materialConsumptionFormSchema, type MaterialConsumptionFormData } from "@/lib/validations/admin";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface MaterialConsumptionProps {
   material: MaterialWithDetails;
@@ -12,12 +18,17 @@ interface MaterialConsumptionProps {
 
 export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionProps) {
   const [isConsumeModalOpen, setIsConsumeModalOpen] = useState(false);
-  const [jobId, setJobId] = useState("");
-  const [quantity, setQuantity] = useState<number>(0);
   const [jobs, setJobs] = useState<any[]>([]);
-  const [error, setError] = useState("");
 
   const { consumeMaterial, isLoading } = useMaterials();
+
+  const form = useForm<MaterialConsumptionFormData>({
+    resolver: zodResolver(materialConsumptionFormSchema),
+    defaultValues: {
+      jobId: "",
+      quantity: 0,
+    },
+  });
 
   useEffect(() => {
     loadJobs();
@@ -35,31 +46,20 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!jobId) {
-      setError("Selectează un job de producție");
+  const onSubmit = async (data: MaterialConsumptionFormData) => {
+    if (data.quantity > material.stock) {
+      form.setError("quantity", {
+        type: "manual",
+        message: `Stoc insuficient (disponibil: ${material.stock} ${material.unit})`,
+      });
       return;
     }
 
-    if (!quantity || quantity <= 0) {
-      setError("Cantitatea trebuie să fie > 0");
-      return;
-    }
-
-    if (quantity > material.stock) {
-      setError(`Stoc insuficient (disponibil: ${material.stock} ${material.unit})`);
-      return;
-    }
-
-    const result = await consumeMaterial(material.id, { jobId, quantity });
+    const result = await consumeMaterial(material.id, data);
 
     if (result) {
       setIsConsumeModalOpen(false);
-      setJobId("");
-      setQuantity(0);
+      form.reset();
       onUpdate();
     }
   };
@@ -177,73 +177,71 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <Form form={form} onSubmit={onSubmit}>
               {/* Job Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job de producție <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={jobId}
-                  onChange={(e) => setJobId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Selectează job-ul</option>
-                  {jobs.map((job) => (
-                    <option key={job.id} value={job.id}>
-                      {job.name} - {job.status}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                name="jobId"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel required>Job de producție</FormLabel>
+                    <select
+                      {...field}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Selectează job-ul</option>
+                      {jobs.map((job) => (
+                        <option key={job.id} value={job.id}>
+                          {job.name} - {job.status}
+                        </option>
+                      ))}
+                    </select>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Quantity */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cantitate ({material.unit}) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  max={material.stock}
-                  value={quantity || ""}
-                  onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={`Max ${material.stock}`}
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
+              <FormField
+                name="quantity"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel required>Cantitate ({material.unit})</FormLabel>
+                    <Input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      max={material.stock}
+                      placeholder={`Max ${material.stock}`}
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-2">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => {
                     setIsConsumeModalOpen(false);
-                    setError("");
+                    form.reset();
                   }}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   disabled={isLoading}
                 >
                   Anulează
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="primary"
+                  loading={isLoading}
                 >
-                  {isLoading ? "Se procesează..." : "Consumă"}
-                </button>
+                  Consumă
+                </Button>
               </div>
-            </form>
+            </Form>
           </div>
         </div>
       )}

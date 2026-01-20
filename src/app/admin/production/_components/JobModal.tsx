@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ProductionPriority, CreateJobData } from "@/modules/production/useProduction";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ProductionPriority } from "@/modules/production/useProduction";
+import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface Order {
   id: string;
@@ -20,8 +26,8 @@ interface User {
 interface JobModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateJobData) => Promise<void>;
-  initialData?: CreateJobData;
+  onSubmit: (data: JobFormData) => Promise<void>;
+  initialData?: JobFormData;
   mode?: "create" | "edit";
 }
 
@@ -32,29 +38,32 @@ export default function JobModal({
   initialData, 
   mode = "create" 
 }: JobModalProps) {
-  const [formData, setFormData] = useState<CreateJobData>({
-    orderId: "",
-    name: "",
-    priority: "NORMAL",
-    dueDate: "",
-    notes: "",
-    assignedToId: "",
-  });
-  
   const [orders, setOrders] = useState<Order[]>([]);
   const [operators, setOperators] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const form = useForm<JobFormData>({
+    resolver: zodResolver(jobFormSchema),
+    defaultValues: {
+      orderId: "",
+      name: "",
+      priority: "NORMAL",
+      dueDate: "",
+      notes: "",
+      assignedToId: "",
+    },
+  });
+
+  const { formState: { isSubmitting }, reset } = form;
 
   useEffect(() => {
     if (isOpen) {
       fetchData();
       if (initialData) {
-        setFormData(initialData);
+        reset(initialData);
       }
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, reset]);
 
   const fetchData = async () => {
     try {
@@ -80,59 +89,13 @@ export default function JobModal({
     }
   };
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Job name is required";
-    }
-
-    if (!formData.orderId) {
-      newErrors.orderId = "Order is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
-    try {
-      setLoading(true);
-      
-      // Clean up data before submission
-      const submitData: CreateJobData = {
-        orderId: formData.orderId,
-        name: formData.name.trim(),
-        priority: formData.priority,
-      };
-
-      if (formData.dueDate) {
-        submitData.dueDate = formData.dueDate;
-      }
-
-      if (formData.notes?.trim()) {
-        submitData.notes = formData.notes.trim();
-      }
-
-      if (formData.assignedToId) {
-        submitData.assignedToId = formData.assignedToId;
-      }
-
-      await onSubmit(submitData);
-      handleClose();
-    } catch (err) {
-      console.error("Error submitting job:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleFormSubmit = async (data: JobFormData) => {
+    await onSubmit(data);
+    handleClose();
   };
 
   const handleClose = () => {
-    setFormData({
+    reset({
       orderId: "",
       name: "",
       priority: "NORMAL",
@@ -140,7 +103,6 @@ export default function JobModal({
       notes: "",
       assignedToId: "",
     });
-    setErrors({});
     onClose();
   };
 
@@ -165,7 +127,7 @@ export default function JobModal({
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <Form form={form} onSubmit={handleFormSubmit} className="p-6 space-y-4">
           {loadingData ? (
             <div className="flex items-center justify-center py-8">
               <div className="w-8 h-8 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
@@ -173,130 +135,136 @@ export default function JobModal({
           ) : (
             <>
               {/* Job Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    errors.name ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="e.g., Printare 100 bannere"
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              <FormField
+                name="name"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel required>Job Name</FormLabel>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Printare 100 bannere"
+                    />
+                    <FormMessage />
+                  </div>
                 )}
-              </div>
+              />
 
               {/* Order */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Order <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.orderId}
-                  onChange={(e) => setFormData({ ...formData, orderId: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    errors.orderId ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select an order</option>
-                  {orders.map((order) => (
-                    <option key={order.id} value={order.id}>
-                      {order.customerName} - {order.totalPrice} RON ({order.status})
-                    </option>
-                  ))}
-                </select>
-                {errors.orderId && (
-                  <p className="text-red-500 text-sm mt-1">{errors.orderId}</p>
+              <FormField
+                name="orderId"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel required>Order</FormLabel>
+                    <select
+                      {...field}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Select an order</option>
+                      {orders.map((order) => (
+                        <option key={order.id} value={order.id}>
+                          {order.customerName} - {order.totalPrice} RON ({order.status})
+                        </option>
+                      ))}
+                    </select>
+                    <FormMessage />
+                  </div>
                 )}
-              </div>
+              />
 
               {/* Priority */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Priority
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as ProductionPriority })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="LOW">Low</option>
-                  <option value="NORMAL">Normal</option>
-                  <option value="HIGH">High</option>
-                  <option value="URGENT">Urgent</option>
-                </select>
-              </div>
+              <FormField
+                name="priority"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Priority</FormLabel>
+                    <select
+                      {...field}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="LOW">Low</option>
+                      <option value="NORMAL">Normal</option>
+                      <option value="HIGH">High</option>
+                      <option value="URGENT">Urgent</option>
+                    </select>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Due Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+              <FormField
+                name="dueDate"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Due Date</FormLabel>
+                    <Input
+                      type="date"
+                      {...field}
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Assigned Operator */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assign to Operator
-                </label>
-                <select
-                  value={formData.assignedToId}
-                  onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Unassigned</option>
-                  {operators.map((operator) => (
-                    <option key={operator.id} value={operator.id}>
-                      {operator.name} ({operator.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FormField
+                name="assignedToId"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Assign to Operator</FormLabel>
+                    <select
+                      {...field}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Unassigned</option>
+                      {operators.map((operator) => (
+                        <option key={operator.id} value={operator.id}>
+                          {operator.name} ({operator.role})
+                        </option>
+                      ))}
+                    </select>
+                    <FormMessage />
+                  </div>
+                )}
+              />
 
               {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Additional notes about this job..."
-                />
-              </div>
+              <FormField
+                name="notes"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Notes</FormLabel>
+                    <textarea
+                      {...field}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      placeholder="Additional notes about this job..."
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
             </>
           )}
-        </form>
+        </Form>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
           >
             Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading || loadingData}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={isSubmitting || loadingData}
+            onClick={() => form.handleSubmit(handleFormSubmit)()}
           >
-            {loading ? "Saving..." : mode === "create" ? "Create Job" : "Update Job"}
-          </button>
+            {mode === "create" ? "Create Job" : "Update Job"}
+          </Button>
         </div>
       </div>
     </div>

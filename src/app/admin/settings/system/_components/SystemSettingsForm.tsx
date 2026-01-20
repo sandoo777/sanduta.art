@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Save, RefreshCw } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { useSettings } from "@/modules/settings/useSettings";
+import { systemSettingsFormSchema, type SystemSettingsFormData } from "@/lib/validations/admin";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/Input";
 
 const CURRENCIES = [
   { value: "MDL", label: "MDL (Moldovan Leu)" },
@@ -22,16 +27,18 @@ const TIMEZONES = [
 export function SystemSettingsForm() {
   const { getSystemSettings, updateSystemSettings, loading, error } = useSettings();
   
-  const [formData, setFormData] = useState({
-    company_name: "",
-    company_email: "",
-    default_currency: "MDL",
-    timezone: "Europe/Chisinau",
-    low_stock_threshold: "10",
+  const form = useForm<SystemSettingsFormData>({
+    resolver: zodResolver(systemSettingsFormSchema),
+    defaultValues: {
+      company_name: "",
+      company_email: "",
+      default_currency: "MDL",
+      timezone: "Europe/Chisinau",
+      low_stock_threshold: "10",
+    },
   });
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const { formState: { isSubmitting, isSubmitSuccessful }, reset } = form;
 
   useEffect(() => {
     loadSettings();
@@ -42,7 +49,7 @@ export function SystemSettingsForm() {
       const settings = await getSystemSettings();
       
       // Map settings to form data
-      setFormData({
+      reset({
         company_name: settings.company_name || "",
         company_email: settings.company_email || "",
         default_currency: settings.default_currency || "MDL",
@@ -54,27 +61,15 @@ export function SystemSettingsForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setSaveSuccess(false);
-
-    try {
-      await updateSystemSettings(formData);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (_error) {
-      console.error("Error saving settings:", error);
-    } finally {
-      setIsSaving(false);
-    }
+  const onSubmit = async (data: SystemSettingsFormData) => {
+    await updateSystemSettings(data);
   };
 
   const handleReset = () => {
     loadSettings();
   };
 
-  if (loading && !formData.company_name) {
+  if (loading && !form.getValues("company_name")) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-600">Loading settings...</div>
@@ -83,9 +78,9 @@ export function SystemSettingsForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <Form form={form} onSubmit={onSubmit} className="space-y-6">
       {/* Success Message */}
-      {saveSuccess && (
+      {isSubmitSuccessful && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-600">
           Settings saved successfully!
         </div>
@@ -104,34 +99,33 @@ export function SystemSettingsForm() {
           Company Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Company Name
-            </label>
-            <input
-              type="text"
-              value={formData.company_name}
-              onChange={(e) =>
-                setFormData({ ...formData, company_name: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Sanduta Print"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Company Email
-            </label>
-            <input
-              type="email"
-              value={formData.company_email}
-              onChange={(e) =>
-                setFormData({ ...formData, company_email: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="contact@sanduta.art"
-            />
-          </div>
+          <FormField
+            name="company_name"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Company Name</FormLabel>
+                <Input
+                  {...field}
+                  placeholder="Sanduta Print"
+                />
+                <FormMessage />
+              </div>
+            )}
+          />
+          <FormField
+            name="company_email"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Company Email</FormLabel>
+                <Input
+                  type="email"
+                  {...field}
+                  placeholder="contact@sanduta.art"
+                />
+                <FormMessage />
+              </div>
+            )}
+          />
         </div>
       </div>
 
@@ -141,42 +135,44 @@ export function SystemSettingsForm() {
           Localization
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Default Currency
-            </label>
-            <select
-              value={formData.default_currency}
-              onChange={(e) =>
-                setFormData({ ...formData, default_currency: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {CURRENCIES.map((currency) => (
-                <option key={currency.value} value={currency.value}>
-                  {currency.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Timezone
-            </label>
-            <select
-              value={formData.timezone}
-              onChange={(e) =>
-                setFormData({ ...formData, timezone: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {TIMEZONES.map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FormField
+            name="default_currency"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Default Currency</FormLabel>
+                <select
+                  {...field}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {CURRENCIES.map((currency) => (
+                    <option key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </option>
+                  ))}
+                </select>
+                <FormMessage />
+              </div>
+            )}
+          />
+          <FormField
+            name="timezone"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Timezone</FormLabel>
+                <select
+                  {...field}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
+                <FormMessage />
+              </div>
+            )}
+          />
         </div>
       </div>
 
@@ -186,27 +182,24 @@ export function SystemSettingsForm() {
           Inventory Settings
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Low Stock Threshold
-            </label>
-            <input
-              type="number"
-              value={formData.low_stock_threshold}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  low_stock_threshold: e.target.value,
-                })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="10"
-              min="0"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Alert when stock falls below this value
-            </p>
-          </div>
+          <FormField
+            name="low_stock_threshold"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Low Stock Threshold</FormLabel>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="10"
+                  {...field}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Alert when stock falls below this value
+                </p>
+                <FormMessage />
+              </div>
+            )}
+          />
         </div>
       </div>
 
@@ -214,30 +207,21 @@ export function SystemSettingsForm() {
       <div className="flex items-center gap-3">
         <Button
           type="submit"
-          disabled={isSaving}
+          loading={isSubmitting}
           className="flex items-center gap-2"
         >
-          {isSaving ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Settings
-            </>
-          )}
+          <Save className="w-4 h-4" />
+          Save Settings
         </Button>
         <Button
           type="button"
           variant="secondary"
           onClick={handleReset}
-          disabled={isSaving}
+          disabled={isSubmitting}
         >
           Reset
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

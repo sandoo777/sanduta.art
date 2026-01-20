@@ -256,3 +256,36 @@ export const jobFormSchema = z.object({
 });
 
 export type JobFormData = z.infer<typeof jobFormSchema>;
+
+// ==================== System Settings Schema ====================
+export const systemSettingsFormSchema = z.object({
+  company_name: z.string()
+    .min(1, 'Company name is required')
+    .max(100, 'Company name must be less than 100 characters'),
+  
+  company_email: z.string()
+    .email('Invalid email format')
+    .min(1, 'Company email is required'),
+  
+  default_currency: z.string()
+    .min(1, 'Currency is required'),
+  
+  timezone: z.string()
+    .min(1, 'Timezone is required'),
+  
+  low_stock_threshold: z.string()
+    .min(1, 'Low stock threshold is required')
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: 'Low stock threshold must be a non-negative number',
+    }),
+});
+
+export type SystemSettingsFormData = z.infer<typeof systemSettingsFormSchema>;
+
+// ==================== Production Search Schema ====================
+export const productionSearchFormSchema = z.object({
+  search: z.string().optional().or(z.literal('')),
+  priority: z.string().optional().or(z.literal('')),
+});
+
+export type ProductionSearchFormData = z.infer<typeof productionSearchFormSchema>;
