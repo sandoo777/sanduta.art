@@ -1,6 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { productFormSchema, type ProductFormData } from "@/lib/validations/admin";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface Product {
   id: string;
@@ -14,8 +23,18 @@ interface Product {
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: "", category: "", price: "", image_url: "", options: "" });
   const [uploading, setUploading] = useState(false);
+
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: "",
+      category: "",
+      price: "",
+      image_url: "",
+      options: "",
+    },
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -41,14 +60,13 @@ export default function AdminProducts() {
     setUploading(false);
 
     if (res.ok) {
-      setForm({ ...form, image_url: data.url });
+      form.setValue("image_url", data.url);
     } else {
       alert("Upload failed");
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ProductFormData) => {
     const method = editing ? "PUT" : "POST";
     const url = editing ? `/api/admin/products/${editing.id}` : "/api/admin/products";
 
@@ -56,30 +74,35 @@ export default function AdminProducts() {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: form.name,
-        category: form.category,
-        price: parseFloat(form.price),
-        image_url: form.image_url,
-        options: form.options ? JSON.parse(form.options) : null,
+        name: data.name,
+        category: data.category,
+        price: parseFloat(data.price),
+        image_url: data.image_url || undefined,
+        options: data.options ? JSON.parse(data.options) : null,
       }),
     });
 
     if (res.ok) {
       fetchProducts();
-      setForm({ name: "", category: "", price: "", image_url: "", options: "" });
+      form.reset();
       setEditing(null);
     }
   };
 
   const handleEdit = (product: Product) => {
     setEditing(product);
-    setForm({
+    form.reset({
       name: product.name,
       category: product.category,
       price: product.price.toString(),
       image_url: product.image_url || "",
       options: product.options ? JSON.stringify(product.options) : "",
     });
+  };
+
+  const handleCancel = () => {
+    setEditing(null);
+    form.reset();
   };
 
   const handleDelete = async (id: string) => {
@@ -92,71 +115,98 @@ export default function AdminProducts() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Products Management</h2>
-      <form onSubmit={handleSubmit} className="mb-8 p-4 border rounded">
+      <Form form={form} onSubmit={onSubmit} className="mb-8 p-4 border rounded">
         <div className="grid grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="p-2 border rounded"
-            required
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Name</FormLabel>
+                <Input {...field} placeholder="Product name" />
+                <FormMessage />
+              </div>
+            )}
           />
-          <input
-            type="text"
-            placeholder="Category"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="p-2 border rounded"
-            required
+          
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Category</FormLabel>
+                <Input {...field} placeholder="Category" />
+                <FormMessage />
+              </div>
+            )}
           />
-          <input
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            className="p-2 border rounded"
-            required
+          
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Price</FormLabel>
+                <Input {...field} type="number" step="0.01" placeholder="0.00" />
+                <FormMessage />
+              </div>
+            )}
           />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={form.image_url}
-            onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-            className="p-2 border rounded"
+          
+          <FormField
+            control={form.control}
+            name="image_url"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Image URL</FormLabel>
+                <Input {...field} placeholder="https://..." />
+                <FormMessage />
+              </div>
+            )}
           />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])}
-            className="p-2 border rounded"
-            disabled={uploading}
-          />
-          {uploading && <p>Uploading...</p>}
-          <textarea
-            placeholder="Options (JSON)"
-            value={form.options}
-            onChange={(e) => setForm({ ...form, options: e.target.value })}
-            className="p-2 border rounded"
-            rows={3}
+          
+          <div>
+            <FormLabel>Upload Image</FormLabel>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={uploading}
+            />
+            {uploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="options"
+            render={({ field }) => (
+              <div className="col-span-2">
+                <FormLabel>Options (JSON)</FormLabel>
+                <textarea
+                  {...field}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder='{"key": "value"}'
+                />
+                <FormMessage />
+              </div>
+            )}
           />
         </div>
-        <button type="submit" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
-          {editing ? "Update" : "Add"} Product
-        </button>
-        {editing && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditing(null);
-              setForm({ name: "", category: "", price: "", image_url: "", options: "" });
-            }}
-            className="ml-4 px-4 py-2 bg-gray-500 text-white rounded"
-          >
-            Cancel
-          </button>
-        )}
-      </form>
+        
+        <div className="mt-4 flex gap-2">
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {editing ? "Update" : "Add"} Product
+          </Button>
+          {editing && (
+            <Button type="button" variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+          )}
+        </div>
+      </Form>
+      </Form>
       <div className="overflow-x-auto -mx-4 md:mx-0">
         <div className="inline-block min-w-full align-middle">
           <div className="overflow-hidden border border-gray-300 md:rounded-lg">

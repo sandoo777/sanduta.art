@@ -1,7 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useCustomers, type CreateCustomerData, type Customer } from "@/modules/customers/useCustomers";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { customerFormSchema, type CustomerFormData } from "@/lib/validations/admin";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -17,25 +26,26 @@ export default function CustomerModal({
   customer,
 }: CustomerModalProps) {
   const { createCustomer, updateCustomer, loading } = useCustomers();
-  
-  const [formData, setFormData] = useState<CreateCustomerData>({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    address: "",
-    city: "",
-    country: "",
-  });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm<CustomerFormData>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      address: "",
+      city: "",
+      country: "",
+    },
+  });
 
   // Load customer data when editing
   useEffect(() => {
     if (!isOpen) return;
     
     if (customer) {
-      setFormData({
+      form.reset({
         name: customer.name,
         email: customer.email || "",
         phone: customer.phone || "",
@@ -46,7 +56,7 @@ export default function CustomerModal({
       });
     } else {
       // Reset form when creating new
-      setFormData({
+      form.reset({
         name: "",
         email: "",
         phone: "",
@@ -55,47 +65,23 @@ export default function CustomerModal({
         city: "",
         country: "",
       });
-      setErrors({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer, isOpen]);
-
-  // Validate form
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Numele este obligatoriu";
-    }
-
-    if (formData.email && formData.email.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        newErrors.email = "Email invalid";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [customer, isOpen, form]);
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
+  const onSubmit = async (data: CustomerFormData) => {
     try {
       // Remove empty strings
-      const cleanData: CreateCustomerData = {
-        name: formData.name.trim(),
-        ...(formData.email?.trim() && { email: formData.email.trim() }),
-        ...(formData.phone?.trim() && { phone: formData.phone.trim() }),
-        ...(formData.company?.trim() && { company: formData.company.trim() }),
-        ...(formData.address?.trim() && { address: formData.address.trim() }),
-        ...(formData.city?.trim() && { city: formData.city.trim() }),
-        ...(formData.country?.trim() && { country: formData.country.trim() }),
+      const cleanData: any = {
+        name: data.name.trim(),
       };
+      
+      if (data.email?.trim()) cleanData.email = data.email.trim();
+      if (data.phone?.trim()) cleanData.phone = data.phone.trim();
+      if (data.company?.trim()) cleanData.company = data.company.trim();
+      if (data.address?.trim()) cleanData.address = data.address.trim();
+      if (data.city?.trim()) cleanData.city = data.city.trim();
+      if (data.country?.trim()) cleanData.country = data.country.trim();
 
       if (customer) {
         await updateCustomer(customer.id, cleanData);
@@ -107,20 +93,7 @@ export default function CustomerModal({
       onClose();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Eroare necunoscută";
-      setErrors({ submit: errorMessage });
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
+      form.setError('root', { message: errorMessage });
     }
   };
 
@@ -146,156 +119,127 @@ export default function CustomerModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <Form form={form} onSubmit={onSubmit} className="p-6 space-y-4">
           {/* Error message */}
-          {errors.submit && (
+          {form.formState.errors.root && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {errors.submit}
+              {form.formState.errors.root.message}
             </div>
           )}
 
           {/* Name - Required */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nume <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.name ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Ion Popescu"
-              required
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <div>
+                <FormLabel>
+                  Nume <span className="text-red-500">*</span>
+                </FormLabel>
+                <Input {...field} placeholder="Ion Popescu" />
+                <FormMessage />
+              </div>
             )}
-          </div>
+          />
 
           {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="ion@example.com"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Email</FormLabel>
+                <Input {...field} type="email" placeholder="ion@example.com" />
+                <FormMessage />
+              </div>
             )}
-          </div>
+          />
 
           {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Telefon
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="+40721234567"
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Telefon</FormLabel>
+                <Input {...field} type="tel" placeholder="+40721234567" />
+                <FormMessage />
+              </div>
+            )}
+          />
 
           {/* Company */}
-          <div>
-            <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-              Companie
-            </label>
-            <input
-              type="text"
-              id="company"
-              name="company"
-              value={formData.company}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="SC Example SRL"
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="company"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Companie</FormLabel>
+                <Input {...field} placeholder="SC Example SRL" />
+                <FormMessage />
+              </div>
+            )}
+          />
 
           {/* Address */}
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-              Adresă
-            </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Str. Principală 123"
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <div>
+                <FormLabel>Adresă</FormLabel>
+                <Input {...field} placeholder="Str. Principală 123" />
+                <FormMessage />
+              </div>
+            )}
+          />
 
           {/* City and Country */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                Oraș
-              </label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="București"
-              />
-            </div>
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-                Țară
-              </label>
-              <input
-                type="text"
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="România"
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="city"
+              render={({ field }) => (
+                <div>
+                  <FormLabel>Oraș</FormLabel>
+                  <Input {...field} placeholder="București" />
+                  <FormMessage />
+                </div>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <div>
+                  <FormLabel>Țară</FormLabel>
+                  <Input {...field} placeholder="România" />
+                  <FormMessage />
+                </div>
+              )}
+            />
           </div>
 
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1"
               disabled={loading}
             >
               Anulează
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              className="flex-1"
+              disabled={loading || form.formState.isSubmitting}
             >
-              {loading ? "Se salvează..." : customer ? "Actualizează" : "Adaugă Client"}
-            </button>
+              {loading || form.formState.isSubmitting ? "Se salvează..." : customer ? "Actualizează" : "Adaugă Client"}
+            </Button>
           </div>
-        </form>
+        </Form>
       </div>
     </div>
   );
