@@ -8,6 +8,8 @@ import {
   TrashIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import AddressForm from "./AddressForm";
+import { AddressFormData } from "@/lib/validations/user-panel";
 
 export default function AddressList() {
   const {
@@ -21,53 +23,33 @@ export default function AddressList() {
   } = useAccount();
 
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Omit<Address, "id">>({
-    name: "",
-    phone: "",
-    address: "",
-    city: "",
-    country: "Moldova",
-    postalCode: "",
-    isDefault: false,
-  });
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   useEffect(() => {
     fetchAddresses();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async (data: AddressFormData): Promise<boolean> => {
     let success = false;
-    if (editingId) {
-      success = await updateAddress(editingId, formData);
+    if (editingAddress) {
+      success = await updateAddress(editingAddress.id, data);
     } else {
-      success = await addAddress(formData);
+      success = await addAddress(data);
     }
-
+    
     if (success) {
       resetForm();
     }
+    return success;
   };
 
   const resetForm = () => {
     setShowForm(false);
-    setEditingId(null);
-    setFormData({
-      name: "",
-      phone: "",
-      address: "",
-      city: "",
-      country: "Moldova",
-      postalCode: "",
-      isDefault: false,
-    });
+    setEditingAddress(null);
   };
 
   const handleEdit = (address: Address) => {
-    setEditingId(address.id);
-    setFormData(address);
+    setEditingAddress(address);
     setShowForm(true);
   };
 
@@ -107,134 +89,11 @@ export default function AddressList() {
 
       {/* Address Form */}
       {showForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingId ? "Editează adresa" : "Adresă nouă"}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nume complet *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Telefon *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Adresă completă *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                placeholder="Strada, număr, bloc, scară, apartament"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Oraș *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.city}
-                  onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Țară *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.country}
-                  onChange={(e) =>
-                    setFormData({ ...formData, country: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cod poștal
-                </label>
-                <input
-                  type="text"
-                  value={formData.postalCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, postalCode: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isDefault"
-                checked={formData.isDefault}
-                onChange={(e) =>
-                  setFormData({ ...formData, isDefault: e.target.checked })
-                }
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="isDefault" className="text-sm text-gray-700">
-                Setează ca adresă implicită
-              </label>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                {editingId ? "Actualizează" : "Adaugă adresa"}
-              </button>
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                Anulează
-              </button>
-            </div>
-          </form>
-        </div>
+        <AddressForm
+          editingAddress={editingAddress}
+          onSubmit={handleSubmit}
+          onCancel={resetForm}
+        />
       )}
 
       {/* Addresses List */}

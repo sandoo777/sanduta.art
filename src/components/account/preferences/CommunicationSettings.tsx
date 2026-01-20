@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePreferences } from "@/modules/account/usePreferences";
 import { useTranslations } from "@/modules/i18n";
 import { Mail, CheckCircle2 } from "lucide-react";
+import { Form, FormField } from "@/components/ui";
+import { communicationPreferencesSchema, type CommunicationPreferencesFormData } from "@/lib/validations/user-panel";
 
 export const CommunicationSettings = () => {
   const { preferences, updateCommunicationPreferences } = usePreferences();
   const { t } = useTranslations();
   const [saving, setSaving] = useState(false);
 
-  const handleToggle = async (field: string, value: boolean) => {
+  const handleSubmit = async (data: CommunicationPreferencesFormData) => {
     try {
       setSaving(true);
-      await updateCommunicationPreferences({ [field]: value });
-    } catch (_error) {
+      await updateCommunicationPreferences(data);
+    } catch (error) {
       console.error("Failed to update communication preferences:", error);
     } finally {
       setSaving(false);
@@ -31,6 +33,7 @@ export const CommunicationSettings = () => {
     disabled?: boolean;
   }) => (
     <button
+      type="button"
       onClick={() => onChange(!checked)}
       disabled={disabled}
       className={`
@@ -50,22 +53,22 @@ export const CommunicationSettings = () => {
 
   const communications = [
     {
-      field: "newsletter",
+      field: "newsletter" as const,
       label: t("preferences.communication.newsletter"),
       desc: t("preferences.communication.newsletterDesc"),
     },
     {
-      field: "specialOffers",
+      field: "specialOffers" as const,
       label: t("preferences.communication.specialOffers"),
       desc: t("preferences.communication.specialOffersDesc"),
     },
     {
-      field: "personalizedRecommend",
+      field: "personalizedRecommend" as const,
       label: t("preferences.communication.recommendations"),
       desc: t("preferences.communication.recommendationsDesc"),
     },
     {
-      field: "productNews",
+      field: "productNews" as const,
       label: t("preferences.communication.productNews"),
       desc: t("preferences.communication.productNewsDesc"),
     },
@@ -87,28 +90,46 @@ export const CommunicationSettings = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {communications.map((item) => (
-          <div
-            key={item.field}
-            className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-          >
-            <div className="flex-1">
-              <div className="font-medium text-gray-900">{item.label}</div>
-              <div className="text-sm text-gray-600 mt-0.5">{item.desc}</div>
-            </div>
-            <Toggle
-              checked={
-                preferences?.[
-                  item.field as keyof typeof preferences
-                ] as boolean ?? false
-              }
-              onChange={(value) => handleToggle(item.field, value)}
-              disabled={saving}
-            />
-          </div>
-        ))}
-      </div>
+      <Form<CommunicationPreferencesFormData>
+        schema={communicationPreferencesSchema}
+        onSubmit={handleSubmit}
+        defaultValues={{
+          newsletter: preferences?.newsletter ?? false,
+          specialOffers: preferences?.specialOffers ?? false,
+          personalizedRecommend: preferences?.personalizedRecommend ?? false,
+          productNews: preferences?.productNews ?? false,
+        }}
+      >
+        <div className="space-y-4">
+          {communications.map((item) => (
+            <FormField<CommunicationPreferencesFormData> key={item.field} name={item.field}>
+              {({ value, onChange }) => (
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{item.label}</div>
+                    <div className="text-sm text-gray-600 mt-0.5">{item.desc}</div>
+                  </div>
+                  <Toggle
+                    checked={value as boolean}
+                    onChange={async (newValue) => {
+                      onChange({ target: { value: newValue } } as any);
+                      // Auto-submit on toggle
+                      const newData = {
+                        newsletter: item.field === 'newsletter' ? newValue : (preferences?.newsletter ?? false),
+                        specialOffers: item.field === 'specialOffers' ? newValue : (preferences?.specialOffers ?? false),
+                        personalizedRecommend: item.field === 'personalizedRecommend' ? newValue : (preferences?.personalizedRecommend ?? false),
+                        productNews: item.field === 'productNews' ? newValue : (preferences?.productNews ?? false),
+                      };
+                      handleSubmit(newData);
+                    }}
+                    disabled={saving}
+                  />
+                </div>
+              )}
+            </FormField>
+          ))}
+        </div>
+      </Form>
 
       {saving && (
         <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-600">

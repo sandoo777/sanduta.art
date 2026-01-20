@@ -2,16 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAccount, UserProfile } from "@/modules/account/useAccount";
+import { Form, FormField, FormLabel, FormMessage, Input, Button } from "@/components/ui";
+import { profileSchema, type ProfileFormData } from "@/lib/validations/user-panel";
 
 export default function ProfileForm() {
   const { profile, loading, fetchProfile, updateProfile } = useAccount();
-  const [formData, setFormData] = useState<Partial<UserProfile>>({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    cui: "",
-  });
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -20,25 +15,11 @@ export default function ProfileForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (profile) {
-      setFormData({
-        name: profile.name || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
-        company: profile.company || "",
-        cui: profile.cui || "",
-      });
-    }
-     
-  }, [profile]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: ProfileFormData) => {
     setSaving(true);
     setSuccessMessage("");
 
-    const success = await updateProfile(formData);
+    const success = await updateProfile(data);
 
     if (success) {
       setSuccessMessage("Profilul a fost actualizat cu succes!");
@@ -58,66 +39,87 @@ export default function ProfileForm() {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Success Message */}
-        {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-            {successMessage}
-          </div>
-        )}
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+          {successMessage}
+        </div>
+      )}
 
+      <Form<ProfileFormData>
+        schema={profileSchema}
+        onSubmit={handleSubmit}
+        defaultValues={{
+          name: profile?.name || "",
+          email: profile?.email || "",
+          phone: profile?.phone || "",
+          company: profile?.company || "",
+          cui: profile?.cui || "",
+        }}
+        className="space-y-6"
+      >
         {/* Personal Information */}
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Informații personale
           </h3>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nume complet *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormField<ProfileFormData> name="name">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="name" required>Nume complet</FormLabel>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="Ion Popescu"
+                  />
+                  <FormMessage error={error} />
+                </div>
+              )}
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Schimbarea email-ului poate necesita reverificare
-              </p>
-            </div>
+            <FormField<ProfileFormData> name="email">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="email" required>Email</FormLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="ion@example.com"
+                  />
+                  <FormMessage error={error} />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Schimbarea email-ului poate necesita reverificare
+                  </p>
+                </div>
+              )}
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefon
-              </label>
-              <input
-                type="tel"
-                value={formData.phone || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormField<ProfileFormData> name="phone">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="phone">Telefon</FormLabel>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={value || ""}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="+373 69 123 456"
+                  />
+                  <FormMessage error={error} />
+                </div>
+              )}
+            </FormField>
           </div>
         </div>
 
@@ -127,50 +129,58 @@ export default function ProfileForm() {
             Informații firmă (opțional)
           </h3>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nume firmă
-              </label>
-              <input
-                type="text"
-                value={formData.company || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, company: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <FormField<ProfileFormData> name="company">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="company">Nume firmă</FormLabel>
+                  <Input
+                    id="company"
+                    type="text"
+                    value={value || ""}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="SC Example SRL"
+                  />
+                  <FormMessage error={error} />
+                </div>
+              )}
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                CUI / CIF
-              </label>
-              <input
-                type="text"
-                value={formData.cui || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, cui: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Pentru facturi cu TVA
-              </p>
-            </div>
+            <FormField<ProfileFormData> name="cui">
+              {({ value, onChange, onBlur, error }) => (
+                <div>
+                  <FormLabel htmlFor="cui">CUI / CIF</FormLabel>
+                  <Input
+                    id="cui"
+                    type="text"
+                    value={value || ""}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    error={error}
+                    placeholder="1234567890"
+                  />
+                  <FormMessage error={error} />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Pentru facturi cu TVA
+                  </p>
+                </div>
+              )}
+            </FormField>
           </div>
         </div>
 
         {/* Submit Button */}
         <div className="pt-6 border-t border-gray-200">
-          <button
+          <Button
             type="submit"
-            disabled={saving}
-            className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={saving}
+            className="w-full md:w-auto px-8"
           >
             {saving ? "Se salvează..." : "Salvează modificările"}
-          </button>
+          </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }
