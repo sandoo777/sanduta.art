@@ -90,7 +90,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       const data = await response.json();
       set({ unreadCount: data.unreadCount });
     } catch (_error) {
-      console.error('Error fetching unread count:', error);
+      console.error('Error fetching unread count:', _error);
     }
   },
 
