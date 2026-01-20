@@ -68,7 +68,7 @@ export async function POST(_request: NextRequest) {
         { fallback: 'cod_available' }
       );
     }
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:Paynet', error, { action: 'create_payment_session' });
     return createErrorResponse('Failed to create payment session. Please try again later.', 500);
   }

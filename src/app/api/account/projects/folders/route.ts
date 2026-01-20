@@ -38,7 +38,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(formattedFolders);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching folders:", error);
     return NextResponse.json(
       { error: "Failed to fetch folders" },
@@ -85,7 +85,7 @@ export async function POST(_request: Request) {
       createdAt: folder.createdAt.toISOString(),
       projectCount: 0,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating folder:", error);
     return NextResponse.json(
       { error: "Failed to create folder" },

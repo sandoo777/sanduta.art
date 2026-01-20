@@ -41,7 +41,7 @@ export async function POST(_req: NextRequest) {
     logger.info('API:Register', 'User created successfully', { userId: user.id, email: user.email });
 
     return NextResponse.json({ message: "User created", user: { id: user.id, name: user.name, email: user.email } });
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:Register', error, { action: 'create_user' });
     return createErrorResponse('Registration failed. Please try again later.', 500);
   }

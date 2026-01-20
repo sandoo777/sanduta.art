@@ -53,7 +53,7 @@ export const GET = withAuth(
           metadata: version.metadata,
         })),
       });
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching file", error);
       return NextResponse.json({ error: "Failed to fetch file" }, { status: 500 });
     }
@@ -100,7 +100,7 @@ export const DELETE = withAuth(
       });
 
       return NextResponse.json({ success: true });
-    } catch (_error) {
+    } catch (error) {
       console.error("Error deleting file", error);
       return NextResponse.json({ error: "Failed to delete file" }, { status: 500 });
     }

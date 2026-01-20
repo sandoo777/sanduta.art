@@ -23,7 +23,7 @@ export async function GET(_request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('Error getting pickup points:', error);
     return NextResponse.json(
       { error: 'Failed to get pickup points' },

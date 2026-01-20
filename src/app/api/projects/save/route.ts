@@ -79,7 +79,7 @@ export async function POST(_request: Request) {
       previewUrl: project.previewImage,
       finalFileUrl: project.finalFile,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error saving project:', error);
     return NextResponse.json(
       { error: 'Failed to save project' },
@@ -142,7 +142,7 @@ export async function GET(_request: Request) {
         updatedAt: project.updatedAt,
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error loading project:', error);
     return NextResponse.json(
       { error: 'Failed to load project' },

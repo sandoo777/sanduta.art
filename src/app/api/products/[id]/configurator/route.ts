@@ -54,7 +54,7 @@ export async function GET(
     const response = NextResponse.json(configuratorProduct);
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=900');
     return response;
-  } catch (_error) {
+  } catch (error) {
     logApiError(TAG, error, { productId: params.id });
     return createErrorResponse(
       'Nu am reușit să încărcăm datele necesare pentru configurator',

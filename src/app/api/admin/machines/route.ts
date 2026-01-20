@@ -31,7 +31,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(serializedMachines);
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching machines:', error);
     return NextResponse.json(
       { error: 'Failed to fetch machines' },
@@ -89,7 +89,7 @@ export async function POST(_request: NextRequest) {
       ...machine,
       costPerHour: machine.costPerHour ? Number(machine.costPerHour) : null,
     }, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error creating machine:', error);
     return NextResponse.json(
       { error: 'Failed to create machine' },

@@ -51,7 +51,7 @@ export async function GET(
     }
 
     return NextResponse.json(material);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching material:", error);
     return NextResponse.json(
       { error: "Eroare la preluarea materialului" },
@@ -157,7 +157,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(material);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating material:", error);
     return NextResponse.json(
       { error: "Eroare la actualizarea materialului" },
@@ -217,7 +217,7 @@ export async function DELETE(
       success: true, 
       message: "Materialul a fost șters cu succes" 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting material:", error);
     return NextResponse.json(
       { error: "Eroare la ștergerea materialului" },

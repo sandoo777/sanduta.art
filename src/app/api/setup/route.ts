@@ -13,7 +13,7 @@ export async function GET() {
       needsSetup: adminCount === 0,
       adminCount 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Setup check error:', error);
     return NextResponse.json({ error: 'Failed to check setup status' }, { status: 500 });
   }

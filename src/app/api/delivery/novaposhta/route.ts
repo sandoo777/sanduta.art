@@ -104,7 +104,7 @@ export async function POST(_request: NextRequest) {
         { orderId, fallback: 'manual_processing' }
       );
     }
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:NovaPoshta', error, { action: 'create_shipment' });
     return createErrorResponse(
       'Failed to create shipment. Please contact support with your order number.',

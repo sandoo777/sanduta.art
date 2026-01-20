@@ -33,7 +33,7 @@ export async function POST(_request: NextRequest) {
     });
 
     return NextResponse.json({ message: 'Webhook processed' }, { status: 200 });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error processing Paynet webhook:', error);
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }

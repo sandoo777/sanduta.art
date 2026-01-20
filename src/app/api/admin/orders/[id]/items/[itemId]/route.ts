@@ -101,7 +101,7 @@ export async function PATCH(
     await recalculateOrderTotal(id);
 
     return NextResponse.json(item);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating item:", error);
     return NextResponse.json(
       { error: "Failed to update item" },
@@ -158,7 +158,7 @@ export async function DELETE(
     await recalculateOrderTotal(id);
 
     return NextResponse.json({ message: "Item deleted successfully" });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting item:", error);
     return NextResponse.json(
       { error: "Failed to delete item" },

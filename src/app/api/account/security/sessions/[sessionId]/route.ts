@@ -54,7 +54,7 @@ export const DELETE = withAuth(
       });
 
       return NextResponse.json({ success: true, message: 'Sesiunea a fost revocată' });
-    } catch (_error) {
+    } catch (error) {
       console.error('Error revoking session:', error);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

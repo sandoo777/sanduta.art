@@ -55,7 +55,7 @@ export async function POST(_request: Request) {
       backupCodes,
       otpauthUrl
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error generating 2FA:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

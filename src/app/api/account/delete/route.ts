@@ -45,7 +45,7 @@ export async function POST(_request: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting account:", error);
     return NextResponse.json(
       { error: "Failed to delete account" },

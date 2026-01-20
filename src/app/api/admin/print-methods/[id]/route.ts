@@ -34,7 +34,7 @@ export async function GET(
       createdAt: printMethod.createdAt.toISOString(),
       updatedAt: printMethod.updatedAt.toISOString(),
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching print method:", error);
     return NextResponse.json(
       { error: "Failed to fetch print method" },
@@ -83,7 +83,7 @@ export async function PATCH(
       createdAt: printMethod.createdAt.toISOString(),
       updatedAt: printMethod.updatedAt.toISOString(),
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating print method:", error);
     return NextResponse.json(
       { error: "Failed to update print method" },
@@ -110,7 +110,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting print method:", error);
     return NextResponse.json(
       { error: "Failed to delete print method" },

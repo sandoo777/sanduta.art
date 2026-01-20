@@ -48,7 +48,7 @@ export async function GET(
     }
 
     return NextResponse.json(serializeFullProduct(product));
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching full product:', error);
     return NextResponse.json(
       { error: 'Failed to fetch product' },
@@ -203,7 +203,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(serializeFullProduct(updatedProduct));
-  } catch (_error) {
+  } catch (error) {
     console.error('Error updating full product:', error);
     return NextResponse.json(
       { error: 'Failed to update product' },

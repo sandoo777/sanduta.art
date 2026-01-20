@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ jobs });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching production jobs:", _error);
     return NextResponse.json(
       { error: "Failed to fetch production jobs" },
@@ -146,7 +146,7 @@ export async function POST(_request: NextRequest) {
     });
 
     return NextResponse.json(job, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating production job:", error);
     return NextResponse.json(
       { error: "Failed to create production job" },

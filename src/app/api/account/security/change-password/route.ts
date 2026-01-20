@@ -86,7 +86,7 @@ export const POST = withAuth(
         success: true,
         message: 'Parola a fost schimbată cu succes'
       });
-    } catch (_error) {
+    } catch (error) {
       console.error('Error changing password:', error);
       return NextResponse.json(
         { error: 'Eroare la schimbarea parolei' },

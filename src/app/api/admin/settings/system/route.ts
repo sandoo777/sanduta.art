@@ -28,7 +28,7 @@ export async function GET(_request: NextRequest) {
       settings: settingsObject,
       raw: settings // Also include raw array for reference
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching system settings:", error);
     return NextResponse.json(
       { error: "Failed to fetch system settings" },
@@ -106,7 +106,7 @@ export async function PATCH(_request: NextRequest) {
       settings: settingsObject,
       updated: results.length
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating system settings:", error);
     return NextResponse.json(
       { error: "Failed to update system settings" },

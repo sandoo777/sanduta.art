@@ -42,7 +42,7 @@ export async function POST(
     });
 
     return NextResponse.json(updated);
-  } catch (_error) {
+  } catch (error) {
     console.error('Error archiving notification:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

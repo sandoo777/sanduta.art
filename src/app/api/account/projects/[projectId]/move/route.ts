@@ -57,7 +57,7 @@ export async function PATCH(
       folderId: updatedProject.folderId,
       updatedAt: updatedProject.updatedAt.toISOString(),
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error moving project:", error);
     return NextResponse.json(
       { error: "Failed to move project" },

@@ -50,7 +50,7 @@ export async function DELETE(
       success: true, 
       message: "Nota a fost ștearsă cu succes" 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting customer note:", error);
     return NextResponse.json(
       { error: "Eroare la ștergerea notei" },

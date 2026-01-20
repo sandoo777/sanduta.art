@@ -65,7 +65,7 @@ export const GET = withRole(
       }
 
       return NextResponse.json(order);
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching order:", error);
       return NextResponse.json(
         { error: "Failed to fetch order" },
@@ -197,7 +197,7 @@ export const PATCH = withRole(
       }
 
       return NextResponse.json(order);
-    } catch (_error) {
+    } catch (error) {
       console.error("Error updating order:", error);
       return NextResponse.json(
         { error: "Failed to update order" },
@@ -270,7 +270,7 @@ export const DELETE = withRole(
       });
 
       return NextResponse.json({ message: "Order deleted successfully" });
-    } catch (_error) {
+    } catch (error) {
       console.error("Error deleting order:", error);
       return NextResponse.json(
         { error: "Failed to delete order" },

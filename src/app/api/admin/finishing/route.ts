@@ -34,7 +34,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(serializedOperations);
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching finishing operations:', error);
     return NextResponse.json(
       { error: 'Failed to fetch finishing operations' },
@@ -95,7 +95,7 @@ export async function POST(_request: NextRequest) {
       costPerUnit: operation.costPerUnit ? Number(operation.costPerUnit) : null,
       costPerM2: operation.costPerM2 ? Number(operation.costPerM2) : null,
     }, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error creating finishing operation:', error);
     return NextResponse.json(
       { error: 'Failed to create finishing operation' },

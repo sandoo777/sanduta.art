@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     return NextResponse.json(preferences);
-  } catch (_error) {
+  } catch (error) {
     console.error("[PREFERENCES_GET]", error);
     return NextResponse.json(
       { error: "Internal server error" },
@@ -79,7 +79,7 @@ export async function PATCH(_req: Request) {
     }
 
     return NextResponse.json(preferences);
-  } catch (_error) {
+  } catch (error) {
     console.error("[PREFERENCES_PATCH]", error);
     return NextResponse.json(
       { error: "Internal server error" },

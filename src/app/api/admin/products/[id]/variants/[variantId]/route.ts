@@ -79,7 +79,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(variant);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating variant:", error);
     return NextResponse.json(
       { error: "Failed to update variant" },
@@ -133,7 +133,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "Variant deleted successfully" });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting variant:", error);
     return NextResponse.json(
       { error: "Failed to delete variant" },

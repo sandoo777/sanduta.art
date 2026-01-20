@@ -71,7 +71,7 @@ export const PATCH = withRole(
       });
 
       return NextResponse.json(updatedUser);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to update user:', error);
       return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
     }
@@ -128,7 +128,7 @@ export const DELETE = withRole(
       });
 
       return NextResponse.json({ success: true });
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to delete user:', error);
       return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
     }

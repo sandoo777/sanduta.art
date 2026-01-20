@@ -236,7 +236,7 @@ export async function GET(_request: NextRequest) {
     setCachedData(cacheKey, result);
 
     return NextResponse.json(result);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching products report:", error);
     return NextResponse.json(
       { error: "Failed to fetch products report" },

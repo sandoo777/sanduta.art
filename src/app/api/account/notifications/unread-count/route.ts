@@ -29,7 +29,7 @@ export async function GET(_request: Request) {
     });
 
     return NextResponse.json({ unreadCount });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching unread count:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

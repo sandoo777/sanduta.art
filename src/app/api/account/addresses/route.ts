@@ -25,7 +25,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user.addresses);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching addresses:", error);
     return NextResponse.json(
       { error: "Failed to fetch addresses" },
@@ -75,7 +75,7 @@ export async function POST(_request: Request) {
     });
 
     return NextResponse.json(newAddress);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating address:", error);
     return NextResponse.json(
       { error: "Failed to create address" },

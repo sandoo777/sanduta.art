@@ -58,7 +58,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(orders);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },

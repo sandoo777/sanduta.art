@@ -50,7 +50,7 @@ export async function DELETE(
       success: true, 
       message: "Tag-ul a fost șters cu succes" 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error deleting customer tag:", error);
     return NextResponse.json(
       { error: "Eroare la ștergerea tag-ului" },

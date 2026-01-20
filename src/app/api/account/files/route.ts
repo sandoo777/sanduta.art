@@ -75,7 +75,7 @@ export const GET = withAuth(
       }));
 
       return NextResponse.json(payload);
-    } catch (_error) {
+    } catch (error) {
       console.error("Error loading files", error);
       return NextResponse.json(
         { error: "Failed to load files" },

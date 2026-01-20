@@ -143,7 +143,7 @@ export async function POST(
       success: true,
       order: updatedOrder,
     });
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:UpdateOrderStatus', error);
     return createErrorResponse('Failed to update order status', 500);
   }

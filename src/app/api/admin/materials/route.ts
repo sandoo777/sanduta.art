@@ -48,7 +48,7 @@ export async function GET(_request: NextRequest) {
     });
 
     return NextResponse.json(materialsWithMetrics);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching materials:", error);
     return NextResponse.json(
       { error: "Eroare la preluarea materialelor" },
@@ -135,7 +135,7 @@ export async function POST(_request: NextRequest) {
     });
 
     return NextResponse.json(material, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating material:", error);
     return NextResponse.json(
       { error: "Eroare la crearea materialului" },

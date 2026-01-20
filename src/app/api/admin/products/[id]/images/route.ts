@@ -59,7 +59,7 @@ export async function POST(
     });
 
     return NextResponse.json(image, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating image:", error);
     return NextResponse.json(
       { error: "Failed to create image" },

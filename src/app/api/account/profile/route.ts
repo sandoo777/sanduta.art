@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
@@ -67,7 +67,7 @@ export async function PATCH(_request: Request) {
       company: user.company,
       cui: user.cui,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },

@@ -31,7 +31,7 @@ export async function POST(_request: NextRequest) {
     };
     
     return NextResponse.json(parsedProject, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error creating project:', error);
     return NextResponse.json(
       { error: 'Failed to create project' },
@@ -66,7 +66,7 @@ export async function GET(_request: NextRequest) {
     });
     
     return NextResponse.json(projects);
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching projects:', error);
     return NextResponse.json(
       { error: 'Failed to fetch projects' },

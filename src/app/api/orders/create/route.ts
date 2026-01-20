@@ -156,7 +156,7 @@ export async function POST(_request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:Orders:Create', error, { action: 'create_order' });
     return createErrorResponse(
       'Eroare la crearea comenzii. Te rugăm să încerci din nou sau contactează suportul.',

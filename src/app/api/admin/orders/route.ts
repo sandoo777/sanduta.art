@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
         hasPreviousPage: page > 1,
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching orders:", _error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },
@@ -241,7 +241,7 @@ export async function POST(_req: NextRequest) {
     });
 
     return NextResponse.json(order, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating order:", error);
     return NextResponse.json(
       { error: "Failed to create order" },

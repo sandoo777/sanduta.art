@@ -164,7 +164,7 @@ export async function POST(_req: NextRequest) {
     });
 
     return NextResponse.json(serializeFullProduct(fullProduct), { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error creating full product:', error);
     return NextResponse.json(
       { error: 'Failed to create product' },

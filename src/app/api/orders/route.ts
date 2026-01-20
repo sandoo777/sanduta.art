@@ -36,7 +36,7 @@ export const GET = withAuth(
       logger.info('API:Orders', `Fetched ${orders.length} orders`, { userId: user.id });
 
       return NextResponse.json({ orders });
-    } catch (_error) {
+    } catch (error) {
       logApiError('API:Orders', error, { action: 'fetch_orders' });
       return createErrorResponse('Failed to fetch orders. Please try again later.', 500);
     }
@@ -181,7 +181,7 @@ export const POST = withAuth(
     });
 
     return NextResponse.json({ message: 'Order submitted successfully', order }, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:Orders', error, { action: 'create_order' });
     return createErrorResponse('Failed to create order. Please try again or contact support.', 500);
   }

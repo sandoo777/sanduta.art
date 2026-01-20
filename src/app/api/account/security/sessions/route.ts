@@ -31,7 +31,7 @@ export async function GET(_request: Request) {
     });
 
     return NextResponse.json({ sessions });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching sessions:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -86,7 +86,7 @@ export async function POST(_request: Request) {
     });
 
     return NextResponse.json({ success: true, sessionToken });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error creating session:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -77,7 +77,7 @@ export async function POST(
     });
 
     return NextResponse.json(variant, { status: 201 });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating variant:", error);
     return NextResponse.json(
       { error: "Failed to create variant" },

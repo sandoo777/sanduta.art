@@ -65,7 +65,7 @@ export async function POST(
       lastUsedAt: updated.lastUsedAt ? updated.lastUsedAt.toISOString() : null,
       versionCount: updated._count.versions,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error marking file as reused", error);
     return NextResponse.json(
       { error: "Failed to update file usage" },

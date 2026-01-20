@@ -106,7 +106,7 @@ export async function POST(
         minStock: material.minStock,
       } : null,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error("Error consuming material:", error);
     return NextResponse.json(
       { error: "Eroare la consumul materialului" },

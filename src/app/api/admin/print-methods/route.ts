@@ -26,7 +26,7 @@ export async function GET(_request: NextRequest) {
     }));
 
     return NextResponse.json(formatted);
-  } catch (_error) {
+  } catch (error) {
     console.error("Error fetching print methods:", error);
     return NextResponse.json(
       { error: "Failed to fetch print methods" },
@@ -97,7 +97,7 @@ export async function POST(_request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error("Error creating print method:", error);
     return NextResponse.json(
       { error: "Failed to create print method" },

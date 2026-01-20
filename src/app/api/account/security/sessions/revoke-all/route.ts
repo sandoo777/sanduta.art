@@ -48,7 +48,7 @@ export async function POST(_request: Request) {
       success: true, 
       message: 'Toate sesiunile au fost revocate' 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error revoking all sessions:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -65,7 +65,7 @@ export async function POST(
     });
 
     return NextResponse.json(duplicate);
-  } catch (_error) {
+  } catch (error) {
     console.error('Error duplicating product:', error);
     return NextResponse.json(
       { error: 'Failed to duplicate product' },

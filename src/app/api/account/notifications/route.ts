@@ -63,7 +63,7 @@ export async function GET(_request: Request) {
       unreadCount,
       hasMore: offset + notifications.length < totalCount
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error fetching notifications:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

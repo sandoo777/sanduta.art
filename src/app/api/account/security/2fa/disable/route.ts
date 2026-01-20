@@ -76,7 +76,7 @@ export async function POST(_request: Request) {
       success: true, 
       message: 'Autentificarea în doi pași a fost dezactivată' 
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error disabling 2FA:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

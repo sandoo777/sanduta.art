@@ -30,7 +30,7 @@ export async function POST(_request: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch (error) {
     console.error('Error marking all notifications as read:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

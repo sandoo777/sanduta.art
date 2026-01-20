@@ -41,7 +41,7 @@ export async function GET() {
     logger.info('API:Categories', `Found ${categories.length} active categories`);
 
     return NextResponse.json(categories);
-  } catch (_error) {
+  } catch (error) {
     logApiError('API:Categories', error);
     return createErrorResponse('Failed to fetch categories', 500);
   }
