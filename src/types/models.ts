@@ -128,6 +128,34 @@ export interface CategoryWithRelations extends Category {
   };
 }
 
+/**
+ * Category Tree Node - Recursive structure for hierarchical categories
+ * Used by /api/categories/tree endpoint
+ */
+export interface CategoryTreeNode {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  color: string | null;
+  icon: string | null;
+  order: number;
+  active: boolean;
+  featured: boolean;
+  productCount: number;
+  children: CategoryTreeNode[];
+  parentId?: string | null;
+}
+
+/**
+ * Category with children (for hooks and components)
+ * Lightweight version for navigation and filters
+ */
+export interface CategoryWithChildren extends Category {
+  children?: CategoryWithChildren[];
+}
+
 export interface ProductionJobWithRelations extends ProductionJob {
   order: Order;
   assignedTo?: User | null;

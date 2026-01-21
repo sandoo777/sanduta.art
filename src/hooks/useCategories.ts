@@ -2,16 +2,11 @@
 
 /**
  * Hook pentru obținere categorii cu ierarhie
+ * Type-safe cu CategoryWithChildren din @/types/models
  */
 
 import { useState, useEffect } from 'react';
-import { Category } from '@/types/models';
-  order: number;
-}
-
-interface CategoryWithChildren extends Category {
-  children?: CategoryWithChildren[];
-}
+import { Category, CategoryWithChildren } from '@/types/models';
 
 export function useCategories() {
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
@@ -33,28 +28,30 @@ export function useCategories() {
 
       const data: Category[] = await response.json();
       
-      // Construim ierarhia: categorii principale cu copiii lor
+      // Build hierarchy - type-safe with CategoryWithChildren
       const categoryMap = new Map<string, CategoryWithChildren>();
       const rootCategories: CategoryWithChildren[] = [];
 
-      // Prima tură: cream map-ul
+      // First pass: create map
       data.forEach((cat) => {
         categoryMap.set(cat.id, { ...cat, children: [] });
       });
 
-      // A doua tură: construim ierarhia
+      // Second pass: build hierarchy - no casts needed
       data.forEach((cat) => {
-        const category = categoryMap.get(cat.id)!;
+        const category = categoryMap.get(cat.id);
+        if (!category) return; // Type guard
         
         if (cat.parentId) {
-          // Este subcategorie
           const parent = categoryMap.get(cat.parentId);
           if (parent) {
             if (!parent.children) parent.children = [];
             parent.children.push(category);
+          } else {
+            // Parent not found - treat as root
+            rootCategories.push(category);
           }
         } else {
-          // Este categorie principală
           rootCategories.push(category);
         }
       });
