@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useOrders } from '@/modules/orders/useOrders';
+import { fetchUsers } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface Operator {
@@ -32,12 +33,13 @@ export function AssignOperator({
     // Fetch operators list
     const fetchOperators = async () => {
       try {
-        const response = await fetch('/api/admin/users?role=OPERATOR');
-        if (response.ok) {
-          const data = await response.json();
-          setOperators(Array.isArray(data) ? data : data.data || []);
+        const response = await fetchUsers({ role: 'OPERATOR' });
+        if (response.success && response.data) {
+          setOperators(Array.isArray(response.data) ? response.data : []);
+        } else {
+          toast.error('Eroare la încărcarea operatorilor');
         }
-      } catch (_error) {
+      } catch (error) {
         console.error('Failed to fetch operators:', error);
         toast.error('Eroare la încărcarea operatorilor');
       } finally {

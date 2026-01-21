@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LoadingState } from '@/components/ui';
 import { useRouter } from "next/navigation";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 import CustomerModal from "../_components/CustomerModal";
@@ -72,14 +73,7 @@ export default function CustomerDetailsPage({ params }: PageProps) {
   };
 
   if (loading || !customer) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600">Se încarcă detaliile clientului...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă detaliile clientului..." />;
   }
 
   return (

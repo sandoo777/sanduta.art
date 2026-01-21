@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LoadingState } from '@/components/ui';
 import { Shield, Users, Key, Info } from "lucide-react";
 import { UserRole } from "@prisma/client";
 
@@ -82,10 +83,7 @@ export default function RolesManagementPage() {
         </div>
 
         {loading ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Se încarcă rolurile...</p>
-          </div>
+          <LoadingState text="Se încarcă rolurile..." />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Roles List */}

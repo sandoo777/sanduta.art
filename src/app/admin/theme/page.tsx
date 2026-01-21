@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { BrandingSettings } from '@/components/theme/BrandingSettings';
 import { ColorSettings } from '@/components/theme/ColorSettings';
 import { TypographySettings } from '@/components/theme/TypographySettings';
@@ -285,14 +286,7 @@ export default function ThemeCustomizerPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600">Loading theme customizer...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Loading theme customizer..." />;
   }
 
   return (

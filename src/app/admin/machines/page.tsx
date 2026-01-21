@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { LoadingState } from '@/components/ui';
 import { Plus, Search, Filter } from 'lucide-react';
 import { MachineCard } from './_components/MachineCard';
 import { MachineForm } from './_components/MachineForm';
@@ -90,14 +91,7 @@ export default function MachinesPage() {
   };
 
   if (loadingData) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Se încarcă echipamentele...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă echipamentele..." />;
   }
 
   return (

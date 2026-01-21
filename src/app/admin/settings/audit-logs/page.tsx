@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Activity, Filter, Download, Search } from "lucide-react";
-import { ActivityType } from "@prisma/client";
+import { Activity, Filter, Download, Search } from "lucide-react";import { LoadingState } from "@/components/ui/LoadingState";import { ActivityType } from "@prisma/client";
 
 interface AuditLog {
   id: string;
@@ -205,10 +204,7 @@ export default function AuditLogsPage() {
 
         {/* Logs Table */}
         {loading ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Se încarcă audit logs...</p>
-          </div>
+          <LoadingState text="Se încarcă audit logs..." />
         ) : (
           <>
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">

@@ -139,10 +139,7 @@ export default function AdminCategoriesPage() {
 
       {/* Categories Grid */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Loading categories...</p>
-        </div>
+        <LoadingState text="Loading categories..." />
       ) : filteredCategories.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
           <div className="text-6xl mb-4">📦</div>

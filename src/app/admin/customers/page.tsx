@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 import CustomerModal from "./_components/CustomerModal";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -169,10 +170,7 @@ export default function CustomersPage() {
 
       {/* Loading State */}
       {loading && customers.length === 0 && (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Se încarcă clienții...</p>
-        </div>
+        <LoadingState text="Se încarcă clienții..." />
       )}
 
       {/* Empty State */}

@@ -28,9 +28,7 @@ export default function OperatorsReportPage() {
   if (loading && !operators) {
     return (
       <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
+        <LoadingState text="Se încarcă raportul de operatori..." />
       </div>
     );
   }

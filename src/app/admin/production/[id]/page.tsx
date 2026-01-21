@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { LoadingState } from '@/components/ui';
 import Link from "next/link";
 import { useProduction, ProductionJob, UpdateJobData } from "@/modules/production/useProduction";
 import { StatusBadge } from "../_components/StatusManager";
@@ -83,11 +84,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading && !job) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingState text="" />;
   }
 
   if (error || !job) {

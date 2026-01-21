@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { fetchCategories } from '@/lib/api';
 
 interface CategoryNav {
   id: number;
@@ -22,19 +23,18 @@ export function MobileCategoriesMenu({ onLinkClick }: MobileCategoriesMenuProps)
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
-        if (res.ok) {
-          const data = await res.json();
-          setCategories(data);
+        const response = await fetchCategories();
+        if (response.success && response.data) {
+          setCategories(response.data);
         }
-      } catch (_error) {
+      } catch (error) {
         console.error('Error fetching categories:', error);
       }
     };
 
-    fetchCategories();
+    loadCategories();
   }, []);
 
   const parentCategories = categories.filter((cat) => !cat.parentId);

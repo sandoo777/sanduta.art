@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
+import { fetchCategories } from '@/lib/api';
 
 interface CategoryMenu {
   id: number;
@@ -28,22 +29,21 @@ export function CategoriesMegaMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Fetch categories
-    const fetchCategories = async () => {
+    // Fetch categories using API client
+    const loadCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
-        if (res.ok) {
-          const data = await res.json();
-          setCategories(data);
+        const response = await fetchCategories();
+        if (response.success && response.data) {
+          setCategories(response.data);
         }
-      } catch (_error) {
+      } catch (error) {
         console.error('Error fetching categories:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
+    loadCategories();
   }, []);
 
   // Close menu when clicking outside

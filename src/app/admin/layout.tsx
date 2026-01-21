@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LoadingState } from '@/components/ui';
 import { useSession } from 'next-auth/react';
 import { AdminSidebar } from './_components/AdminSidebar';
 import { AdminTopbar } from './_components/AdminTopbar';
@@ -15,14 +16,7 @@ export default function AdminLayout({
 
   // Show loading state
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Loading..." />;
   }
 
   // Middleware handles authentication and authorization

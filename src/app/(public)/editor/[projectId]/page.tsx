@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
+import { LoadingState } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import EditorLayout from '@/components/public/editor/EditorLayout';
@@ -75,14 +76,7 @@ export default function EditorPage({ params }: PageProps) {
   }, [projectId, setProject, router]);
 
   if (loading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Se încarcă proiectul...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă proiectul..." />;
   }
 
   if (error) {

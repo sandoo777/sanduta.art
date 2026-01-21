@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { fetchCategories as fetchCategoriesAPI } from '@/lib/api';
 import { Category, CategoryWithChildren } from '@/types/models';
 
 export function useCategories() {
@@ -20,13 +21,13 @@ export function useCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/categories');
+      const response = await fetchCategoriesAPI();
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to fetch categories');
       }
 
-      const data: Category[] = await response.json();
+      const data: Category[] = response.data;
       
       // Build hierarchy - type-safe with CategoryWithChildren
       const categoryMap = new Map<string, CategoryWithChildren>();

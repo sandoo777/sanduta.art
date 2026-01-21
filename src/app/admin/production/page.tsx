@@ -179,9 +179,7 @@ export default function ProductionPage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-12 h-12 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
-          </div>
+          <LoadingState text="Se încarcă joburile de producție..." />
         ) : (
           <div className="flex gap-6 overflow-x-auto pb-4">
             {statusColumns.map((column) => {

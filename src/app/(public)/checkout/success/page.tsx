@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Package, Clock, FileText, ArrowRight, Mail, Phone, User } from 'lucide-react';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 interface OrderDetails {
   id: string;
@@ -71,14 +72,7 @@ function CheckoutSuccessContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0066FF] mx-auto mb-4"></div>
-          <p className="text-gray-600">Se încarcă detaliile comenzii...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă detaliile comenzii..." />;
   }
 
   if (error || !order) {
@@ -275,14 +269,7 @@ function CheckoutSuccessContent() {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0066FF] mx-auto mb-4"></div>
-          <p className="text-gray-600">Se încarcă...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingState text="Se încarcă..." />}>
       <CheckoutSuccessContent />
     </Suspense>
   );

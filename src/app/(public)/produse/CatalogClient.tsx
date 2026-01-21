@@ -6,6 +6,7 @@ import { Filters, FilterState } from '@/components/public/catalog/Filters';
 import { SortBar, SortOption } from '@/components/public/catalog/SortBar';
 import { ProductGrid } from '@/components/public/catalog/ProductGrid';
 import { Pagination } from '@/components/public/catalog/Pagination';
+import { fetchCategories, fetchPublicProducts } from '@/lib/api';
 import { Product as ProductBase } from '@/types/models';
 
 interface Product extends Partial<ProductBase> {
@@ -55,20 +56,20 @@ export default function CatalogClient({ initialCategoryId }: CatalogClientProps 
       try {
         setLoading(true);
         
-        // Fetch categories
-        const categoriesRes = await fetch('/api/categories');
-        if (categoriesRes.ok) {
-          const categoriesData = await categoriesRes.json();
-          setCategories(categoriesData);
+        // Fetch categories and products using API client
+        const [categoriesRes, productsRes] = await Promise.all([
+          fetchCategories(),
+          fetchPublicProducts()
+        ]);
+
+        if (categoriesRes.success && categoriesRes.data) {
+          setCategories(categoriesRes.data);
         }
 
-        // Fetch products
-        const productsRes = await fetch('/api/products');
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          setProducts(productsData);
+        if (productsRes.success && productsRes.data) {
+          setProducts(productsRes.data);
         }
-      } catch (_error) {
+      } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);

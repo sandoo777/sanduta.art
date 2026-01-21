@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
+import { PageTitle, StatusBadge, Card, Button, LoadingState } from '@/components/ui';
 import { Package, ShoppingBag, Search } from 'lucide-react';
 import { Order, OrderItem as OrderItemType } from '@/types/models';
 
@@ -101,11 +101,7 @@ export default function OrdersPage() {
   const counts = getFilterCounts();
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă comenzile..." />;
   }
 
   if (!session) {

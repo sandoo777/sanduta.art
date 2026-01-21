@@ -21,11 +21,7 @@ export default function AccountDashboardPage() {
   const { user, loading } = useCurrentUser();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă contul..." />;
   }
 
   const quickStats = [

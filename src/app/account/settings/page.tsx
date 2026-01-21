@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
-import { Card, Button, Input } from '@/components/ui';
+import { Card, Button, Input, LoadingState } from '@/components/ui';
 import { Lock, Bell, Globe, Save, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -125,11 +125,7 @@ export default function SettingsPage() {
   };
 
   if (userLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-      </div>
-    );
+    return <LoadingState text="Se încarcă setările..." />;
   }
 
   return (

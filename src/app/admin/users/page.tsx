@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import { Role } from "@/lib/types-prisma";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { User } from '@/types/models';
+import { useUsers } from '@/domains/admin/hooks/useUsers';
+import type { UserRole } from '@prisma/client';
 
 interface UserWithCount extends User {
   _count: {
@@ -16,56 +17,34 @@ interface UserWithCount extends User {
 
 export default function AdminUsersPage() {
   const { data: session } = useSession();
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    users,
+    isLoading,
+    loadUsers,
+    updateUserRole,
+    deleteUser,
+  } = useUsers();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
-      setUsers(data);
-    } catch (_error) {
-      console.error('Error fetching users:', _error);
-      alert('Failed to fetch users');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRoleChange = async (userId: string, newRole: Role) => {
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
     if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
       return;
     }
 
-    try {
-      setUpdatingUserId(userId);
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update user role');
-      }
-
-      await fetchUsers();
+    setUpdatingUserId(userId);
+    const success = await updateUserRole(userId, newRole);
+    setUpdatingUserId(null);
+    
+    if (success) {
       alert('User role updated successfully!');
-    } catch (_error) {
-      console.error('Error updating user role:', error);
+    } else {
       alert('Failed to update user role');
-    } finally {
-      setUpdatingUserId(null);
     }
   };
 
@@ -74,45 +53,36 @@ export default function AdminUsersPage() {
       return;
     }
 
-    try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete user');
-      }
-
-      await fetchUsers();
+    const success = await deleteUser(userId);
+    
+    if (success) {
       alert('User deleted successfully!');
-    } catch (_error: unknown) {
-      console.error('Error deleting user:', error);
-      alert(error.message || 'Failed to delete user');
+    } else {
+      alert('Failed to delete user');
     }
   };
 
-  const getRoleBadgeColor = (role: Role) => {
+  const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-      case Role.ADMIN:
+      case 'ADMIN':
         return 'bg-purple-100 text-purple-800 border-purple-200';
-      case Role.MANAGER:
+      case 'MANAGER':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case Role.OPERATOR:
+      case 'OPERATOR':
         return 'bg-green-100 text-green-800 border-green-200';
-      case Role.VIEWER:
+      case 'VIEWER':
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getRoleDashboard = (role: Role) => {
+  const getRoleDashboard = (role: UserRole) => {
     switch (role) {
-      case Role.ADMIN:
+      case 'ADMIN':
         return '/admin';
-      case Role.MANAGER:
+      case 'MANAGER':
         return '/manager';
-      case Role.OPERATOR:
+      case 'OPERATOR':
         return '/operator';
       default:
         return null;
@@ -139,8 +109,8 @@ export default function AdminUsersPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <Button onClick={fetchUsers} disabled={loading}>
-              {loading ? 'Loading...' : 'Refresh'}
+            <Button onClick={() => loadUsers()} disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Refresh'}
             </Button>
           </div>
         </div>
@@ -221,7 +191,7 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
                           disabled={updatingUserId === user.id || session?.user.id === user.id}
                           className={`px-3 py-1 text-xs font-semibold rounded-full border ${getRoleBadgeColor(user.role)} ${
                             updatingUserId === user.id || session?.user.id === user.id
@@ -229,10 +199,10 @@ export default function AdminUsersPage() {
                               : 'cursor-pointer hover:opacity-80'
                           }`}
                         >
-                          <option value={Role.VIEWER}>Viewer</option>
-                          <option value={Role.OPERATOR}>Operator</option>
-                          <option value={Role.MANAGER}>Manager</option>
-                          <option value={Role.ADMIN}>Admin</option>
+                          <option value="VIEWER">Viewer</option>
+                          <option value="OPERATOR">Operator</option>
+                          <option value="MANAGER">Manager</option>
+                          <option value="ADMIN">Admin</option>
                         </select>
                         {session?.user.id === user.id && (
                           <div className="text-xs text-gray-500 mt-1">(You)</div>

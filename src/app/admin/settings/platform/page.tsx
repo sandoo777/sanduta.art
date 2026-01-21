@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LoadingState } from '@/components/ui';
 import { Settings, Save, Globe, Mail, DollarSign, Bell, Building2 } from "lucide-react";
 
 interface PlatformSettings {
@@ -102,14 +103,7 @@ export default function PlatformSettingsPage() {
   ];
 
   if (loading || !settings) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Se încarcă setările...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă setările..." />;
   }
 
   return (

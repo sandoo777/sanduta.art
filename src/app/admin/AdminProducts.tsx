@@ -11,11 +11,14 @@ import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Product } from '@/types/models';
+import { useProducts } from '@/domains/products/hooks/useProducts';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  const { getProducts, createProduct, updateProduct, deleteProduct, loading } = useProducts();
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -33,9 +36,10 @@ export default function AdminProducts() {
   }, []);
 
   const fetchProducts = async () => {
-    const res = await fetch("/api/admin/products");
-    const data = await res.json();
-    setProducts(data);
+    const result = await getProducts();
+    if (result.success && result.data) {
+      setProducts(result.data.products);
+    }
   };
 
   const handleImageUpload = async (file: File) => {
@@ -43,6 +47,8 @@ export default function AdminProducts() {
     const formData = new FormData();
     formData.append("file", file);
 
+    // Note: Upload still uses direct fetch as it's a file upload
+    // Could be extracted to a separate uploadService later
     const res = await fetch("/api/upload", {
       method: "POST",
       body: formData,
@@ -59,25 +65,30 @@ export default function AdminProducts() {
   };
 
   const onSubmit = async (data: ProductFormData) => {
-    const method = editing ? "PUT" : "POST";
-    const url = editing ? `/api/admin/products/${editing.id}` : "/api/admin/products";
+    const productData = {
+      name: data.name,
+      categoryId: data.category, // Note: May need adjustment based on schema
+      price: parseFloat(data.price),
+      imageUrl: data.image_url || undefined,
+      options: data.options ? JSON.parse(data.options) : null,
+      // Add other required fields based on CreateProductDTO
+      type: 'STANDARD' as const,
+      active: true,
+    };
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: data.name,
-        category: data.category,
-        price: parseFloat(data.price),
-        image_url: data.image_url || undefined,
-        options: data.options ? JSON.parse(data.options) : null,
-      }),
-    });
+    let result;
+    if (editing) {
+      result = await updateProduct(editing.id, productData);
+    } else {
+      result = await createProduct(productData as any);
+    }
 
-    if (res.ok) {
+    if (result.success) {
       fetchProducts();
       form.reset();
       setEditing(null);
+    } else {
+      alert(result.error || 'Failed to save product');
     }
   };
 
@@ -99,8 +110,12 @@ export default function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure?")) {
-      await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
-      fetchProducts();
+      const result = await deleteProduct(id);
+      if (result.success) {
+        fetchProducts();
+      } else {
+        alert(result.error || 'Failed to delete product');
+      }
     }
   };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LoadingState } from '@/components/ui';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductionPriority } from "@/modules/production/useProduction";
@@ -8,6 +9,7 @@ import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { fetchOrders, fetchUsers } from '@/lib/api';
 import { Order, User } from '@/types/models';
 
 interface JobModalProps {
@@ -55,20 +57,21 @@ export default function JobModal({
   const fetchData = async () => {
     try {
       setLoadingData(true);
-      const [ordersRes, operatorsRes] = await Promise.all([
-        fetch("/api/admin/orders"),
-        fetch("/api/admin/users?role=MANAGER&role=OPERATOR"),
+      const [ordersRes, managersRes, operatorsRes] = await Promise.all([
+        fetchOrders(),
+        fetchUsers({ role: 'MANAGER' }),
+        fetchUsers({ role: 'OPERATOR' }),
       ]);
 
-      if (ordersRes.ok) {
-        const ordersData = await ordersRes.json();
-        setOrders(ordersData.orders || []);
+      if (ordersRes.success && ordersRes.data) {
+        setOrders(ordersRes.data);
       }
 
-      if (operatorsRes.ok) {
-        const operatorsData = await operatorsRes.json();
-        setOperators(operatorsData.users || []);
-      }
+      const combined = [
+        ...(managersRes.data || []),
+        ...(operatorsRes.data || [])
+      ];
+      setOperators(combined);
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
@@ -116,9 +119,7 @@ export default function JobModal({
         {/* Body */}
         <Form form={form} onSubmit={handleFormSubmit} className="p-6 space-y-4">
           {loadingData ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
-            </div>
+            <LoadingState size="sm" text="" />
           ) : (
             <>
               {/* Job Name */}

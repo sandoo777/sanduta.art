@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { LoadingState } from '@/components/ui';
+import { fetchUsers } from '@/lib/api';
 import { User } from '@/types/models';
 
 interface AssignOperatorProps {
@@ -40,14 +42,15 @@ export default function AssignOperator({
   const fetchOperators = async () => {
     try {
       setLoadingOperators(true);
-      const response = await fetch("/api/admin/users?role=MANAGER&role=OPERATOR");
+      const response = await fetchUsers({ role: 'MANAGER' });
+      const response2 = await fetchUsers({ role: 'OPERATOR' });
       
-      if (!response.ok) {
+      if (!response.success || !response2.success) {
         throw new Error("Failed to fetch operators");
       }
 
-      const data = await response.json();
-      setOperators(data.users || []);
+      const combined = [...(response.data || []), ...(response2.data || [])];
+      setOperators(combined);
     } catch (err) {
       console.error("Error fetching operators:", err);
       setError("Failed to load operators");
@@ -68,8 +71,7 @@ export default function AssignOperator({
   if (loadingOperators) {
     return (
       <div className="flex items-center gap-2 text-gray-500 text-sm">
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
-        <span>Loading operators...</span>
+        <LoadingState size="sm" text="Loading operators..." />
       </div>
     );
   }
