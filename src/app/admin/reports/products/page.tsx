@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Package, DollarSign, TrendingUp } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, Table, LoadingState } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
 import { BarChart, PieChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
@@ -71,14 +72,14 @@ export default function ProductsReportPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -106,9 +107,11 @@ export default function ProductsReportPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Category
@@ -126,16 +129,19 @@ export default function ProductsReportPage() {
               ))}
             </select>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Selling Products */}
         {products && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Top 10 Selling Products</h2>
-            <BarChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Selling Products</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
               data={products.topSellingProducts.slice(0, 10)}
               xKey="name"
               bars={[
@@ -143,14 +149,18 @@ export default function ProductsReportPage() {
               ]}
               height={350}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Revenue by Product */}
         {products && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Top 10 Revenue Products</h2>
-            <BarChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Revenue Products</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
               data={products.revenueByProduct.slice(0, 10)}
               xKey="name"
               bars={[
@@ -159,79 +169,121 @@ export default function ProductsReportPage() {
               height={350}
               layout="vertical"
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Products by Category */}
         {products && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Products by Category</h2>
-            <PieChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Products by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PieChart
               data={products.productsByCategory.map(c => ({
                 name: c.categoryName,
                 value: c.productsCount
               }))}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Revenue by Category */}
         {products && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Category</h2>
-            <PieChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PieChart
               data={products.productsByCategory.map(c => ({
                 name: c.categoryName,
                 value: c.revenue
               }))}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Products Table */}
       {products && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Performance</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Product</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Quantity</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Revenue</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Avg Price</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">% of Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.slice(0, 20).map((product) => (
-                  <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.sku}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{product.quantity.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">{formatCurrency(product.revenue)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{formatCurrency(product.avgPrice)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">
-                      {((product.revenue / products.totalRevenue) * 100).toFixed(1)}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Product Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'product',
+                  label: 'Product',
+                  sortable: true,
+                  render: (row) => (
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{row.name}</p>
+                      <p className="text-xs text-gray-500">{row.sku}</p>
+                    </div>
+                  )
+                },
+                {
+                  key: 'quantity',
+                  label: 'Quantity',
+                  sortable: true,
+                  accessor: (row) => row.quantity,
+                  render: (row) => (
+                    <span className="text-right block">{row.quantity.toLocaleString()}</span>
+                  )
+                },
+                {
+                  key: 'revenue',
+                  label: 'Revenue',
+                  sortable: true,
+                  accessor: (row) => row.revenue,
+                  render: (row) => (
+                    <span className="text-right block font-medium">{formatCurrency(row.revenue)}</span>
+                  )
+                },
+                {
+                  key: 'avgPrice',
+                  label: 'Avg Price',
+                  sortable: true,
+                  accessor: (row) => row.avgPrice,
+                  render: (row) => (
+                    <span className="text-right block">{formatCurrency(row.avgPrice)}</span>
+                  )
+                },
+                {
+                  key: 'percentage',
+                  label: '% of Total',
+                  render: (row) => (
+                    <span className="text-right block">
+                      {((row.revenue / products.totalRevenue) * 100).toFixed(1)}%
+                    </span>
+                  )
+                }
+              ]}
+              data={filteredProducts.slice(0, 20)}
+              rowKey="id"
+              loading={loading}
+              emptyMessage="No products found"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {/* Category Summary */}
       {products && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Category Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Category Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.productsByCategory.map((category) => (
               <div key={category.categoryId} className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-900">{category.categoryName}</p>
@@ -240,8 +292,8 @@ export default function ProductsReportPage() {
                 <p className="text-sm text-gray-600 mt-1">{category.totalQuantity.toLocaleString()} units sold</p>
               </div>
             ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

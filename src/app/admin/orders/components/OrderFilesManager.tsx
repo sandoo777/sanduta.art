@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { EmptyState } from '@/components/ui';
 import { useOrders } from '@/modules/orders/useOrders';
 import { toast } from 'sonner';
 import { Trash2, Plus, FileText, Download } from 'lucide-react';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface OrderFile {
   id: string;
@@ -23,6 +25,7 @@ export function OrderFilesManager({
   files,
   onFilesChanged,
 }: OrderFilesManagerProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const [isAddingFile, setIsAddingFile] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,15 +59,20 @@ export function OrderFilesManager({
   };
 
   const handleDeleteFile = async (fileId: string) => {
-    if (!confirm('Ștergi acest fișier?')) return;
-
-    const result = await deleteFile(orderId, fileId);
-    if (result.success) {
-      toast.success('Fișier șters cu succes');
-      onFilesChanged?.();
-    } else {
-      toast.error('Eroare: ' + result.error);
-    }
+    await confirm({
+      title: 'Șterge fișier',
+      message: 'Ștergi acest fișier?',
+      variant: 'danger',
+      onConfirm: async () => {
+        const result = await deleteFile(orderId, fileId);
+        if (result.success) {
+          toast.success('Fișier șters cu succes');
+          onFilesChanged?.();
+        } else {
+          toast.error('Eroare: ' + result.error);
+        }
+      }
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -147,9 +155,11 @@ export function OrderFilesManager({
       )}
 
       {files.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Nu sunt fișiere în comanda
-        </div>
+        <EmptyState
+          icon={<FileText className="h-12 w-12" />}
+          title="Niciun fișier"
+          description="Încarcă fișiere pentru această comandă"
+        />
       ) : (
         <div className="space-y-2">
           {files.map((file) => (
@@ -187,6 +197,7 @@ export function OrderFilesManager({
           ))}
         </div>
       )}
+      <Dialog />
     </div>
   );
 }

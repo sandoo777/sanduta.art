@@ -5,6 +5,7 @@ import { signOut } from 'next-auth/react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui';
 
 interface AdminTopbarProps {
   onMenuClick: () => void;
@@ -83,9 +84,9 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
                     <p className="text-xs text-gray-500 mt-1">
                       {user?.email}
                     </p>
-                    <span className="inline-block mt-2 px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded">
+                    <Badge variant="info" size="sm" className="mt-2">
                       {user?.role || 'ADMIN'}
-                    </span>
+                    </Badge>
                   </div>
                   
                   <button

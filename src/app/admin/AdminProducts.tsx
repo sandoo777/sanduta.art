@@ -5,15 +5,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productFormSchema, type ProductFormData } from "@/lib/validations/admin";
 import { Form } from "@/components/ui/Form";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Table } from "@/components/ui/Table";
+import type { Column } from "@/components/ui/Table.types";
 import { Product } from '@/types/models';
 import { useProducts } from '@/domains/products/hooks/useProducts';
 
 export default function AdminProducts() {
+  const { confirm, Dialog } = useConfirmDialog();
   const [products, setProducts] = useState<Product[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -109,14 +113,19 @@ export default function AdminProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure?")) {
-      const result = await deleteProduct(id);
-      if (result.success) {
-        fetchProducts();
-      } else {
-        alert(result.error || 'Failed to delete product');
+    await confirm({
+      title: 'Șterge produs',
+      message: 'Sigur vrei să ștergi acest produs?',
+      variant: 'danger',
+      onConfirm: async () => {
+        const result = await deleteProduct(id);
+        if (result.success) {
+          fetchProducts();
+        } else {
+          alert(result.error || 'Failed to delete product');
+        }
       }
-    }
+    });
   };
 
   return (
@@ -213,52 +222,74 @@ export default function AdminProducts() {
           )}
         </div>
       </Form>
-      </Form>
-      <div className="overflow-x-auto -mx-4 md:mx-0">
-        <div className="inline-block min-w-full align-middle">
-          <div className="overflow-hidden border border-gray-300 md:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Image</th>
-                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Name</th>
-                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Category</th>
-                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Price</th>
-                  <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-2 md:px-4 py-3 border-r">
-                      {product.image_url && <img src={product.image_url} alt={product.name} className="w-12 h-12 md:w-16 md:h-16 object-cover rounded" />}
-                    </td>
-                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{product.name}</td>
-                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{product.category}</td>
-                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{product.price} ₽</td>
-                    <td className="px-2 md:px-4 py-3 text-xs md:text-sm">
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="px-2 py-1 bg-yellow-500 text-white rounded text-xs md:text-sm hover:bg-yellow-600 transition"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="px-2 py-1 bg-red-500 text-white rounded text-xs md:text-sm hover:bg-red-600 transition"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      
+      <Table
+        columns={[
+          {
+            key: 'image',
+            label: 'Image',
+            render: (product) => (
+              product.image_url ? (
+                <img 
+                  src={product.image_url} 
+                  alt={product.name} 
+                  className="w-12 h-12 md:w-16 md:h-16 object-cover rounded" 
+                />
+              ) : null
+            )
+          },
+          {
+            key: 'name',
+            label: 'Name',
+            sortable: true,
+            accessor: 'name'
+          },
+          {
+            key: 'category',
+            label: 'Category',
+            sortable: true,
+            accessor: 'category'
+          },
+          {
+            key: 'price',
+            label: 'Price',
+            sortable: true,
+            render: (product) => (
+              <span className="whitespace-nowrap">{product.price} ₽</span>
+            )
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (product) => (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={() => handleEdit(product)}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Edit
+                </Button>
+                <Button
+                  onClick={() => handleDelete(product.id)}
+                  variant="danger"
+                  size="sm"
+                >
+                  Delete
+                </Button>
+              </div>
+            )
+          }
+        ]}
+        data={products}
+        rowKey="id"
+        loading={loading}
+        emptyMessage="Nu există produse"
+        bordered={true}
+        responsive={true}
+        clientSideSort={true}
+      />
+      <Dialog />
     </div>
   );
 }

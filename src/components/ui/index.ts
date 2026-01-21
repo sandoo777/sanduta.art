@@ -20,6 +20,11 @@ export type { SectionTitleProps, PageTitleProps } from './SectionTitle';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './tabs';
 
+export { Table } from './Table';
+export type { TableProps, Column, SortState, SortDirection } from './Table.types';
+
+export { Pagination } from './Pagination';
+
 // Form Components
 export { Form, useFormContext, useWatch } from './Form';
 export { FormField } from './FormField';
@@ -28,4 +33,12 @@ export { FormMessage } from './FormMessage';
 
 // State Components
 export { LoadingState, SkeletonCard, SkeletonList, SkeletonTable } from './LoadingState';
-export { ErrorState, ErrorNetwork, Error404, Error403 } from './ErrorState';
+export { ErrorState, ErrorNetwork, Error404, Error403, ErrorGeneric, InlineError, SuccessState } from './ErrorState';
+export { EmptyState, EmptyProjects, EmptyFiles, EmptyOrders, EmptyNotifications, EmptySearch } from './EmptyState';
+
+// Modal Component
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';
+
+// Confirm Dialog
+export { ConfirmDialog, useConfirmDialog, confirmPresets } from './ConfirmDialog';

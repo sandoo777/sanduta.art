@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { MoreVertical, Edit, Trash2, Activity, Ruler } from "lucide-react";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Badge } from '@/components/ui';
 import type { PrintMethod } from "@/modules/print-methods/types";
 import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
 
@@ -12,6 +14,7 @@ interface PrintMethodCardProps {
 }
 
 export function PrintMethodCard({ printMethod, onEdit, onDelete }: PrintMethodCardProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const [showMenu, setShowMenu] = useState(false);
 
   const typeInfo = PRINT_METHOD_TYPES.find((t) => t.value === printMethod.type) || {
@@ -81,11 +84,16 @@ export function PrintMethodCard({ printMethod, onEdit, onDelete }: PrintMethodCa
                   Edit
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm("Sigur vrei să ștergi această metodă de tipărire?")) {
-                      onDelete(printMethod.id);
-                    }
+                  onClick={async () => {
                     setShowMenu(false);
+                    await confirm({
+                      title: 'Șterge metodă tipărire',
+                      message: 'Sigur vrei să ștergi această metodă de tipărire?',
+                      variant: 'danger',
+                      onConfirm: async () => {
+                        onDelete(printMethod.id);
+                      }
+                    });
                   }}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-red-600 flex items-center gap-2"
                 >
@@ -129,11 +137,12 @@ export function PrintMethodCard({ printMethod, onEdit, onDelete }: PrintMethodCa
       {/* Status Badge */}
       {!printMethod.active && (
         <div className="absolute top-2 right-2">
-          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600">
+          <Badge variant="default" size="sm">
             Inactiv
-          </span>
+          </Badge>
         </div>
       )}
+      <Dialog />
     </div>
   );
 }

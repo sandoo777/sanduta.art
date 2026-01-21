@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, Plus } from "lucide-react";
+import { Card, CardContent } from '@/components/ui';
 import { usePrintMethods } from "@/modules/print-methods/usePrintMethods";
 import type { PrintMethod, PrintMethodFilters, CreatePrintMethodInput } from "@/modules/print-methods/types";
 import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
@@ -104,28 +105,36 @@ export default function PrintMethodsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600">Total Metode</div>
-            <div className="text-2xl font-bold text-gray-900">{printMethods.length}</div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600">Active</div>
-            <div className="text-2xl font-bold text-green-600">
-              {printMethods.filter((m) => m.active).length}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600">Inactive</div>
-            <div className="text-2xl font-bold text-gray-400">
-              {printMethods.filter((m) => !m.active).length}
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="text-sm text-gray-600">Tipuri</div>
-            <div className="text-2xl font-bold text-blue-600">
-              {new Set(printMethods.map((m) => m.type)).size}
-            </div>
-          </div>
+          <Card padding="sm">
+            <CardContent>
+              <div className="text-sm text-gray-600">Total Metode</div>
+              <div className="text-2xl font-bold text-gray-900">{printMethods.length}</div>
+            </CardContent>
+          </Card>
+          <Card padding="sm">
+            <CardContent>
+              <div className="text-sm text-gray-600">Active</div>
+              <div className="text-2xl font-bold text-green-600">
+                {printMethods.filter((m) => m.active).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card padding="sm">
+            <CardContent>
+              <div className="text-sm text-gray-600">Inactive</div>
+              <div className="text-2xl font-bold text-gray-400">
+                {printMethods.filter((m) => !m.active).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card padding="sm">
+            <CardContent>
+              <div className="text-sm text-gray-600">Tipuri</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {new Set(printMethods.map((m) => m.type)).size}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}

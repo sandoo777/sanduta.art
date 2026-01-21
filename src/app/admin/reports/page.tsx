@@ -15,6 +15,9 @@ import {
   Award,
 } from "lucide-react";
 import { KpiCard } from "@/components/KpiCard";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { LineChart, BarChart, PieChart, DonutChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
 import type { 
@@ -82,14 +85,14 @@ export default function ReportsPage() {
             Comprehensive business intelligence and performance metrics
           </p>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPI Cards */}
@@ -161,75 +164,91 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Last 12 Months */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Sales Last 12 Months</h2>
-              <Link
-                href="/admin/reports/sales"
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View Details
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <LineChart
-              data={sales.salesByMonth}
-              xKey="month"
-              lines={[
-                { key: "revenue", color: "#10b981", name: "Revenue" },
-                { key: "orders", color: "#3b82f6", name: "Orders" },
-              ]}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Sales Last 12 Months</CardTitle>
+                <Link
+                  href="/admin/reports/sales"
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  View Details
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <LineChart
+                data={sales.salesByMonth}
+                xKey="month"
+                lines={[
+                  { key: "revenue", color: "#10b981", name: "Revenue" },
+                  { key: "orders", color: "#3b82f6", name: "Orders" },
+                ]}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Sales Last 30 Days */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Sales Last 30 Days</h2>
-              <Link
-                href="/admin/reports/sales"
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View Details
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <BarChart
-              data={sales.salesByDay}
-              xKey="date"
-              bars={[
-                { key: "revenue", color: "#10b981", name: "Revenue" },
-              ]}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Sales Last 30 Days</CardTitle>
+                <Link
+                  href="/admin/reports/sales"
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  View Details
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={sales.salesByDay}
+                xKey="date"
+                bars={[
+                  { key: "revenue", color: "#10b981", name: "Revenue" },
+                ]}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Orders by Status */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Orders by Status</h2>
-            <PieChart
-              data={sales.salesByStatus.map(s => ({
-                name: s.status,
-                value: s.count
-              }))}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Orders by Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PieChart
+                data={sales.salesByStatus.map(s => ({
+                  name: s.status,
+                  value: s.count
+                }))}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Revenue by Source */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Source</h2>
-            <DonutChart
-              data={sales.salesBySource.map(s => ({
-                name: s.source,
-                value: s.revenue
-              }))}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue by Source</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DonutChart
+                data={sales.salesBySource.map(s => ({
+                  name: s.source,
+                  value: s.revenue
+                }))}
+              />
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -237,18 +256,21 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top 5 Products */}
         {products && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Top 5 Products</h2>
-              <Link
-                href="/admin/reports/products"
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="space-y-3">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Top 5 Products</CardTitle>
+                <Link
+                  href="/admin/reports/products"
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
               {products.topSellingProducts.slice(0, 5).map((product, index) => (
                 <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
@@ -263,40 +285,45 @@ export default function ReportsPage() {
                   <p className="font-semibold text-gray-900">{formatCurrency(product.revenue)}</p>
                 </div>
               ))}
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Top 5 Customers */}
+        {/* Top 5 Customers */
         {customers && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Top 5 Customers</h2>
-              <Link
-                href="/admin/reports/customers"
-                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View All
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {customers.topCustomers.slice(0, 5).map((customer, index) => (
-                <div key={customer.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full text-sm font-bold">
-                      {index + 1}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Top 5 Customers</CardTitle>
+                <Link
+                  href="/admin/reports/customers"
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {customers.topCustomers.slice(0, 5).map((customer, index) => (
+                  <div key={customer.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full text-sm font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{customer.name}</p>
+                        <p className="text-sm text-gray-600">{customer.totalOrders} orders</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{customer.name}</p>
-                      <p className="text-sm text-gray-600">{customer.totalOrders} orders</p>
-                    </div>
+                    <p className="font-semibold text-gray-900">{formatCurrency(customer.totalSpent)}</p>
                   </div>
-                  <p className="font-semibold text-gray-900">{formatCurrency(customer.totalSpent)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 

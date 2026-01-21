@@ -2,9 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { Table } from '@/components/ui/Table';
+import type { Column } from '@/components/ui/Table.types';
+import { Badge } from '@/components/ui/Badge';
 import { useOrders } from '@/modules/orders/useOrders';
 import { Search, Eye, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Order } from '@/types/models';
 
 interface OrderListItem extends Order {
@@ -148,32 +152,33 @@ export default function OrdersListPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-3 text-gray-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Cauta dupa nume, email sau ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search
+                className="absolute left-3 top-3 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Cauta dupa nume, email sau ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                  text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm
-              bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {STATUS_OPTIONS.map((option) => (
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm
+                bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -201,100 +206,105 @@ export default function OrdersListPage() {
             </p>
           </div>
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Se încarcă comenzile...</p>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500">Nu sunt comenzi care să corespundă filtrelor</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">ID / Client</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Plată</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Total</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Data</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Acțiuni</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {order.customerName}
-                        </p>
-                        <p className="text-xs text-gray-500 font-mono">
-                          {order.id}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-600">{order.customerEmail}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {getStatusLabel(order.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block px-2 py-1 rounded text-xs font-medium ${getPaymentStatusColor(
-                          order.paymentStatus
-                        )}`}
-                      >
-                        {getPaymentLabel(order.paymentStatus)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {order.totalPrice.toFixed(2)} {order.currency}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-600">
-                        {formatDate(order.createdAt)}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center">
-                        <Link
-                          href={`/admin/orders/${order.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5
-                            bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200
-                            transition-colors text-sm font-medium"
-                        >
-                          <Eye size={16} />
-                          <span>Detalii</span>
-                          <ChevronRight size={16} />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <Table<Order>
+        columns={[
+          {
+            key: 'customer',
+            label: 'ID / Client',
+            render: (order) => (
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  {order.customerName}
+                </p>
+                <p className="text-xs text-gray-500 font-mono">
+                  {order.id}
+                </p>
+              </div>
+            )
+          },
+          {
+            key: 'email',
+            label: 'Email',
+            accessor: 'customerEmail'
+          },
+          {
+            key: 'status',
+            label: 'Status',
+            sortable: true,
+            render: (order) => (
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  order.status
+                )}`}
+              >
+                {getStatusLabel(order.status)}
+              </span>
+            )
+          },
+          {
+            key: 'payment',
+            label: 'Plată',
+            render: (order) => (
+              <span
+                className={`inline-block px-2 py-1 rounded text-xs font-medium ${getPaymentStatusColor(
+                  order.paymentStatus
+                )}`}
+              >
+                {getPaymentLabel(order.paymentStatus)}
+              </span>
+            )
+          },
+          {
+            key: 'total',
+            label: 'Total',
+            sortable: true,
+            render: (order) => (
+              <p className="text-sm font-semibold text-gray-900">
+                {order.totalPrice.toFixed(2)} {order.currency}
+              </p>
+            )
+          },
+          {
+            key: 'date',
+            label: 'Data',
+            sortable: true,
+            render: (order) => (
+              <p className="text-sm text-gray-600">
+                {formatDate(order.createdAt)}
+              </p>
+            )
+          },
+          {
+            key: 'actions',
+            label: 'Acțiuni',
+            align: 'center',
+            render: (order) => (
+              <Link
+                href={`/admin/orders/${order.id}`}
+                className="inline-flex items-center gap-1 px-3 py-1.5
+                  bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200
+                  transition-colors text-sm font-medium"
+              >
+                <Eye size={16} />
+                <span>Detalii</span>
+                <ChevronRight size={16} />
+              </Link>
+            )
+          }
+        ]}
+        data={filteredOrders}
+        rowKey="id"
+        loading={isLoading}
+        loadingMessage="Se încarcă comenzile..."
+        emptyMessage="Nu sunt comenzi care să corespundă filtrelor"
+        striped={true}
+        responsive={true}
+        rowClassName={() => "hover:bg-gray-50 transition-colors"}
+      />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Card, CardContent } from '@/components/ui';
+
 interface TimelineEvent {
   id: string;
   type: "created" | "status_changed" | "priority_changed" | "assigned" | "updated";
@@ -128,8 +130,9 @@ export default function JobTimeline(props: JobTimelineProps) {
   events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Timeline</h3>
+    <Card>
+      <CardContent>
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Timeline</h3>
 
       <div className="space-y-6">
         {events.length > 0 ? (
@@ -169,6 +172,7 @@ export default function JobTimeline(props: JobTimelineProps) {
           </div>
         )}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

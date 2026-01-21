@@ -10,13 +10,14 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ZodSchema } from 'zod';
 
-interface FormProps<TFieldValues extends FieldValues> {
+export interface FormProps<TFieldValues extends FieldValues> {
   children: React.ReactNode;
   onSubmit: SubmitHandler<TFieldValues>;
   schema?: ZodSchema<TFieldValues>;
   defaultValues?: DefaultValues<TFieldValues>;
   className?: string;
   methods?: UseFormReturn<TFieldValues>;
+  form?: UseFormReturn<TFieldValues>; // Alias pentru methods
 }
 
 export function Form<TFieldValues extends FieldValues>({
@@ -26,6 +27,7 @@ export function Form<TFieldValues extends FieldValues>({
   defaultValues,
   className = '',
   methods: externalMethods,
+  form, // Alias pentru methods
 }: FormProps<TFieldValues>) {
   // Folosim metodele externe dacă sunt furnizate, altfel creăm propriile metode
   const internalMethods = useForm<TFieldValues>({
@@ -34,7 +36,7 @@ export function Form<TFieldValues extends FieldValues>({
     mode: 'onBlur',
   });
 
-  const methods = externalMethods || internalMethods;
+  const methods = form || externalMethods || internalMethods;
 
   return (
     <FormProvider {...methods}>

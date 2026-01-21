@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, AlertTriangle, CheckCircle } from "lucide-react";
+import { ErrorState } from "@/components/ui";
+import { Lock, AlertTriangle, CheckCircle, Shield, Key } from "lucide-react";
 
 interface SecuritySettings {
   twoFactorEnabled: boolean;
@@ -42,16 +43,20 @@ export default function SecuritySettingsPage() {
 
   const [newIp, setNewIp] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const saveSettings = async () => {
     try {
       setSaving(true);
+      setError(null);
       // API call to save settings
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert("Setările de securitate au fost salvate!");
-    } catch (_error) {
-      console.error("Failed to save security settings:", error);
-      alert("Eroare la salvarea setărilor!");
+    } catch (err) {
+      console.error("Failed to save security settings:", err);
+      const errorMsg = err instanceof Error ? err.message : 'Eroare la salvarea setărilor';
+      setError(errorMsg);
+      alert(errorMsg);
     } finally {
       setSaving(false);
     }

@@ -10,6 +10,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 
 interface CustomerModalProps {
@@ -72,7 +73,7 @@ export default function CustomerModal({
   const onSubmit = async (data: CustomerFormData) => {
     try {
       // Remove empty strings
-      const cleanData: any = {
+      const cleanData: Record<string, string> = {
         name: data.name.trim(),
       };
       
@@ -97,25 +98,14 @@ export default function CustomerModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">
             {customer ? "Editează Client" : "Adaugă Client Nou"}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            disabled={loading}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
 
         {/* Form */}
@@ -241,6 +231,6 @@ export default function CustomerModal({
           </div>
         </Form>
       </div>
-    </div>
+    </Modal>
   );
 }

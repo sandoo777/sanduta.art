@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Package, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table, Badge } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
 import { BarChart, LineChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
@@ -58,14 +59,14 @@ export default function MaterialsReportPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -118,9 +119,9 @@ export default function MaterialsReportPage() {
                     <p className="font-medium text-gray-900">{material.name}</p>
                     <p className="text-sm text-gray-600">{material.sku}</p>
                   </div>
-                  <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                  <Badge variant="danger" size="sm">
                     LOW
-                  </span>
+                  </Badge>
                 </div>
                 <div className="mt-3 space-y-1">
                   <div className="flex justify-between text-sm">
@@ -150,127 +151,205 @@ export default function MaterialsReportPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Consumed Materials */}
         {materials && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Top 10 Consumed Materials</h2>
-            <BarChart
-              data={materials.topConsumedMaterials.slice(0, 10)}
-              xKey="name"
-              bars={[
-                { key: "totalConsumed", color: "#3b82f6", name: "Quantity" },
-              ]}
-              height={350}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Consumed Materials</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={materials.topConsumedMaterials.slice(0, 10)}
+                xKey="name"
+                bars={[
+                  { key: "totalConsumed", color: "#3b82f6", name: "Quantity" },
+                ]}
+                height={350}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Material Costs */}
         {materials && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Top 10 by Cost</h2>
-            <BarChart
-              data={materials.topConsumedMaterials.slice(0, 10)}
-              xKey="name"
-              bars={[
-                { key: "totalCost", color: "#10b981", name: "Cost" },
-              ]}
-              height={350}
-              layout="vertical"
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 by Cost</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={materials.topConsumedMaterials.slice(0, 10)}
+                xKey="name"
+                bars={[
+                  { key: "totalCost", color: "#10b981", name: "Cost" },
+                ]}
+                height={350}
+                layout="vertical"
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Consumption by Month */}
         {materials && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 lg:col-span-2">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Consumption Last 12 Months</h2>
-            <LineChart
-              data={materials.consumptionByMonth}
-              xKey="month"
-              lines={[
-                { key: "totalQuantity", color: "#3b82f6", name: "Quantity" },
-                { key: "totalCost", color: "#10b981", name: "Cost" },
-              ]}
-              height={350}
-            />
-          </div>
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Consumption Last 12 Months</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LineChart
+                data={materials.consumptionByMonth}
+                xKey="month"
+                lines={[
+                  { key: "totalQuantity", color: "#3b82f6", name: "Quantity" },
+                  { key: "totalCost", color: "#10b981", name: "Cost" },
+                ]}
+                height={350}
+              />
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Materials Table */}
       {materials && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Material Consumption Details</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Material</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Unit</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Consumed</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Cost/Unit</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Total Cost</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Usage Count</th>
-                </tr>
-              </thead>
-              <tbody>
-                {materials.topConsumedMaterials.map((material) => (
-                  <tr key={material.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{material.name}</p>
-                        <p className="text-xs text-gray-500">{material.sku}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{material.unit}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">
-                      {material.totalConsumed.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">
-                      {formatCurrency(material.totalCost / material.totalConsumed)}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">
-                      {formatCurrency(material.totalCost)}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{material.usageCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Material Consumption Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'material',
+                  label: 'Material',
+                  sortable: true,
+                  accessor: (row) => row.name,
+                  render: (row) => (
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{row.name}</p>
+                      <p className="text-xs text-gray-500">{row.sku}</p>
+                    </div>
+                  )
+                },
+                {
+                  key: 'unit',
+                  label: 'Unit',
+                  accessor: 'unit',
+                  render: (row) => (
+                    <span className="text-right block">{row.unit}</span>
+                  )
+                },
+                {
+                  key: 'consumed',
+                  label: 'Consumed',
+                  sortable: true,
+                  accessor: (row) => row.totalConsumed,
+                  render: (row) => (
+                    <span className="text-right block font-medium">
+                      {row.totalConsumed.toLocaleString()}
+                    </span>
+                  )
+                },
+                {
+                  key: 'costPerUnit',
+                  label: 'Cost/Unit',
+                  sortable: true,
+                  accessor: (row) => row.totalCost / row.totalConsumed,
+                  render: (row) => (
+                    <span className="text-right block">
+                      {formatCurrency(row.totalCost / row.totalConsumed)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'totalCost',
+                  label: 'Total Cost',
+                  sortable: true,
+                  accessor: (row) => row.totalCost,
+                  render: (row) => (
+                    <span className="text-right block font-medium">
+                      {formatCurrency(row.totalCost)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'usageCount',
+                  label: 'Usage Count',
+                  sortable: true,
+                  accessor: (row) => row.usageCount,
+                  render: (row) => (
+                    <span className="text-right block">{row.usageCount}</span>
+                  )
+                }
+              ]}
+              data={materials.topConsumedMaterials}
+              rowKey="id"
+              loading={loading}
+              emptyMessage="No materials data available"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
 
-      {/* Monthly Summary */}
+      {/* Monthly Summary */
       {materials && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Consumption Summary</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Month</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Quantity</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Cost</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Materials Used</th>
-                </tr>
-              </thead>
-              <tbody>
-                {materials.consumptionByMonth.map((month) => (
-                  <tr key={month.month} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-900">{month.month}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">
-                      {month.totalQuantity.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">
-                      {formatCurrency(month.totalCost)}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{month.materialsUsed}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Consumption Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'month',
+                  label: 'Month',
+                  sortable: true,
+                  accessor: 'month'
+                },
+                {
+                  key: 'quantity',
+                  label: 'Quantity',
+                  sortable: true,
+                  accessor: (row) => row.totalQuantity,
+                  render: (row) => (
+                    <span className="text-right block font-medium">
+                      {row.totalQuantity.toLocaleString()}
+                    </span>
+                  )
+                },
+                {
+                  key: 'cost',
+                  label: 'Cost',
+                  sortable: true,
+                  accessor: (row) => row.totalCost,
+                  render: (row) => (
+                    <span className="text-right block font-medium">
+                      {formatCurrency(row.totalCost)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'materialsUsed',
+                  label: 'Materials Used',
+                  sortable: true,
+                  accessor: (row) => row.materialsUsed,
+                  render: (row) => (
+                    <span className="text-right block">{row.materialsUsed}</span>
+                  )
+                }
+              ]}
+              data={materials.consumptionByMonth}
+              rowKey="month"
+              loading={loading}
+              emptyMessage="No monthly data available"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
     </div>
   );

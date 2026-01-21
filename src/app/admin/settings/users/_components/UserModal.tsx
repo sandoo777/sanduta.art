@@ -3,16 +3,23 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
 import { userFormSchema, type UserFormData } from "@/lib/validations/admin";
 import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
+import { Select, Modal } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { useSettings, User } from "@/modules/settings/useSettings";
 import { UserRole } from "@prisma/client";
+
+const ROLE_OPTIONS = [
+  { value: "ADMIN", label: "Admin" },
+  { value: "MANAGER", label: "Manager" },
+  { value: "OPERATOR", label: "Operator" },
+  { value: "VIEWER", label: "Viewer" },
+];
 
 interface UserModalProps {
   user?: User | null;
@@ -64,7 +71,7 @@ export function UserModal({ user, onClose, canManageRoles }: UserModalProps) {
 
     try {
       if (isEditing) {
-        const updateData: any = {
+        const updateData: Partial<User> = {
           name: data.name,
           email: data.email,
           active: data.active,
@@ -97,19 +104,13 @@ export function UserModal({ user, onClose, canManageRoles }: UserModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={true} onClose={() => onClose()} size="md">
+      <div className="bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? "Edit User" : "Add User"}
           </h2>
-          <button
-            onClick={() => onClose()}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Form */}
@@ -178,18 +179,12 @@ export function UserModal({ user, onClose, canManageRoles }: UserModalProps) {
             render={({ field }) => (
               <div>
                 <FormLabel>Role</FormLabel>
-                <select
+                <Select
                   {...field}
+                  options={ROLE_OPTIONS}
                   disabled={!canManageRoles}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !canManageRoles ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <option value="ADMIN">Admin</option>
-                  <option value="MANAGER">Manager</option>
-                  <option value="OPERATOR">Operator</option>
-                  <option value="VIEWER">Viewer</option>
-                </select>
+                  fullWidth={true}
+                />
                 {!canManageRoles && (
                   <p className="mt-1 text-xs text-gray-500">
                     Only admins can change user roles
@@ -242,6 +237,6 @@ export function UserModal({ user, onClose, canManageRoles }: UserModalProps) {
           </div>
         </Form>
       </div>
-    </div>
+    </Modal>
   );
 }

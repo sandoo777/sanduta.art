@@ -1,16 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState, Modal } from '@/components/ui';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductionPriority } from "@/modules/production/useProduction";
 import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
-import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { fetchOrders, fetchUsers } from '@/lib/api';
 import { Order, User } from '@/types/models';
+
+const PRIORITY_OPTIONS = [
+  { value: "LOW", label: "Low" },
+  { value: "NORMAL", label: "Normal" },
+  { value: "HIGH", label: "High" },
+  { value: "URGENT", label: "Urgent" },
+];
 
 interface JobModalProps {
   isOpen: boolean;
@@ -34,12 +42,12 @@ export default function JobModal({
   const form = useForm<JobFormData>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
+      title: "",
       orderId: "",
-      name: "",
-      priority: "NORMAL",
-      dueDate: "",
+      status: "PENDING",
+      assignedTo: "",
+      deadline: "",
       notes: "",
-      assignedToId: "",
     },
   });
 
@@ -86,34 +94,24 @@ export default function JobModal({
 
   const handleClose = () => {
     reset({
+      title: "",
       orderId: "",
-      name: "",
-      priority: "NORMAL",
-      dueDate: "",
+      status: "PENDING",
+      assignedTo: "",
+      deadline: "",
       notes: "",
-      assignedToId: "",
     });
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={handleClose} size="lg">
+      <div className="bg-white rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
             {mode === "create" ? "Create Production Job" : "Edit Production Job"}
           </h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
 
         {/* Body */}
@@ -143,17 +141,17 @@ export default function JobModal({
                 render={({ field }) => (
                   <div>
                     <FormLabel required>Order</FormLabel>
-                    <select
+                    <Select
                       {...field}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="">Select an order</option>
-                      {orders.map((order) => (
-                        <option key={order.id} value={order.id}>
-                          {order.customerName} - {order.totalPrice} RON ({order.status})
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Select an order" },
+                        ...orders.map((order) => ({
+                          value: order.id,
+                          label: `${order.customerName} - ${order.totalPrice} RON (${order.status})`
+                        }))
+                      ]}
+                      fullWidth={true}
+                    />
                     <FormMessage />
                   </div>
                 )}
@@ -165,15 +163,11 @@ export default function JobModal({
                 render={({ field }) => (
                   <div>
                     <FormLabel>Priority</FormLabel>
-                    <select
+                    <Select
                       {...field}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="LOW">Low</option>
-                      <option value="NORMAL">Normal</option>
-                      <option value="HIGH">High</option>
-                      <option value="URGENT">Urgent</option>
-                    </select>
+                      options={PRIORITY_OPTIONS}
+                      fullWidth={true}
+                    />
                     <FormMessage />
                   </div>
                 )}
@@ -200,17 +194,17 @@ export default function JobModal({
                 render={({ field }) => (
                   <div>
                     <FormLabel>Assign to Operator</FormLabel>
-                    <select
+                    <Select
                       {...field}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="">Unassigned</option>
-                      {operators.map((operator) => (
-                        <option key={operator.id} value={operator.id}>
-                          {operator.name} ({operator.role})
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Unassigned" },
+                        ...operators.map((operator) => ({
+                          value: operator.id,
+                          label: `${operator.name} (${operator.role})`
+                        }))
+                      ]}
+                      fullWidth={true}
+                    />
                     <FormMessage />
                   </div>
                 )}
@@ -255,6 +249,6 @@ export default function JobModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

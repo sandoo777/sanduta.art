@@ -1,6 +1,7 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 const mockData = [
   { month: "Jan", sales: 12000 },
@@ -13,10 +14,12 @@ const mockData = [
 
 export function SalesChart() {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Sales (Last 6 Months)</h2>
-      
-      <div className="h-80">
+    <Card>
+      <CardHeader>
+        <CardTitle>Sales (Last 6 Months)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={mockData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -53,6 +56,7 @@ export function SalesChart() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

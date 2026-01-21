@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { ErrorState } from '@/components/ui';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { BrandingSettings } from '@/components/theme/BrandingSettings';
 import { ColorSettings } from '@/components/theme/ColorSettings';
 import { TypographySettings } from '@/components/theme/TypographySettings';
@@ -191,13 +193,12 @@ const DEFAULT_THEME: ThemeConfig = {
       closeOnBackdrop: true,
     },
   },
-  homepage: {
-    blocks: [],
-  },
+  homepage: [],
 };
 
 export default function ThemeCustomizerPage() {
   const router = useRouter();
+  const { confirm, Dialog } = useConfirmDialog();
   const [activeTab, setActiveTab] = useState<TabName>('branding');
   const [theme, setTheme] = useState<ThemeConfig>(DEFAULT_THEME);
   const [isLoading, setIsLoading] = useState(true);
@@ -205,6 +206,7 @@ export default function ThemeCustomizerPage() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load theme on mount
   useEffect(() => {
@@ -214,6 +216,7 @@ export default function ThemeCustomizerPage() {
   const loadTheme = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const response = await fetch('/api/admin/theme?version=draft');
       
       if (response.ok) {
@@ -222,9 +225,12 @@ export default function ThemeCustomizerPage() {
           setTheme(data.theme);
           setLastSaved(new Date(data.updatedAt));
         }
+      } else {
+        setError('Eroare la încărcarea temei');
       }
-    } catch (_error) {
-      console.error('Failed to load theme:', error);
+    } catch (err) {
+      console.error('Failed to load theme:', err);
+      setError(err instanceof Error ? err.message : 'Eroare la încărcarea temei');
     } finally {
       setIsLoading(false);
     }
@@ -248,7 +254,7 @@ export default function ThemeCustomizerPage() {
         alert('❌ Failed to save theme');
       }
     } catch (_error) {
-      console.error('Failed to save theme:', error);
+      console.error('Failed to save theme:', _error);
       alert('❌ Failed to save theme');
     } finally {
       setIsSaving(false);
@@ -256,28 +262,32 @@ export default function ThemeCustomizerPage() {
   };
 
   const publishTheme = async () => {
-    if (!confirm('Are you sure you want to publish this theme? It will be live for all users.')) {
-      return;
-    }
+    await confirm({
+      title: 'Publică tema',
+      message: 'Sigur vrei să publici această temă? Va fi live pentru toți utilizatorii.',
+      variant: 'warning',
+      requireConfirmation: true,
+      onConfirm: async () => {
+        try {
+          setIsPublishing(true);
+          const response = await fetch('/api/admin/theme/publish', {
+            method: 'PUT',
+          });
 
-    try {
-      setIsPublishing(true);
-      const response = await fetch('/api/admin/theme/publish', {
-        method: 'PUT',
-      });
-
-      if (response.ok) {
-        alert('✅ Theme published successfully!');
-        router.push('/');
-      } else {
-        alert('❌ Failed to publish theme');
+          if (response.ok) {
+            alert('✅ Theme published successfully!');
+            router.refresh();
+          } else {
+            alert('❌ Failed to publish theme');
+          }
+        } catch (_error) {
+          console.error('Failed to publish theme:', _error);
+          alert('❌ Failed to publish theme');
+        } finally {
+          setIsPublishing(false);
+        }
       }
-    } catch (_error) {
-      console.error('Failed to publish theme:', error);
-      alert('❌ Failed to publish theme');
-    } finally {
-      setIsPublishing(false);
-    }
+    });
   };
 
   const updateTheme = (updates: Partial<ThemeConfig>) => {
@@ -287,6 +297,10 @@ export default function ThemeCustomizerPage() {
 
   if (isLoading) {
     return <LoadingState text="Loading theme customizer..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} retry={loadTheme} />;
   }
 
   return (
@@ -398,8 +412,8 @@ export default function ThemeCustomizerPage() {
 
         {activeTab === 'homepage' && (
           <HomepageBuilder
-            value={theme.homepage.blocks}
-            onChange={(blocks) => updateTheme({ homepage: { blocks } })}
+            value={theme.homepage}
+            onChange={(blocks) => updateTheme({ homepage: blocks })}
           />
         )}
 
@@ -407,6 +421,7 @@ export default function ThemeCustomizerPage() {
           <ThemePreview theme={theme} />
         )}
       </main>
+      <Dialog />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState, Card, CardContent } from '@/components/ui';
 import Link from "next/link";
 import { useProduction, ProductionJob, UpdateJobData } from "@/modules/production/useProduction";
 import { StatusBadge } from "../_components/StatusManager";
@@ -280,35 +280,41 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Status Manager */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Status</h3>
-              <StatusManager
+            <Card padding="sm">
+              <CardContent>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Status</h3>
+                <StatusManager
                 currentStatus={job.status}
                 onStatusChange={handleStatusChange}
                 loading={updating}
               />
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Priority Manager */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Priority</h3>
-              <PriorityManager
+            <Card padding="sm">
+              <CardContent>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Priority</h3>
+                <PriorityManager
                 currentPriority={job.priority}
                 onPriorityChange={handlePriorityChange}
                 loading={updating}
               />
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Assign Operator */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Assigned Operator</h3>
-              <AssignOperator
+            <Card padding="sm">
+              <CardContent>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Assigned Operator</h3>
+                <AssignOperator
                 currentOperatorId={job.assignedToId}
                 currentOperator={job.assignedTo}
                 onAssign={handleAssignOperator}
                 loading={updating}
               />
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

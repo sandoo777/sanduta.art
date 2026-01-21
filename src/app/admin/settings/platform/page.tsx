@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState, ErrorState } from '@/components/ui';
 import { Settings, Save, Globe, Mail, DollarSign, Bell, Building2 } from "lucide-react";
 
 interface PlatformSettings {
@@ -54,6 +54,7 @@ export default function PlatformSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<keyof PlatformSettings>("general");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -62,11 +63,16 @@ export default function PlatformSettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await fetch("/api/admin/settings/platform");
+      if (!response.ok) {
+        throw new Error('Eroare la încărcarea setărilor');
+      }
       const data = await response.json();
       setSettings(data);
-    } catch (_error) {
-      console.error("Failed to fetch platform settings:", error);
+    } catch (err) {
+      console.error("Failed to fetch platform settings:", err);
+      setError(err instanceof Error ? err.message : 'Eroare la încărcarea setărilor');
     } finally {
       setLoading(false);
     }
@@ -102,7 +108,15 @@ export default function PlatformSettingsPage() {
     { id: "notifications", label: "Notificări", icon: Bell },
   ];
 
-  if (loading || !settings) {
+  if (loading) {
+    return <LoadingState text="Se încarcă setările..." />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} retry={fetchSettings} />;
+  }
+
+  if (!settings) {
     return <LoadingState text="Se încarcă setările..." />;
   }
 

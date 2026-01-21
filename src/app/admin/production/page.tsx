@@ -8,6 +8,15 @@ import JobCard from "./_components/JobCard";
 import JobModal from "./_components/JobModal";
 import { productionSearchFormSchema, type ProductionSearchFormData } from "@/lib/validations/admin";
 import { Form, FormField } from "@/components/ui/form";
+import { Input, Select } from "@/components/ui";
+
+const PRIORITY_OPTIONS = [
+  { value: "", label: "All Priorities" },
+  { value: "LOW", label: "Low" },
+  { value: "NORMAL", label: "Normal" },
+  { value: "HIGH", label: "High" },
+  { value: "URGENT", label: "Urgent" },
+];
 
 const statusColumns: Array<{
   status: ProductionStatus;
@@ -109,18 +118,17 @@ export default function ProductionPage() {
                 name="search"
                 render={({ field }) => (
                   <div className="relative">
-                    <input
+                    <Input
                       type="text"
                       {...field}
                       placeholder="Search by job name, order ID, or customer..."
-                      className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       onChange={(e) => {
                         field.onChange(e);
                         loadJobs();
                       }}
                     />
                     <svg
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -136,20 +144,15 @@ export default function ProductionPage() {
             <FormField
               name="priority"
               render={({ field }) => (
-                <select
+                <Select
                   {...field}
+                  options={PRIORITY_OPTIONS}
                   onChange={(e) => {
                     field.onChange(e);
                     loadJobs();
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">All Priorities</option>
-                  <option value="LOW">Low</option>
-                  <option value="NORMAL">Normal</option>
-                  <option value="HIGH">High</option>
-                  <option value="URGENT">Urgent</option>
-                </select>
+                  fullWidth={false}
+                />
               )}
             />
 

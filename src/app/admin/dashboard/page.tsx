@@ -1,6 +1,7 @@
 'use client';
 
 import { ShoppingCart, Package, DollarSign, Users } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { KpiCard } from './_components/KpiCard';
 import { SalesChart } from './_components/SalesChart';
 import { TopProducts } from './_components/TopProducts';
@@ -59,9 +60,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
           <div className="flex items-center border-b pb-3">
             <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
               <span className="text-green-600 text-lg">✓</span>
@@ -89,8 +93,8 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500">1 hour ago</p>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

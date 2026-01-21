@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/ui";
 import { type Customer } from "@/modules/customers/useCustomers";
 
 interface CustomerTimelineProps {
@@ -160,18 +161,15 @@ export default function CustomerTimeline({ customer }: CustomerTimelineProps) {
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <svg
-          className="w-16 h-16 mx-auto mb-4 text-gray-300"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p className="text-lg font-medium">Nu există activitate</p>
-        <p className="text-sm">Timeline-ul va apărea aici</p>
-      </div>
+      <EmptyState
+        icon={
+          <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        }
+        title="Nu există activitate"
+        description="Activitățile clientului vor apărea aici"
+      />
     );
   }
 

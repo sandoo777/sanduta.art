@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Table } from "@/components/ui/Table";
+import type { Column } from "@/components/ui/Table.types";
 import { useOrders } from '@/domains/orders/hooks/useOrders';
-import { LoadingState } from '@/components/ui/LoadingState';
 
 interface OrderListItem {
   id: string;
@@ -41,71 +42,92 @@ export default function AdminOrders() {
 
   return (
     <div>
-      {loading ? (
-        <LoadingState text="Se încarcă comenzile..." />
-      ) : (
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
-            <div className="overflow-hidden border border-gray-300 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">ID</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Customer</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Total</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Status</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Date</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{order.id.slice(-8)}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">
-                        <div className="font-medium">{order.customerName}</div>
-                        <div className="text-gray-500 text-xs">{order.customerEmail}</div>
-                        {order.user && <div className="text-xs text-gray-400">User: {order.user.name}</div>}
-                      </td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{order.total} ₽</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{order.status}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{new Date(order.createdAt).toLocaleDateString()}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                          className="p-1 md:p-2 border rounded text-xs md:text-sm w-full md:w-auto"
-                          disabled={loading}
-                        >
-                          <option value="PENDING">Pending</option>
-                          <option value="CONFIRMED">Confirmed</option>
-                          <option value="IN_PROGRESS">In Progress</option>
-                          <option value="READY">Ready</option>
-                          <option value="SHIPPED">Shipped</option>
-                          <option value="DELIVERED">Delivered</option>
-                          <option value="CANCELLED">Cancelled</option>
-                        </select>
-                        <details className="mt-2">
-                          <summary className="cursor-pointer text-blue-600 hover:text-blue-800 text-xs md:text-sm">Details</summary>
-                          <ul className="mt-2 space-y-1">
-                            {order.orderItems.map((item, idx) => (
-                              <li key={idx} className="text-xs md:text-sm text-gray-700">
-                                {item.product.name} x {item.quantity}
-                              </li>
-                            ))}
-                          </ul>
-                        </details>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}div>
-        </div>
-      </div>
+      <Table
+        columns={[
+          {
+            key: 'id',
+            label: 'ID',
+            render: (order) => (
+              <span className="text-xs md:text-sm">{order.id.slice(-8)}</span>
+            )
+          },
+          {
+            key: 'customer',
+            label: 'Customer',
+            render: (order) => (
+              <div>
+                <div className="font-medium">{order.customerName}</div>
+                <div className="text-gray-500 text-xs">{order.customerEmail}</div>
+                {order.user && <div className="text-xs text-gray-400">User: {order.user.name}</div>}
+              </div>
+            )
+          },
+          {
+            key: 'total',
+            label: 'Total',
+            sortable: true,
+            render: (order) => (
+              <span className="whitespace-nowrap">{order.total} ₽</span>
+            )
+          },
+          {
+            key: 'status',
+            label: 'Status',
+            sortable: true,
+            accessor: 'status'
+          },
+          {
+            key: 'createdAt',
+            label: 'Date',
+            sortable: true,
+            render: (order) => (
+              <span className="whitespace-nowrap">
+                {new Date(order.createdAt).toLocaleDateString()}
+              </span>
+            )
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (order) => (
+              <div>
+                <select
+                  value={order.status}
+                  onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                  className="p-1 md:p-2 border rounded text-xs md:text-sm w-full md:w-auto"
+                  disabled={loading}
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="READY">Ready</option>
+                  <option value="SHIPPED">Shipped</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-blue-600 hover:text-blue-800 text-xs md:text-sm">Details</summary>
+                  <ul className="mt-2 space-y-1">
+                    {order.orderItems.map((item, idx) => (
+                      <li key={idx} className="text-xs md:text-sm text-gray-700">
+                        {item.product.name} x {item.quantity}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </div>
+            )
+          }
+        ]}
+        data={orders}
+        rowKey="id"
+        loading={loading}
+        loadingMessage="Se încarcă comenzile..."
+        emptyMessage="Nu există comenzi"
+        bordered={true}
+        responsive={true}
+        clientSideSort={true}
+      />
     </div>
   );
 }

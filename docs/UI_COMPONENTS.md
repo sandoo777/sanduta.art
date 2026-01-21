@@ -837,6 +837,307 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
 
 ---
 
+### Table
+
+Powerful, feature-rich table component for displaying tabular data with sorting, pagination, and responsive design.
+
+**Props:**
+- `columns`: `Column[]` - Array of column definitions (required)
+- `data`: `T[]` - Array of data objects to display (required)
+- `rowKey`: `string | function` - Unique key for each row (default: `'id'`)
+- `onRowClick`: `(row, index) => void` - Callback when row is clicked
+- `rowClassName`: `string | function` - Custom class for rows
+- `sortState`: `{ column: string, direction: 'asc' | 'desc' | null }` - Controlled sort state
+- `onSortChange`: `(column, direction) => void` - Callback for sort changes
+- `clientSideSort`: `boolean` - Enable client-side sorting (default: `true`)
+- `pagination`: `PaginationOptions` - Pagination configuration
+- `loading`: `boolean` - Show loading state
+- `loadingRows`: `number` - Number of skeleton rows (default: `5`)
+- `emptyMessage`: `string` - Message when no data
+- `emptyComponent`: `ReactNode` - Custom empty state component
+- `compact`: `boolean` - Compact table style
+- `striped`: `boolean` - Striped rows (default: `true`)
+- `bordered`: `boolean` - Add border around table
+- `responsive`: `boolean` - Enable horizontal scroll on mobile (default: `true`)
+- `stickyHeader`: `boolean` - Sticky header on scroll
+- `maxHeight`: `string` - Max height for sticky header
+
+**Column Definition:**
+```typescript
+interface Column {
+  key: string;              // Unique identifier
+  label: string;            // Header text
+  sortable?: boolean;       // Enable sorting
+  render?: (row) => ReactNode; // Custom cell renderer
+  accessor?: string | function; // Data accessor
+  width?: string;           // Column width (CSS)
+  align?: 'left' | 'center' | 'right';
+  className?: string;       // Header class
+  cellClassName?: string;   // Cell class
+}
+```
+
+**Usage - Basic Table:**
+```tsx
+import { Table } from '@/components/ui';
+
+const columns = [
+  { key: 'id', label: 'ID', width: '80px' },
+  { key: 'name', label: 'Nume', sortable: true },
+  { key: 'email', label: 'Email', sortable: true },
+  { key: 'status', label: 'Status', align: 'center' },
+];
+
+const data = [
+  { id: 1, name: 'Ion Popescu', email: 'ion@example.com', status: 'active' },
+  { id: 2, name: 'Maria Ionescu', email: 'maria@example.com', status: 'inactive' },
+];
+
+<Table
+  columns={columns}
+  data={data}
+  rowKey="id"
+/>
+```
+
+**Usage - With Custom Rendering:**
+```tsx
+import { Table, Badge, Button } from '@/components/ui';
+
+const columns = [
+  { 
+    key: 'name', 
+    label: 'Nume', 
+    sortable: true 
+  },
+  { 
+    key: 'status', 
+    label: 'Status',
+    align: 'center',
+    render: (row) => <Badge value={row.status} />
+  },
+  { 
+    key: 'actions', 
+    label: 'Acțiuni',
+    align: 'right',
+    render: (row) => (
+      <div className="flex gap-2 justify-end">
+        <Button size="sm" variant="ghost">Edit</Button>
+        <Button size="sm" variant="danger">Delete</Button>
+      </div>
+    )
+  },
+];
+
+<Table
+  columns={columns}
+  data={users}
+  onRowClick={(user) => console.log('Clicked:', user)}
+/>
+```
+
+**Usage - With Sorting & Pagination:**
+```tsx
+const [page, setPage] = useState(1);
+const [sortState, setSortState] = useState({ column: null, direction: null });
+
+const handleSort = (column, direction) => {
+  setSortState({ column, direction });
+  // Fetch sorted data from API
+  fetchUsers({ sortBy: column, sortDir: direction });
+};
+
+<Table
+  columns={columns}
+  data={users}
+  sortState={sortState}
+  onSortChange={handleSort}
+  clientSideSort={false} // Server-side sorting
+  pagination={{
+    currentPage: page,
+    totalPages: 10,
+    totalCount: 200,
+    pageSize: 20,
+    onPageChange: setPage,
+  }}
+/>
+```
+
+**Usage - With Loading State:**
+```tsx
+const { data, loading } = useUsers();
+
+<Table
+  columns={columns}
+  data={data || []}
+  loading={loading}
+  loadingRows={10}
+  loadingMessage="Se încarcă utilizatorii..."
+  emptyMessage="Nu există utilizatori înregistrați"
+/>
+```
+
+**Usage - Compact & Sticky Header:**
+```tsx
+<Table
+  columns={columns}
+  data={longList}
+  compact
+  stickyHeader
+  maxHeight="600px"
+  bordered
+/>
+```
+
+**Usage - Custom Accessor:**
+```tsx
+const columns = [
+  { 
+    key: 'fullName', 
+    label: 'Nume Complet',
+    accessor: (row) => `${row.firstName} ${row.lastName}`,
+    sortable: true
+  },
+  { 
+    key: 'address', 
+    label: 'Adresă',
+    accessor: 'address.street', // Nested property
+  },
+];
+```
+
+**Usage - Custom Sort Function:**
+```tsx
+const columns = [
+  { 
+    key: 'date', 
+    label: 'Dată',
+    sortable: true,
+    sortFn: (a, b, direction) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return direction === 'asc' 
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
+    },
+    render: (row) => new Date(row.date).toLocaleDateString('ro-RO')
+  },
+];
+```
+
+**Features:**
+- ✅ **Sortare**: Client-side sau server-side, multiple columns
+- ✅ **Paginare**: Integrată cu componenta Pagination
+- ✅ **Loading state**: Skeleton loader automat
+- ✅ **Empty state**: Mesaj customizabil când nu există date
+- ✅ **Responsive**: Scroll orizontal pe mobile
+- ✅ **Dark mode**: Stiluri adaptive
+- ✅ **Sticky header**: Header fix la scroll
+- ✅ **Row actions**: Click pe rând, custom className
+- ✅ **Custom rendering**: Flexibilitate completă per celulă
+- ✅ **TypeScript**: Type-safe cu generics
+- ✅ **Accessibility**: ARIA labels, semantic HTML
+
+**Best Practices:**
+- Folosește `rowKey` pentru performanță optimă
+- Preferă `clientSideSort={false}` pentru dataset-uri mari
+- Folosește `render` pentru formatare complexă (Badge, Button, etc.)
+- Activează `stickyHeader` pentru liste lungi
+- Setează `width` pe coloane pentru layout stabil
+- Folosește `compact` pentru economie de spațiu
+
+**Exemple Reale:**
+
+*Admin Orders Table:*
+```tsx
+<Table
+  columns={[
+    { key: 'orderNumber', label: 'Nr. Comandă', sortable: true },
+    { 
+      key: 'customer', 
+      label: 'Client',
+      accessor: (order) => order.customer.name,
+      sortable: true 
+    },
+    { 
+      key: 'total', 
+      label: 'Total',
+      align: 'right',
+      render: (order) => `${order.total} MDL`
+    },
+    { 
+      key: 'status', 
+      label: 'Status',
+      align: 'center',
+      render: (order) => <Badge value={order.status} />
+    },
+    { 
+      key: 'actions', 
+      label: '',
+      align: 'right',
+      render: (order) => (
+        <Button size="sm" onClick={() => router.push(`/admin/orders/${order.id}`)}>
+          Vizualizează
+        </Button>
+      )
+    },
+  ]}
+  data={orders}
+  rowKey="id"
+  onRowClick={(order) => router.push(`/admin/orders/${order.id}`)}
+  pagination={{
+    currentPage: page,
+    totalPages: Math.ceil(totalCount / pageSize),
+    totalCount,
+    pageSize,
+    onPageChange: setPage,
+  }}
+  loading={loading}
+/>
+```
+
+*Products Catalog:*
+```tsx
+<Table
+  columns={[
+    { 
+      key: 'image', 
+      label: '',
+      width: '80px',
+      render: (product) => (
+        <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded" />
+      )
+    },
+    { key: 'name', label: 'Produs', sortable: true },
+    { 
+      key: 'category', 
+      label: 'Categorie',
+      accessor: (product) => product.category.name 
+    },
+    { 
+      key: 'price', 
+      label: 'Preț',
+      align: 'right',
+      sortable: true,
+      render: (product) => `${product.price} MDL`
+    },
+    { 
+      key: 'stock', 
+      label: 'Stoc',
+      align: 'center',
+      render: (product) => (
+        <Badge value={product.stock > 0 ? 'În stoc' : 'Epuizat'} />
+      )
+    },
+  ]}
+  data={products}
+  striped
+  bordered
+/>
+```
+
+---
+
 ## Support
 
 For questions or issues with UI components:

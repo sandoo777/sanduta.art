@@ -3,38 +3,19 @@
 import Link from "next/link";
 import { Package } from "lucide-react";
 import type { Material } from "@/modules/materials/types";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui";
 
 interface MaterialCardProps {
   material: Material;
 }
 
 export function MaterialCard({ material }: MaterialCardProps) {
-  const getStockBadge = () => {
-    if (material.stock === 0) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-          Stoc epuizat
-        </span>
-      );
-    }
-    if (material.lowStock) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-          Stoc scăzut
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        OK
-      </span>
-    );
-  };
-
   return (
     <Link href={`/admin/materials/${material.id}`}>
-      <div className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-3">
+      <Card className="hover:shadow-md transition-shadow">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <Package className="w-5 h-5 text-blue-600" />
@@ -46,10 +27,21 @@ export function MaterialCard({ material }: MaterialCardProps) {
               )}
             </div>
           </div>
-          {getStockBadge()}
-        </div>
+          {material.stock === 0 ? (
+            <Badge variant="default" size="sm" className="bg-black text-white">
+              Stoc epuizat
+            </Badge>
+          ) : material.lowStock ? (
+            <Badge variant="danger" size="sm">
+              Stoc scăzut
+            </Badge>
+          ) : (
+            <Badge variant="success" size="sm">
+              OK
+            </Badge>
+          )}
 
-        <div className="grid grid-cols-2 gap-4 mb-3">
+          <div className="grid grid-cols-2 gap-4 mb-3">
           <div>
             <p className="text-xs text-gray-500 mb-1">Stoc</p>
             <div className="flex items-center gap-1">
@@ -85,7 +77,8 @@ export function MaterialCard({ material }: MaterialCardProps) {
             </p>
           </div>
         )}
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, Input, Card, CardContent, Badge } from "@/components/ui/Button";
+import { Table } from "@/components/ui/Table";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
+import type { Column } from "@/components/ui/Table.types";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
@@ -17,6 +20,7 @@ interface UserWithCount extends User {
 
 export default function AdminUsersPage() {
   const { data: session } = useSession();
+  const { confirm, Dialog } = useConfirmDialog();
   const {
     users,
     isLoading,
@@ -33,46 +37,53 @@ export default function AdminUsersPage() {
   }, []);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
-      return;
-    }
-
-    setUpdatingUserId(userId);
-    const success = await updateUserRole(userId, newRole);
-    setUpdatingUserId(null);
-    
-    if (success) {
-      alert('User role updated successfully!');
-    } else {
-      alert('Failed to update user role');
-    }
+    await confirm({
+      title: 'Schimbă rol utilizator',
+      message: `Sigur vrei să schimbi rolul utilizatorului la ${newRole}?`,
+      variant: 'warning',
+      onConfirm: async () => {
+        setUpdatingUserId(userId);
+        const success = await updateUserRole(userId, newRole);
+        setUpdatingUserId(null);
+        
+        if (success) {
+          alert('User role updated successfully!');
+        } else {
+          alert('Failed to update user role');
+        }
+      }
+    });
   };
 
   const handleDeleteUser = async (userId: string, userName: string | null) => {
-    if (!confirm(`Are you sure you want to delete user "${userName || 'Unknown'}"? This action cannot be undone.`)) {
-      return;
-    }
-
-    const success = await deleteUser(userId);
-    
-    if (success) {
-      alert('User deleted successfully!');
-    } else {
-      alert('Failed to delete user');
-    }
+    await confirm({
+      title: 'Șterge utilizator',
+      message: `Sigur vrei să ștergi utilizatorul "${userName || 'Unknown'}"? Această acțiune nu poate fi anulată.`,
+      variant: 'danger',
+      requireConfirmation: true,
+      onConfirm: async () => {
+        const success = await deleteUser(userId);
+        
+        if (success) {
+          alert('User deleted successfully!');
+        } else {
+          alert('Failed to delete user');
+        }
+      }
+    });
   };
 
-  const getRoleBadgeColor = (role: UserRole) => {
+  const getRoleVariant = (role: UserRole): 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
     switch (role) {
       case 'ADMIN':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
+        return 'info'; // purple → cyan (closest)
       case 'MANAGER':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'primary';
       case 'OPERATOR':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'success';
       case 'VIEWER':
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'default';
     }
   };
 
@@ -102,12 +113,11 @@ export default function AdminUsersPage() {
             <p className="text-gray-600 mt-1">Manage user accounts and roles</p>
           </div>
           <div className="flex items-center space-x-3">
-            <input
+            <Input
               type="text"
               placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <Button onClick={() => loadUsers()} disabled={isLoading}>
               {isLoading ? 'Loading...' : 'Refresh'}
@@ -117,141 +127,148 @@ export default function AdminUsersPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Total Users</div>
-            <div className="text-2xl font-bold text-gray-900">{users.length}</div>
-          </div>
-          <div className="bg-purple-50 rounded-lg shadow p-6">
-            <div className="text-sm text-purple-600">Admins</div>
-            <div className="text-2xl font-bold text-purple-900">
-              {users.filter(u => u.role === Role.ADMIN).length}
-            </div>
-          </div>
-          <div className="bg-blue-50 rounded-lg shadow p-6">
-            <div className="text-sm text-blue-600">Managers</div>
-            <div className="text-2xl font-bold text-blue-900">
-              {users.filter(u => u.role === Role.MANAGER).length}
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Viewers</div>
-            <div className="text-2xl font-bold text-gray-900">
-              {users.filter(u => u.role === Role.VIEWER).length}
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-sm text-gray-600">Total Users</div>
+              <div className="text-2xl font-bold text-gray-900">{users.length}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-purple-50">
+            <CardContent className="p-6">
+              <div className="text-sm text-purple-600">Admins</div>
+              <div className="text-2xl font-bold text-purple-900">
+                {users.filter(u => u.role === Role.ADMIN).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-blue-50">
+            <CardContent className="p-6">
+              <div className="text-sm text-blue-600">Managers</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {users.filter(u => u.role === Role.MANAGER).length}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-gray-50">
+            <CardContent className="p-6">
+              <div className="text-sm text-gray-600">Viewers</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {users.filter(u => u.role === Role.VIEWER).length}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="text-gray-600">Loading users...</div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Orders
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Joined
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dashboard
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="b6-white divide-y divide-gray-200">
-                {filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      No users found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <tr key={user.id} className={updatingUserId === user.id ? 'opacity-50' : ''}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.name || 'No name'}
-                          </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                          disabled={updatingUserId === user.id || session?.user.id === user.id}
-                          className={`px-3 py-1 text-xs font-semibold rounded-full border ${getRoleBadgeColor(user.role)} ${
-                            updatingUserId === user.id || session?.user.id === user.id
-                              ? 'opacity-50 cursor-not-allowed'
-                              : 'cursor-pointer hover:opacity-80'
-                          }`}
-                        >
-                          <option value="VIEWER">Viewer</option>
-                          <option value="OPERATOR">Operator</option>
-                          <option value="MANAGER">Manager</option>
-                          <option value="ADMIN">Admin</option>
-                        </select>
-                        {session?.user.id === user.id && (
-                          <div className="text-xs text-gray-500 mt-1">(You)</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user._count.orders}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.createdAt).toLocaleDateString('ro-RO', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {getRoleDashboard(user.role) && (
-                          <Link
-                            href={getRoleDashboard(user.role)!}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            Open
-                          </Link>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleDeleteUser(user.id, user.name)}
-                          disabled={session?.user.id === user.id}
-                          className={`text-red-600 hover:text-red-900 ${
-                            session?.user.id === user.id
-                              ? 'opacity-50 cursor-not-allowed'
-                              : ''
-                          }`}
-                          title={session?.user.id === user.id ? 'Cannot delete your own account' : 'Delete user'}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <Table<UserWithCount>
+            columns={[
+              {
+                key: 'name',
+                label: 'User',
+                sortable: true,
+                render: (user) => (
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.name || 'No name'}
+                    </div>
+                    <div className="text-sm text-gray-500">{user.email}</div>
+                  </div>
+                )
+              },
+              {
+                key: 'role',
+                label: 'Role',
+                sortable: true,
+                render: (user) => (
+                  <div>
+                    <select
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
+                      disabled={updatingUserId === user.id || session?.user.id === user.id}
+                      className={`${getRoleVariant(user.role)} ${
+                        updatingUserId === user.id || session?.user.id === user.id
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer hover:opacity-80'
+                      }`}
+                    >
+                      <option value="VIEWER">Viewer</option>
+                      <option value="OPERATOR">Operator</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                    {session?.user.id === user.id && (
+                      <div className="text-xs text-gray-500 mt-1">(You)</div>
+                    )}
+                  </div>
+                )
+              },
+              {
+                key: 'orders',
+                label: 'Orders',
+                accessor: (user) => user._count.orders
+              },
+              {
+                key: 'createdAt',
+                label: 'Joined',
+                sortable: true,
+                render: (user) => (
+                  <span className="text-sm text-gray-500">
+                    {new Date(user.createdAt).toLocaleDateString('ro-RO', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                )
+              },
+              {
+                key: 'dashboard',
+                label: 'Dashboard',
+                align: 'center',
+                render: (user) => (
+                  getRoleDashboard(user.role) ? (
+                    <Link
+                      href={getRoleDashboard(user.role)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Open
+                    </Link>
+                  ) : null
+                )
+              },
+              {
+                key: 'actions',
+                label: 'Actions',
+                align: 'right',
+                render: (user) => (
+                  <button
+                    onClick={() => handleDeleteUser(user.id, user.name)}
+                    disabled={session?.user.id === user.id}
+                    className={`text-red-600 hover:text-red-900 ${
+                      session?.user.id === user.id
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                    title={session?.user.id === user.id ? 'Cannot delete your own account' : 'Delete user'}
+                  >
+                    Delete
+                  </button>
+                )
+              }
+            ]}
+            data={filteredUsers}
+            rowKey="id"
+            loading={loading}
+            loadingMessage="Loading users..."
+            emptyMessage="No users found"
+            rowClassName={(user) => updatingUserId === user.id ? 'opacity-50' : ''}
+            striped={true}
+          />
+        </div>
       </div>
+      <Dialog />
   );
 }

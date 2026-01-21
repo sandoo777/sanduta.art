@@ -1,8 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
+import { Table } from "@/components/ui/Table";
+import type { Column } from "@/components/ui/Table.types";
+import { Badge } from "@/components/ui";
 import { useUsers } from '@/domains/admin/hooks/useUsers';
 import type { UserRole } from '@prisma/client';
+
+interface UserWithCount {
+  id: string;
+  name: string | null;
+  email: string;
+  role: UserRole;
+  createdAt: Date;
+  _count?: {
+    orders: number;
+  };
+}
 
 export default function AdminUsers() {
   const { users, isLoading, loadUsers, updateUserRole } = useUsers();
@@ -21,52 +35,67 @@ export default function AdminUsers() {
   return (
     <div>
       <h2 className="text-xl md:text-2xl font-bold mb-4">Users Management</h2>
-      {isLoading ? (
-        <LoadingState text="Se încarcă utilizatorii..." />
-      ) : (
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
-            <div className="overflow-hidden border border-gray-300 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Name</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Email</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Role</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Orders</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold border-r">Joined</th>
-                    <th className="px-2 md:px-4 py-3 text-left text-xs md:text-sm font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.name || "N/A"}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.email}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user.role}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r">{user._count?.orders || 0}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm border-r whitespace-nowrap">{new Date(user.createdAt).toLocaleDateString()}</td>
-                      <td className="px-2 md:px-4 py-3 text-xs md:text-sm">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                          className="p-1 md:p-2 border rounded text-xs md:text-sm w-full md:w-auto"
-                          disabled={isLoading}
-                        >
-                          <option value="VIEWER">Viewer</option>
-                          <option value="OPERATOR">Operator</option>
-                          <option value="MANAGER">Manager</option>
-                          <option value="ADMIN">Admin</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+      <Table<UserWithCount>
+        columns={[
+          {
+            key: 'name',
+            label: 'Name',
+            sortable: true,
+            accessor: (user) => user.name || "N/A"
+          },
+          {
+            key: 'email',
+            label: 'Email',
+            sortable: true,
+            accessor: 'email'
+          },
+          {
+            key: 'role',
+            label: 'Role',
+            sortable: true,
+            render: (user) => <Badge value={user.role} />
+          },
+          {
+            key: 'orders',
+            label: 'Orders',
+            accessor: (user) => user._count?.orders || 0
+          },
+          {
+            key: 'createdAt',
+            label: 'Joined',
+            sortable: true,
+            render: (user) => (
+              <span className="whitespace-nowrap">
+                {new Date(user.createdAt).toLocaleDateString()}
+              </span>
+            )
+          },
+          {
+            key: 'actions',
+            label: 'Actions',
+            render: (user) => (
+              <select
+                value={user.role}
+                onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+                className="p-1 md:p-2 border rounded text-xs md:text-sm w-full md:w-auto"
+                disabled={isLoading}
+              >
+                <option value="VIEWER">Viewer</option>
+                <option value="OPERATOR">Operator</option>
+                <option value="MANAGER">Manager</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            )
+          }
+        ]}
+        data={users as UserWithCount[]}
+        rowKey="id"
+        loading={isLoading}
+        loadingMessage="Se încarcă utilizatorii..."
+        emptyMessage="Nu există utilizatori"
+        bordered={true}
+        responsive={true}
+      />
     </div>
   );
 }

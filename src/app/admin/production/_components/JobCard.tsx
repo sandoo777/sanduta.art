@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Card, CardContent, Badge } from "@/components/ui";
 import { ProductionJob, ProductionPriority } from "@/modules/production/useProduction";
 
 interface JobCardProps {
@@ -33,9 +34,10 @@ export default function JobCard({ job }: JobCardProps) {
 
   return (
     <Link href={`/admin/production/${job.id}`}>
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-3">
+      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+        <CardContent className="p-4">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2 mb-3">
           <h3 className="font-medium text-gray-900 text-sm line-clamp-2 flex-1">
             {job.name}
           </h3>
@@ -99,14 +101,15 @@ export default function JobCard({ job }: JobCardProps) {
                 })}
               </span>
               {overdue && (
-                <span className="px-1 py-0.5 bg-red-100 rounded text-[10px] font-medium">
+                <Badge variant="danger" size="sm" className="text-[10px] font-medium">
                   OVERDUE
-                </span>
-              )}
+                </Badge>
+              )}  
             </div>
           )}
         </div>
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

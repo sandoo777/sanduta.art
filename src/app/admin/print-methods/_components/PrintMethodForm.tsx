@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { PrintMethod } from "@/modules/print-methods/types";
@@ -12,6 +11,7 @@ import { printMethodFormSchema, type PrintMethodFormData } from "@/lib/validatio
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui";
 
 interface PrintMethodFormProps {
   printMethod?: PrintMethod | null;
@@ -64,23 +64,16 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-xl font-bold text-gray-900">
-            {printMethod ? "Edit Print Method" : "Add Print Method"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal isOpen={true} onClose={onClose} size="xl">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <h2 className="text-xl font-bold text-gray-900">
+          {printMethod ? "Edit Print Method" : "Add Print Method"}
+        </h2>
+      </div>
 
-        {/* Form */}
-        <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+      {/* Form */}
+      <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">{
           <div className="space-y-4">
             {/* Name */}
             <FormField
@@ -277,27 +270,26 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               )}
             />
           </div>
-        </Form>
+      </Form>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-          >
-            Anulează
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isSubmitting}
-            onClick={() => form.handleSubmit(handleFormSubmit)()}
-          >
-            Salvează
-          </Button>
-        </div>
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onClose}
+        >
+          Anulează
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={isSubmitting}
+          onClick={() => form.handleSubmit(handleFormSubmit)()}
+        >
+          Salvează
+        </Button>
       </div>
-    </div>
+    </Modal>
   );
 }

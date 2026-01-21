@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
-import { Key, Shield, Check, X } from "lucide-react";
+import { Table, LoadingState } from '@/components/ui';
+import { Key, Check, X } from "lucide-react";
 import { UserRole } from "@prisma/client";
 
 interface Permission {
@@ -117,63 +117,52 @@ export default function PermissionsPage() {
             </div>
 
             {/* Permission Matrix */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">
-                        Permisiune
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Descriere
-                      </th>
-                      {roles.map((role) => (
-                        <th
-                          key={role}
-                          className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase"
-                        >
-                          {role}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredPermissions.map((permission) => {
-                      const rolePermissions = matrix.reduce((acc, role) => {
-                        acc[role.role] = new Set(role.permissions);
-                        return acc;
-                      }, {} as Record<string, Set<string>>);
-
-                      return (
-                        <tr key={permission.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white">
-                            <code className="px-2 py-1 bg-gray-100 rounded text-xs">
-                              {permission.name}
-                            </code>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600 max-w-md">
-                            {permission.description}
-                          </td>
-                          {roles.map((role) => {
-                            const hasPermission = rolePermissions[role]?.has(permission.name);
-                            return (
-                              <td key={role} className="px-6 py-4 text-center">
-                                {hasPermission ? (
-                                  <Check className="w-5 h-5 text-green-600 mx-auto" />
-                                ) : (
-                                  <X className="w-5 h-5 text-gray-300 mx-auto" />
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <Table
+              columns={[
+                {
+                  key: 'name',
+                  label: 'Permisiune',
+                  render: (permission) => (
+                    <code className="px-2 py-1 bg-gray-100 rounded text-xs">
+                      {permission.name}
+                    </code>
+                  ),
+                },
+                {
+                  key: 'description',
+                  label: 'Descriere',
+                  render: (permission) => (
+                    <span className="text-sm text-gray-600">{permission.description}</span>
+                  ),
+                },
+                ...roles.map((role) => ({
+                  key: `role_${role}`,
+                  label: role,
+                  render: (permission: Permission) => {
+                    const rolePermissions = matrix.reduce((acc, r) => {
+                      acc[r.role] = new Set(r.permissions);
+                      return acc;
+                    }, {} as Record<string, Set<string>>);
+                    const hasPermission = rolePermissions[role]?.has(permission.name);
+                    return (
+                      <div className="flex justify-center">
+                        {hasPermission ? (
+                          <Check className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <X className="w-5 h-5 text-gray-300" />
+                        )}
+                      </div>
+                    );
+                  },
+                })),
+              ]}
+              data={filteredPermissions}
+              rowKey="id"
+              loading={loading}
+              emptyMessage="Nu există permisiuni de afișat"
+              className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6"
+              stickyHeader={true}
+            />
 
             {/* Permission Groups Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

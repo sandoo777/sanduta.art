@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Card, CardContent } from '@/components/ui';
 
 interface JobNotesProps {
   jobId: string;
@@ -34,8 +35,9 @@ export default function JobNotes({ jobId, notes: initialNotes = "", onUpdate }: 
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card>
+      <CardContent>
+        <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Job Notes</h3>
         {!isEditing && (
           <button
@@ -89,6 +91,7 @@ export default function JobNotes({ jobId, notes: initialNotes = "", onUpdate }: 
           )}
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

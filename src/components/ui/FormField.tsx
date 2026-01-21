@@ -4,21 +4,24 @@ import {
   Controller,
   FieldPath,
   FieldValues,
+  ControllerRenderProps,
 } from 'react-hook-form';
 
 interface FormFieldProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
-  children: (field: {
+  children?: (field: {
     value: any;
     onChange: (...event: any[]) => void;
     onBlur: () => void;
     error?: string;
   }) => React.ReactNode;
+  render?: (props: { field: ControllerRenderProps<TFieldValues> }) => React.ReactNode;
 }
 
 export function FormField<TFieldValues extends FieldValues>({
   name,
   children,
+  render,
 }: FormFieldProps<TFieldValues>) {
   const {
     control,
@@ -34,10 +37,10 @@ export function FormField<TFieldValues extends FieldValues>({
       control={control}
       render={({ field }) => (
         <>
-          {children({
+          {render ? render({ field }) : children ? children({
             ...field,
             error,
-          })}
+          }) : null}
         </>
       )}
     />

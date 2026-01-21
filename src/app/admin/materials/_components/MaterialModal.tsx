@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
 import { materialFormSchema, type MaterialFormData } from "@/lib/validations/admin";
 import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
@@ -11,6 +10,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { Material } from "@/modules/materials/types";
 
@@ -79,19 +79,13 @@ export function MaterialModal({ material, onClose, onSuccess }: MaterialModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={true} onClose={onClose} size="lg">
+      <div className="bg-white rounded-lg w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
             {material ? "Editează Material" : "Adaugă Material Nou"}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
         {/* Form */}
@@ -214,6 +208,6 @@ export function MaterialModal({ material, onClose, onSuccess }: MaterialModalPro
           </div>
         </Form>
       </div>
-    </div>
+    </Modal>
   );
 }

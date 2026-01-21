@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { EmptyState } from "@/components/ui";
 import { useCustomers, type CustomerNote } from "@/modules/customers/useCustomers";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface CustomerNotesProps {
   customerId: number;
@@ -14,6 +16,7 @@ export default function CustomerNotes({
   notes,
   onUpdate,
 }: CustomerNotesProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const { addNote, deleteNote, loading } = useCustomers();
   const [newNote, setNewNote] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -35,15 +38,20 @@ export default function CustomerNotes({
 
   // Handle delete note
   const handleDeleteNote = async (noteId: number) => {
-    if (!confirm("Sigur vrei să ștergi această notă?")) return;
-
-    try {
-      await deleteNote(customerId, noteId);
-      onUpdate();
-    } catch (err) {
-      console.error("Error deleting note:", err);
-      alert("Eroare la ștergerea notei");
-    }
+    await confirm({
+      title: 'Șterge notă',
+      message: 'Sigur vrei să ștergi această notă?',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteNote(customerId, noteId);
+          onUpdate();
+        } catch (err) {
+          console.error("Error deleting note:", err);
+          alert("Eroare la ștergerea notei");
+        }
+      }
+    });
   };
 
   // Format date
@@ -108,23 +116,20 @@ export default function CustomerNotes({
 
       {/* Notes List */}
       {notes.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <svg
-            className="w-16 h-16 mx-auto mb-4 text-gray-300"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <p className="text-lg font-medium">Nu există note</p>
-          <p className="text-sm">Adaugă prima notă pentru acest client</p>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          }
+          title="Nu există note"
+          description="Adaugă prima notă pentru acest client"
+        />
       ) : (
         <div className="space-y-4">
           {notes.map((note) => (
@@ -182,6 +187,7 @@ export default function CustomerNotes({
           ))}
         </div>
       )}
+      <Dialog />
     </div>
   );
 }

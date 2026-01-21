@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 export default function AdminPage() {
   const stats = [
@@ -55,8 +56,9 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quickActions.map((action) => (
             <Link key={action.title} href={action.link}>
-              <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition">
-                <div className="flex items-start">
+              <Card className="cursor-pointer hover:shadow-lg transition">
+                <CardContent className="pt-6">
+                  <div className="flex items-start">
                   <div className="text-3xl mr-4">{action.icon}</div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -64,8 +66,9 @@ export default function AdminPage() {
                     </h3>
                     <p className="text-sm text-gray-600">{action.description}</p>
                   </div>
-                </div>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
@@ -74,8 +77,8 @@ export default function AdminPage() {
       {/* Recent Activity */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 space-y-4">
+        <Card>
+          <CardContent className="space-y-4">
             <div className="flex items-center border-b pb-3">
               <div className="text-2xl mr-3">📦</div>
               <div className="flex-1">
@@ -97,8 +100,8 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-500">Canvas Print 40x60 - 2 hours ago</p>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

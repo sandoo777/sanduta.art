@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
+import { Button, Input, Select, Card, CardContent, EmptyState, EmptySearch } from '@/components/ui';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { FinishingCard } from './_components/FinishingCard';
 import { FinishingForm } from './_components/FinishingForm';
@@ -37,7 +38,7 @@ export default function FinishingPage() {
       setLoadingData(true);
       const data = await getFinishingOperations();
       setOperations(data);
-    } catch (_error) {
+    } catch (error) {
       console.error('Error loading operations:', error);
     } finally {
       setLoadingData(false);
@@ -106,10 +107,12 @@ export default function FinishingPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Total Operațiuni</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
-        </div>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Total Operațiuni</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+          </CardContent>
+        </Card>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-sm text-gray-600">Active</div>
           <div className="text-2xl font-bold text-green-600 mt-1">{stats.active}</div>
@@ -118,40 +121,39 @@ export default function FinishingPage() {
           <div className="text-sm text-gray-600">Inactive</div>
           <div className="text-2xl font-bold text-gray-400 mt-1">{stats.inactive}</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Tipuri</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">{stats.types}</div>
-        </div>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Tipuri</div>
+            <div className="text-2xl font-bold text-blue-600 mt-1">{stats.types}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
+          <Input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Caută după nume..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="pl-10"
           />
         </div>
 
         {/* Type Filter */}
         <div className="sm:w-48">
-          <select
+          <Select
+            options={[
+              { value: "all", label: "Toate tipurile" },
+              ...FINISHING_OPERATION_TYPES
+            ]}
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">Toate tipurile</option>
-            {FINISHING_OPERATION_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+            fullWidth={true}
+          />
         </div>
 
         {/* Active Only */}
@@ -166,27 +168,30 @@ export default function FinishingPage() {
         </label>
 
         {/* Add Button */}
-        <button
+        <Button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          variant="primary"
         >
           <Plus className="h-5 w-5" />
           <span className="hidden sm:inline">Adaugă Operațiune</span>
-        </button>
+        </Button>
       </div>
 
       {/* Operations Grid */}
       {filteredOperations.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <div className="text-gray-400 mb-2">
-            <Filter className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="text-gray-600">
-            {searchTerm || typeFilter !== 'all' || activeOnly
-              ? 'Nu s-au găsit operațiuni cu filtrele aplicate'
-              : 'Nu există operațiuni de finisare'}
-          </p>
-        </div>
+        searchTerm ? (
+          <EmptySearch query={searchTerm} />
+        ) : (
+          <EmptyState
+            icon={<Filter className="h-12 w-12" />}
+            title="Nu există operațiuni de finisare"
+            description="Adaugă prima operațiune pentru a începe"
+            action={{
+              label: "Adaugă operațiune",
+              onClick: () => setShowForm(true)
+            }}
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredOperations.map((operation) => (

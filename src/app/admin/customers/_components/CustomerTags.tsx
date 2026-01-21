@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button, EmptyState } from "@/components/ui";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCustomers, type CustomerTag } from "@/modules/customers/useCustomers";
 
 interface CustomerTagsProps {
@@ -27,6 +30,7 @@ export default function CustomerTags({
   tags,
   onUpdate,
 }: CustomerTagsProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const { addTag, deleteTag, loading } = useCustomers();
   const [isAdding, setIsAdding] = useState(false);
   const [newLabel, setNewLabel] = useState("");
@@ -50,30 +54,34 @@ export default function CustomerTags({
 
   // Handle delete tag
   const handleDeleteTag = async (tagId: number) => {
-    if (!confirm("Sigur vrei să ștergi acest tag?")) return;
-
-    try {
-      await deleteTag(customerId, tagId);
-      onUpdate();
-    } catch (err) {
-      console.error("Error deleting tag:", err);
-      alert("Eroare la ștergerea tag-ului");
-    }
+    await confirm({
+      title: 'Șterge tag',
+      message: 'Sigur vrei să ștergi acest tag?',
+      variant: 'danger',
+      onConfirm: async () => {
+        try {
+          await deleteTag(customerId, tagId);
+          onUpdate();
+        } catch (err) {
+          console.error("Error deleting tag:", err);
+          alert("Eroare la ștergerea tag-ului");
+        }
+      }
+    });
   };
 
   return (
     <div className="space-y-4">
       {/* Add Tag Button */}
       {!isAdding && (
-        <button
+        <Button
           onClick={() => setIsAdding(true)}
-          className="px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center gap-2"
+          variant="outline"
+          className="border-dashed border-2"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="w-5 h-5" />
           Adaugă Tag
-        </button>
+        </Button>
       )}
 
       {/* Add Tag Form */}
@@ -132,47 +140,46 @@ export default function CustomerTags({
 
           {/* Buttons */}
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => {
                 setIsAdding(false);
                 setNewLabel("");
                 setSelectedColor(PRESET_COLORS[0].value);
               }}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              variant="outline"
+              fullWidth
               disabled={loading}
             >
               Anulează
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleAddTag}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              variant="primary"
+              fullWidth
               disabled={loading || !newLabel.trim()}
             >
               {loading ? "Se salvează..." : "Adaugă Tag"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {/* Tags List */}
       {tags.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <svg
-            className="w-16 h-16 mx-auto mb-4 text-gray-300"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-            />
-          </svg>
-          <p className="text-lg font-medium">Nu există tag-uri</p>
-          <p className="text-sm">Adaugă primul tag pentru acest client</p>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+              />
+            </svg>
+          }
+          title="Nu există tag-uri"
+          description="Adaugă primul tag pentru a organiza clienții"
+        />
       ) : (
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
@@ -203,9 +210,9 @@ export default function CustomerTags({
                 </svg>
               </button>
             </div>
-          ))}
-        </div>
+          ))}        </div>
       )}
+      <Dialog />
     </div>
   );
 }

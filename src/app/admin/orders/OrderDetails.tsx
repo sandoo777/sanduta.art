@@ -11,6 +11,7 @@ import { OrderTimeline } from './components/OrderTimeline';
 import { toast } from 'sonner';
 import { ChevronLeft, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Order } from '@/types/models';
 
 interface OrderDetailsPageProps {
@@ -159,9 +160,11 @@ export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
       </div>
 
       {/* Manager Cards */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4 border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Gestiune Comandă</h2>
-        <div className="space-y-3">
+      <Card className="border border-gray-200">
+        <CardHeader>
+          <CardTitle>Gestiune Comandă</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
           <OrderStatusManager
             orderId={order.id}
             currentStatus={order.status}
@@ -178,8 +181,8 @@ export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
             assignedOperatorName={order.assignedTo?.name}
             onOperatorAssigned={() => loadOrder()}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

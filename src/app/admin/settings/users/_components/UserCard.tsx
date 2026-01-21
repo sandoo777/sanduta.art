@@ -1,4 +1,5 @@
 import { Edit, Trash2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui";
 import { User } from "@/modules/settings/useSettings";
 
 const ROLE_COLORS = {
@@ -17,8 +18,9 @@ interface UserCardProps {
 
 export function UserCard({ user, onEdit, onToggleActive, onDelete }: UserCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <div className="flex items-start justify-between mb-3">
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
           <p className="text-sm text-gray-600">{user.email}</p>
@@ -86,6 +88,7 @@ export function UserCard({ user, onEdit, onToggleActive, onDelete }: UserCardPro
       <div className="mt-3 text-xs text-gray-500">
         Created: {new Date(user.createdAt).toLocaleDateString()}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

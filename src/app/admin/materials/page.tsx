@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { Table, Badge } from "@/components/ui";
+import { Card, CardContent } from "@/components/ui/Card";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { Material, MaterialFilters } from "@/modules/materials/types";
 import { MaterialCard } from "./_components/MaterialCard";
@@ -15,8 +17,8 @@ export default function MaterialsPage() {
   const { getMaterials, isLoading } = useMaterials();
 
   useEffect(() => {
-    loadMaterials();
-  }, []);
+    getMaterials().then(setMaterials);
+  }, [getMaterials]);
 
   const loadMaterials = async () => {
     const data = await getMaterials();
@@ -103,41 +105,42 @@ export default function MaterialsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Caută după nume sau SKU..."
-              value={filters.search || ""}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Caută după nume sau SKU..."
+                value={filters.search || ""}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
 
-          {/* Unit Filter */}
-          <select
-            value={filters.unit || ""}
-            onChange={(e) => setFilters({ ...filters, unit: e.target.value || undefined })}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Toate unitățile</option>
-            {units.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+            {/* Unit Filter */}
+            <select
+              value={filters.unit || ""}
+              onChange={(e) => setFilters({ ...filters, unit: e.target.value || undefined })}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Toate unitățile</option>
+              {units.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
 
-          {/* Low Stock Filter */}
-          <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-            <input
-              type="checkbox"
-              checked={filters.lowStock || false}
-              onChange={(e) => setFilters({ ...filters, lowStock: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            {/* Low Stock Filter */}
+            <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+              <input
+                type="checkbox"
+                checked={filters.lowStock || false}
+                onChange={(e) => setFilters({ ...filters, lowStock: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
             />
             <span className="text-gray-700">Doar stoc scăzut</span>
           </label>
@@ -148,37 +151,37 @@ export default function MaterialsPage() {
           <div className="mt-4 flex items-center gap-2 flex-wrap">
             <span className="text-sm text-gray-600">Filtre active:</span>
             {filters.search && (
-              <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+              <Badge variant="primary" size="sm">
                 {filters.search}
                 <button
                   onClick={() => setFilters({ ...filters, search: undefined })}
-                  className="hover:text-blue-900"
+                  className="hover:text-blue-900 ml-1"
                 >
                   ×
                 </button>
-              </span>
+              </Badge>
             )}
             {filters.unit && (
-              <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+              <Badge variant="primary" size="sm">
                 {filters.unit}
                 <button
                   onClick={() => setFilters({ ...filters, unit: undefined })}
-                  className="hover:text-blue-900"
+                  className="hover:text-blue-900 ml-1"
                 >
                   ×
                 </button>
-              </span>
+              </Badge>
             )}
             {filters.lowStock && (
-              <span className="inline-flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-1 rounded-full">
+              <Badge variant="danger" size="sm">
                 Stoc scăzut
                 <button
                   onClick={() => setFilters({ ...filters, lowStock: false })}
-                  className="hover:text-red-900"
+                  className="hover:text-red-900 ml-1"
                 >
                   ×
                 </button>
-              </span>
+              </Badge>
             )}
             <button
               onClick={() => setFilters({})}
@@ -188,107 +191,116 @@ export default function MaterialsPage() {
             </button>
           </div>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Materials Grid - Desktop Table */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center text-gray-500">Se încarcă...</div>
-        ) : filteredMaterials.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            {filters.search || filters.unit || filters.lowStock
+      <div className="hidden md:block">
+        <Table
+          columns={[
+            {
+              key: 'name',
+              label: 'Material',
+              sortable: true,
+              render: (material) => (
+                <div className="font-medium text-gray-900">{material.name}</div>
+              ),
+            },
+            {
+              key: 'sku',
+              label: 'SKU',
+              render: (material) => (
+                <span className="text-gray-600">{material.sku || "—"}</span>
+              ),
+            },
+            {
+              key: 'stock',
+              label: 'Stoc',
+              sortable: true,
+              render: (material) => (
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`font-medium ${
+                      material.stock === 0
+                        ? "text-black"
+                        : material.lowStock
+                        ? "text-red-600"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {material.stock}
+                  </span>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-600">{material.minStock}</span>
+                </div>
+              ),
+            },
+            {
+              key: 'unit',
+              label: 'Unitate',
+              render: (material) => (
+                <span className="text-gray-600">{material.unit}</span>
+              ),
+            },
+            {
+              key: 'costPerUnit',
+              label: 'Cost/Unitate',
+              sortable: true,
+              render: (material) => (
+                <span className="text-gray-900">
+                  {Number(material.costPerUnit).toFixed(2)} MDL
+                </span>
+              ),
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              render: (material) => {
+                if (material.stock === 0) {
+                  return (
+                    <Badge variant="default" size="sm" className="bg-black text-white">
+                      Stoc epuizat
+                    </Badge>
+                  );
+                }
+                if (material.lowStock) {
+                  return (
+                    <Badge variant="danger" size="sm">
+                      Stoc scăzut
+                    </Badge>
+                  );
+                }
+                return (
+                  <Badge variant="success" size="sm">
+                    OK
+                  </Badge>
+                );
+              },
+            },
+            {
+              key: 'actions',
+              label: 'Acțiuni',
+              render: (material) => (
+                <Link
+                  href={`/admin/materials/${material.id}`}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Vezi detalii
+                </Link>
+              ),
+            },
+          ]}
+          data={filteredMaterials}
+          rowKey="id"
+          loading={isLoading}
+          emptyMessage={
+            filters.search || filters.unit || filters.lowStock
               ? "Nu s-au găsit materiale cu filtrele selectate"
-              : "Nu există materiale. Creează primul material."}
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Material
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SKU
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stoc
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Unitate
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cost/Unitate
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acțiuni
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredMaterials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{material.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-gray-600">{material.sku || "—"}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`font-medium ${
-                          material.stock === 0
-                            ? "text-black"
-                            : material.lowStock
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }`}
-                      >
-                        {material.stock}
-                      </span>
-                      <span className="text-gray-400">/</span>
-                      <span className="text-gray-600">{material.minStock}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-gray-600">{material.unit}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-gray-900">
-                      {Number(material.costPerUnit).toFixed(2)} MDL
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {material.stock === 0 ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white">
-                        Stoc epuizat
-                      </span>
-                    ) : material.lowStock ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Stoc scăzut
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        OK
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <Link
-                      href={`/admin/materials/${material.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Vezi detalii
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              : "Nu există materiale. Creează primul material."
+          }
+          clientSideSort={true}
+          className="bg-white rounded-lg shadow-sm overflow-hidden"
+        />
       </div>
 
       {/* Materials Grid - Mobile Cards */}

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, Package, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { MaterialWithDetails } from "@/modules/materials/types";
 import { MaterialModal } from "../_components/MaterialModal";
@@ -43,30 +45,6 @@ export default function MaterialDetailsPage() {
     }
   };
 
-  const getStockBadge = () => {
-    if (!material) return null;
-
-    if (material.stock === 0) {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-black text-white">
-          Stoc epuizat
-        </span>
-      );
-    }
-    if (material.lowStock) {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-          Stoc scăzut
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-        OK
-      </span>
-    );
-  };
-
   if (isLoading || !material) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -95,39 +73,40 @@ export default function MaterialDetailsPage() {
         </Link>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Package className="w-8 h-8 text-blue-600" />
+        <Card className="mb-6">
+          <CardContent>
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Package className="w-8 h-8 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{material.name}</h1>
+                  {material.sku && (
+                    <p className="text-gray-600 mt-1">SKU: {material.sku}</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">{material.name}</h1>
-                {material.sku && (
-                  <p className="text-gray-600 mt-1">SKU: {material.sku}</p>
-                )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Editează</span>
+                </button>
+                <button
+                  onClick={() => setIsDeleteConfirmOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Șterge</span>
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsEditModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              >
-                <Edit className="w-4 h-4" />
-                <span>Editează</span>
-              </button>
-              <button
-                onClick={() => setIsDeleteConfirmOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Șterge</span>
-              </button>
-            </div>
-          </div>
 
-          {/* Low Stock Warning */}
-          {material.lowStock && (
+            {/* Low Stock Warning */}
+            {material.lowStock && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 mb-6">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
               <div>
@@ -158,7 +137,19 @@ export default function MaterialDetailsPage() {
                 </p>
                 <span className="text-gray-600">{material.unit}</span>
               </div>
-              {getStockBadge()}
+              {material.stock === 0 ? (
+                <Badge variant="default" size="md" className="bg-black text-white">
+                  Stoc epuizat
+                </Badge>
+              ) : material.lowStock ? (
+                <Badge variant="danger" size="md">
+                  Stoc scăzut
+                </Badge>
+              ) : (
+                <Badge variant="success" size="md">
+                  OK
+                </Badge>
+              )}
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
@@ -185,7 +176,8 @@ export default function MaterialDetailsPage() {
               </p>
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-sm mb-6">

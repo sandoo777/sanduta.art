@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
 import { LineChart, BarChart, PieChart, DonutChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
@@ -80,14 +81,14 @@ export default function SalesReportPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -115,9 +116,12 @@ export default function SalesReportPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Source
@@ -152,16 +156,20 @@ export default function SalesReportPage() {
               ))}
             </select>
           </div>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales by Month */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Sales Last 12 Months</h2>
-            <LineChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales Last 12 Months</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LineChart
               data={sales.salesByMonth}
               xKey="month"
               lines={[
@@ -170,14 +178,18 @@ export default function SalesReportPage() {
               ]}
               height={350}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Sales by Day */}
         {sales && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Sales Last 30 Days</h2>
-            <BarChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales Last 30 Days</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
               data={sales.salesByDay}
               xKey="date"
               bars={[
@@ -185,70 +197,108 @@ export default function SalesReportPage() {
               ]}
               height={350}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Sales by Source */}
         {filteredData && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Source</h2>
-            <PieChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue by Source</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PieChart
               data={filteredData.salesBySource.map(s => ({
                 name: s.source,
                 value: s.revenue
               }))}
-            />
-          </div>
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Sales by Channel */}
         {filteredData && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Channel</h2>
-            <DonutChart
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue by Channel</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DonutChart
               data={filteredData.salesByChannel.map(c => ({
                 name: c.channel,
                 value: c.revenue
               }))}
             />
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Table */}
       {sales && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Sales Data</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Month</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Orders</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Revenue</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Avg Order Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sales.salesByMonth.map((month) => (
-                  <tr key={month.month} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-900">{month.month}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{month.orders.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">{formatCurrency(month.revenue)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{formatCurrency(month.avgOrderValue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Sales Data</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'month',
+                  label: 'Month',
+                  sortable: true,
+                  accessor: 'month'
+                },
+                {
+                  key: 'orders',
+                  label: 'Orders',
+                  sortable: true,
+                  accessor: (row) => row.orders,
+                  render: (row) => (
+                    <span className="text-right block">{row.orders.toLocaleString()}</span>
+                  )
+                },
+                {
+                  key: 'revenue',
+                  label: 'Revenue',
+                  sortable: true,
+                  accessor: (row) => row.revenue,
+                  render: (row) => (
+                    <span className="text-right block font-medium">{formatCurrency(row.revenue)}</span>
+                  )
+                },
+                {
+                  key: 'avgOrderValue',
+                  label: 'Avg Order Value',
+                  sortable: true,
+                  accessor: (row) => row.avgOrderValue,
+                  render: (row) => (
+                    <span className="text-right block">{formatCurrency(row.avgOrderValue)}</span>
+                  )
+                }
+              ]}
+              data={sales.salesByMonth}
+              rowKey="month"
+              loading={loading}
+              emptyMessage="No sales data available"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {/* Status Breakdown */}
       {sales && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Orders by Status</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Orders by Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {sales.salesByStatus.map((status) => (
               <div key={status.status} className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600">{status.status}</p>
@@ -256,8 +306,9 @@ export default function SalesReportPage() {
                 <p className="text-sm text-gray-500 mt-1">{status.percentage.toFixed(1)}% of total</p>
               </div>
             ))}
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState, Badge } from '@/components/ui';
 import { Shield, Users, Key, Info } from "lucide-react";
 import { UserRole } from "@prisma/client";
 
@@ -49,6 +49,16 @@ export default function RolesManagementPage() {
     MANAGER: "purple",
     OPERATOR: "blue",
     VIEWER: "gray",
+  };
+
+  const getRoleBadgeVariant = (roleName: string): 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
+    switch (roleName) {
+      case 'ADMIN': return 'danger';
+      case 'MANAGER': return 'info';
+      case 'OPERATOR': return 'primary';
+      case 'VIEWER': return 'default';
+      default: return 'default';
+    }
   };
 
   return (
@@ -124,9 +134,9 @@ export default function RolesManagementPage() {
                           </div>
                         </div>
                         {role.isSystem && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                          <Badge variant="default" size="sm">
                             Sistem
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       
@@ -162,16 +172,12 @@ export default function RolesManagementPage() {
                       {selectedRole.description}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className={`
-                        px-3 py-1 bg-${roleColors[selectedRole.name]}-100 
-                        text-${roleColors[selectedRole.name]}-800 
-                        text-sm font-medium rounded
-                      `}>
+                      <Badge variant={getRoleBadgeVariant(selectedRole.name)} size="sm">
                         {selectedRole.name}
-                      </span>
-                      <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded">
+                      </Badge>
+                      <Badge variant="default" size="sm">
                         {selectedRole.permissionCount} permisiuni
-                      </span>
+                      </Badge>
                     </div>
                   </div>
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MoreVertical, Edit2, Trash2, DollarSign, Gauge } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { Machine } from '@/modules/machines/types';
 import { MACHINE_TYPES } from '@/modules/machines/types';
 
@@ -13,6 +14,7 @@ interface MachineCardProps {
 }
 
 export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const [showMenu, setShowMenu] = useState(false);
 
   const typeConfig = MACHINE_TYPES.find((t) => t.value === machine.type);
@@ -59,11 +61,16 @@ export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
                   Editează
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm('Ești sigur că vrei să ștergi acest echipament?')) {
-                      onDelete(machine.id);
-                    }
+                  onClick={async () => {
                     setShowMenu(false);
+                    await confirm({
+                      title: 'Șterge echipament',
+                      message: 'Ești sigur că vrei să ștergi acest echipament?',
+                      variant: 'danger',
+                      onConfirm: async () => {
+                        onDelete(machine.id);
+                      }
+                    });
                   }}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
                 >
@@ -109,10 +116,10 @@ export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
         <div>
           <p className="text-xs text-gray-500 mb-1">Compatibilități</p>
           <div className="flex flex-wrap gap-1">
-            <Badge variant="default" className="text-xs bg-blue-50 text-blue-700">
+            <Badge variant="primary" size="sm">
               {machine.compatibleMaterialIds.length} materiale
             </Badge>
-            <Badge variant="default" className="text-xs bg-green-50 text-green-700">
+            <Badge variant="success" size="sm">
               {machine.compatiblePrintMethodIds.length} metode
             </Badge>
           </div>
@@ -123,11 +130,12 @@ export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
       <div className="mt-3 pt-3 border-t border-gray-100">
         <Badge
           variant={machine.active ? 'success' : 'default'}
-          className={machine.active ? 'bg-green-500' : 'bg-gray-400'}
+          size="sm"
         >
           {machine.active ? 'Activ' : 'Inactiv'}
         </Badge>
       </div>
+      <Dialog />
     </div>
   );
 }

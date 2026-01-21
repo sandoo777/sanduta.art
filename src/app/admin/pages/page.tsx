@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
+import { Table, Button } from '@/components/ui';
 
 interface Page {
   id: number;
@@ -68,76 +68,76 @@ export default function AdminPagesPage() {
           <Button>Add New Page</Button>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="text-gray-600">Loading pages...</div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Slug
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Updated
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {pages.map((page) => (
-                  <tr key={page.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {page.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500 font-mono">
-                        /{page.slug}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          page.published
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {page.published ? 'Published' : 'Draft'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(page.updatedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-4">
-                        Edit
-                      </button>
-                      <button className="text-green-600 hover:text-green-900 mr-4">
-                        View
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <Table
+          columns={[
+            {
+              key: 'title',
+              label: 'Title',
+              sortable: true,
+              render: (page) => (
+                <div className="text-sm font-medium text-gray-900">
+                  {page.title}
+                </div>
+              ),
+            },
+            {
+              key: 'slug',
+              label: 'Slug',
+              render: (page) => (
+                <div className="text-sm text-gray-500 font-mono">
+                  /{page.slug}
+                </div>
+              ),
+            },
+            {
+              key: 'published',
+              label: 'Status',
+              render: (page) => (
+                <span
+                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    page.published
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
+                  {page.published ? 'Published' : 'Draft'}
+                </span>
+              ),
+            },
+            {
+              key: 'updatedAt',
+              label: 'Last Updated',
+              sortable: true,
+              render: (page) => (
+                <span className="text-sm text-gray-500">
+                  {new Date(page.updatedAt).toLocaleDateString()}
+                </span>
+              ),
+            },
+            {
+              key: 'actions',
+              label: 'Actions',
+              render: () => (
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-900">
+                    Edit
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-900">
+                    View
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-900">
+                    Delete
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+          data={pages}
+          rowKey="id"
+          loading={loading}
+          emptyMessage="Nu există pagini. Creează prima pagină."
+          clientSideSort={true}
+        />
       </div>
   );
 }

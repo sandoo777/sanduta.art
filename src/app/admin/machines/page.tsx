@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { LoadingState } from '@/components/ui';
+import { LoadingState, Card, CardContent } from '@/components/ui';
 import { Plus, Search, Filter } from 'lucide-react';
 import { MachineCard } from './_components/MachineCard';
 import { MachineForm } from './_components/MachineForm';
@@ -106,10 +106,12 @@ export default function MachinesPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Total Echipamente</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
-        </div>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Total Echipamente</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+          </CardContent>
+        </Card>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-sm text-gray-600">Active</div>
           <div className="text-2xl font-bold text-green-600 mt-1">{stats.active}</div>
@@ -118,10 +120,12 @@ export default function MachinesPage() {
           <div className="text-sm text-gray-600">Inactive</div>
           <div className="text-2xl font-bold text-gray-400 mt-1">{stats.inactive}</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Tipuri</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">{stats.types}</div>
-        </div>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Tipuri</div>
+            <div className="text-2xl font-bold text-blue-600 mt-1">{stats.types}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}

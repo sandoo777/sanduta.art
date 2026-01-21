@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { Save, RefreshCw } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/Button";
+import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Button";
 import { useSettings } from "@/modules/settings/useSettings";
 import { systemSettingsFormSchema, type SystemSettingsFormData } from "@/lib/validations/admin";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui";
 
 const CURRENCIES = [
   { value: "MDL", label: "MDL (Moldovan Leu)" },
@@ -94,11 +95,12 @@ export function SystemSettingsForm() {
       )}
 
       {/* Company Info */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Company Information
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Company Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             name="company_name"
             render={({ field }) => (
@@ -130,26 +132,22 @@ export function SystemSettingsForm() {
       </div>
 
       {/* Localization */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Localization
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Localization</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             name="default_currency"
             render={({ field }) => (
               <div>
                 <FormLabel>Default Currency</FormLabel>
-                <select
+                <Select
                   {...field}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {CURRENCIES.map((currency) => (
-                    <option key={currency.value} value={currency.value}>
-                      {currency.label}
-                    </option>
-                  ))}
-                </select>
+                  options={CURRENCIES}
+                  fullWidth={true}
+                />
                 <FormMessage />
               </div>
             )}
@@ -159,29 +157,26 @@ export function SystemSettingsForm() {
             render={({ field }) => (
               <div>
                 <FormLabel>Timezone</FormLabel>
-                <select
+                <Select
                   {...field}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </option>
-                  ))}
-                </select>
+                  options={TIMEZONES}
+                  fullWidth={true}
+                />
                 <FormMessage />
               </div>
             )}
           />
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Inventory */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Inventory Settings
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Inventory Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             name="low_stock_threshold"
             render={({ field }) => (
@@ -201,7 +196,8 @@ export function SystemSettingsForm() {
             )}
           />
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Actions */}
       <div className="flex items-center gap-3">

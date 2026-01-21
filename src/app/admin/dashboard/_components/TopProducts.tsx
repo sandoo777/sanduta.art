@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TrendingUp } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 interface ProductSales {
   name: string;
@@ -36,28 +37,34 @@ export function TopProducts() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Top Products</h2>
-          <TrendingUp className="w-5 h-5 text-green-600" />
-        </div>
-        <div className="animate-pulse space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Top Products</CardTitle>
+            <TrendingUp className="w-5 h-5 text-green-600" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-12 bg-gray-200 rounded"></div>
           ))}
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Top Products</h2>
-        <TrendingUp className="w-5 h-5 text-green-600" />
-      </div>
-      
-      <div className="space-y-4">
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Top Products</CardTitle>
+          <TrendingUp className="w-5 h-5 text-green-600" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
         {products.map((product, index) => {
           const percentage = (product.sales / maxSales) * 100;
           
@@ -87,13 +94,14 @@ export function TopProducts() {
             </div>
           );
         })}
-      </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500 text-center">
-          Based on total orders this month
-        </p>
-      </div>
-    </div>
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <p className="text-xs text-gray-500 text-center">
+            Based on total orders this month
+          </p>
+        </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

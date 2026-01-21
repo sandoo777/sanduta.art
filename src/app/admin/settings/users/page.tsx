@@ -1,18 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
-import { Users, Plus, Search, Filter, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Table, Badge } from '@/components/ui';
+import { Users, Plus, Search, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
 import { UserRole } from "@prisma/client";
 import { User } from '@/types/models';
-
-interface UserWithCounts extends User {
-  _count: {
-    orders: number;
-    assignedOrders: number;
-    productionJobs: number;
-  };
-}
 
 const roleLabels: Record<UserRole, string> = {
   ADMIN: "Administrator",
@@ -21,11 +13,14 @@ const roleLabels: Record<UserRole, string> = {
   VIEWER: "Vizualizator",
 };
 
-const roleColors: Record<UserRole, string> = {
-  ADMIN: "red",
-  MANAGER: "purple",
-  OPERATOR: "blue",
-  VIEWER: "gray",
+const getRoleVariant = (role: UserRole): 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
+  switch (role) {
+    case 'ADMIN': return 'danger';
+    case 'MANAGER': return 'info';
+    case 'OPERATOR': return 'primary';
+    case 'VIEWER': return 'default';
+    default: return 'default';
+  }
 };
 
 export default function UsersManagementPage() {
@@ -34,13 +29,8 @@ export default function UsersManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [roleFilter, statusFilter]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -55,7 +45,11 @@ export default function UsersManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [roleFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,7 +72,7 @@ export default function UsersManagementPage() {
             </p>
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => alert('Add User feature coming soon')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
@@ -152,104 +146,98 @@ export default function UsersManagementPage() {
         </div>
 
         {/* Users Table */}
-        {loading ? (
-          <LoadingState text="Se încarcă utilizatorii..." />
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Utilizator
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Rol
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Activitate
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Acțiuni
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`
-                        px-2 py-1 text-xs font-medium rounded
-                        bg-${roleColors[user.role]}-100 text-${roleColors[user.role]}-800
-                      `}>
-                        {roleLabels[user.role]}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{user.phone || "—"}</div>
-                      <div className="text-sm text-gray-500">{user.company || "—"}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {user.active ? (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-red-600" />
-                        )}
-                        <span className={`text-sm ${user.active ? "text-green-600" : "text-red-600"}`}>
-                          {user.active ? "Activ" : "Inactiv"}
-                        </span>
-                        {user.twoFactorEnabled && (
-                          <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
-                            2FA
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        {user._count.orders + user._count.assignedOrders} comenzi
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {user._count.productionJobs} job-uri
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-600 hover:bg-gray-50 rounded">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {filteredUsers.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
-                Nu s-au găsit utilizatori.
-              </div>
-            )}
-          </div>
-        )}
+        <Table
+          columns={[
+            {
+              key: 'name',
+              label: 'Utilizator',
+              sortable: true,
+              render: (user) => (
+                <div>
+                  <div className="font-medium text-gray-900">{user.name}</div>
+                  <div className="text-sm text-gray-500">{user.email}</div>
+                </div>
+              ),
+            },
+            {
+              key: 'role',
+              label: 'Rol',
+              render: (user) => (
+                <Badge variant={getRoleVariant(user.role)} size="sm">
+                  {roleLabels[user.role]}
+                </Badge>
+              ),
+            },
+            {
+              key: 'contact',
+              label: 'Contact',
+              render: (user) => (
+                <div>
+                  <div className="text-sm text-gray-900">{user.phone || "—"}</div>
+                  <div className="text-sm text-gray-500">{user.company || "—"}</div>
+                </div>
+              ),
+            },
+            {
+              key: 'active',
+              label: 'Status',
+              render: (user) => (
+                <div className="flex items-center gap-2">
+                  {user.active ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className={`text-sm ${user.active ? "text-green-600" : "text-red-600"}`}>
+                    {user.active ? "Activ" : "Inactiv"}
+                  </span>
+                  {user.twoFactorEnabled && (
+                    <Badge variant="info" size="sm">
+                      2FA
+                    </Badge>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'activity',
+              label: 'Activitate',
+              render: (user) => (
+                <div>
+                  <div className="text-sm text-gray-900">
+                    {(user._count?.orders || 0) + (user._count?.assignedOrders || 0)} comenzi
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {user._count?.productionJobs || 0} job-uri
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: 'actions',
+              label: 'Acțiuni',
+              render: () => (
+                <div className="flex items-center justify-end gap-2">
+                  <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 text-gray-600 hover:bg-gray-50 rounded">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 text-red-600 hover:bg-red-50 rounded">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={filteredUsers}
+          rowKey="id"
+          loading={loading}
+          emptyMessage="Nu s-au găsit utilizatori."
+          clientSideSort={true}
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        />
       </div>
     </div>
   );

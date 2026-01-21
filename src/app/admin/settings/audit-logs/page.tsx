@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Activity, Filter, Download, Search } from "lucide-react";import { LoadingState } from "@/components/ui/LoadingState";import { ActivityType } from "@prisma/client";
+import { useState, useEffect, useCallback } from "react";
+import { Activity, Filter, Download, Search, User, CheckCircle, XCircle } from "lucide-react";
+import { Table, LoadingState, Badge } from "@/components/ui";
+import { ActivityType } from "@prisma/client";
 
 interface AuditLog {
   id: string;
@@ -42,11 +44,7 @@ export default function AuditLogsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchLogs();
-  }, [page, typeFilter, successFilter, startDate, endDate]);
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -68,7 +66,11 @@ export default function AuditLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, typeFilter, successFilter, startDate, endDate]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const filteredLogs = logs.filter((log) =>
     log.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -203,100 +205,90 @@ export default function AuditLogsPage() {
         </div>
 
         {/* Logs Table */}
-        {loading ? (
-          <LoadingState text="Se încarcă audit logs..." />
-        ) : (
-          <>
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Data & Ora
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Utilizator
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Acțiune
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        IP Address
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Detalii
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {new Date(log.createdAt).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(log.createdAt).toLocaleTimeString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-gray-400" />
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {log.user.name}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {log.user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                            {activityTypeLabels[log.type]}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <code className="text-xs text-gray-600">{log.ip}</code>
-                        </td>
-                        <td className="px-6 py-4">
-                          {log.success ? (
-                            <span className="flex items-center gap-1 text-green-600 text-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              Succes
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-red-600 text-sm">
-                              <XCircle className="w-4 h-4" />
-                              Eșuat
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <button className="text-sm text-blue-600 hover:text-blue-800">
-                            Vezi detalii
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {filteredLogs.length === 0 && (
-                <div className="p-8 text-center text-gray-500">
-                  Nu s-au găsit evenimente.
+        <Table
+          columns={[
+            {
+              key: 'createdAt',
+              label: 'Data & Ora',
+              sortable: true,
+              render: (log) => (
+                <div>
+                  <div className="text-sm text-gray-900">
+                    {new Date(log.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(log.createdAt).toLocaleTimeString()}
+                  </div>
                 </div>
-              )}
-            </div>
+              ),
+            },
+            {
+              key: 'user',
+              label: 'Utilizator',
+              sortable: true,
+              render: (log) => (
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {log.user.name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {log.user.email}
+                    </div>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: 'type',
+              label: 'Acțiune',
+              render: (log) => (
+                <Badge variant="primary" size="sm">
+                  {activityTypeLabels[log.type]}
+                </Badge>
+              ),
+            },
+            {
+              key: 'ip',
+              label: 'IP Address',
+              render: (log) => <code className="text-xs text-gray-600">{log.ip}</code>,
+            },
+            {
+              key: 'success',
+              label: 'Status',
+              render: (log) => log.success ? (
+                <span className="flex items-center gap-1 text-green-600 text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  Succes
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-red-600 text-sm">
+                  <XCircle className="w-4 h-4" />
+                  Eșuat
+                </span>
+              ),
+            },
+            {
+              key: 'actions',
+              label: 'Detalii',
+              render: () => (
+                <button className="text-sm text-blue-600 hover:text-blue-800">
+                  Vezi detalii
+                </button>
+              ),
+            },
+          ]}
+          data={filteredLogs}
+          rowKey="id"
+          loading={loading}
+          emptyMessage="Nu s-au găsit evenimente."
+          clientSideSort={true}
+          className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        />
 
-            {/* Pagination */}
-            {totalPages > 1 && (
+        {/* Pagination */}
+        {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-center gap-2">
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
@@ -317,8 +309,6 @@ export default function AuditLogsPage() {
                 </button>
               </div>
             )}
-          </>
-        )}
       </div>
     </div>
   );

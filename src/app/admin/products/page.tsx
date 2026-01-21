@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { LoadingState } from '@/components/ui';
+import Link from 'next/link';
+import { LoadingState, EmptyState, EmptySearch, Button, Card, CardContent } from '@/components/ui';
 import { Plus, Package } from 'lucide-react';
 import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductSearch } from '@/components/admin/products/ProductSearch';
@@ -10,7 +11,6 @@ import { ProductTypeFilter } from '@/components/admin/products/ProductTypeFilter
 import { StatusFilter } from '@/components/admin/products/StatusFilter';
 import { useProducts } from '@/modules/products/useProducts';
 import type { Product, ProductType } from '@/modules/products/types';
-import Link from 'next/link';
 
 export default function ProductsPage() {
   const {
@@ -37,7 +37,7 @@ export default function ProductsPage() {
       setLoadingData(true);
       const data = await getProducts();
       setProducts(data);
-    } catch (_error) {
+    } catch (error) {
       console.error('Error loading products:', error);
     } finally {
       setLoadingData(false);
@@ -79,7 +79,7 @@ export default function ProductsPage() {
     try {
       await duplicateProduct(id);
       await loadProducts();
-    } catch (_error) {
+    } catch (error) {
       console.error('Error duplicating product:', error);
     }
   };
@@ -88,17 +88,13 @@ export default function ProductsPage() {
     try {
       await toggleProductStatus(id, active);
       await loadProducts();
-    } catch (_error) {
+    } catch (error) {
       console.error('Error toggling product status:', error);
     }
   };
 
   if (loadingData) {
-    return (
-      <LoadingState text="Se încarcă produsele..." />
-        </div>
-      </div>
-    );
+    return <LoadingState text="Se încarcă produsele..." />;
   }
 
   return (
@@ -113,42 +109,54 @@ export default function ProductsPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Total</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">
-            {stats.total}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Active</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">
-            {stats.active}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Inactive</div>
-          <div className="text-2xl font-bold text-red-600 mt-1">
-            {stats.inactive}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Standard</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">
-            {stats.standard}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Configurabil</div>
-          <div className="text-2xl font-bold text-purple-600 mt-1">
-            {stats.configurable}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Custom</div>
-          <div className="text-2xl font-bold text-gray-600 mt-1">
-            {stats.custom}
-          </div>
-        </div>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Total</div>
+            <div className="text-2xl font-bold text-gray-900 mt-1">
+              {stats.total}
+            </div>
+          </CardContent>
+        </Card>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Active</div>
+            <div className="text-2xl font-bold text-green-600 mt-1">
+              {stats.active}
+            </div>
+          </CardContent>
+        </Card>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Inactive</div>
+            <div className="text-2xl font-bold text-red-600 mt-1">
+              {stats.inactive}
+            </div>
+          </CardContent>
+        </Card>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Standard</div>
+            <div className="text-2xl font-bold text-blue-600 mt-1">
+              {stats.standard}
+            </div>
+          </CardContent>
+        </Card>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Configurabil</div>
+            <div className="text-2xl font-bold text-purple-600 mt-1">
+              {stats.configurable}
+            </div>
+          </CardContent>
+        </Card>
+        <Card padding="sm">
+          <CardContent>
+            <div className="text-sm text-gray-600">Custom</div>
+            <div className="text-2xl font-bold text-gray-600 mt-1">
+              {stats.custom}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -171,38 +179,31 @@ export default function ProductsPage() {
           <StatusFilter checked={activeOnly} onChange={setActiveOnly} />
 
           {/* Add Button */}
-          <Link
-            href="/admin/products/new"
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-          >
-            <Plus className="h-5 w-5" />
-            <span className="hidden sm:inline">Add Product</span>
-            <span className="sm:hidden">Add</span>
+          <Link href="/admin/products/new">
+            <Button variant="primary">
+              <Plus className="h-5 w-5" />
+              <span className="hidden sm:inline">Add Product</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
           </Link>
         </div>
       </div>
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <div className="text-gray-400 mb-2">
-            <Package className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="text-gray-600">
-            {searchTerm || categoryFilter !== 'all' || typeFilter !== 'all' || activeOnly
-              ? 'Nu s-au găsit produse cu filtrele aplicate'
-              : 'Nu există produse'}
-          </p>
-          {!searchTerm && categoryFilter === 'all' && typeFilter === 'all' && !activeOnly && (
-            <Link
-              href="/admin/products/new"
-              className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              Adaugă primul produs
-            </Link>
-          )}
-        </div>
+        searchTerm ? (
+          <EmptySearch query={searchTerm} />
+        ) : (
+          <EmptyState
+            icon={<Package className="h-12 w-12" />}
+            title="Nu există produse"
+            description="Adaugă primul produs pentru a începe"
+            action={{
+              label: "Adaugă primul produs",
+              onClick: () => window.location.href = '/admin/products/new'
+            }}
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (

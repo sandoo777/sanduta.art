@@ -10,6 +10,7 @@ import { FINISHING_OPERATION_TYPES } from '@/modules/finishing/types';
 import { finishingFormSchema, type FinishingFormData } from '@/lib/validations/admin';
 import { Form, FormField, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 
 interface FinishingFormProps {
@@ -50,12 +51,14 @@ export function FinishingForm({ operation, onSubmit, onClose }: FinishingFormPro
           <h2 className="text-xl font-semibold text-gray-900">
             {operation ? 'Editează Operațiune' : 'Adaugă Operațiune de Finisare'}
           </h2>
-          <button
+          <Button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="sm"
+            className="p-2"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -81,16 +84,11 @@ export function FinishingForm({ operation, onSubmit, onClose }: FinishingFormPro
               render={({ field }) => (
                 <div>
                   <FormLabel required>Tip operațiune</FormLabel>
-                  <select
+                  <Select
                     {...field}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {FINISHING_OPERATION_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={FINISHING_OPERATION_TYPES}
+                    fullWidth={true}
+                  />
                   <FormMessage />
                 </div>
               )}

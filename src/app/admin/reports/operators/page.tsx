@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Award, Clock, Target, TrendingUp } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
 import { BarChart, PieChart, LineChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
@@ -51,14 +52,14 @@ export default function OperatorsReportPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -95,105 +96,151 @@ export default function OperatorsReportPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Jobs Completed by Operator */}
         {operators && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Jobs Completed by Operator</h2>
-            <BarChart
-              data={operators.operatorJobs}
-              xKey="operatorName"
-              bars={[
-                { key: "jobsCompleted", color: "#10b981", name: "Completed" },
-                { key: "jobsInProgress", color: "#f59e0b", name: "In Progress" },
-              ]}
-              height={350}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Jobs Completed by Operator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={operators.operatorJobs}
+                xKey="operatorName"
+                bars={[
+                  { key: "jobsCompleted", color: "#10b981", name: "Completed" },
+                  { key: "jobsInProgress", color: "#f59e0b", name: "In Progress" },
+                ]}
+                height={350}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Avg Completion Time */}
         {operators && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Average Completion Time</h2>
-            <BarChart
-              data={operators.operatorJobs}
-              xKey="operatorName"
-              bars={[
-                { key: "avgCompletionTime", color: "#3b82f6", name: "Hours" },
-              ]}
-              height={350}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Average Completion Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={operators.operatorJobs}
+                xKey="operatorName"
+                bars={[
+                  { key: "avgCompletionTime", color: "#3b82f6", name: "Hours" },
+                ]}
+                height={350}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Efficiency Scores */}
         {operators && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Efficiency Score (0-100)</h2>
-            <BarChart
-              data={operators.operatorEfficiency}
-              xKey="operatorName"
-              bars={[
-                { key: "efficiencyScore", color: "#8b5cf6", name: "Score" },
-              ]}
-              height={350}
-              layout="vertical"
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Efficiency Score (0-100)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={operators.operatorEfficiency}
+                xKey="operatorName"
+                bars={[
+                  { key: "efficiencyScore", color: "#8b5cf6", name: "Score" },
+                ]}
+                height={350}
+                layout="vertical"
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* On-time vs Late Jobs */}
         {operators && operators.operatorEfficiency.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">On-time vs Late Jobs (Total)</h2>
-            <PieChart
-              data={[
-                { 
-                  name: "On-time", 
-                  value: operators.operatorEfficiency.reduce((sum, op) => sum + op.onTimeJobs, 0) 
-                },
-                { 
-                  name: "Late", 
-                  value: operators.operatorEfficiency.reduce((sum, op) => sum + op.lateJobs, 0) 
-                },
-              ]}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>On-time vs Late Jobs (Total)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PieChart
+                data={[
+                  { 
+                    name: "On-time", 
+                    value: operators.operatorEfficiency.reduce((sum, op) => sum + op.onTimeJobs, 0) 
+                  },
+                  { 
+                    name: "Late", 
+                    value: operators.operatorEfficiency.reduce((sum, op) => sum + op.lateJobs, 0) 
+                  },
+                ]}
+              />
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Operators Table */}
       {operators && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Operator Details</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Operator</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Completed</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">In Progress</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Avg Time</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Efficiency</th>
-                </tr>
-              </thead>
-              <tbody>
-                {operators.operatorJobs.map((operator) => {
-                  const efficiency = operators.operatorEfficiency.find(
-                    e => e.operatorId === operator.operatorId
-                  );
-                  return (
-                    <tr key={operator.operatorId} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{operator.operatorName}</p>
-                          <p className="text-xs text-gray-500">{operator.operatorEmail}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 text-right">{operator.jobsCompleted}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900 text-right">{operator.jobsInProgress}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900 text-right">
-                        {operator.avgCompletionTime.toFixed(1)}h
-                      </td>
-                      <td className="py-3 px-4 text-sm text-right">
+        <Card>
+          <CardHeader>
+            <CardTitle>Operator Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'operator',
+                  label: 'Operator',
+                  sortable: true,
+                  accessor: (row) => row.operatorName,
+                  render: (row) => (
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{row.operatorName}</p>
+                      <p className="text-xs text-gray-500">{row.operatorEmail}</p>
+                    </div>
+                  )
+                },
+                {
+                  key: 'completed',
+                  label: 'Completed',
+                  sortable: true,
+                  accessor: (row) => row.jobsCompleted,
+                  render: (row) => (
+                    <span className="text-right block">{row.jobsCompleted}</span>
+                  )
+                },
+                {
+                  key: 'inProgress',
+                  label: 'In Progress',
+                  sortable: true,
+                  accessor: (row) => row.jobsInProgress,
+                  render: (row) => (
+                    <span className="text-right block">{row.jobsInProgress}</span>
+                  )
+                },
+                {
+                  key: 'avgTime',
+                  label: 'Avg Time',
+                  sortable: true,
+                  accessor: (row) => row.avgCompletionTime,
+                  render: (row) => (
+                    <span className="text-right block">{row.avgCompletionTime.toFixed(1)}h</span>
+                  )
+                },
+                {
+                  key: 'efficiency',
+                  label: 'Efficiency',
+                  sortable: true,
+                  accessor: (row) => {
+                    const efficiency = operators.operatorEfficiency.find(
+                      e => e.operatorId === row.operatorId
+                    );
+                    return efficiency ? efficiency.efficiencyScore : 0;
+                  },
+                  render: (row) => {
+                    const efficiency = operators.operatorEfficiency.find(
+                      e => e.operatorId === row.operatorId
+                    );
+                    return (
+                      <div className="text-right">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           efficiency && efficiency.efficiencyScore >= 80
                             ? "bg-green-100 text-green-800"
@@ -203,21 +250,31 @@ export default function OperatorsReportPage() {
                         }`}>
                           {efficiency ? efficiency.efficiencyScore.toFixed(0) : "N/A"}
                         </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      </div>
+                    );
+                  }
+                }
+              ]}
+              data={operators.operatorJobs}
+              rowKey="operatorId"
+              loading={loading}
+              emptyMessage="No operator data available"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
 
-      {/* Completion Time Details */}
+      {/* Completion Time Details */
       {operators && operators.completionTimesByOperator.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Completion Time Statistics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Completion Time Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {operators.completionTimesByOperator.map((operator) => (
               <div key={operator.operatorId} className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-900">{operator.operatorName}</p>
@@ -241,8 +298,9 @@ export default function OperatorsReportPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

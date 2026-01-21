@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui';
 
 interface KpiCardProps {
   title: string;
@@ -19,28 +20,30 @@ export function KpiCard({ title, value, icon, trend, trendUp = true, color = 'pu
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+    <Card className="hover:shadow-lg transition">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-600">{title}</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+            
+            {trend && (
+              <div className={`flex items-center space-x-1 mt-2 text-sm ${trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                {trendUp ? (
+                  <TrendingUp className="w-4 h-4" />
+                ) : (
+                  <TrendingDown className="w-4 h-4" />
+                )}
+                <span className="font-medium">{trend}</span>
+              </div>
+            )}
+          </div>
           
-          {trend && (
-            <div className={`flex items-center space-x-1 mt-2 text-sm ${trendUp ? 'text-green-600' : 'text-red-600'}`}>
-              {trendUp ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span className="font-medium">{trend}</span>
-            </div>
-          )}
+          <div className={`w-12 h-12 rounded-full ${colorClasses[color as keyof typeof colorClasses] || colorClasses.purple} flex items-center justify-center flex-shrink-0`}>
+            {icon}
+          </div>
         </div>
-        
-        <div className={`w-12 h-12 rounded-full ${colorClasses[color as keyof typeof colorClasses] || colorClasses.purple} flex items-center justify-center flex-shrink-0`}>
-          {icon}
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

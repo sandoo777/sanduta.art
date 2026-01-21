@@ -1,6 +1,7 @@
 'use client';
 
 import { Edit, Trash2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/Card';
 
 interface CategoryCardProps {
   category: {
@@ -22,36 +23,37 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
   const icon = category.icon || '📦';
 
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-6 border border-gray-100">
-      {/* Icon and Color */}
-      <div className="flex items-start justify-between mb-4">
-        <div 
-          className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
-          style={{ backgroundColor: `${color}20` }}
-        >
-          <span>{icon}</span>
-        </div>
-        
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={onEdit}
-            className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
-            title="Edit category"
+    <Card className="hover:shadow-lg transition-all border border-gray-100">
+      <CardContent className="p-6">
+        {/* Icon and Color */}
+        <div className="flex items-start justify-between mb-4">
+          <div 
+            className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+            style={{ backgroundColor: `${color}20` }}
           >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-            title="Delete category"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+            <span>{icon}</span>
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={onEdit}
+              className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
+              title="Edit category"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onDelete}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+              title="Delete category"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Category Info */}
-      <div>
+        {/* Category Info */}
+        <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-1">
           {category.name}
         </h3>
@@ -75,6 +77,7 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
           </span>
         </div>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

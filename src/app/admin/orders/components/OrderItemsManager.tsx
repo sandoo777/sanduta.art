@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { EmptyState } from '@/components/ui';
 import { useOrders } from '@/modules/orders/useOrders';
 import { toast } from 'sonner';
 import { Trash2, Plus } from 'lucide-react';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface OrderItem {
   id: string;
@@ -31,6 +33,7 @@ export function OrderItemsManager({
   items,
   onItemsChanged,
 }: OrderItemsManagerProps) {
+  const { confirm, Dialog } = useConfirmDialog();
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -75,15 +78,20 @@ export function OrderItemsManager({
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm('Ștergi această articol?')) return;
-
-    const result = await deleteItem(orderId, itemId);
-    if (result.success) {
-      toast.success('Articol șters cu succes');
-      onItemsChanged?.();
-    } else {
-      toast.error('Eroare: ' + result.error);
-    }
+    await confirm({
+      title: 'Șterge articol',
+      message: 'Ștergi această articol?',
+      variant: 'danger',
+      onConfirm: async () => {
+        const result = await deleteItem(orderId, itemId);
+        if (result.success) {
+          toast.success('Articol șters cu succes');
+          onItemsChanged?.();
+        } else {
+          toast.error('Eroare: ' + result.error);
+        }
+      }
+    });
   };
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
@@ -208,9 +216,15 @@ export function OrderItemsManager({
       )}
 
       {items.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Nu sunt articole în comanda
-        </div>
+        <EmptyState
+          icon={
+            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          }
+          title="Nu sunt articole"
+          description="Adaugă articole în această comandă"
+        />
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
@@ -283,6 +297,7 @@ export function OrderItemsManager({
           </div>
         </div>
       )}
+      <Dialog />
     </div>
   );
 }

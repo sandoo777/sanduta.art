@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw, Users, DollarSign, TrendingUp, Target } from "lucide-react";
+import { Button, Card, CardHeader, CardTitle, CardContent, Table, LoadingState } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
 import { LineChart, DonutChart, BarChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
@@ -58,14 +59,14 @@ export default function CustomersReportPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
           onClick={loadData}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* KPIs */}
@@ -103,125 +104,178 @@ export default function CustomersReportPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* New Customers by Month */}
         {customers && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">New Customers by Month</h2>
-            <LineChart
-              data={customers.newCustomersByMonth}
-              xKey="month"
-              lines={[
-                { key: "count", color: "#8b5cf6", name: "New Customers" },
-              ]}
-              height={300}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>New Customers by Month</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LineChart
+                data={customers.newCustomersByMonth}
+                xKey="month"
+                lines={[
+                  { key: "count", color: "#8b5cf6", name: "New Customers" },
+                ]}
+                height={300}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Customer Segments */}
         {customers && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Value Segments</h2>
-            <BarChart
-              data={[
-                { segment: "High Value", count: customers.customerSegments.high },
-                { segment: "Medium Value", count: customers.customerSegments.medium },
-                { segment: "Low Value", count: customers.customerSegments.low },
-              ]}
-              xKey="segment"
-              bars={[
-                { key: "count", color: "#10b981", name: "Customers" },
-              ]}
-              height={300}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Value Segments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarChart
+                data={[
+                  { segment: "High Value", count: customers.customerSegments.high },
+                  { segment: "Medium Value", count: customers.customerSegments.medium },
+                  { segment: "Low Value", count: customers.customerSegments.low },
+                ]}
+                xKey="segment"
+                bars={[
+                  { key: "count", color: "#10b981", name: "Customers" },
+                ]}
+                height={300}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Returning vs New */}
         {customers && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Returning vs New Customers</h2>
-            <DonutChart
-              data={[
-                { name: "Returning", value: customers.returningCustomers.total },
-                { name: "One-time", value: customers.totalCustomers - customers.returningCustomers.total },
-              ]}
-            />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Returning vs New Customers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DonutChart
+                data={[
+                  { name: "Returning", value: customers.returningCustomers.total },
+                  { name: "One-time", value: customers.totalCustomers - customers.returningCustomers.total },
+                ]}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* CLV Distribution */}
         {customers && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">CLV Statistics</h2>
-            <div className="space-y-4">
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-600">Total Customer Value</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(customers.customerLifetimeValue.total)}
-                </p>
+          <Card>
+            <CardHeader>
+              <CardTitle>CLV Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Total Customer Value</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(customers.customerLifetimeValue.total)}
+                  </p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Average CLV</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(customers.customerLifetimeValue.average)}
+                  </p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Median CLV</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(customers.customerLifetimeValue.median)}
+                  </p>
+                </div>
               </div>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600">Average CLV</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(customers.customerLifetimeValue.average)}
-                </p>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <p className="text-sm text-gray-600">Median CLV</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(customers.customerLifetimeValue.median)}
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
       {/* Top Customers Table */}
       {customers && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Customers</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Customer</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Orders</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Total Spent</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">Avg Order</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Last Order</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.topCustomers.map((customer) => (
-                  <tr key={customer.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{customer.name}</p>
-                        <p className="text-xs text-gray-500">{customer.email}</p>
-                        {customer.phone && (
-                          <p className="text-xs text-gray-500">{customer.phone}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{customer.totalOrders}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-medium">{formatCurrency(customer.totalSpent)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right">{formatCurrency(customer.avgOrderValue)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-500">
-                      {new Date(customer.lastOrderDate).toLocaleDateString("ro-RO")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Customers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table
+              columns={[
+                {
+                  key: 'customer',
+                  label: 'Customer',
+                  sortable: true,
+                  accessor: (row) => row.name,
+                  render: (row) => (
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{row.name}</p>
+                      <p className="text-xs text-gray-500">{row.email}</p>
+                      {row.phone && (
+                        <p className="text-xs text-gray-500">{row.phone}</p>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'orders',
+                  label: 'Orders',
+                  sortable: true,
+                  accessor: (row) => row.totalOrders,
+                  render: (row) => (
+                    <span className="text-right block">{row.totalOrders}</span>
+                  )
+                },
+                {
+                  key: 'totalSpent',
+                  label: 'Total Spent',
+                  sortable: true,
+                  accessor: (row) => row.totalSpent,
+                  render: (row) => (
+                    <span className="text-right block font-medium">{formatCurrency(row.totalSpent)}</span>
+                  )
+                },
+                {
+                  key: 'avgOrder',
+                  label: 'Avg Order',
+                  sortable: true,
+                  accessor: (row) => row.avgOrderValue,
+                  render: (row) => (
+                    <span className="text-right block">{formatCurrency(row.avgOrderValue)}</span>
+                  )
+                },
+                {
+                  key: 'lastOrder',
+                  label: 'Last Order',
+                  sortable: true,
+                  accessor: (row) => row.lastOrderDate,
+                  render: (row) => (
+                    <span className="text-gray-500">
+                      {new Date(row.lastOrderDate).toLocaleDateString("ro-RO")}
+                    </span>
+                  )
+                }
+              ]}
+              data={customers.topCustomers}
+              rowKey="id"
+              loading={loading}
+              emptyMessage="No customers data available"
+              clientSideSort={true}
+              striped={true}
+              responsive={true}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {/* Segment Details */}
       {customers && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Customer Segments</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Segments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 bg-green-600 rounded-full"></div>
@@ -258,7 +312,8 @@ export default function CustomersReportPage() {
               <p className="text-xs text-gray-500 mt-2">Below average - 1 std dev</p>
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

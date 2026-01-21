@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { useCategories } from "@/modules/categories/useCategories";
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CategoryCard } from "./_components/CategoryCard";
 import { CategoryModal, CategoryFormData } from "./_components/CategoryModal";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Category } from '@/types/models';
 
 interface CategoryWithCount extends Category {
@@ -14,6 +16,7 @@ interface CategoryWithCount extends Category {
 }
 
 export default function AdminCategoriesPage() {
+  const { confirm, Dialog } = useConfirmDialog();
   const { categories, loading, createCategory, updateCategory, deleteCategory } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -61,16 +64,19 @@ export default function AdminCategoriesPage() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete "${category.name}"?`)) {
-      return;
-    }
-
-    const result = await deleteCategory(category.id);
-    if (result.success) {
-      showToast('Category deleted successfully', 'success');
-    } else {
-      showToast(result.error || 'Failed to delete category', 'error');
-    }
+    await confirm({
+      title: 'Șterge categorie',
+      message: `Sigur vrei să ștergi categoria "${category.name}"?`,
+      variant: 'danger',
+      onConfirm: async () => {
+        const result = await deleteCategory(category.id);
+        if (result.success) {
+          showToast('Category deleted successfully', 'success');
+        } else {
+          showToast(result.error || 'Failed to delete category', 'error');
+        }
+      }
+    });
   };
 
   const filteredCategories = categories.filter(cat =>
@@ -125,16 +131,20 @@ export default function AdminCategoriesPage() {
         </div>
 
         {/* Stats */}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Categories</div>
-          <div className="text-3xl font-bold text-gray-900 mt-1">{categories.length}</div>
-        </div>
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg shadow p-4">
-          <div className="text-sm text-purple-700 font-medium">Total Products</div>
-          <div className="text-3xl font-bold text-purple-900 mt-1">
-            {categories.reduce((sum, cat) => sum + cat._count.products, 0)}
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-gray-600">Total Categories</div>
+            <div className="text-3xl font-bold text-gray-900 mt-1">{categories.length}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-blue-50">
+          <CardContent className="p-4">
+            <div className="text-sm text-purple-700 font-medium">Total Products</div>
+            <div className="text-3xl font-bold text-purple-900 mt-1">
+              {categories.reduce((sum, cat) => sum + cat._count.products, 0)}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Categories Grid */}
@@ -176,6 +186,7 @@ export default function AdminCategoriesPage() {
         onSave={handleSave}
         category={editingCategory}
       />
+      <Dialog />
     </div>
   );
 }

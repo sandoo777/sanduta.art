@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plug, Check, X, Settings, Key, ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui";
 
 interface Integration {
   id: string;
@@ -156,11 +157,9 @@ export default function IntegrationsPage() {
         {/* Integrations Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredIntegrations.map((integration) => (
-            <div
-              key={integration.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all"
-            >
-              <div className="flex items-start justify-between mb-4">
+            <Card key={integration.id} className="hover:shadow-lg transition-all">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="text-4xl">{integration.icon}</div>
                   <div>
@@ -214,7 +213,8 @@ export default function IntegrationsPage() {
                   </button>
                 )}
               </div>
-            </div>
+            </CardContent>
+          </Card>
           ))}
         </div>
 
