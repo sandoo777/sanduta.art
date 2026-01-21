@@ -7,27 +7,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
 import { Package, ShoppingBag, Search } from 'lucide-react';
+import { Order, OrderItem as OrderItemType } from '@/types/models';
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  product: {
+interface OrderWithItems extends Order {
+  orderItems: Array<{
     id: string;
-    name: string;
-    price: number;
-    image_url: string | null;
-  };
-}
-
-interface Order {
-  id: string;
-  total: number;
-  status: string;
-  paymentStatus: string;
-  deliveryStatus: string;
-  trackingNumber: string | null;
-  createdAt: string;
-  orderItems: OrderItem[];
+    quantity: number;
+    product: {
+      id: string;
+      name: string;
+      price: number;
+      image_url: string | null;
+    };
+  }>;
 }
 
 type FilterType = 'all' | 'processing' | 'production' | 'completed' | 'cancelled';

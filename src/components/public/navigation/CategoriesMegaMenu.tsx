@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 
-interface Category {
+interface CategoryMenu {
   id: number;
   name: string;
   slug: string;

@@ -1,44 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Order, OrderItem, OrderFile } from '@/types/models';
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  variantId?: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
-  customDescription?: string;
-  product?: {
-    id: string;
-    name: string;
-    price: number;
-  };
-}
-
-interface OrderFile {
-  id: string;
-  url: string;
-  name: string;
-  createdAt: string;
-}
-
-interface Order {
-  id: string;
-  customerId?: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  source: 'ONLINE' | 'OFFLINE';
-  channel: 'WEB' | 'PHONE' | 'WALK_IN' | 'EMAIL';
-  status: string;
-  paymentStatus: string;
-  totalPrice: number;
-  currency: string;
-  dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
+interface OrderDetails extends Order {
   customer?: {
     id: string;
     name: string;
@@ -50,7 +15,13 @@ interface Order {
     name: string;
     email: string;
   };
-  orderItems: OrderItem[];
+  orderItems: Array<OrderItem & {
+    product?: {
+      id: string;
+      name: string;
+      price: number;
+    };
+  }>;
   files: OrderFile[];
   _count?: {
     orderItems: number;

@@ -1,22 +1,13 @@
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image_url?: string;
-  options?: Record<string, unknown>;
-}
+/**
+ * @deprecated Use types from @/types/models, @/types/api, @/types/pagination instead
+ * This file is kept for backward compatibility and will be removed in future
+ */
 
+// Re-export from centralized types
+export type { Product, Order, OrderItem } from '@/types/models';
+
+// Legacy CartItem interface (should use OrderItem)
 export interface CartItem {
   product: Product;
   quantity: number;
-}
-
-export interface Order {
-  id: string;
-  products: CartItem[];
-  total: number;
-  customer_name: string;
-  customer_email: string;
-  created_at: string;
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Order, OrderItem } from '@/types/models';
 
-interface Order {
+interface OrderListItem {
   id: string;
   total: number;
   customerName: string;
@@ -14,7 +15,7 @@ interface Order {
 }
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderListItem[]>([]);
 
   useEffect(() => {
     fetchOrders();

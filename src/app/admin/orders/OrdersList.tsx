@@ -5,16 +5,9 @@ import Link from 'next/link';
 import { useOrders } from '@/modules/orders/useOrders';
 import { Search, Eye, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Order } from '@/types/models';
 
-interface Order {
-  id: string;
-  customerName: string;
-  customerEmail: string;
-  status: string;
-  paymentStatus: string;
-  totalPrice: number;
-  currency: string;
-  createdAt: string;
+interface OrderListItem extends Order {
   _count?: {
     orderItems: number;
     files: number;

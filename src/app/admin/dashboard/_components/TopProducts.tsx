@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { TrendingUp } from 'lucide-react';
 
-interface Product {
+interface ProductSales {
   name: string;
   sales: number;
 }
 
 export function TopProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductSales[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

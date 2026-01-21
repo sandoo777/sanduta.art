@@ -1,15 +1,5 @@
 import { useState } from "react";
-import { UserRole } from "@prisma/client";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { User, UserRole } from '@/types/models';
 
 export interface CreateUserData {
   name: string;

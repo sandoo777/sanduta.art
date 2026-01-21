@@ -11,6 +11,7 @@ import { OrderTimeline } from './components/OrderTimeline';
 import { toast } from 'sonner';
 import { ChevronLeft, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { Order } from '@/types/models';
 
 interface OrderDetailsPageProps {
   params: {
@@ -18,21 +19,7 @@ interface OrderDetailsPageProps {
   };
 }
 
-interface Order {
-  id: string;
-  customerId?: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone?: string;
-  source: 'ONLINE' | 'OFFLINE';
-  channel: 'WEB' | 'PHONE' | 'WALK_IN' | 'EMAIL';
-  status: string;
-  paymentStatus: string;
-  totalPrice: number;
-  currency: string;
-  dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
+interface OrderDetail extends Order {
   customer?: {
     id: string;
     name: string;

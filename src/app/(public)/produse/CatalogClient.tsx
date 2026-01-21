@@ -6,8 +6,9 @@ import { Filters, FilterState } from '@/components/public/catalog/Filters';
 import { SortBar, SortOption } from '@/components/public/catalog/SortBar';
 import { ProductGrid } from '@/components/public/catalog/ProductGrid';
 import { Pagination } from '@/components/public/catalog/Pagination';
+import { Product as ProductBase } from '@/types/models';
 
-interface Product {
+interface Product extends Partial<ProductBase> {
   id: number;
   name: string;
   slug: string;
@@ -21,7 +22,7 @@ interface Product {
   popularity?: number;
 }
 
-interface Category {
+interface CategoryView {
   id: number;
   name: string;
   icon?: string;
@@ -36,7 +37,7 @@ interface CatalogClientProps {
 
 export default function CatalogClient({ initialCategoryId }: CatalogClientProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryView[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     categoryId: initialCategoryId || null,

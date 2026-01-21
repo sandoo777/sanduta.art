@@ -1,18 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { User } from '@/types/models';
 
-interface User {
-  id: string;
-  name?: string;
-  email: string;
-  role: string;
-  createdAt: string;
+interface UserWithCount extends User {
   _count?: { orders: number };
 }
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserWithCount[]>([]);
 
   useEffect(() => {
     fetchUsers();

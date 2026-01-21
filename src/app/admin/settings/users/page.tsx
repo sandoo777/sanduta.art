@@ -3,18 +3,9 @@
 import { useState, useEffect } from "react";
 import { Users, Plus, Search, Filter, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
 import { UserRole } from "@prisma/client";
+import { User } from '@/types/models';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  active: boolean;
-  phone?: string;
-  company?: string;
-  twoFactorEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
+interface UserWithCounts extends User {
   _count: {
     orders: number;
     assignedOrders: number;

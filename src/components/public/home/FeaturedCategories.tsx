@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-interface Category {
+interface CategoryFeatured {
   id: string;
   name: string;
   description: string;
@@ -11,7 +11,7 @@ interface Category {
   image: string;
 }
 
-const categories: Category[] = [
+const categories: CategoryFeatured[] = [
   {
     id: 'canvas',
     name: 'Tablouri Canvas',

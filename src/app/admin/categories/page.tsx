@@ -5,13 +5,9 @@ import { Plus, Search } from "lucide-react";
 import { useCategories } from "@/modules/categories/useCategories";
 import { CategoryCard } from "./_components/CategoryCard";
 import { CategoryModal, CategoryFormData } from "./_components/CategoryModal";
+import { Category } from '@/types/models';
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  icon: string | null;
+interface CategoryWithCount extends Category {
   _count: {
     products: number;
   };

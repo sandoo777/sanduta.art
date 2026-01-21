@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Order as OrderBase, OrderItem as OrderItemBase } from '@/types/models';
 
 export interface Address {
   id: string;
@@ -13,29 +14,17 @@ export interface Address {
   isDefault: boolean;
 }
 
-export interface OrderItem {
-  id: string;
+export interface OrderItem extends OrderItemBase {
   productName: string;
-  quantity: number;
-  unitPrice: number;
-  lineTotal: number;
   thumbnail?: string;
 }
 
-export interface Order {
-  id: string;
+export interface Order extends OrderBase {
   orderNumber: string;
-  status: string;
-  paymentStatus: string;
-  paymentMethod?: string;
-  deliveryStatus: string;
-  totalPrice: number;
-  currency: string;
-  createdAt: string;
-  items: OrderItem[];
   deliveryAddress?: string;
   deliveryMethod?: string;
   trackingNumber?: string;
+  items: OrderItem[];
 }
 
 export interface Project {

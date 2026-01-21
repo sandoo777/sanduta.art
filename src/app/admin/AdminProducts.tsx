@@ -10,15 +10,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  image_url?: string;
-  options?: any;
-}
+import { Product } from '@/types/models';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);

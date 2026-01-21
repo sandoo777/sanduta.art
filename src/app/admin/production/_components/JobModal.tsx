@@ -8,20 +8,7 @@ import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-
-interface Order {
-  id: string;
-  customerName: string;
-  totalPrice: number;
-  status: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { Order, User } from '@/types/models';
 
 interface JobModalProps {
   isOpen: boolean;

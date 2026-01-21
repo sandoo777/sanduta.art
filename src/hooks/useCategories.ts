@@ -5,14 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  icon?: string;
-  color?: string;
-  parentId?: string | null;
+import { Category } from '@/types/models';
   order: number;
 }
 

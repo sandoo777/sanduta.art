@@ -2,7 +2,7 @@
 
 import { ProductCard } from './ProductCard';
 
-interface Product {
+interface ProductView {
   id: number;
   name: string;
   slug: string;

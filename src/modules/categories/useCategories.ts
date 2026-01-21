@@ -1,15 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Category } from '@/types/models';
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  icon: string | null;
-  createdAt: string;
-  updatedAt: string;
+interface CategoryWithCount extends Category {
   _count: {
     products: number;
   };

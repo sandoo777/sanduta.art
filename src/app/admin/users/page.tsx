@@ -6,13 +6,9 @@ import { Role } from "@/lib/types-prisma";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { User } from '@/types/models';
 
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  role: Role;
-  createdAt: string;
+interface UserWithCount extends User {
   _count: {
     orders: number;
   };

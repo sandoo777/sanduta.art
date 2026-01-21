@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface Category {
+interface CategoryView {
   id: number;
   name: string;
   icon?: string;

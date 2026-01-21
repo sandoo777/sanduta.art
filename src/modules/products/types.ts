@@ -1,38 +1,22 @@
-export type ProductType = 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM';
+/**
+ * Product Types Module
+ * Re-exports core types from @/types/models + domain-specific extensions
+ */
 
+// Re-export core types
+export type { 
+  Product, 
+  ProductVariant,
+  ProductImage as ProductImageBase, 
+  Category,
+  ProductType 
+} from '@/types/models';
+
+// Legacy/extended ProductImage (keep if needed locally)
 export interface ProductImage {
   id: string;
   url: string;
   productId: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  color?: string;
-  icon?: string;
-  parentId?: string | null;
-  order?: number;
-  active?: boolean;
-  featured?: boolean;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  sku?: string;
-  description?: string;
-  type: ProductType;
-  price: number;
-  categoryId: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  category?: Category;
-  images?: ProductImage[];
 }
 
 export interface CreateProductInput {
@@ -40,7 +24,7 @@ export interface CreateProductInput {
   slug: string;
   sku?: string;
   description?: string;
-  type: ProductType;
+  type: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM';
   price: number;
   categoryId: string;
   active?: boolean;
@@ -51,7 +35,7 @@ export interface UpdateProductInput {
   slug?: string;
   sku?: string;
   description?: string;
-  type?: ProductType;
+  type?: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM';
   price?: number;
   categoryId?: string;
   active?: boolean;
@@ -60,7 +44,7 @@ export interface UpdateProductInput {
 export interface ProductFilters {
   search?: string;
   categoryId?: string;
-  type?: ProductType | 'all';
+  type?: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM' | 'all';
   activeOnly?: boolean;
 }
 

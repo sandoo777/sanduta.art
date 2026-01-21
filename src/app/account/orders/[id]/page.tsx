@@ -4,31 +4,21 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import { Order, OrderItem as OrderItemType } from '@/types/models';
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  product: {
+interface OrderWithDetails extends Order {
+  orderItems: Array<{
     id: string;
-    name: string;
-    category: string;
-    price: number;
-    image_url: string | null;
-  };
-}
-
-interface Order {
-  id: string;
-  total: number;
-  customerName: string;
-  customerEmail: string;
-  status: string;
-  paymentStatus: string;
-  deliveryStatus: string;
-  trackingNumber: string | null;
+    quantity: number;
+    product: {
+      id: string;
+      name: string;
+      category: string;
+      price: number;
+      image_url: string | null;
+    };
+  }>;
   paynetSessionId: string | null;
-  createdAt: string;
-  orderItems: OrderItem[];
 }
 
 export default function OrderDetailPage() {

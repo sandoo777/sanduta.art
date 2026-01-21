@@ -3,8 +3,9 @@
 import { ManagerLayout } from "@/components/layout/ManagerLayout";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Order } from '@/types/models';
 
-interface Order {
+interface OrderListView {
   id: number;
   orderNumber: string;
   customerName: string;
