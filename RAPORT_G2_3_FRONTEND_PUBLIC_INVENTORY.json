@@ -1,0 +1,642 @@
+{
+  "metadata": {
+    "taskId": "G2.3 - Frontend Public Inventory",
+    "generatedAt": "2026-01-22",
+    "scope": "Inventar componente custom din paginile publice care necesită standardizare",
+    "targetComponents": [
+      "Button",
+      "Card",
+      "Input",
+      "Modal"
+    ]
+  },
+  "home": {
+    "buttons": [
+      {
+        "file": "src/components/public/home/Hero.tsx",
+        "line": 50,
+        "code": "<Button size=\"lg\" className=\"group w-full sm:w-auto\">...",
+        "variant": "primary",
+        "action": "navigate to /products",
+        "status": "✅ FOLOSEȘTE Button UI",
+        "priority": "low"
+      },
+      {
+        "file": "src/components/public/home/Hero.tsx",
+        "line": 56,
+        "code": "<Button variant=\"outline\" size=\"lg\" className=\"w-full border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-white sm:w-auto\">",
+        "variant": "outline",
+        "action": "navigate to /products",
+        "status": "⚠️ CUSTOM CLASSES - trebuie simplificat",
+        "priority": "medium",
+        "recommendation": "Folosește doar variant='outline' fără override de culori"
+      },
+      {
+        "file": "src/components/public/home/PopularProducts.tsx",
+        "line": 91,
+        "code": "<Button variant=\"outline\" size=\"sm\" className=\"w-full border-2 border-gray-200 group-hover:border-primary group-hover:text-primary\">",
+        "variant": "outline",
+        "action": "navigate to product configure",
+        "status": "⚠️ CUSTOM CLASSES - trebuie simplificat",
+        "priority": "medium",
+        "recommendation": "Folosește doar variant='outline' fără hover custom"
+      },
+      {
+        "file": "src/components/public/home/PopularProducts.tsx",
+        "line": 105,
+        "code": "<Button size=\"lg\" variant=\"outline\" className=\"border-2 border-primary text-primary hover:bg-primary hover:text-white\">",
+        "variant": "outline",
+        "action": "navigate to all products",
+        "status": "⚠️ CUSTOM CLASSES - trebuie simplificat",
+        "priority": "medium",
+        "recommendation": "Folosește variant='primary' sau variant='outline' fără override"
+      },
+      {
+        "file": "src/components/public/home/FinalCTA.tsx",
+        "line": 33,
+        "code": "<Button size=\"lg\" className=\"w-full bg-white text-primary hover:bg-gray-100 sm:w-auto\">",
+        "variant": "custom",
+        "action": "navigate to products",
+        "status": "⚠️ CUSTOM CLASSES - trebuie simplificat",
+        "priority": "medium",
+        "recommendation": "Creează variant='inverse' sau folosește variant existent"
+      },
+      {
+        "file": "src/components/public/home/FinalCTA.tsx",
+        "line": 40,
+        "code": "<Button size=\"lg\" variant=\"outline\" className=\"w-full border-2 border-white bg-transparent text-white hover:bg-white/10 sm:w-auto\">",
+        "variant": "outline",
+        "action": "navigate to contact",
+        "status": "⚠️ CUSTOM CLASSES - trebuie simplificat",
+        "priority": "medium",
+        "recommendation": "Creează variant='ghost-white' pentru CTA pe fundal colorat"
+      }
+    ],
+    "cards": [
+      {
+        "file": "src/components/public/home/PopularProducts.tsx",
+        "line": 46,
+        "code": "<Link ... className=\"group relative overflow-hidden rounded-xl bg-gray-50 shadow-sm transition-all hover:shadow-xl\">",
+        "content": "Product card cu imagine + info + CTA",
+        "hoverEffect": "shadow lift + scale image",
+        "status": "❌ CUSTOM CARD - trebuie înlocuit cu Card UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> și folosește CardHeader + CardContent + CardFooter"
+      },
+      {
+        "file": "src/components/public/home/FeaturedCategories.tsx",
+        "line": 73,
+        "code": "<Link ... className=\"group relative overflow-hidden rounded-2xl bg-gray-100 shadow-md transition-all hover:shadow-2xl\">",
+        "content": "Category card cu imagine + overlay + text",
+        "hoverEffect": "shadow lift + scale + border primary",
+        "status": "❌ CUSTOM CARD - complex hover effects",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> și standardizează hover effects"
+      },
+      {
+        "file": "src/components/public/home/WhyChooseUs.tsx",
+        "line": 60,
+        "code": "<div className=\"group relative overflow-hidden rounded-xl bg-white p-8 shadow-sm transition-all hover:shadow-xl\">",
+        "content": "Benefit card cu icon + title + description",
+        "hoverEffect": "shadow lift + icon scale + border bottom",
+        "status": "❌ CUSTOM CARD - trebuie înlocuit cu Card UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> și folosește CardContent"
+      }
+    ],
+    "inputs": [],
+    "modals": []
+  },
+  "productCard": {
+    "buttons": [
+      {
+        "file": "src/components/public/catalog/ProductCard.tsx",
+        "line": 78,
+        "code": "<button onClick={() => setQuickViewOpen(true)} className=\"p-2 bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-600 rounded-lg shadow-lg transition-colors\">",
+        "variant": "ghost",
+        "action": "open quick view modal",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='ghost' size='icon'>"
+      },
+      {
+        "file": "src/components/public/catalog/ProductCard.tsx",
+        "line": 159,
+        "code": "<button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2\">",
+        "variant": "primary",
+        "action": "configure product",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='primary' className='w-full'>"
+      }
+    ],
+    "cards": [
+      {
+        "file": "src/components/public/catalog/ProductCard.tsx",
+        "line": 43,
+        "code": "<motion.div className=\"group relative bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden\">",
+        "content": "Product card complet cu badges, image, quick view, price, CTA",
+        "hoverEffect": "shadow lift + quick view button appears + image scale",
+        "status": "❌ CUSTOM CARD cu MOTION - cel mai complex, prioritate maximă",
+        "priority": "critical",
+        "recommendation": "REFACTOR COMPLET: Card UI + separate BadgeList + ProductImage + ProductInfo components"
+      }
+    ],
+    "inputs": [],
+    "modals": [
+      {
+        "file": "src/components/public/catalog/ProductQuickView.tsx",
+        "line": 56,
+        "code": "<Modal isOpen={isOpen} onClose={onClose} size=\"xl\">",
+        "content": "Quick view modal cu grid 2 col (image + info)",
+        "trigger": "Quick view button pe ProductCard",
+        "status": "✅ FOLOSEȘTE Modal UI",
+        "priority": "low"
+      }
+    ]
+  },
+  "cart": {
+    "buttons": [
+      {
+        "file": "src/components/public/cart/CartList.tsx",
+        "line": 47,
+        "code": "<Link href=\"/produse\" className=\"inline-flex items-center justify-center px-6 py-3 bg-[#0066FF] text-white rounded-lg hover:bg-[#0052CC] transition-colors font-medium\">",
+        "variant": "primary",
+        "action": "navigate to products",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button as='link' variant='primary' href='/produse'>"
+      },
+      {
+        "file": "src/components/public/cart/CartSummary.tsx",
+        "line": 100,
+        "code": "<button onClick={handleCheckout} className=\"w-full rounded-lg py-4 px-6 font-semibold text-lg flex items-center justify-center gap-2 shadow-lg transition-colors\" disabled={errors.length > 0}>",
+        "variant": "primary",
+        "action": "proceed to checkout",
+        "status": "❌ CUSTOM BUTTON cu STATES - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='primary' disabled={...} loading={...}>"
+      },
+      {
+        "file": "src/components/public/cart/CartItem.tsx",
+        "line": 208,
+        "code": "<Link ... className=\"inline-flex items-center gap-2 px-4 py-2 bg-[#0066FF] text-white rounded-lg hover:bg-[#0052CC] transition-colors text-sm font-medium\">",
+        "variant": "primary",
+        "action": "edit configuration",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button as='link' variant='primary' size='sm'>"
+      },
+      {
+        "file": "src/components/public/cart/CartItem.tsx",
+        "line": 215,
+        "code": "<button ... className=\"inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium\">",
+        "variant": "secondary",
+        "action": "duplicate item",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='outline' size='sm'>"
+      },
+      {
+        "file": "src/components/public/cart/CartItem.tsx",
+        "line": 222,
+        "code": "<button ... className=\"inline-flex items-center gap-2 px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium\">",
+        "variant": "danger",
+        "action": "remove item",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='danger' size='sm'>"
+      }
+    ],
+    "cards": [
+      {
+        "file": "src/components/public/cart/CartList.tsx",
+        "line": 25,
+        "code": "<div className=\"bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center\">",
+        "content": "Empty state card cu SVG icon + text + CTA",
+        "hoverEffect": "none",
+        "status": "⚠️ CUSTOM CARD - ar trebui EmptyState UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <EmptyState icon={...} title={...} description={...} action={...}>"
+      },
+      {
+        "file": "src/components/public/cart/CartItem.tsx",
+        "line": 28,
+        "code": "<div className=\"bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6\">",
+        "content": "Cart item card cu preview + specs + price breakdown + actions",
+        "hoverEffect": "none",
+        "status": "❌ CUSTOM CARD - complex, multi-section",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> + CardContent pentru structură"
+      },
+      {
+        "file": "src/components/public/cart/CartSummary.tsx",
+        "line": 35,
+        "code": "<div className=\"bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-24\">",
+        "content": "Summary card cu totals + CTA + trust badges",
+        "hoverEffect": "none",
+        "status": "❌ CUSTOM CARD - sticky sidebar",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> + CardHeader + CardContent + CardFooter"
+      }
+    ],
+    "inputs": [
+      {
+        "file": "src/components/public/cart/QuantitySelector.tsx",
+        "line": 20,
+        "code": "<input type=\"number\" min={min} max={max} value={value} onChange={handleInput} className=\"w-12 text-center border rounded\" />",
+        "type": "number",
+        "validation": "min/max constraints",
+        "status": "⚠️ CUSTOM INPUT - ar putea folosi Input UI",
+        "priority": "low",
+        "recommendation": "Păstrează custom (este un component specialized), dar asigură consistență vizuală"
+      }
+    ],
+    "modals": []
+  },
+  "checkout": {
+    "buttons": [
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 124,
+        "code": "<Link href=\"/cart\" className=\"inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#0066FF] transition-colors\">",
+        "variant": "ghost",
+        "action": "back to cart",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Button as='link' variant='ghost' size='sm'>"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 331,
+        "code": "<button type=\"submit\" disabled={loading} className=\"w-full bg-[#0066FF] text-white py-3 rounded-lg font-semibold hover:bg-[#0052CC] disabled:bg-gray-400 transition-colors\">",
+        "variant": "primary",
+        "action": "submit checkout form",
+        "status": "❌ CUSTOM BUTTON cu DISABLED STATE - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button type='submit' variant='primary' loading={loading} disabled={loading}>"
+      }
+    ],
+    "cards": [
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 138,
+        "code": "<div className=\"bg-white rounded-lg shadow p-6\">",
+        "content": "Checkout form card cu contact + delivery + payment sections",
+        "hoverEffect": "none",
+        "status": "❌ CUSTOM CARD - form container",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card> + CardContent pentru structură"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 143,
+        "code": "<div className=\"mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3\">",
+        "content": "Error alert card",
+        "hoverEffect": "none",
+        "status": "⚠️ CUSTOM ALERT - ar trebui ErrorState UI",
+        "priority": "medium",
+        "recommendation": "Creează Alert component UI sau folosește ErrorState"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 347,
+        "code": "<div className=\"bg-white rounded-lg shadow p-6 sticky top-8\">",
+        "content": "Order summary sidebar sticky",
+        "hoverEffect": "none",
+        "status": "❌ CUSTOM CARD - trebuie înlocuit cu Card UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Card className='sticky top-8'> + CardHeader + CardContent"
+      }
+    ],
+    "inputs": [
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 163,
+        "code": "<input type=\"text\" name=\"customerName\" ... className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066FF] focus:border-transparent\" />",
+        "type": "text",
+        "validation": "required",
+        "status": "❌ CUSTOM INPUT - toate form inputs trebuie înlocuite",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Input label='Nume complet' name='customerName' required />"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 172,
+        "code": "<input type=\"email\" name=\"customerEmail\" ... className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066FF] focus:border-transparent\" />",
+        "type": "email",
+        "validation": "required, email format",
+        "status": "❌ CUSTOM INPUT - trebuie înlocuit",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Input type='email' label='Email' name='customerEmail' required />"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 181,
+        "code": "<input type=\"tel\" name=\"customerPhone\" ... className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066FF] focus:border-transparent\" />",
+        "type": "tel",
+        "validation": "required, phone format",
+        "status": "❌ CUSTOM INPUT - trebuie înlocuit",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Input type='tel' label='Telefon' name='customerPhone' required />"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 197,
+        "code": "<input type=\"radio\" name=\"deliveryMethod\" ... className=\"w-4 h-4 text-[#0066FF]\" />",
+        "type": "radio",
+        "validation": "none",
+        "status": "⚠️ CUSTOM RADIO - ar trebui Radio UI component",
+        "priority": "medium",
+        "recommendation": "Creează Radio component UI sau folosește FormField cu type='radio'"
+      },
+      {
+        "file": "src/app/(public)/checkout/page.tsx",
+        "line": 235,
+        "code": "<input type=\"text\" name=\"deliveryAddress\" ... className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066FF] focus:border-transparent\" />",
+        "type": "text",
+        "validation": "conditional required",
+        "status": "❌ CUSTOM INPUT - trebuie înlocuit",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Input label='Adresa de livrare' name='deliveryAddress' required={...} />"
+      }
+    ],
+    "modals": []
+  },
+  "catalog": {
+    "buttons": [
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 99,
+        "code": "<button onClick={handleReset} className=\"text-sm text-blue-600 hover:text-blue-700 font-medium\">",
+        "variant": "ghost",
+        "action": "reset filters",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Button variant='ghost' size='sm'>"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 237,
+        "code": "<button onClick={() => setIsOpen(true)} className=\"w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors\">",
+        "variant": "secondary",
+        "action": "open mobile filters drawer",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Button variant='outline' className='w-full'>"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 272,
+        "code": "<button onClick={() => setIsOpen(false)} className=\"text-gray-500 hover:text-gray-700\">",
+        "variant": "ghost",
+        "action": "close drawer",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "low",
+        "recommendation": "Înlocuiește cu <Button variant='ghost' size='icon'>"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 127,
+        "code": "<button key={index} onClick={() => setActiveIndex(index)} className=\"h-2 rounded-full transition-all\">",
+        "variant": "custom",
+        "action": "carousel indicator",
+        "status": "✅ PĂSTREAZĂ CUSTOM - carousel dots sunt specifice",
+        "priority": "none",
+        "recommendation": "Păstrează așa, este un pattern de navigare carousel"
+      },
+      {
+        "file": "src/components/public/catalog/ProductQuickView.tsx",
+        "line": 246,
+        "code": "<button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30\">",
+        "variant": "primary",
+        "action": "configure product from quick view",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='primary' className='w-full' shadow>"
+      },
+      {
+        "file": "src/components/public/catalog/ProductQuickView.tsx",
+        "line": 263,
+        "code": "<button className=\"w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-4 px-6 rounded-lg border-2 border-gray-300 transition-colors flex items-center justify-center gap-2\">",
+        "variant": "outline",
+        "action": "view full details",
+        "status": "❌ CUSTOM BUTTON - trebuie înlocuit cu Button UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Button variant='outline' className='w-full'>"
+      }
+    ],
+    "cards": [
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 262,
+        "code": "<div className=\"hidden lg:block bg-white p-6 rounded-lg shadow-sm border border-gray-200\">",
+        "content": "Filters sidebar desktop",
+        "hoverEffect": "none",
+        "status": "❌ CUSTOM CARD - trebuie înlocuit cu Card UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Card> + CardContent pentru structură"
+      }
+    ],
+    "inputs": [
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 109,
+        "code": "<select value={filters.categoryId || ''} onChange={...} className=\"w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent\">",
+        "type": "select",
+        "validation": "none",
+        "status": "❌ CUSTOM SELECT - trebuie înlocuit cu Select UI",
+        "priority": "high",
+        "recommendation": "Înlocuiește cu <Select label='Categorie' options={...} value={...} onChange={...} />"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 151,
+        "code": "<input type=\"number\" value={filters.minPrice} onChange={...} className=\"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent\" min=\"0\" />",
+        "type": "number",
+        "validation": "min constraint",
+        "status": "❌ CUSTOM INPUT - trebuie înlocuit cu Input UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Input type='number' label='Minim' min={0} />"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 159,
+        "code": "<input type=\"number\" value={filters.maxPrice} onChange={...} className=\"w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent\" min=\"0\" />",
+        "type": "number",
+        "validation": "min constraint",
+        "status": "❌ CUSTOM INPUT - trebuie înlocuit cu Input UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Input type='number' label='Maxim' min={0} />"
+      },
+      {
+        "file": "src/components/public/catalog/Filters.tsx",
+        "line": 177,
+        "code": "<input type=\"checkbox\" checked={...} onChange={...} className=\"w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500\" />",
+        "type": "checkbox",
+        "validation": "none",
+        "status": "⚠️ CUSTOM CHECKBOX - ar trebui Checkbox UI component",
+        "priority": "medium",
+        "recommendation": "Creează Checkbox component UI sau folosește FormField cu type='checkbox'"
+      }
+    ],
+    "modals": []
+  },
+  "testimonials": {
+    "buttons": [],
+    "cards": [
+      {
+        "file": "src/components/public/home/Testimonials.tsx",
+        "line": 145,
+        "code": "<div className=\"relative h-full rounded-xl bg-white p-8 shadow-sm transition-all hover:shadow-lg\">",
+        "content": "Testimonial card cu quote icon + rating + content + author",
+        "hoverEffect": "shadow lift",
+        "status": "❌ CUSTOM CARD - trebuie înlocuit cu Card UI",
+        "priority": "medium",
+        "recommendation": "Înlocuiește cu <Card> + CardContent"
+      }
+    ],
+    "inputs": [],
+    "modals": []
+  },
+  "summary": {
+    "totalButtons": 28,
+    "buttonsStandardized": 2,
+    "buttonsNeedingFix": 26,
+    "totalCards": 16,
+    "cardsStandardized": 0,
+    "cardsNeedingFix": 16,
+    "totalInputs": 11,
+    "inputsStandardized": 0,
+    "inputsNeedingFix": 11,
+    "totalModals": 1,
+    "modalsStandardized": 1,
+    "modalsNeedingFix": 0,
+    "totalComponents": 56,
+    "componentsStandardized": 3,
+    "componentsNeedingFix": 53,
+    "completionRate": "5.4%"
+  },
+  "priorities": {
+    "critical": [
+      {
+        "component": "ProductCard",
+        "file": "src/components/public/catalog/ProductCard.tsx",
+        "reason": "Cel mai folosit component, afectează UX pe toate paginile de catalog",
+        "impact": "Foarte mare - afișat în liste, grids, homepage"
+      }
+    ],
+    "high": [
+      {
+        "component": "CartItem",
+        "file": "src/components/public/cart/CartItem.tsx",
+        "reason": "Complex card cu multe butoane custom, central în UX checkout"
+      },
+      {
+        "component": "CartSummary",
+        "file": "src/components/public/cart/CartSummary.tsx",
+        "reason": "CTA principal checkout, trebuie loading states"
+      },
+      {
+        "component": "CheckoutForm",
+        "file": "src/app/(public)/checkout/page.tsx",
+        "reason": "Toate form inputs custom, validare custom"
+      },
+      {
+        "component": "FeaturedCategories",
+        "file": "src/components/public/home/FeaturedCategories.tsx",
+        "reason": "Cards complexe cu hover effects, homepage visibility"
+      },
+      {
+        "component": "PopularProducts",
+        "file": "src/components/public/home/PopularProducts.tsx",
+        "reason": "Product cards și CTA buttons, homepage visibility"
+      },
+      {
+        "component": "ProductQuickView",
+        "file": "src/components/public/catalog/ProductQuickView.tsx",
+        "reason": "Butoane CTA principale, modal deja standard dar conținut custom"
+      }
+    ],
+    "medium": [
+      {
+        "component": "Hero",
+        "file": "src/components/public/home/Hero.tsx",
+        "reason": "CTA buttons cu custom classes, homepage visibility"
+      },
+      {
+        "component": "FinalCTA",
+        "file": "src/components/public/home/FinalCTA.tsx",
+        "reason": "CTA buttons pe fundal colorat, custom variants"
+      },
+      {
+        "component": "Filters",
+        "file": "src/components/public/catalog/Filters.tsx",
+        "reason": "Select, inputs, checkboxes custom - UX catalog"
+      },
+      {
+        "component": "CartList",
+        "file": "src/components/public/cart/CartList.tsx",
+        "reason": "Empty state și CTA, important pentru UX"
+      },
+      {
+        "component": "WhyChooseUs",
+        "file": "src/components/public/home/WhyChooseUs.tsx",
+        "reason": "Benefit cards cu hover effects"
+      },
+      {
+        "component": "Testimonials",
+        "file": "src/components/public/home/Testimonials.tsx",
+        "reason": "Testimonial cards standardization"
+      }
+    ],
+    "low": [
+      {
+        "component": "QuantitySelector",
+        "file": "src/components/public/cart/QuantitySelector.tsx",
+        "reason": "Component specialized, păstrează custom dar verifică consistență vizuală"
+      }
+    ]
+  },
+  "recommendations": {
+    "immediate": [
+      "1. REFACTOR ProductCard - cel mai impact, folosit peste tot",
+      "2. STANDARDIZARE Cart components - CartItem, CartSummary (UX critical path)",
+      "3. FORM INPUTS Checkout - înlocuiește toate <input> cu <Input> UI",
+      "4. BUTTONS HOME - Hero, PopularProducts, FinalCTA (homepage visibility)"
+    ],
+    "phase2": [
+      "1. CARDS HOME - FeaturedCategories, WhyChooseUs, Testimonials",
+      "2. FILTERS - Select, Input, Checkbox components",
+      "3. ALERTS - creează Alert UI component pentru error states"
+    ],
+    "nice-to-have": [
+      "1. Radio UI component pentru checkout delivery/payment options",
+      "2. Checkbox UI component pentru filters",
+      "3. Badge standardization în ProductCard"
+    ]
+  },
+  "estimatedEffort": {
+    "productCard": "4-6 ore (refactor complet + teste)",
+    "cartComponents": "3-4 ore (CartItem + CartSummary + CartList)",
+    "checkoutForm": "2-3 ore (toate form inputs)",
+    "homeButtons": "2-3 ore (Hero + PopularProducts + FinalCTA)",
+    "homeCards": "3-4 ore (FeaturedCategories + WhyChooseUs + Testimonials)",
+    "catalogFilters": "2-3 ore (Select + Input + Checkbox)",
+    "quickView": "1-2 ore (butoane CTA)",
+    "total": "17-25 ore pentru standardizare completă frontend public"
+  },
+  "notes": [
+    "ProductCard este cel mai complex și cel mai folosit - trebuie refactorizat PRIMUL",
+    "Cart components sunt în critical path checkout - prioritate înaltă",
+    "Checkout form are cele mai multe inputs custom - standardizare în bloc",
+    "Homepage components (Hero, PopularProducts, FeaturedCategories) au visibility mare - medium priority",
+    "Filters sunt folosite doar în catalog - medium-low priority",
+    "Modal UI este deja folosit corect în ProductQuickView - exemplu bun",
+    "QuantitySelector este specialized component - păstrează custom dar asigură consistență",
+    "Multe butoane au custom classes pentru culori - trebuie decis dacă se creează variants noi (inverse, ghost-white) sau se folosesc existenții",
+    "Cards au hover effects complexe - trebuie decis ce se standardizează în Card UI și ce rămâne custom pe component",
+    "Consideră crearea Alert UI component pentru error/success messages",
+    "Consideră crearea Radio și Checkbox UI components pentru forms"
+  ]
+}

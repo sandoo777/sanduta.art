@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   const lastUpdated = '11 Ianuarie 2026';
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="container mx-auto max-w-4xl py-12">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold text-secondary mb-4">

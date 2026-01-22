@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { ShoppingCart } from 'lucide-react';
+import { EmptyState, Button } from '@/components/ui';
 import { CartItem } from './CartItem';
 import { useCartStore } from '@/modules/cart/cartStore';
 
@@ -24,35 +26,15 @@ export default function CartList() {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-        <div className="max-w-md mx-auto">
-          <svg
-            className="w-24 h-24 mx-auto text-gray-300 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Coșul tău este gol
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Începe configurarea unui produs pentru a-l adăuga în coș.
-          </p>
-          <Link
-            href="/produse"
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#0066FF] text-white rounded-lg hover:bg-[#0052CC] transition-colors font-medium"
-          >
-            Explorează produsele
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        icon={<ShoppingCart className="h-16 w-16" />}
+        title="Coșul tău este gol"
+        description="Începe configurarea unui produs pentru a-l adăuga în coș."
+        action={{
+          label: "Explorează produsele",
+          href: "/produse"
+        }}
+      />
     );
   }
 

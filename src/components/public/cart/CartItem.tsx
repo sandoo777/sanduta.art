@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Trash2, Edit2, Copy } from 'lucide-react';
+import { Button, Card, CardContent } from '@/components/ui';
 import type { CartItem as CartItemType } from '@/modules/cart/cartStore';
 import { QuantitySelector } from './QuantitySelector';
 import { CartItemProjectPreview } from '@/components/cart/CartItemProjectPreview';
@@ -25,8 +26,9 @@ export function CartItem({ item, onRemove, onDuplicate, onQuantityChange }: Cart
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+    <Card>
+      <CardContent className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {/* Preview Image */}
         <div className="flex-shrink-0">
           <div className="relative w-full md:w-32 h-48 md:h-32 bg-gray-100 rounded-lg overflow-hidden">
@@ -203,32 +205,34 @@ export function CartItem({ item, onRemove, onDuplicate, onQuantityChange }: Cart
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/produse/${item.productSlug}/configure?editItemId=${item.id}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066FF] text-white rounded-lg hover:bg-[#0052CC] transition-colors text-sm font-medium"
-            >
-              <Edit2 className="w-4 h-4" />
-              Editează configurarea
+            <Link href={`/produse/${item.productSlug}/configure?editItemId=${item.id}`}>
+              <Button variant="primary" size="sm">
+                <Edit2 className="w-4 h-4" />
+                Editează configurarea
+              </Button>
             </Link>
             
-            <button
+            <Button 
+              variant="secondary" 
+              size="sm" 
               onClick={() => onDuplicate(item.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
             >
               <Copy className="w-4 h-4" />
               Duplică
-            </button>
+            </Button>
             
-            <button
+            <Button 
+              variant="danger" 
+              size="sm" 
               onClick={() => onRemove(item.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
             >
               <Trash2 className="w-4 h-4" />
               Șterge
-            </button>
+            </Button>
           </div>
         </div>
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
