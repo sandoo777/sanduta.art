@@ -17,7 +17,7 @@ import {
   AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
-import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 interface NavItem {
   label: string;

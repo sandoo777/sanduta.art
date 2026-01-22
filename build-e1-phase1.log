@@ -1,0 +1,20 @@
+
+> sanduta.art@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.9
+   - Environments: .env.production, .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+
+
+Retrying 1/3...
+
+
+Retrying 1/3...
+
+
+Retrying 1/3...
+Next.js build worker exited with code: null and signal: SIGTERM

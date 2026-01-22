@@ -7,7 +7,7 @@ import { Button } from '@/components/ui';
 import { useCartStore } from '@/modules/cart/cartStore';
 import { useSession } from 'next-auth/react';
 import NotificationsDropdown from '@/components/account/notifications/NotificationsDropdown';
-import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CategoriesMegaMenu } from '@/components/public/navigation/CategoriesMegaMenu';
 import { MobileCategoriesMenu } from '@/components/public/navigation/MobileCategoriesMenu';
 
