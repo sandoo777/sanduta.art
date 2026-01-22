@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Confirmation Dialog pentru acțiuni critice
  */
