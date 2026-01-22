@@ -84,13 +84,22 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       const response = await fetch('/api/account/notifications/unread-count');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch unread count');
+        // Graceful handling: set to 0 if API fails (user not logged in, etc)
+        if (response.status === 401) {
+          set({ unreadCount: 0 });
+          return;
+        }
+        console.warn('Failed to fetch unread count:', response.status);
+        set({ unreadCount: 0 });
+        return;
       }
 
       const data = await response.json();
       set({ unreadCount: data.unreadCount });
-    } catch (_error) {
-      console.error('Error fetching unread count:', _error);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      // Fail silently and set to 0
+      set({ unreadCount: 0 });
     }
   },
 
