@@ -1,0 +1,290 @@
+{
+  "duplicates": [
+    {
+      "componentName": "Pagination",
+      "standardizedPath": "src/components/ui/Pagination.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/public/catalog/Pagination.tsx",
+          "canDelete": false,
+          "reason": "Potential duplicate of UI component - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "KpiCard",
+      "standardizedPath": "src/components/KpiCard.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/manager/dashboard/_components/KpiCard.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of KpiCard - needs manual review"
+        },
+        {
+          "path": "src/app/admin/dashboard/_components/KpiCard.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #2 of KpiCard - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "Footer",
+      "standardizedPath": "src/components/Footer.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/public/Footer.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of Footer - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderProducts",
+      "standardizedPath": "src/components/account/OrderProducts.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderProducts.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderProducts - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderAddress",
+      "standardizedPath": "src/components/account/OrderAddress.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderAddress.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderAddress - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderStatusBar",
+      "standardizedPath": "src/components/account/OrderStatusBar.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderStatusBar.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderStatusBar - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderPayment",
+      "standardizedPath": "src/components/account/OrderPayment.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderPayment.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderPayment - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderFiles",
+      "standardizedPath": "src/components/account/OrderFiles.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderFiles.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderFiles - needs manual review"
+        },
+        {
+          "path": "src/components/orders/OrderFiles.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #2 of OrderFiles - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderDelivery",
+      "standardizedPath": "src/components/account/OrderDelivery.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderDelivery.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderDelivery - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderTimeline",
+      "standardizedPath": "src/components/account/OrderTimeline.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderTimeline.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderTimeline - needs manual review"
+        },
+        {
+          "path": "src/components/orders/OrderTimeline.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #2 of OrderTimeline - needs manual review"
+        },
+        {
+          "path": "src/app/admin/orders/components/OrderTimeline.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #3 of OrderTimeline - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrderHistory",
+      "standardizedPath": "src/components/account/OrderHistory.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/account/orders/OrderHistory.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrderHistory - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "OrdersList",
+      "standardizedPath": "src/components/account/orders/OrdersList.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/admin/orders/OrdersList.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of OrdersList - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "Header",
+      "standardizedPath": "src/components/layout/Header.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/public/Header.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of Header - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "LanguageSwitcher",
+      "standardizedPath": "src/components/i18n/LanguageSwitcher.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/common/LanguageSwitcher.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of LanguageSwitcher - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "ProductCard",
+      "standardizedPath": "src/components/public/catalog/ProductCard.tsx",
+      "duplicates": [
+        {
+          "path": "src/components/admin/products/ProductCard.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of ProductCard - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "SalesChart",
+      "standardizedPath": "src/components/admin/dashboard/SalesChart.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/manager/dashboard/_components/SalesChart.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of SalesChart - needs manual review"
+        },
+        {
+          "path": "src/app/admin/dashboard/_components/SalesChart.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #2 of SalesChart - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "ProductionOverview",
+      "standardizedPath": "src/components/admin/dashboard/ProductionOverview.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/manager/dashboard/_components/ProductionOverview.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of ProductionOverview - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "TopProducts",
+      "standardizedPath": "src/app/manager/dashboard/_components/TopProducts.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/admin/dashboard/_components/TopProducts.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of TopProducts - needs manual review"
+        }
+      ]
+    },
+    {
+      "componentName": "AssignOperator",
+      "standardizedPath": "src/app/admin/orders/components/AssignOperator.tsx",
+      "duplicates": [
+        {
+          "path": "src/app/admin/production/_components/AssignOperator.tsx",
+          "canDelete": false,
+          "reason": "Duplicate #1 of AssignOperator - needs manual review"
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "totalComponents": 352,
+    "totalDuplicateNames": 21,
+    "importantDuplicates": 1,
+    "needsManualReview": 24
+  },
+  "uiComponents": [
+    "Table",
+    "TableExample",
+    "EmptyState",
+    "ContactFormExample",
+    "ErrorState",
+    "Pagination",
+    "Form",
+    "tabs",
+    "Select",
+    "Modal",
+    "FormLabel",
+    "Button",
+    "FormMessage",
+    "FormField",
+    "ConfirmDialog",
+    "FormExample",
+    "Card",
+    "Input",
+    "Badge",
+    "SectionTitle",
+    "LoadingState"
+  ],
+  "duplicateNames": [
+    "KpiCard",
+    "Footer",
+    "OrderProducts",
+    "OrderAddress",
+    "OrderStatusBar",
+    "OrderPayment",
+    "OrderFiles",
+    "OrderDelivery",
+    "OrderTimeline",
+    "OrderHistory",
+    "OrdersList",
+    "Header",
+    "LanguageSwitcher",
+    "Pagination",
+    "ProductCard",
+    "SalesChart",
+    "ProductionOverview",
+    "layout",
+    "page",
+    "TopProducts",
+    "AssignOperator"
+  ]
+}
