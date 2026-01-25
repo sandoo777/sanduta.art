@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { FileText, Download, Eye, Search, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 
 interface Invoice {
   id: string;
@@ -188,12 +189,12 @@ export default function InvoicesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link
+                      <AuthLink
                         href={`/account/orders/${invoice.orderId}`}
                         className="text-sm text-indigo-600 hover:text-indigo-700"
                       >
                         #{invoice.orderId}
-                      </Link>
+                      </AuthLink>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">

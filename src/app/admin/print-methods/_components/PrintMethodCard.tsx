@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MoreVertical, Edit, Trash2, Activity, Ruler } from "lucide-react";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
 import type { PrintMethod } from "@/modules/print-methods/types";
 import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
 

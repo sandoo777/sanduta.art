@@ -18,8 +18,10 @@ import {
   Upload,
   AlertTriangle,
 } from 'lucide-react';
-import { Button, Card, Badge } from '@/components/ui';
-import Link from 'next/link';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { AuthLink } from '@/components/common/links/AuthLink';
 
 export default function NotificationsPage() {
   const { data: session } = useSession();
@@ -215,7 +217,7 @@ export default function NotificationsPage() {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {notification.actionUrl && notification.actionLabel && (
-                        <Link href={notification.actionUrl}>
+                        <AuthLink href={notification.actionUrl}>
                           <Button
                             variant="primary"
                             size="sm"
@@ -227,7 +229,7 @@ export default function NotificationsPage() {
                           >
                             {notification.actionLabel}
                           </Button>
-                        </Link>
+                        </AuthLink>
                       )}
 
                       {!notification.read && (

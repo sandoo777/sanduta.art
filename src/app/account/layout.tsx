@@ -3,7 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
-import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
+import { PanelHeader } from "@/components/common/headers/PanelHeader";
+import { PanelSidebar, SidebarItem } from "@/components/common/sidebars/PanelSidebar";
 
 interface UserLayoutProps {
   children: ReactNode;

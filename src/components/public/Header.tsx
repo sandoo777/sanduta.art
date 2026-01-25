@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingCart, User } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
 import { useCartStore } from '@/modules/cart/cartStore';
 import { useSession } from 'next-auth/react';
 import NotificationsDropdown from '@/components/account/notifications/NotificationsDropdown';

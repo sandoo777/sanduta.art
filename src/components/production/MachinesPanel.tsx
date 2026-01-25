@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, Button, Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Cog, Play, Square, Wrench, Activity } from 'lucide-react';
 
 type MachineStatus = 'idle' | 'running' | 'maintenance' | 'offline';

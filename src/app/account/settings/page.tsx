@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
-import { Card, Button, Input, LoadingState } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Lock, Bell, Globe, Save, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {

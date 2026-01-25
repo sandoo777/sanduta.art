@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { LoadingState, Card, CardContent } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui/Card';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Plus, Search, Filter } from 'lucide-react';
 import { MachineCard } from './_components/MachineCard';
 import { MachineForm } from './_components/MachineForm';

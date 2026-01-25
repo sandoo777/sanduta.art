@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { AuthLink } from "@/components/common/links/AuthLink";
 import { useAccount, Order } from "@/modules/account/useAccount";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 
@@ -110,7 +110,7 @@ export default function OrdersList() {
       ) : (
         <div className="space-y-4">
           {filteredOrders.map((order) => (
-            <Link
+            <AuthLink
               key={order.id}
               href={`/dashboard/orders/${order.id}`}
               className="block bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
@@ -159,7 +159,7 @@ export default function OrdersList() {
                   <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                 </div>
               </div>
-            </Link>
+            </AuthLink>
           ))}
         </div>
       )}

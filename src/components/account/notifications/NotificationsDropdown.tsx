@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { formatDistanceToNow } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
@@ -147,13 +147,13 @@ export default function NotificationsDropdown() {
           {/* Footer */}
           {recentNotifications.length > 0 && (
             <div className="px-4 py-3 border-t border-gray-200">
-              <Link
+              <AuthLink
                 href="/dashboard/notifications"
                 onClick={() => setIsOpen(false)}
                 className="block text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 Vezi toate notificările
-              </Link>
+              </AuthLink>
             </div>
           )}
         </div>

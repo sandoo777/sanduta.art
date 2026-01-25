@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -107,9 +107,10 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
             const active = isActive(item.href);
             
             return (
-              <Link
+              <AuthLink
                 key={item.name}
                 href={item.href}
+                prefetch={false}
                 onClick={onClose}
                 className={`
                   group flex items-center gap-3 px-3 py-2.5 rounded-lg
@@ -133,7 +134,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
                 <span className={`text-sm flex-1 ${active ? 'font-semibold' : 'font-medium'}`}>
                   {item.name}
                 </span>
-              </Link>
+              </AuthLink>
             );
           })}
         </div>
@@ -162,7 +163,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       >
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/80 bg-white/80 backdrop-blur-sm">
-          <Link href="/admin" className="flex items-center space-x-2.5 group">
+          <AuthLink href="/admin" prefetch={false} className="flex items-center space-x-2.5 group">
             <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-200 group-hover:shadow-lg group-hover:shadow-purple-300 transition-all duration-200 group-hover:scale-105">
               <span className="text-white font-bold text-sm">SA</span>
             </div>
@@ -170,7 +171,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
               <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Admin</span>
               <p className="text-[10px] text-gray-500 font-medium">Control Panel</p>
             </div>
-          </Link>
+          </AuthLink>
           
           {/* Close button for mobile */}
           <button
@@ -203,13 +204,14 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">Need Help?</p>
                 <p className="text-xs text-gray-600 mt-0.5">Check our documentation</p>
-                <Link 
+                <AuthLink 
                   href="/docs" 
+                  prefetch={false}
                   className="text-xs text-purple-600 hover:text-purple-700 font-semibold mt-2 inline-flex items-center gap-1 hover:gap-2 transition-all"
                 >
                   View Docs
                   <span>→</span>
-                </Link>
+                </AuthLink>
               </div>
             </div>
           </div>

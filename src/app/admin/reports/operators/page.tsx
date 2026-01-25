@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { ArrowLeft, RefreshCw, Award, Clock, Target, TrendingUp } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
@@ -39,12 +39,12 @@ export default function OperatorsReportPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link
+          <AuthLink
             href="/admin/reports"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-          </Link>
+          </AuthLink>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Operator Performance</h1>
             <p className="text-sm text-gray-600 mt-1">
@@ -268,14 +268,14 @@ export default function OperatorsReportPage() {
       )}
 
       {/* Completion Time Details */
-      {operators && operators.completionTimesByOperator.length > 0 && (
+      {operators && operators.completionTimesByOperator && operators.completionTimesByOperator.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Completion Time Statistics</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {operators.completionTimesByOperator.map((operator) => (
+              {operators.completionTimesByOperator.map((operator) => (
               <div key={operator.operatorId} className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-900">{operator.operatorName}</p>
                 <div className="mt-3 space-y-2">

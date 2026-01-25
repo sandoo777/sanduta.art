@@ -1,22 +1,27 @@
 // Server Component — Data fetching with direct Prisma access
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import { redirect } from 'next/navigation';
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 import prisma from '@/lib/prisma';
 import AddressesClient from './AddressesClient';
 
 export default async function AddressesPage() {
-  // 1. Auth check server-side
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect('/login');
-  }
+  try {
+    // 1. Auth check server-side
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      safeRedirect('/login');
+    }
 
-  // 2. Fetch addresses directly from database
-  const addresses = await prisma.address.findMany({
-    where: {
-      userId: session.user.id,
-    },
+    // Validate session has user ID
+    const userId = validateServerData(session?.user?.id, 'User ID not found in session');
+
+    // 2. Fetch addresses directly from database with safe wrapper
+    const addresses = await fetchServerData(
+      () => prisma.address.findMany({
+        where: {
+          userId,
+        },
     select: {
       id: true,
       name: true,
@@ -45,3 +50,5 @@ export default async function AddressesPage() {
   }));
 
   // 4. Pass data to Client Component for interactivity
+  return <AddressesClient addresses={addressesData} />;
+}

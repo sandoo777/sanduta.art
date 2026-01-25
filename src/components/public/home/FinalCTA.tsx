@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Phone } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
 
 export function FinalCTA() {
   return (

@@ -29,7 +29,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: RootLayoutProps) {
-  const locale = params.lang as Locale;
+  const resolvedParams = await params;
+  const locale = resolvedParams.lang as Locale;
   
   const titles = {
     ro: 'Sanduta.art - Produse personalizate tipărite',
@@ -59,11 +60,12 @@ export async function generateMetadata({ params }: RootLayoutProps) {
 
 export default async function RootLayout({ children, params }: RootLayoutProps) {
   // Validare locale
-  if (!isValidLocale(params.lang)) {
+  const resolvedParams = await params;
+  if (!isValidLocale(resolvedParams.lang)) {
     notFound();
   }
 
-  const locale = params.lang as Locale;
+  const locale = resolvedParams.lang as Locale;
   
   // Încarcă traducerile pentru limba curentă
   const translations = await loadTranslations(locale);

@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { NotificationType, getNotificationTypeName } from '@/lib/notifications/notificationTypes';
-import { Button, Input, Card } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { X, Send, AlertTriangle } from 'lucide-react';
 
 interface SendNotificationModalProps {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 interface ProductSales {
   name: string;

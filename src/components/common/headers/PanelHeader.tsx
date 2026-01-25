@@ -71,6 +71,7 @@ export function PanelHeader() {
               <div className="absolute top-16 left-4 bg-white rounded-lg shadow-lg border border-gray-200 py-2 w-48 z-50">
                 <Link
                   href="/"
+                  prefetch={false}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -78,6 +79,7 @@ export function PanelHeader() {
                 </Link>
                 <Link
                   href="/products"
+                  prefetch={false}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >

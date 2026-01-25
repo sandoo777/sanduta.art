@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthLink } from "@/components/common/links/AuthLink";
 import {
   ShoppingBagIcon,
   FolderIcon,
@@ -95,7 +95,7 @@ export default function AccountSidebar() {
           const active = isActive(item.href);
 
           return (
-            <Link
+            <AuthLink
               key={item.href}
               href={item.href}
               onClick={() => setMobileMenuOpen(false)}

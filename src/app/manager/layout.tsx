@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
-import Link from "next/link";
+import { AuthLink } from "@/components/common/links/AuthLink";
 import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
 
 interface ManagerLayoutProps {
@@ -28,9 +28,9 @@ export function ManagerLayout({ children }: ManagerLayoutProps) {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Unauthorized Access</h1>
           <p className="text-gray-600">You don&apos;t have permission to access the manager panel.</p>
-          <Link href="/" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
+          <AuthLink href="/" className="text-blue-600 hover:text-blue-700 mt-4 inline-block">
             Go to Homepage
-          </Link>
+          </AuthLink>
         </div>
       </div>
     );

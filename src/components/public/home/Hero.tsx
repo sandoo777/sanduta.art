@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
 
 export function Hero() {
   return (

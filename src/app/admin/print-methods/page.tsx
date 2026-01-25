@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, Plus } from "lucide-react";
-import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui/Card';
 import { usePrintMethods } from "@/modules/print-methods/usePrintMethods";
 import type { PrintMethod, PrintMethodFilters, CreatePrintMethodInput } from "@/modules/print-methods/types";
 import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";

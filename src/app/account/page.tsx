@@ -1,7 +1,7 @@
 'use client';
 
 import { useCurrentUser } from "@/modules/auth/useCurrentUser";
-import Link from "next/link";
+import { AuthLink } from "@/components/common/links/AuthLink";
 import { 
   ShoppingBag, 
   FolderOpen, 
@@ -15,7 +15,7 @@ import {
   Clock,
   User,
 } from 'lucide-react';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/ui/Card';
 
 export default function AccountDashboardPage() {
   const { user, loading } = useCurrentUser();
@@ -152,7 +152,7 @@ export default function AccountDashboardPage() {
           {quickLinks.map((link) => {
             const Icon = link.icon;
             return (
-              <Link
+              <AuthLink
                 key={link.href}
                 href={link.href}
                 className="group"
@@ -173,7 +173,7 @@ export default function AccountDashboardPage() {
                     </div>
                   </div>
                 </Card>
-              </Link>
+              </AuthLink>
             );
           })}
         </div>
@@ -197,12 +197,12 @@ export default function AccountDashboardPage() {
                 Acum 2 zile
               </p>
             </div>
-            <Link
+            <AuthLink
               href="/account/orders"
               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Vezi →
-            </Link>
+            </AuthLink>
           </div>
 
           <div className="p-4 flex items-center gap-4">
@@ -217,12 +217,12 @@ export default function AccountDashboardPage() {
                 Acum 3 zile
               </p>
             </div>
-            <Link
+            <AuthLink
               href="/account/orders"
               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Vezi →
-            </Link>
+            </AuthLink>
           </div>
 
           <div className="p-4 flex items-center gap-4">
@@ -237,12 +237,12 @@ export default function AccountDashboardPage() {
                 Acum 5 zile
               </p>
             </div>
-            <Link
+            <AuthLink
               href="/account/projects"
               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Vezi →
-            </Link>
+            </AuthLink>
           </div>
         </Card>
       </div>
@@ -261,18 +261,18 @@ export default function AccountDashboardPage() {
               Explorează ghidul nostru sau contactează echipa de suport pentru asistență
             </p>
             <div className="flex gap-3">
-              <Link
+              <AuthLink
                 href="/help"
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 Ghid Utilizator →
-              </Link>
-              <Link
+              </AuthLink>
+              <AuthLink
                 href="/contact"
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 Contact Suport →
-              </Link>
+              </AuthLink>
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table, LoadingState } from '@/components/ui';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { Table } from '@/components/ui/Table';
 import { Key, Check, X } from "lucide-react";
 import { UserRole } from "@prisma/client";
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { LoadingState } from '@/components/ui';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/modules/editor/editorStore';
 import EditorLayout from '@/components/public/editor/EditorLayout';

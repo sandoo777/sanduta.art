@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Table, Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Table } from '@/components/ui/Table';
 
 interface Page {
   id: number;

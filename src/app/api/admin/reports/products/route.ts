@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
 import { getCachedData, setCachedData } from "@/modules/reports/utils";
 import type { ProductsReport, TopProduct, CategoryRevenue, ProductRevenue, ProductPerformance } from "@/modules/reports/types";

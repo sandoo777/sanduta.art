@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
-import { Button, Input, Select, Card, CardContent, EmptyState, EmptySearch } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { EmptySearch, EmptyState } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { FinishingCard } from './_components/FinishingCard';
 import { FinishingForm } from './_components/FinishingForm';

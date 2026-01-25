@@ -1,7 +1,7 @@
 'use client';
 
 import { ShoppingCart, Package, DollarSign, Users } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { KpiCard } from './_components/KpiCard';
 import { SalesChart } from './_components/SalesChart';
 import { TopProducts } from './_components/TopProducts';

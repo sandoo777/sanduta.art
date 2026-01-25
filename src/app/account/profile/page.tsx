@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
-import { Card, Button, Input, LoadingState } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { User, Building, Save, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 // Validation helpers

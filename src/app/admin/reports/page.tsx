@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -168,13 +168,13 @@ export default function ReportsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Sales Last 12 Months</CardTitle>
-                <Link
+                <AuthLink
                   href="/admin/reports/sales"
                   className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 >
                   View Details
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </AuthLink>
               </div>
             </CardHeader>
             <CardContent>
@@ -196,13 +196,13 @@ export default function ReportsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Sales Last 30 Days</CardTitle>
-                <Link
+                <AuthLink
                   href="/admin/reports/sales"
                   className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 >
                   View Details
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </AuthLink>
               </div>
             </CardHeader>
             <CardContent>
@@ -260,13 +260,13 @@ export default function ReportsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Top 5 Products</CardTitle>
-                <Link
+                <AuthLink
                   href="/admin/reports/products"
                   className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 >
                   View All
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </AuthLink>
               </div>
             </CardHeader>
             <CardContent>
@@ -291,18 +291,18 @@ export default function ReportsPage() {
         )}
 
         {/* Top 5 Customers */
-        {customers && (
+        {customers && customers.topCustomers && customers.topCustomers.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Top 5 Customers</CardTitle>
-                <Link
+                <AuthLink
                   href="/admin/reports/customers"
                   className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 >
                   View All
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </AuthLink>
               </div>
             </CardHeader>
             <CardContent>
@@ -338,13 +338,13 @@ export default function ReportsPage() {
                 {materials.lowStockMaterials.length} materials are running low
               </p>
             </div>
-            <Link
+            <AuthLink
               href="/admin/reports/materials"
               className="ml-auto text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
             >
               View All
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </AuthLink>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {materials.lowStockMaterials.slice(0, 6).map((material) => (
@@ -375,7 +375,7 @@ export default function ReportsPage() {
           { href: "/admin/reports/materials", label: "Materials", icon: AlertTriangle, color: "bg-red-600" },
           { href: "/admin/orders", label: "Orders", icon: ShoppingCart, color: "bg-pink-600" },
         ].map((link) => (
-          <Link
+          <AuthLink
             key={link.href}
             href={link.href}
             className="flex flex-col items-center gap-2 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
@@ -384,7 +384,7 @@ export default function ReportsPage() {
               <link.icon className="w-6 h-6 text-white" />
             </div>
             <span className="text-sm font-medium text-gray-900">{link.label}</span>
-          </Link>
+          </AuthLink>
         ))}
       </div>
     </div>

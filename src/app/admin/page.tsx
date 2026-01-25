@@ -1,7 +1,7 @@
 'use client';
 
-import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { AuthLink } from "@/components/common/links/AuthLink";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function AdminPage() {
   const stats = [
@@ -36,7 +36,7 @@ export default function AdminPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
-          <Link key={stat.label} href={stat.link}>
+          <AuthLink key={stat.label} href={stat.link}>
             <div className={`${stat.color} rounded-lg p-6 cursor-pointer hover:shadow-lg transition`}>
               <div className="flex items-center justify-between">
                 <div>
@@ -46,7 +46,7 @@ export default function AdminPage() {
                 <div className="text-4xl">{stat.icon}</div>
               </div>
             </div>
-          </Link>
+          </AuthLink>
         ))}
       </div>
 
@@ -55,7 +55,7 @@ export default function AdminPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quickActions.map((action) => (
-            <Link key={action.title} href={action.link}>
+            <AuthLink key={action.title} href={action.link}>
               <Card className="cursor-pointer hover:shadow-lg transition">
                 <CardContent className="pt-6">
                   <div className="flex items-start">
@@ -69,7 +69,7 @@ export default function AdminPage() {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </AuthLink>
           ))}
         </div>
       </div>

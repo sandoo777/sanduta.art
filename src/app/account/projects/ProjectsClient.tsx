@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Button, LoadingState } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { FolderOpen, Plus, Edit2, Trash2, Eye, Download } from 'lucide-react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import Image from 'next/image';
 
 export interface Project {
@@ -96,12 +98,12 @@ export default function ProjectsClient({ projects: initialProjects }: Props) {
             Gestionează proiectele create în editorul vizual
           </p>
         </div>
-        <Link href="/editor">
+        <AuthLink href="/editor">
           <Button variant="primary">
             <Plus className="w-4 h-4 mr-2" />
             Proiect Nou
           </Button>
-        </Link>
+        </AuthLink>
       </div>
 
       {/* Projects Grid */}
@@ -114,12 +116,12 @@ export default function ProjectsClient({ projects: initialProjects }: Props) {
           <p className="text-gray-600 mb-4">
             Creează primul tău proiect în editorul vizual
           </p>
-          <Link href="/editor">
+          <AuthLink href="/editor">
             <Button variant="primary">
               <Plus className="w-4 h-4 mr-2" />
               Creează Proiect
             </Button>
-          </Link>
+          </AuthLink>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -148,12 +150,12 @@ export default function ProjectsClient({ projects: initialProjects }: Props) {
                 
                 {/* Overlay Actions */}
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Link href={`/editor/${project.id}`}>
+                  <AuthLink href={`/editor/${project.id}`}>
                     <Button variant="primary" className="text-sm">
                       <Edit2 className="w-4 h-4 mr-2" />
                       Editează
                     </Button>
-                  </Link>
+                  </AuthLink>
                   <Button
                     onClick={() => handleExport(project.id, 'png')}
                     variant="secondary"
@@ -179,12 +181,12 @@ export default function ProjectsClient({ projects: initialProjects }: Props) {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Link href={`/editor/${project.id}`} className="flex-1">
+                  <AuthLink href={`/editor/${project.id}`} className="flex-1">
                     <Button variant="secondary" className="w-full text-sm">
                       <Eye className="w-4 h-4 mr-2" />
                       Vezi
                     </Button>
-                  </Link>
+                  </AuthLink>
                   <Button
                     onClick={() => handleDuplicate(project.id)}
                     variant="ghost"

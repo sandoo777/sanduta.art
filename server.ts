@@ -8,6 +8,25 @@ const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
 const port = parseInt(process.env.PORT || '3000', 10);
 
+// Global error handlers pentru stabilitate
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+  // Nu închide procesul în dev pentru a nu pierde sesiunea
+  if (!dev) {
+    console.error('Process will exit in production mode');
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception:', error);
+  // Nu închide procesul în dev pentru a nu pierde sesiunea
+  if (!dev) {
+    console.error('Process will exit in production mode');
+    process.exit(1);
+  }
+});
+
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 

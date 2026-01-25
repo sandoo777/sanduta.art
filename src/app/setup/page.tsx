@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useRouter } from "next/navigation";
 import { Card, Input, Button } from "@/components/ui";
 

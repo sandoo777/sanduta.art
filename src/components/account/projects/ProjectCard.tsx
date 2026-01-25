@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import {
   EllipsisVerticalIcon,
   PencilIcon,
@@ -81,7 +81,7 @@ export default function ProjectCard({
     <>
       <div className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200">
         {/* Thumbnail */}
-        <Link
+        <AuthLink
           href={`/editor/${project.id}`}
           className="block aspect-[4/3] bg-gray-100 relative overflow-hidden"
         >
@@ -116,7 +116,7 @@ export default function ProjectCard({
               <ArrowTopRightOnSquareIcon className="w-8 h-8 text-white drop-shadow-lg" />
             </div>
           </div>
-        </Link>
+        </AuthLink>
 
         {/* Content */}
         <div className="p-4">
@@ -146,13 +146,13 @@ export default function ProjectCard({
                     onClick={() => setShowMenu(false)}
                   />
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                    <Link
+                    <AuthLink
                       href={`/editor/${project.id}`}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       <PencilIcon className="w-4 h-4" />
                       Deschide în editor
-                    </Link>
+                    </AuthLink>
                     <button
                       onClick={handleDuplicate}
                       disabled={loading}

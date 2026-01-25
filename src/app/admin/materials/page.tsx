@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, Plus, AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { Table, Badge } from "@/components/ui";
+import { AuthLink } from '@/components/common/links/AuthLink';
+import { Table } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { Material, MaterialFilters } from "@/modules/materials/types";
@@ -281,12 +282,12 @@ export default function MaterialsPage() {
               key: 'actions',
               label: 'Acțiuni',
               render: (material) => (
-                <Link
+                <AuthLink
                   href={`/admin/materials/${material.id}`}
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
                   Vezi detalii
-                </Link>
+                </AuthLink>
               ),
             },
           ]}

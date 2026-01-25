@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Table, Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
+import { Table } from '@/components/ui/Table';
 import { Users, Plus, Search, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react";
 import { UserRole } from "@prisma/client";
 import { User } from '@/types/models';

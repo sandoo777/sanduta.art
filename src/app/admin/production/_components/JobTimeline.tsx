@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui/Card';
 
 interface TimelineEvent {
   id: string;

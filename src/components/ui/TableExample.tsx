@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Table, Badge, Button, type Column } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Table } from '@/components/ui/Table';
 
 // Tipul de date pentru exemplu
 interface User {

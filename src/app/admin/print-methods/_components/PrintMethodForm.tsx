@@ -8,10 +8,13 @@ import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { Material } from "@/modules/materials/types";
 import { printMethodFormSchema, type PrintMethodFormData } from "@/lib/validations/admin";
-import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui";
+import { Modal } from "@/components/ui/Modal";
 
 interface PrintMethodFormProps {
   printMethod?: PrintMethod | null;
@@ -73,10 +76,10 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">{
-          <div className="space-y-4">
-            {/* Name */}
-            <FormField
+      <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="space-y-4">
+          {/* Name */}
+          <FormField
               name="name"
               render={({ field }) => (
                 <div>
@@ -270,10 +273,10 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               )}
             />
           </div>
-      </Form>
+        </Form>
 
-      {/* Footer */}
-      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50">
         <Button
           type="button"
           variant="ghost"

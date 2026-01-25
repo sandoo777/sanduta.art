@@ -10,7 +10,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui";
+import { Modal } from "@/components/ui/Modal";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 
 interface CustomerModalProps {

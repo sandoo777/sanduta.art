@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { XMarkIcon, DocumentArrowDownIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
 import { ExportOptions, ExportFormat } from '@/modules/editor/export/exportTypes';
 import { validateExport, exportPNG, exportPDF, exportSVG, exportPrintReady } from '@/modules/editor/export/exportEngine';
 import { useEditorStore } from '@/modules/editor/editorStore';

@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, Package, AlertCircle } from "lucide-react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui";
+import { Badge } from "@/components/ui/Badge";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { MaterialWithDetails } from "@/modules/materials/types";
 import { MaterialModal } from "../_components/MaterialModal";
@@ -64,13 +64,13 @@ export default function MaterialDetailsPage() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
-        <Link
+        <AuthLink
           href="/admin/materials"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Înapoi la materiale</span>
-        </Link>
+        </AuthLink>
 
         {/* Header */}
         <Card className="mb-6">

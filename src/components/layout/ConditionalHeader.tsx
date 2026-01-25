@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { PublicHeader } from '@/components/common';
+import { PublicHeader } from '@/components/common/headers/PublicHeader';
 
 /**
  * ConditionalHeader - Afișează headerul pe paginile publice

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardContent, Badge } from "@/components/ui";
 import { ProductionJob, ProductionPriority } from "@/modules/production/useProduction";
 
@@ -33,7 +33,7 @@ export default function JobCard({ job }: JobCardProps) {
   const overdue = isOverdue(job.dueDate);
 
   return (
-    <Link href={`/admin/production/${job.id}`}>
+    <AuthLink href={`/admin/production/${job.id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
         <CardContent className="p-4">
           {/* Header */}
@@ -110,6 +110,6 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
         </CardContent>
       </Card>
-    </Link>
+    </AuthLink>
   );
 }

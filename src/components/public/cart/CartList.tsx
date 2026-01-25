@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-import { EmptyState, Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { CartItem } from './CartItem';
 import { useCartStore } from '@/modules/cart/cartStore';
 

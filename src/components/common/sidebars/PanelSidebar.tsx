@@ -67,6 +67,7 @@ export function PanelSidebar({ title, userInfo, navItems, className = '' }: Pane
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-700 font-medium'

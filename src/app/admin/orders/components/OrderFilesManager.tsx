@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { EmptyState } from '@/components/ui';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useOrders } from '@/modules/orders/useOrders';
 import { toast } from 'sonner';
 import { Trash2, Plus, FileText, Download } from 'lucide-react';

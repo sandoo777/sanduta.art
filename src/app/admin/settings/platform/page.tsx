@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState, ErrorState } from '@/components/ui';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Settings, Save, Globe, Mail, DollarSign, Bell, Building2 } from "lucide-react";
 
 interface PlatformSettings {

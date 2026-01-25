@@ -6,7 +6,7 @@ import { Table } from "@/components/ui/Table";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { Column } from "@/components/ui/Table.types";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { ExternalLink } from "lucide-react";
 import { User } from '@/types/models';
 import { useUsers } from '@/domains/admin/hooks/useUsers';
@@ -227,7 +227,7 @@ export default function AdminUsersPage() {
                 align: 'center',
                 render: (user) => (
                   getRoleDashboard(user.role) ? (
-                    <Link
+                    <AuthLink
                       href={getRoleDashboard(user.role)!}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
                     >
                       <ExternalLink className="w-4 h-4" />
                       Open
-                    </Link>
+                    </AuthLink>
                   ) : null
                 )
               },

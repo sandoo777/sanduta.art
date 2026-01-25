@@ -1,7 +1,8 @@
 // Server Component — Data fetching for single order
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
+import { safeRedirect, validateServerData } from '@/lib/serverSafe';
 import prisma from '@/lib/prisma';
 import OrderDetailClient from './OrderDetailClient';
 
@@ -10,21 +11,25 @@ interface Props {
 }
 
 export default async function OrderDetailPage({ params }: Props) {
-  // 1. Await params (Next.js 15 requirement)
-  const { id } = await params;
+  try {
+    // 1. Await params (Next.js 15 requirement)
+    const { id } = await params;
 
-  // 2. Auth check server-side
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect('/login?callbackUrl=/account/orders');
-  }
+    // 2. Auth check server-side
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      safeRedirect('/login?callbackUrl=/account/orders');
+    }
 
-  // 3. Fetch order directly from database
-  const order = await prisma.order.findUnique({
-    where: {
-      id: parseInt(id, 10),
-      userId: session.user.id, // Security: only user's own orders
-    },
+    // Validate session has user ID
+    validateServerData(session?.user?.id, 'User ID not found in session');
+
+    // 3. Fetch order directly from database
+    const order = await prisma.order.findUnique({
+      where: {
+        id: parseInt(id, 10),
+        userId: session!.user.id, // Security: only user's own orders
+      },
     select: {
       id: true,
       orderNumber: true,
@@ -103,3 +108,5 @@ export default async function OrderDetailPage({ params }: Props) {
   };
 
   // 6. Pass data to Client Component
+  return <OrderDetailClient order={orderData} />;
+}

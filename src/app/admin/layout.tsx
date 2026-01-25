@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LoadingState } from '@/components/ui';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useSession } from 'next-auth/react';
 import { AdminSidebar } from './_components/AdminSidebar';
 import { AdminTopbar } from './_components/AdminTopbar';

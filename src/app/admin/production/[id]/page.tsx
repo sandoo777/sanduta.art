@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { LoadingState, Card, CardContent } from '@/components/ui';
-import Link from "next/link";
+import { Card, CardContent } from '@/components/ui/Card';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { useProduction, ProductionJob, UpdateJobData } from "@/modules/production/useProduction";
 import { StatusBadge } from "../_components/StatusManager";
 import { PriorityBadge } from "../_components/PriorityManager";
@@ -93,9 +94,9 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-red-600">
           {error || "Job not found"}
         </div>
-        <Link href="/admin/production" className="mt-4 inline-block text-indigo-600 hover:text-indigo-700">
+        <AuthLink href="/admin/production" className="mt-4 inline-block text-indigo-600 hover:text-indigo-700">
           ← Back to Production Board
-        </Link>
+        </AuthLink>
       </div>
     );
   }
@@ -106,7 +107,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-6">
           {/* Breadcrumb */}
-          <Link 
+          <AuthLink 
             href="/admin/production" 
             className="text-indigo-600 hover:text-indigo-700 text-sm font-medium mb-4 inline-flex items-center gap-1"
           >
@@ -114,7 +115,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Production Board
-          </Link>
+          </AuthLink>
 
           {/* Job Info */}
           <div className="flex items-start justify-between gap-4 mt-4">

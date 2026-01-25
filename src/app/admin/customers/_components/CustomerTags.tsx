@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button, EmptyState } from "@/components/ui";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useCustomers, type CustomerTag } from "@/modules/customers/useCustomers";
 

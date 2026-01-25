@@ -146,6 +146,49 @@ export async function GET(req: NextRequest) {
 
 **Всегда**: try/catch, логирование, проверка роли, понятные HTTP статусы.
 
+### Server Component Safety (`src/lib/serverSafe.ts`)
+```typescript
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
+
+// Server Component pattern:
+export default async function Page() {
+  try {
+    // 1. Auth check с safeRedirect
+    const session = await getServerSession(authOptions);
+    if (!session) return safeRedirect('/login');
+    
+    // 2. Validate data
+    const userId = validateServerData(session?.user?.id, 'User ID missing');
+    
+    // 3. Fetch with timeout + retry
+    const data = await fetchServerData(
+      () => prisma.table.findMany({ where: { userId } }),
+      { timeout: 10000, retries: 2 }
+    );
+    
+    return <ClientComponent data={data} />;
+  } catch (error) {
+    logger.error('Page', 'Failed', { error });
+    throw error; // Next.js error boundary
+  }
+}
+```
+
+**Функции защиты:**
+- `safeRedirect(path)` — защищает redirect(), позволяет NEXT_REDIRECT
+- `validateServerData<T>(data, msg)` — проверяет data !== null/undefined, type-safe
+- `fetchServerData(fetcher, opts)` — Prisma wrapper с timeout (10s) + retry (2x)
+- `serverSafe(fn, opts)` — generic async wrapper с fallback
+- `withServerSafety(Component)` — HOC для page-level защиты
+
+**Когда использовать:**
+- ❗ **ВСЕГДА** `safeRedirect()` вместо `redirect()` в Server Components
+- ❗ **ВСЕГДА** `validateServerData()` для session.user.id, params.id
+- ❗ **ВСЕГДА** `fetchServerData()` для Prisma queries
+- ❗ **ВСЕГДА** return перед `safeRedirect()`
+
+**Документация**: `docs/SERVER_COMPONENT_SAFETY_GUIDE.md`
+
 ### UI компоненты (`src/components/ui/`)
 ```typescript
 import { Button, Card, Badge, Input, Select } from '@/components/ui';

@@ -1,6 +1,6 @@
 'use client';
 
-import { EmptyState } from '@/components/ui';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Package } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 

@@ -1,38 +1,50 @@
 // Server Component — Data fetching with direct Prisma access
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import ProjectsClient from './ProjectsClient';
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 
 export default async function ProjectsPage() {
-  // 1. Auth check server-side
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect('/login');
-  }
+  try {
+    // 1. Auth check server-side
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return safeRedirect('/login');
+    }
 
-  // 2. Fetch projects directly from database
-  // Note: Assuming Project model exists in Prisma schema
-  // If not, this will need to be adjusted based on actual schema
-  
-  const projects = await prisma.project.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    select: {
-      id: true,
-      name: true,
-      thumbnail: true,
-      createdAt: true,
-      updatedAt: true,
-      productType: true,
-      dimensions: true,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  });
+    // 2. Validate session data
+    const userId = validateServerData(
+      session?.user?.id,
+      'User ID not found in session'
+    );
+
+    // 3. Fetch projects directly from database with safe wrapper
+    // Note: Assuming Project model exists in Prisma schema
+    // If not, this will need to be adjusted based on actual schema
+    const projects = await fetchServerData(
+      () => prisma.project.findMany({
+        where: {
+          userId,
+        },
+        select: {
+          id: true,
+          name: true,
+          thumbnail: true,
+          createdAt: true,
+          updatedAt: true,
+          productType: true,
+          dimensions: true,
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      }),
+      {
+        timeout: 10000,
+        retries: 2,
+      }
+    );
 
   // 3. Transform data for client
   const projectsData = projects.map(project => ({
@@ -47,178 +59,4 @@ export default async function ProjectsPage() {
 
   // 4. Pass data to Client Component for interactivity
   return <ProjectsClient projects={projectsData} />;
-}
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Sigur vrei să ștergi acest proiect?')) return;
-
-    try {
-      const response = await fetch(`/api/account/projects/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Failed to delete project');
-
-      await fetchProjects();
-    } catch (_error) {
-      console.error('Error deleting project:', error);
-      alert('Eroare la ștergerea proiectului');
-    }
-  };
-
-  const handleDuplicate = async (id: string) => {
-    try {
-      const response = await fetch(`/api/account/projects/${id}/duplicate`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) throw new Error('Failed to duplicate project');
-
-      await fetchProjects();
-    } catch (_error) {
-      console.error('Error duplicating project:', error);
-      alert('Eroare la duplicarea proiectului');
-    }
-  };
-
-  const handleExport = async (id: string, format: 'png' | 'pdf') => {
-    try {
-      const response = await fetch(`/api/account/projects/${id}/export?format=${format}`);
-      
-      if (!response.ok) throw new Error('Failed to export project');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `project-${id}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (_error) {
-      console.error('Error exporting project:', error);
-      alert('Eroare la exportarea proiectului');
-    }
-  };
-
-  if (loading) {
-    return <LoadingState text="Se încarcă proiectele..." />;
-  }
-
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Proiectele Mele</h1>
-          <p className="text-gray-600 mt-2">
-            Gestionează proiectele create în editorul vizual
-          </p>
-        </div>
-        <Link href="/editor">
-          <Button variant="primary">
-            <Plus className="w-4 h-4 mr-2" />
-            Proiect Nou
-          </Button>
-        </Link>
-      </div>
-
-      {/* Projects Grid */}
-      {projects.length === 0 ? (
-        <Card className="p-12 text-center">
-          <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Niciun proiect salvat
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Creează primul tău proiect în editorul vizual
-          </p>
-          <Link href="/editor">
-            <Button variant="primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Creează Proiect
-            </Button>
-          </Link>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <Card key={project.id} className="overflow-hidden group">
-              {/* Thumbnail */}
-              <div className="relative h-48 bg-gray-100">
-                {project.thumbnail ? (
-                  <Image
-                    src={project.thumbnail}
-                    alt={project.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <FolderOpen className="w-12 h-12 text-gray-400" />
-                  </div>
-                )}
-                
-                {/* Overlay Actions */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Link href={`/editor/${project.id}`}>
-                    <Button variant="primary" className="text-sm">
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Editează
-                    </Button>
-                  </Link>
-                  <Button
-                    onClick={() => handleExport(project.id, 'png')}
-                    variant="secondary"
-                    className="text-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 truncate">
-                  {project.name}
-                </h3>
-                <div className="space-y-1 text-sm text-gray-600 mb-4">
-                  <p>Tip: {project.productType}</p>
-                  <p>Dimensiuni: {project.dimensions}</p>
-                  <p className="text-xs">
-                    Actualizat: {new Date(project.updatedAt).toLocaleDateString('ro-RO')}
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <Link href={`/editor/${project.id}`} className="flex-1">
-                    <Button variant="secondary" className="w-full text-sm">
-                      <Eye className="w-4 h-4 mr-2" />
-                      Vezi
-                    </Button>
-                  </Link>
-                  <Button
-                    onClick={() => handleDuplicate(project.id)}
-                    variant="ghost"
-                    className="text-gray-600"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(project.id)}
-                    variant="ghost"
-                    className="text-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }

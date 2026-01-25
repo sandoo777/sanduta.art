@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock, Eye, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { useAnalytics } from "@/modules/admin/useAnalytics";
 
 interface RecentOrder {
@@ -114,13 +114,13 @@ export default function RecentOrders() {
             <p className="text-sm text-gray-600">Ultimele 10 comenzi</p>
           </div>
         </div>
-        <Link
+        <AuthLink
           href="/admin/orders"
           className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
         >
           Vezi toate
           <ArrowRight className="w-4 h-4" />
-        </Link>
+        </AuthLink>
       </div>
 
       {/* Orders Table */}
@@ -179,13 +179,13 @@ export default function RecentOrders() {
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <Link
+                  <AuthLink
                     href={`/admin/orders/${order.id}`}
                     className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
                   >
                     <Eye className="w-4 h-4" />
                     Vezi
-                  </Link>
+                  </AuthLink>
                 </td>
               </tr>
             ))}

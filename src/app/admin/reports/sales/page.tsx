@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { ArrowLeft, RefreshCw, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
@@ -68,12 +68,12 @@ export default function SalesReportPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link
+          <AuthLink
             href="/admin/reports"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-          </Link>
+          </AuthLink>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Sales Report</h1>
             <p className="text-sm text-gray-600 mt-1">

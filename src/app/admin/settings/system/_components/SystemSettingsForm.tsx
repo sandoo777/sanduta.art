@@ -129,7 +129,8 @@ export function SystemSettingsForm() {
             )}
           />
         </div>
-      </div>
+      </CardContent>
+      </Card>
 
       {/* Localization */}
       <Card>

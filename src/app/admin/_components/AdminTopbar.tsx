@@ -4,8 +4,8 @@ import { Menu, LogOut, User, ChevronDown, ExternalLink } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
 import { useState } from 'react';
-import Link from 'next/link';
-import { Badge } from '@/components/ui';
+import { AuthLink } from '@/components/common/links/AuthLink';
+import { Badge } from '@/components/ui/Badge';
 
 interface AdminTopbarProps {
   onMenuClick: () => void;
@@ -39,7 +39,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
         {/* Right side - User info and actions */}
         <div className="flex items-center space-x-4">
           {/* View Site Button */}
-          <Link 
+          <AuthLink 
             href="/"
             target="_blank"
             rel="noopener noreferrer"
@@ -47,7 +47,7 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
           >
             <ExternalLink className="w-4 h-4" />
             <span className="hidden sm:inline">Vezi site-ul</span>
-          </Link>
+          </AuthLink>
 
           {/* User dropdown */}
           <div className="relative">

@@ -1,4 +1,5 @@
-import { PublicHeader, PublicFooter } from '@/components/common';
+import { PublicHeader } from '@/components/common/headers/PublicHeader';
+import { PublicFooter } from '@/components/common/footers/PublicFooter';
 
 export default function ProductsLayout({
   children,

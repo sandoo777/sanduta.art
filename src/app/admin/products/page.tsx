@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { LoadingState, EmptyState, EmptySearch, Button, Card, CardContent } from '@/components/ui';
+import { AuthLink } from '@/components/common/links/AuthLink';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { EmptySearch, EmptyState } from '@/components/ui/EmptyState';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Plus, Package } from 'lucide-react';
 import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductSearch } from '@/components/admin/products/ProductSearch';
@@ -179,13 +182,13 @@ export default function ProductsPage() {
           <StatusFilter checked={activeOnly} onChange={setActiveOnly} />
 
           {/* Add Button */}
-          <Link href="/admin/products/new">
+          <AuthLink href="/admin/products/new">
             <Button variant="primary">
               <Plus className="h-5 w-5" />
               <span className="hidden sm:inline">Add Product</span>
               <span className="sm:hidden">Add</span>
             </Button>
-          </Link>
+          </AuthLink>
         </div>
       </div>
 

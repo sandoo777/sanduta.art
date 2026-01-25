@@ -1,13 +1,7 @@
 import React from 'react';
 import { z } from 'zod';
-import {
-  Form,
-  FormField,
-  FormLabel,
-  FormMessage,
-  Input,
-  Button,
-} from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 // Exemplu de schemă Zod
 const loginSchema = z.object({

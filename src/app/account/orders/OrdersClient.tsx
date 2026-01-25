@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import Image from 'next/image';
-import { PageTitle, StatusBadge, Card, Button } from '@/components/ui';
+import { StatusBadge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { PageTitle } from '@/components/ui/SectionTitle';
 import { Package, ShoppingBag, Search } from 'lucide-react';
 
 interface OrderWithItems {
@@ -92,12 +95,12 @@ export default function OrdersClient({ orders }: OrdersClientProps) {
             <p className="text-gray-600 mb-6">
               Explorează catalogul nostru și creează prima ta comandă personalizată.
             </p>
-            <Link href="/products">
+            <AuthLink href="/products">
               <Button size="lg" className="inline-flex items-center gap-2">
                 <ShoppingBag size={20} />
                 Descoperă Produsele
               </Button>
-            </Link>
+            </AuthLink>
           </div>
         </Card>
       )}
@@ -273,12 +276,12 @@ export default function OrdersClient({ orders }: OrdersClientProps) {
               </div>
 
               <div className="border-t pt-4 mt-4">
-                <Link href={`/account/orders/${order.id}`}>
+                <AuthLink href={`/account/orders/${order.id}`}>
                   <Button variant="primary" fullWidth className="inline-flex items-center justify-center gap-2">
                     <Package size={18} />
                     Vezi Detalii Comandă
                   </Button>
-                </Link>
+                </AuthLink>
               </div>
             </Card>
           ))}

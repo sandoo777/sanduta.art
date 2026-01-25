@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { useSecurity } from '@/modules/account/useSecurity';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { Form, FormField, FormLabel, FormMessage, Input } from '@/components/ui';
+import { Input } from '@/components/ui/Input';
+import { Form } from '@/components/ui/Form';
+import { FormField } from '@/components/ui/FormField';
+import { FormLabel } from '@/components/ui/FormLabel';
+import { FormMessage } from '@/components/ui/FormMessage';
 import { changePasswordSchema, type ChangePasswordFormData, getPasswordStrengthDetails } from '@/lib/validations/user-panel';
 
 export default function ChangePasswordForm() {

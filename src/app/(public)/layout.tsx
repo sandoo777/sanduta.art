@@ -1,4 +1,5 @@
-import { PublicHeader, PublicFooter } from '@/components/common';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/public/Footer';
 import { generateMetadata } from './seo';
 
 export const metadata = generateMetadata();
@@ -10,9 +11,9 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <PublicHeader />
+      <Header />
       <main className="flex-1">{children}</main>
-      <PublicFooter />
+      <Footer />
     </div>
   );
 }

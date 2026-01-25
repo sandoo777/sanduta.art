@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { ErrorState } from '@/components/ui';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { BrandingSettings } from '@/components/theme/BrandingSettings';
 import { ColorSettings } from '@/components/theme/ColorSettings';

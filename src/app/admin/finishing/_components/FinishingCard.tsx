@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { MoreVertical, Edit2, Trash2, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui';
-import { Button } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 import type { FinishingOperation } from '@/modules/finishing/types';

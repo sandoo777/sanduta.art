@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { Package } from "lucide-react";
 import type { Material } from "@/modules/materials/types";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui";
+import { Badge } from "@/components/ui/Badge";
 
 interface MaterialCardProps {
   material: Material;
@@ -12,34 +12,35 @@ interface MaterialCardProps {
 
 export function MaterialCard({ material }: MaterialCardProps) {
   return (
-    <Link href={`/admin/materials/${material.id}`}>
+    <AuthLink href={`/admin/materials/${material.id}`}>
       <Card className="hover:shadow-md transition-shadow">
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Package className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{material.name}</h3>
+                {material.sku && (
+                  <p className="text-sm text-gray-500">SKU: {material.sku}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">{material.name}</h3>
-              {material.sku && (
-                <p className="text-sm text-gray-500">SKU: {material.sku}</p>
-              )}
-            </div>
+            {material.stock === 0 ? (
+              <Badge variant="default" size="sm" className="bg-black text-white">
+                Stoc epuizat
+              </Badge>
+            ) : material.lowStock ? (
+              <Badge variant="danger" size="sm">
+                Stoc scăzut
+              </Badge>
+            ) : (
+              <Badge variant="success" size="sm">
+                OK
+              </Badge>
+            )}
           </div>
-          {material.stock === 0 ? (
-            <Badge variant="default" size="sm" className="bg-black text-white">
-              Stoc epuizat
-            </Badge>
-          ) : material.lowStock ? (
-            <Badge variant="danger" size="sm">
-              Stoc scăzut
-            </Badge>
-          ) : (
-            <Badge variant="success" size="sm">
-              OK
-            </Badge>
-          )}
 
           <div className="grid grid-cols-2 gap-4 mb-3">
           <div>
@@ -79,6 +80,6 @@ export function MaterialCard({ material }: MaterialCardProps) {
         )}
         </CardContent>
       </Card>
-    </Link>
+    </AuthLink>
   );
 }

@@ -5,7 +5,7 @@ import { KpiCard } from './_components/KpiCard';
 import { SalesChart } from './_components/SalesChart';
 import { TopProducts } from './_components/TopProducts';
 import { ProductionOverview } from './_components/ProductionOverview';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 
 export default function ManagerDashboardPage() {
   return (
@@ -17,18 +17,18 @@ export default function ManagerDashboardPage() {
           <p className="text-gray-600 mt-2">Production & operations overview</p>
         </div>
         <div className="flex gap-3">
-          <Link 
+          <AuthLink 
             href="/manager/orders"
             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
           >
             View Orders
-          </Link>
-          <Link 
+          </AuthLink>
+          <AuthLink 
             href="/manager/production"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Production
-          </Link>
+          </AuthLink>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export default function ManagerDashboardPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link 
+          <AuthLink 
             href="/manager/orders"
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition"
           >
@@ -94,9 +94,9 @@ export default function ManagerDashboardPage() {
               <p className="font-medium text-gray-900">Manage Orders</p>
               <p className="text-xs text-gray-500">View and process orders</p>
             </div>
-          </Link>
+          </AuthLink>
 
-          <Link 
+          <AuthLink 
             href="/manager/production"
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition"
           >
@@ -107,9 +107,9 @@ export default function ManagerDashboardPage() {
               <p className="font-medium text-gray-900">Production</p>
               <p className="text-xs text-gray-500">Track production status</p>
             </div>
-          </Link>
+          </AuthLink>
 
-          <Link 
+          <AuthLink 
             href="/manager/reports"
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition"
           >
@@ -120,7 +120,7 @@ export default function ManagerDashboardPage() {
               <p className="font-medium text-gray-900">Reports</p>
               <p className="text-xs text-gray-500">View analytics & reports</p>
             </div>
-          </Link>
+          </AuthLink>
         </div>
       </div>
     </div>

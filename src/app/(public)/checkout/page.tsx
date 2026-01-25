@@ -7,7 +7,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { Button, Card, CardHeader, CardContent, CardFooter, Input, FormField } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { FormField } from '@/components/ui/FormField';
 import { useCartStore } from '@/modules/cart/cartStore';
 
 // Zod Schema pentru validare checkout

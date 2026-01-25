@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
+import { safeRedirect, validateServerData } from '@/lib/serverSafe';
 import OrdersClient from './OrdersClient';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export default async function AccountOrdersPage() {
   
   if (!session?.user?.id) {
     console.log('[/account/orders] No session, redirecting to signin');
-    redirect('/auth/signin');
+    safeRedirect('/auth/signin');
   }
 
   console.log('[/account/orders] Fetching orders for user:', session.user.id);

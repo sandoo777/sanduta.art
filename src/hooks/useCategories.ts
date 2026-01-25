@@ -2,12 +2,23 @@
 
 /**
  * Hook pentru obținere categorii cu ierarhie
- * Type-safe cu CategoryWithChildren din @/types/models
  */
 
 import { useState, useEffect } from 'react';
-import { fetchCategories as fetchCategoriesAPI } from '@/lib/api';
-import { Category, CategoryWithChildren } from '@/types/models';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  color?: string;
+  parentId?: string | null;
+  order: number;
+}
+
+interface CategoryWithChildren extends Category {
+  children?: CategoryWithChildren[];
+}
 
 export function useCategories() {
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
@@ -21,38 +32,36 @@ export function useCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await fetchCategoriesAPI();
+      const response = await fetch('/api/categories');
       
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch categories');
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
       }
 
-      const data: Category[] = response.data;
+      const data: Category[] = await response.json();
       
-      // Build hierarchy - type-safe with CategoryWithChildren
+      // Construim ierarhia: categorii principale cu copiii lor
       const categoryMap = new Map<string, CategoryWithChildren>();
       const rootCategories: CategoryWithChildren[] = [];
 
-      // First pass: create map
+      // Prima tură: cream map-ul
       data.forEach((cat) => {
         categoryMap.set(cat.id, { ...cat, children: [] });
       });
 
-      // Second pass: build hierarchy - no casts needed
+      // A doua tură: construim ierarhia
       data.forEach((cat) => {
-        const category = categoryMap.get(cat.id);
-        if (!category) return; // Type guard
+        const category = categoryMap.get(cat.id)!;
         
         if (cat.parentId) {
+          // Este subcategorie
           const parent = categoryMap.get(cat.parentId);
           if (parent) {
             if (!parent.children) parent.children = [];
             parent.children.push(category);
-          } else {
-            // Parent not found - treat as root
-            rootCategories.push(category);
           }
         } else {
+          // Este categorie principală
           rootCategories.push(category);
         }
       });

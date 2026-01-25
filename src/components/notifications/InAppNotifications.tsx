@@ -19,7 +19,7 @@ import {
   UserCheck,
   Wrench,
 } from 'lucide-react';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 
 interface InAppNotificationsProps {

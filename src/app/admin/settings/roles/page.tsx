@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState, Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Shield, Users, Key, Info } from "lucide-react";
 import { UserRole } from "@prisma/client";
 

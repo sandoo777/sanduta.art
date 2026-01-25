@@ -1,0 +1,49 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Auth Prefetch Safety Check
+# Prevents committing unsafe Link usage in auth routes
+
+echo "🔍 Checking for unsafe Link usage in auth routes..."
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(tsx|ts)$' | grep -E '(app/account|app/admin|app/manager|app/operator|components/account|components/admin)')
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "✅ No auth route files staged"
+  exit 0
+fi
+
+FOUND_UNSAFE=0
+
+for FILE in $STAGED_FILES; do
+  if [ -f "$FILE" ]; then
+    # Check if file uses Link from next/link (but not AuthLink)
+    if grep -q "from 'next/link'" "$FILE" || grep -q 'from "next/link"' "$FILE"; then
+      if ! grep -q "AuthLink" "$FILE"; then
+        echo "❌ UNSAFE: $FILE uses Link instead of AuthLink"
+        FOUND_UNSAFE=1
+      fi
+    fi
+  fi
+done
+
+if [ $FOUND_UNSAFE -eq 1 ]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "❌ COMMIT BLOCKED — Unsafe Link usage detected"
+  echo ""
+  echo "Auth-protected routes must use AuthLink to prevent prefetch crashes."
+  echo ""
+  echo "Fix:"
+  echo "  1. Replace: import Link from 'next/link'"
+  echo "     With:    import { AuthLink } from '@/components/common/links/AuthLink'"
+  echo ""
+  echo "  2. Replace: <Link> with <AuthLink>"
+  echo ""
+  echo "Or run: ./scripts/fix-auth-prefetch.sh"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  exit 1
+fi
+
+echo "✅ All auth routes use AuthLink — safe to commit"
+exit 0

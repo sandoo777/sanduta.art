@@ -10,7 +10,7 @@ import { FINISHING_OPERATION_TYPES } from '@/modules/finishing/types';
 import { finishingFormSchema, type FinishingFormData } from '@/lib/validations/admin';
 import { Form, FormField, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui';
+import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 
 interface FinishingFormProps {

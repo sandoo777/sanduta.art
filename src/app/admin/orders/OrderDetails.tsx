@@ -10,7 +10,7 @@ import { OrderFilesManager } from './components/OrderFilesManager';
 import { OrderTimeline } from './components/OrderTimeline';
 import { toast } from 'sonner';
 import { ChevronLeft, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Order } from '@/types/models';
 
@@ -93,12 +93,12 @@ export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">Comanda nu a fost găsită</p>
-        <Link
+        <AuthLink
           href="/admin/orders"
           className="mt-4 inline-block text-blue-600 hover:text-blue-700"
         >
           Înapoi la comenzi
-        </Link>
+        </AuthLink>
       </div>
     );
   }
@@ -108,12 +108,12 @@ export default function OrderDetailsPage({ params }: OrderDetailsPageProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link
+          <AuthLink
             href="/admin/orders"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ChevronLeft size={20} className="text-gray-600" />
-          </Link>
+          </AuthLink>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Comanda {order.id}</h1>
             <p className="text-gray-600 mt-1">

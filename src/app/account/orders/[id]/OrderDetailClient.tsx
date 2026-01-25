@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
 
 interface OrderItem {
   id: number;

@@ -2,6 +2,68 @@
 > sanduta.art@0.1.0 dev
 > NODE_OPTIONS='--max-old-space-size=2048' tsx server.ts
 
-[2026-01-25T12:17:45.710Z] [INFO] [Socket.IO] Initialized successfully 
+[2026-01-25T13:43:52.350Z] [INFO] [Socket.IO] Initialized successfully 
 > Ready on http://localhost:3000
 > Socket.IO enabled on path /api/socket
+ ○ Compiling / ...
+ ⚠ ./src/components/ui/Form.tsx
+Attempted import error: 'useForm' is not exported from 'react-hook-form' (imported as 'useForm').
+
+Import trace for requested module:
+./src/components/ui/Form.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+
+./src/components/ui/Form.tsx
+Attempted import error: 'FormProvider' is not exported from 'react-hook-form' (imported as 'FormProvider').
+
+Import trace for requested module:
+./src/components/ui/Form.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+
+./src/components/ui/Form.tsx
+export 'useFormContext' (reexported as 'useFormContext') was not found in 'react-hook-form' (possible exports: appendErrors, createFormControl, get, set)
+
+Import trace for requested module:
+./src/components/ui/Form.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+
+./src/components/ui/Form.tsx
+export 'useWatch' (reexported as 'useWatch') was not found in 'react-hook-form' (possible exports: appendErrors, createFormControl, get, set)
+
+Import trace for requested module:
+./src/components/ui/Form.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+
+./src/components/ui/FormField.tsx
+Attempted import error: 'useFormContext' is not exported from 'react-hook-form' (imported as 'useFormContext').
+
+Import trace for requested module:
+./src/components/ui/FormField.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+
+./src/components/ui/FormField.tsx
+Attempted import error: 'Controller' is not exported from 'react-hook-form' (imported as 'Controller').
+
+Import trace for requested module:
+./src/components/ui/FormField.tsx
+./src/components/ui/index.ts
+./src/components/public/home/FinalCTA.tsx
+./src/components/public/home/index.ts
+./src/app/(public)/page.tsx
+prisma:query SELECT "public"."products"."id", "public"."products"."name", "public"."products"."slug", "public"."products"."price", "public"."products"."descriptionShort" FROM "public"."products" WHERE "public"."products"."active" = $1 ORDER BY "public"."products"."createdAt" DESC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."product_images"."id", "public"."product_images"."url", "public"."product_images"."productId" FROM "public"."product_images" WHERE "public"."product_images"."productId" IN ($1,$2,$3) ORDER BY "public"."product_images"."createdAt" ASC OFFSET $4

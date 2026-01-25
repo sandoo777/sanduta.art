@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { ArrowLeft, Edit } from "lucide-react";
-import { Button, LoadingState, Card, EmptyState, ErrorState } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useRouter } from "next/navigation";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 import CustomerModal from "../_components/CustomerModal";

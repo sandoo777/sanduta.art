@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
@@ -315,13 +315,13 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-16">
       <div className="flex flex-col gap-2">
-        <Link
+        <AuthLink
           href="/admin/products"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4" />
           Înapoi la produse
-        </Link>
+        </AuthLink>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoadingState } from '@/components/ui';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { fetchUsers } from '@/lib/api';
 import { User } from '@/types/models';
 

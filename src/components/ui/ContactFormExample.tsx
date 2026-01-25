@@ -13,18 +13,9 @@
 
 import { useState } from 'react';
 import { z } from 'zod';
-import {
-  Form,
-  FormField,
-  FormLabel,
-  FormMessage,
-  Input,
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 
 // Schema Zod cu validări reale
 const contactSchema = z.object({

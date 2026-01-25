@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
 import { Filters, FilterState } from '@/components/public/catalog/Filters';
 import { SortBar, SortOption } from '@/components/public/catalog/SortBar';
 import { ProductGrid } from '@/components/public/catalog/ProductGrid';

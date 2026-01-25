@@ -21,7 +21,7 @@ export function useMaterials() {
         throw new Error("Failed to fetch materials");
       }
       return await response.json();
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching materials:", error);
       toast.error("Eroare la încărcarea materialelor");
       return [];
@@ -38,7 +38,7 @@ export function useMaterials() {
         throw new Error("Failed to fetch material");
       }
       return await response.json();
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching material:", error);
       toast.error("Eroare la încărcarea materialului");
       return null;
@@ -64,7 +64,7 @@ export function useMaterials() {
       const material = await response.json();
       toast.success("Material creat cu succes");
       return material;
-    } catch (_error: unknown) {
+    } catch (error: any) {
       console.error("Error creating material:", error);
       toast.error(error.message || "Eroare la crearea materialului");
       return null;
@@ -93,7 +93,7 @@ export function useMaterials() {
       const material = await response.json();
       toast.success("Material actualizat cu succes");
       return material;
-    } catch (_error: unknown) {
+    } catch (error: any) {
       console.error("Error updating material:", error);
       toast.error(error.message || "Eroare la actualizarea materialului");
       return null;
@@ -116,7 +116,7 @@ export function useMaterials() {
 
       toast.success("Material șters cu succes");
       return true;
-    } catch (_error: unknown) {
+    } catch (error: any) {
       console.error("Error deleting material:", error);
       toast.error(error.message || "Eroare la ștergerea materialului");
       return false;
@@ -151,7 +151,7 @@ export function useMaterials() {
       }
       
       return result;
-    } catch (_error: unknown) {
+    } catch (error: any) {
       console.error("Error consuming material:", error);
       toast.error(error.message || "Eroare la consumul materialului");
       return null;

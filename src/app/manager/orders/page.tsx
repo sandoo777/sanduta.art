@@ -1,46 +1,59 @@
 // Server Component — Data fetching with direct Prisma access
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import ManagerOrdersClient from './ManagerOrdersClient';
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 
 export default async function ManagerOrdersPage() {
-  // 1. Auth check server-side
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect('/login');
-  }
+  try {
+    // 1. Auth check server-side
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return safeRedirect('/login');
+    }
 
-  // 2. Role check
-  if (session.user.role !== 'ADMIN' && session.user.role !== 'MANAGER') {
-    redirect('/');
-  }
+    // 2. Validate session data
+    const userRole = validateServerData(
+      session?.user?.role,
+      'User role not found in session'
+    );
 
-  // 3. Fetch orders directly from database
-  const orders = await prisma.order.findMany({
-    select: {
-      id: true,
-      orderNumber: true,
-      status: true,
-      totalAmount: true,
-      createdAt: true,
-      customer: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-      orderItems: {
+    // 3. Role check
+    if (userRole !== 'ADMIN' && userRole !== 'MANAGER') {
+      return safeRedirect('/');
+    }
+
+    // 4. Fetch orders directly from database with safe wrapper
+    const orders = await fetchServerData(
+      () => prisma.order.findMany({
         select: {
           id: true,
+          orderNumber: true,
+          status: true,
+          totalAmount: true,
+          createdAt: true,
+          customer: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+          orderItems: {
+            select: {
+              id: true,
+            },
+          },
         },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      {
+        timeout: 10000,
+        retries: 2,
+      }
+    );
 
   // 4. Transform data for client
   const ordersData = orders.map(order => ({

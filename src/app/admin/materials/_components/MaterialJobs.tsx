@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import { AuthLink } from '@/components/common/links/AuthLink';
 import { Briefcase, ExternalLink } from "lucide-react";
 import type { MaterialWithDetails } from "@/modules/materials/types";
 
@@ -92,12 +92,12 @@ export function MaterialJobs({ material }: MaterialJobsProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h4 className="font-semibold text-gray-900">{job.name}</h4>
-                  <Link
+                  <AuthLink
                     href={`/admin/production/${job.id}`}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     <ExternalLink className="w-4 h-4" />
-                  </Link>
+                  </AuthLink>
                 </div>
                 {job.order && (
                   <p className="text-sm text-gray-600 mb-2">

@@ -5,7 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, Plus } from 'lucide-react';
-import { Card, CardContent, Button, Badge } from '@/components/ui';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { ProductQuickView } from './ProductQuickView';
 
 interface ProductCardProps {
