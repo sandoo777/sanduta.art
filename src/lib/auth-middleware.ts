@@ -20,14 +20,25 @@ export interface AuthenticatedUser {
 export async function requireAuth(
   request: NextRequest
 ): Promise<{ user: AuthenticatedUser } | NextResponse> {
+  console.log('🔐 requireAuth: Getting session...');
+  
   const session = await getServerSession(authOptions);
 
+  console.log('🔐 requireAuth: Session result:', { 
+    hasSession: !!session, 
+    hasUser: !!session?.user,
+    userId: session?.user?.id 
+  });
+
   if (!session || !session.user) {
+    console.log('❌ requireAuth: No session or user found');
     return NextResponse.json(
       { error: 'Neautorizat. Autentificare necesară.' },
       { status: 401 }
     );
   }
+
+  console.log('✅ requireAuth: User authenticated successfully');
 
   return {
     user: {
@@ -142,11 +153,19 @@ export function withAuth(
   ) => Promise<NextResponse>
 ) {
   return async (request: NextRequest, context: { params: Record<string, string> }) => {
+    console.log('🔐 withAuth: Starting authentication check...');
+    
     const authResult = await requireAuth(request);
 
     if (authResult instanceof NextResponse) {
+      console.log('❌ withAuth: Authentication failed, returning error response');
       return authResult;
     }
+
+    console.log('✅ withAuth: Authentication successful', { 
+      userId: authResult.user.id, 
+      role: authResult.user.role 
+    });
 
     return handler(request, { ...context, user: authResult.user });
   };

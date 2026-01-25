@@ -8,16 +8,21 @@ import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
 
 export const GET = withAuth(
   async (request: NextRequest, { user }) => {
+    console.log('🔍 ORDERS API: GET request started', { userId: user?.id });
+    
     try {
+      console.log('🔍 ORDERS API: Checking rate limit...');
       // Rate limiting
       const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);
       if (!rateLimitResult.allowed) {
+        console.log('❌ ORDERS API: Rate limit exceeded');
         return NextResponse.json(
           { error: rateLimitResult.error },
           { status: 429 }
         );
       }
 
+      console.log('🔍 ORDERS API: Rate limit OK, fetching orders...');
       logger.info('API:Orders', 'Fetching user orders', { userId: user.id });
 
       // Fetch user's orders
@@ -33,10 +38,12 @@ export const GET = withAuth(
         orderBy: { createdAt: 'desc' },
       });
 
+      console.log(`✅ ORDERS API: Successfully fetched ${orders.length} orders`);
       logger.info('API:Orders', `Fetched ${orders.length} orders`, { userId: user.id });
 
       return NextResponse.json({ orders });
     } catch (error) {
+      console.error('❌ ORDERS API ERROR:', error);
       logApiError('API:Orders', error, { action: 'fetch_orders' });
       return createErrorResponse('Failed to fetch orders. Please try again later.', 500);
     }

@@ -1,57 +1,34 @@
-// Server Component — Data fetching with direct Prisma access
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/modules/auth/nextauth';
-import { redirect } from 'next/navigation';
-import prisma from '@/lib/prisma';
-import ProjectsClient from './ProjectsClient';
+'use client';
 
-export default async function ProjectsPage() {
-  // 1. Auth check server-side
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    redirect('/login');
-  }
+import { useState } from 'react';
+import { Card, Button, LoadingState } from '@/components/ui';
+import { FolderOpen, Plus, Edit2, Trash2, Eye, Download } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-  // 2. Fetch projects directly from database
-  // Note: Assuming Project model exists in Prisma schema
-  // If not, this will need to be adjusted based on actual schema
-  
-  const projects = await prisma.project.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    select: {
-      id: true,
-      name: true,
-      thumbnail: true,
-      createdAt: true,
-      updatedAt: true,
-      productType: true,
-      dimensions: true,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  });
-
-  // 3. Transform data for client
-  const projectsData = projects.map(project => ({
-    id: project.id,
-    name: project.name || 'Untitled Project',
-    thumbnail: project.thumbnail || '',
-    createdAt: project.createdAt.toISOString(),
-    updatedAt: project.updatedAt.toISOString(),
-    productType: project.productType || 'Unknown',
-    dimensions: project.dimensions || 'N/A',
-  }));
-
-  // 4. Pass data to Client Component for interactivity
-  return <ProjectsClient projects={projectsData} />;
+export interface Project {
+  id: string;
+  name: string;
+  thumbnail: string;
+  createdAt: string;
+  updatedAt: string;
+  productType: string;
+  dimensions: string;
 }
+
+interface Props {
+  projects: Project[];
+}
+
+export default function ProjectsClient({ projects: initialProjects }: Props) {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Sigur vrei să ștergi acest proiect?')) return;
 
+    setDeletingId(id);
     try {
       const response = await fetch(`/api/account/projects/${id}`, {
         method: 'DELETE',
@@ -59,14 +36,18 @@ export default async function ProjectsPage() {
 
       if (!response.ok) throw new Error('Failed to delete project');
 
-      await fetchProjects();
-    } catch (_error) {
+      // Remove from local state
+      setProjects(projects.filter(p => p.id !== id));
+    } catch (error) {
       console.error('Error deleting project:', error);
       alert('Eroare la ștergerea proiectului');
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const handleDuplicate = async (id: string) => {
+    setDuplicatingId(id);
     try {
       const response = await fetch(`/api/account/projects/${id}/duplicate`, {
         method: 'POST',
@@ -74,10 +55,13 @@ export default async function ProjectsPage() {
 
       if (!response.ok) throw new Error('Failed to duplicate project');
 
-      await fetchProjects();
-    } catch (_error) {
+      // Refresh the page to show new project
+      window.location.reload();
+    } catch (error) {
       console.error('Error duplicating project:', error);
       alert('Eroare la duplicarea proiectului');
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -96,15 +80,11 @@ export default async function ProjectsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (_error) {
+    } catch (error) {
       console.error('Error exporting project:', error);
       alert('Eroare la exportarea proiectului');
     }
   };
-
-  if (loading) {
-    return <LoadingState text="Se încarcă proiectele..." />;
-  }
 
   return (
     <div className="space-y-8">
@@ -144,7 +124,13 @@ export default async function ProjectsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Card key={project.id} className="overflow-hidden group">
+            <Card key={project.id} className="overflow-hidden group relative">
+              {deletingId === project.id && (
+                <div className="absolute inset-0 bg-white/90 flex items-center justify-center z-10">
+                  <LoadingState text="Se șterge..." />
+                </div>
+              )}
+              
               {/* Thumbnail */}
               <div className="relative h-48 bg-gray-100">
                 {project.thumbnail ? (
@@ -203,13 +189,19 @@ export default async function ProjectsPage() {
                     onClick={() => handleDuplicate(project.id)}
                     variant="ghost"
                     className="text-gray-600"
+                    disabled={duplicatingId === project.id}
                   >
-                    <Plus className="w-4 h-4" />
+                    {duplicatingId === project.id ? (
+                      <LoadingState text="" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
                   </Button>
                   <Button
                     onClick={() => handleDelete(project.id)}
                     variant="ghost"
                     className="text-red-600"
+                    disabled={deletingId === project.id}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

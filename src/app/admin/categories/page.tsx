@@ -7,6 +7,7 @@ import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CategoryCard } from "./_components/CategoryCard";
 import { CategoryModal, CategoryFormData } from "./_components/CategoryModal";
 import { Card, CardContent } from "@/components/ui/Card";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { Category } from '@/types/models';
 
 interface CategoryWithCount extends Category {

@@ -81,6 +81,7 @@ export const config = {
     "/operator/:path*",
     "/account/:path*",
     // Public routes that need i18n
-    "/((?!api|_next|static|.*\\.).*)",
+    // IMPORTANT: Exclude /api, /api/auth, /_next, /static, and files with extensions
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)",
   ],
 };
