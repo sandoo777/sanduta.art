@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSecurity } from '@/modules/account/useSecurity';
 import { LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui';
 import { Form } from '@/components/ui/Form';
 import { FormField } from '@/components/ui/FormField';
 import { FormLabel } from '@/components/ui/FormLabel';

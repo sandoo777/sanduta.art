@@ -7,9 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
+import { Button, Card, CardHeader, CardContent, CardFooter, Input } from '@/components/ui';
 import { FormField } from '@/components/ui/FormField';
 import { useCartStore } from '@/modules/cart/cartStore';
 

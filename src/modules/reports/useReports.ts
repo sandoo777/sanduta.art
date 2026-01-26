@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { safeGet } from "@/lib/safeFetch";
 import type {
   OverviewKPIs,
   SalesReport,
@@ -20,20 +21,16 @@ export function useReports() {
   const getOverview = async (): Promise<OverviewKPIs | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/overview");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch overview";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<OverviewKPIs | null>(
+        "/api/admin/reports/overview",
+        null,
+        "Reports:Overview"
+      );
+      if (!data) {
+        toast.error("Failed to fetch overview");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching overview:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch overview");
       return null;
@@ -48,20 +45,16 @@ export function useReports() {
   const getSales = async (): Promise<SalesReport | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/sales");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch sales";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<SalesReport | null>(
+        "/api/admin/reports/sales",
+        null,
+        "Reports:Sales"
+      );
+      if (!data) {
+        toast.error("Failed to fetch sales");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching sales:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch sales");
       return null;
@@ -76,20 +69,16 @@ export function useReports() {
   const getProducts = async (): Promise<ProductsReport | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/products");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch products";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<ProductsReport | null>(
+        "/api/admin/reports/products",
+        null,
+        "Reports:Products"
+      );
+      if (!data) {
+        toast.error("Failed to fetch products");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching products:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch products");
       return null;
@@ -104,20 +93,16 @@ export function useReports() {
   const getCustomers = async (): Promise<CustomersReport | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/customers");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch customers";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<CustomersReport | null>(
+        "/api/admin/reports/customers",
+        null,
+        "Reports:Customers"
+      );
+      if (!data) {
+        toast.error("Failed to fetch customers");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching customers:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch customers");
       return null;
@@ -132,20 +117,16 @@ export function useReports() {
   const getOperators = async (): Promise<OperatorsReport | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/operators");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch operators";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<OperatorsReport | null>(
+        "/api/admin/reports/operators",
+        null,
+        "Reports:Operators"
+      );
+      if (!data) {
+        toast.error("Failed to fetch operators");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching operators:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch operators");
       return null;
@@ -160,25 +141,23 @@ export function useReports() {
   const getMaterials = async (): Promise<MaterialsReport | null> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports/materials");
-      if (!res.ok) {
-        let errorMessage = "Failed to fetch materials";
-        try {
-          const error = await res.json();
-          errorMessage = error.error || errorMessage;
-        } catch {
-          // Response body might not be JSON
-        }
-        throw new Error(errorMessage);
+      const data = await safeGet<MaterialsReport | null>(
+        "/api/admin/reports/materials",
+        null,
+        "Reports:Materials"
+      );
+      if (!data) {
+        toast.error("Failed to fetch materials");
       }
-      const data = await res.json();
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error("Error fetching materials:", error);
       toast.error(error instanceof Error ? error.message : "Failed to fetch materials");
       return null;
     } finally {
       setLoading(false);
+    }
+  };
     }
   };
 

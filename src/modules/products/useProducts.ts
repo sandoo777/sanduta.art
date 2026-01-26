@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { safeGet, safePost, safePut, safeDelete } from '@/lib/safeFetch';
 import type {
   Product,
   CreateProductInput,
@@ -14,44 +15,38 @@ export function useProducts() {
 
   const getProducts = async (): Promise<Product[]> => {
     try {
-      const response = await fetch('/api/admin/products', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-
-      const data = await response.json();
+      const data = await safeGet<Product[]>(
+        '/api/admin/products',
+        [],
+        'Products:List'
+      );
       return data;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Eroare la încărcarea produselor');
-      throw error;
+      return [];
     }
   };
 
   const createProduct = async (input: CreateProductInput): Promise<Product> => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-        credentials: 'include',
-      });
+      const product = await safePost<Product | null>(
+        '/api/admin/products',
+        input,
+        null,
+        'Products:Create'
+      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create product');
+      if (!product) {
+        throw new Error('Failed to create product');
       }
 
-      const product = await response.json();
       toast.success('Produs creat cu succes');
       return product;
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       console.error('Error creating product:', error);
-      toast.error(error.message || 'Eroare la crearea produsului');
+      toast.error(error instanceof Error ? error.message : 'Eroare la crearea produsului');
       throw error;
     } finally {
       setLoading(false);
@@ -64,24 +59,22 @@ export function useProducts() {
   ): Promise<Product> => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-        credentials: 'include',
-      });
+      const product = await safePut<Product | null>(
+        `/api/admin/products/${id}`,
+        input,
+        null,
+        'Products:Update'
+      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update product');
+      if (!product) {
+        throw new Error('Failed to update product');
       }
 
-      const product = await response.json();
       toast.success('Produs actualizat cu succes');
       return product;
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       console.error('Error updating product:', error);
-      toast.error(error.message || 'Eroare la actualizarea produsului');
+      toast.error(error instanceof Error ? error.message : 'Eroare la actualizarea produsului');
       throw error;
     } finally {
       setLoading(false);
@@ -91,17 +84,14 @@ export function useProducts() {
   const deleteProduct = async (id: string): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete product');
-      }
+      await safeDelete<{ success: boolean }>(
+        `/api/admin/products/${id}`,
+        { success: false },
+        'Products:Delete'
+      );
 
       toast.success('Produs șters cu succes');
-    } catch (_error) {
+    } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Eroare la ștergerea produsului');
       throw error;
@@ -113,19 +103,20 @@ export function useProducts() {
   const duplicateProduct = async (id: string): Promise<Product> => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/products/${id}/duplicate`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const product = await safePost<Product | null>(
+        `/api/admin/products/${id}/duplicate`,
+        {},
+        null,
+        'Products:Duplicate'
+      );
 
-      if (!response.ok) {
+      if (!product) {
         throw new Error('Failed to duplicate product');
       }
 
-      const product = await response.json();
       toast.success('Produs duplicat cu succes');
       return product;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error duplicating product:', error);
       toast.error('Eroare la duplicarea produsului');
       throw error;

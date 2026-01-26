@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { safeGet, safePost, safePut, safeDelete } from '@/lib/safeFetch';
 import type {
   Material,
   MaterialWithDetails,
@@ -16,11 +17,12 @@ export function useMaterials() {
   const getMaterials = async (): Promise<Material[]> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/materials");
-      if (!response.ok) {
-        throw new Error("Failed to fetch materials");
-      }
-      return await response.json();
+      const data = await safeGet<Material[]>(
+        "/api/admin/materials",
+        [],
+        "Materials:List"
+      );
+      return data;
     } catch (error) {
       console.error("Error fetching materials:", error);
       toast.error("Eroare la încărcarea materialelor");
@@ -33,11 +35,12 @@ export function useMaterials() {
   const getMaterial = async (id: string): Promise<MaterialWithDetails | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/materials/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch material");
-      }
-      return await response.json();
+      const data = await safeGet<MaterialWithDetails | null>(
+        `/api/admin/materials/${id}`,
+        null,
+        "Materials:Detail"
+      );
+      return data;
     } catch (error) {
       console.error("Error fetching material:", error);
       toast.error("Eroare la încărcarea materialului");
@@ -50,18 +53,17 @@ export function useMaterials() {
   const createMaterial = async (data: CreateMaterialInput): Promise<Material | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/admin/materials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const material = await safePost<Material | null>(
+        "/api/admin/materials",
+        data,
+        null,
+        "Materials:Create"
+      );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create material");
+      if (!material) {
+        throw new Error("Failed to create material");
       }
 
-      const material = await response.json();
       toast.success("Material creat cu succes");
       return material;
     } catch (error: any) {

@@ -1,17 +1,4 @@
-/**
- * ⚠️ BARREL FILE - USE WITH CAUTION
- * 
- * Acest fișier re-exportă componente, dar TOATE componentele sunt Client Components.
- * În Server Components, importați DIRECT din fișiere:
- * 
- * ❌ BAD:  import { Button } from '@/components/ui'
- * ✅ GOOD: import { Button } from '@/components/ui/Button'
- * 
- * Acest barrel file este menținut doar pentru compatibilitate backward,
- * dar va fi eliminat în viitorul apropiat.
- */
-
-// ⚠️ CLIENT COMPONENTS - Import direct în Server Components!
+// UI Components
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
@@ -38,7 +25,9 @@ export type { TableProps, Column, SortState, SortDirection } from './Table.types
 
 export { Pagination } from './Pagination';
 
-// ⚠️ REACT-HOOK-FORM - Import DOAR direct!
+// Form Components
+// ВАЖНО: Form, FormField, FormLabel, FormMessage используют react-hook-form
+// и должны импортироваться НАПРЯМУЮ из своих файлов, НЕ через barrel file
 // ❌ import { Form } from '@/components/ui'
 // ✅ import { Form } from '@/components/ui/Form'
 // export { Form, useFormContext, useWatch } from './Form';
@@ -46,12 +35,14 @@ export { Pagination } from './Pagination';
 // export { FormLabel } from './FormLabel';
 // export { FormMessage } from './FormMessage';
 
-// ⚠️ CLIENT COMPONENTS - Import direct în Server Components!
+// State Components
 export { LoadingState, SkeletonCard, SkeletonList, SkeletonTable } from './LoadingState';
 export { ErrorState, ErrorNetwork, Error404, Error403, ErrorGeneric, InlineError, SuccessState } from './ErrorState';
 export { EmptyState, EmptyProjects, EmptyFiles, EmptyOrders, EmptyNotifications, EmptySearch } from './EmptyState';
 
+// Modal Component
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
 
+// Confirm Dialog
 export { ConfirmDialog, useConfirmDialog, confirmPresets } from './ConfirmDialog';
