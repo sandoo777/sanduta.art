@@ -25,19 +25,19 @@ export default function CustomerDetailsPage({ params }: PageProps) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "orders" | "notes" | "tags" | "timeline">("overview");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [customerId, setCustomerId] = useState<number | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Load params and customer
   useEffect(() => {
     params.then((p) => {
-      const id = parseInt(p.id);
+      const id = p.id;
       setCustomerId(id);
       loadCustomer(id);
     });
   }, []);
 
-  const loadCustomer = async (id: number) => {
+  const loadCustomer = async (id: string) => {
     try {
       setError(null);
       const data = await getCustomer(id);

@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Link from 'next/link';
 import { useRouter } from "next/navigation";
-import { Form, FormField, FormLabel, FormMessage, Input, Button } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
 import { resetPasswordSchema, type ResetPasswordFormData, getPasswordStrength } from "@/lib/validations/auth";
 
 export default function ResetPasswordPage() {

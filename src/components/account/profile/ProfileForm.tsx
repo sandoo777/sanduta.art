@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAccount, UserProfile } from "@/modules/account/useAccount";
-import { Form, FormField, FormLabel, FormMessage, Input, Button } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
 import { profileSchema, type ProfileFormData } from "@/lib/validations/user-panel";
 
 export default function ProfileForm() {

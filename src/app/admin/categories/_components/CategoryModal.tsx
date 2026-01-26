@@ -10,6 +10,7 @@ import { FormField } from '@/components/ui/FormField';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { FormMessage } from '@/components/ui/FormMessage';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { ColorPicker } from './ColorPicker';
 import { IconPicker } from './IconPicker';
@@ -18,21 +19,28 @@ interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: CategoryFormData) => Promise<{ success: boolean; error?: string }>;
+  categories: Array<{
+    id: string;
+    name: string;
+    parentId: string | null;
+  }>;
   category?: {
     id: string;
     name: string;
     slug: string;
     color: string | null;
     icon: string | null;
+    parentId: string | null;
   } | null;
 }
 
-export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryModalProps) {
+export function CategoryModal({ isOpen, onClose, onSave, categories, category }: CategoryModalProps) {
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: '',
       slug: '',
+      parentId: null,
       color: '#3B82F6',
       icon: '📦',
     },
@@ -45,6 +53,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       form.reset({
         name: category.name,
         slug: category.slug,
+        parentId: category.parentId || null,
         color: category.color || '#3B82F6',
         icon: category.icon || '📦',
       });
@@ -52,6 +61,7 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
       form.reset({
         name: '',
         slug: '',
+        parentId: null,
         color: '#3B82F6',
         icon: '📦',
       });
@@ -160,6 +170,45 @@ export function CategoryModal({ isOpen, onClose, onSave, category }: CategoryMod
                   </p>
                 </div>
               )}
+            />
+
+            {/* Parent Category */}
+            <FormField
+              control={form.control}
+              name="parentId"
+              render={({ field }) => {
+                // Filter out current category and its descendants from parent options
+                const availableParents = categories.filter(cat => {
+                  // Don't allow selecting itself as parent
+                  if (category && cat.id === category.id) return false;
+                  // Don't allow selecting its own children as parent (prevent cycles)
+                  if (category && cat.parentId === category.id) return false;
+                  return true;
+                });
+
+                const parentOptions = [
+                  { value: '', label: 'None (Root Category)' },
+                  ...availableParents.map(cat => ({
+                    value: cat.id,
+                    label: cat.name + (cat.parentId ? ' (Subcategory)' : '')
+                  }))
+                ];
+
+                return (
+                  <div>
+                    <FormLabel>Parent Category</FormLabel>
+                    <Select
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                      options={parentOptions}
+                    />
+                    <FormMessage />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty to create a root category
+                    </p>
+                  </div>
+                );
+              }}
             />
 
             {/* Color Picker */}

@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
 }
 
-export async function PATCH(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -47,6 +47,17 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
     }
 
     const { id } = await params;
+    
+    // Parse and validate request body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json({ 
+        error: "Invalid JSON body" 
+      }, { status: 400 });
+    }
+    
     const { 
       name, 
       slug, 
@@ -60,7 +71,16 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
       featured,
       metaTitle,
       metaDescription 
-    } = await request.json();
+    } = body;
+    
+    // Validate that at least one field is provided
+    if (!name && !slug && !description && image === undefined && !color && !icon && 
+        parentId === undefined && order === undefined && active === undefined && 
+        featured === undefined && !metaTitle && !metaDescription) {
+      return NextResponse.json({ 
+        error: "At least one field must be provided for update" 
+      }, { status: 400 });
+    }
 
     // Check if slug already exists (excluding current category)
     if (slug) {
@@ -85,6 +105,17 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ 
         error: "Category cannot be its own parent" 
       }, { status: 400 });
+    }
+    
+    // Check if category exists
+    const existingCategory = await prisma.category.findUnique({
+      where: { id },
+    });
+    
+    if (!existingCategory) {
+      return NextResponse.json({ 
+        error: "Category not found" 
+      }, { status: 404 });
     }
 
     const category = await prisma.category.update({
@@ -117,9 +148,26 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
     });
 
     return NextResponse.json(category);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating category:', error);
-    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+    
+    // Check for Prisma-specific errors
+    if (error?.code === 'P2025') {
+      return NextResponse.json({ 
+        error: "Category not found" 
+      }, { status: 404 });
+    }
+    
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ 
+        error: "Category with this slug already exists" 
+      }, { status: 400 });
+    }
+    
+    return NextResponse.json({ 
+      error: "Failed to update category",
+      details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+    }, { status: 500 });
   }
 }
 

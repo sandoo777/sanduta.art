@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from 'next/link';
-import { Form, FormField, FormLabel, FormMessage, Input, Button } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
+import { Form } from "@/components/ui/Form";
+import { FormField } from "@/components/ui/FormField";
+import { FormLabel } from "@/components/ui/FormLabel";
+import { FormMessage } from "@/components/ui/FormMessage";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 
 export default function LoginPage() {

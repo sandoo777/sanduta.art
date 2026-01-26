@@ -63,31 +63,31 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   ) => {
     const colorClasses = {
       blue: {
-        bg: 'bg-gradient-to-r from-blue-50 to-blue-100/50',
-        active: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-200',
-        hover: 'hover:bg-blue-50/80',
-        icon: 'text-blue-600',
+        bg: 'bg-blue-900/20',
+        active: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-900/50',
+        hover: 'hover:bg-gray-800',
+        icon: 'text-blue-400',
         iconActive: 'text-white',
         border: 'border-l-4 border-blue-500',
-        title: 'text-blue-700'
+        title: 'text-blue-400'
       },
       purple: {
-        bg: 'bg-gradient-to-r from-purple-50 to-purple-100/50',
-        active: 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md shadow-purple-200',
-        hover: 'hover:bg-purple-50/80',
-        icon: 'text-purple-600',
+        bg: 'bg-purple-900/20',
+        active: 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-md shadow-purple-900/50',
+        hover: 'hover:bg-gray-800',
+        icon: 'text-purple-400',
         iconActive: 'text-white',
         border: 'border-l-4 border-purple-500',
-        title: 'text-purple-700'
+        title: 'text-purple-400'
       },
       green: {
-        bg: 'bg-gradient-to-r from-green-50 to-green-100/50',
-        active: 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md shadow-green-200',
-        hover: 'hover:bg-green-50/80',
-        icon: 'text-green-600',
+        bg: 'bg-green-900/20',
+        active: 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md shadow-green-900/50',
+        hover: 'hover:bg-gray-800',
+        icon: 'text-green-400',
         iconActive: 'text-white',
         border: 'border-l-4 border-green-500',
-        title: 'text-green-700'
+        title: 'text-green-400'
       }
     };
 
@@ -95,7 +95,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
 
     return (
       <div className="mb-5">
-        <div className={`mx-2 mb-3 px-3 py-2 rounded-lg ${colors.bg} border-l-4 ${colors.border.replace('border-l-4 ', '')}`}>
+        <div className={`mx-2 mb-3 px-3 py-2 rounded-lg bg-gray-800/50 border-l-4 ${colors.border.replace('border-l-4 ', '')}`}>
           <p className={`text-xs font-bold ${colors.title} uppercase tracking-wide flex items-center gap-2`}>
             <span className="text-base">{emoji}</span>
             {title}
@@ -117,7 +117,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
                   transition-all duration-200 ease-in-out
                   ${active 
                     ? `${colors.active} font-semibold ${colors.border}` 
-                    : `text-gray-700 ${colors.hover} hover:shadow-sm hover:translate-x-1`
+                    : `text-gray-300 ${colors.hover} hover:text-white hover:shadow-sm hover:translate-x-1`
                   }
                 `}
               >
@@ -156,34 +156,34 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-gradient-to-b from-white to-gray-50/50 border-r border-gray-200 shadow-lg
+          w-64 bg-gray-900 border-r border-gray-800 shadow-lg
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200/80 bg-white/80 backdrop-blur-sm">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800 bg-gray-900">
           <Link href="/admin" prefetch={false} className="flex items-center space-x-2.5 group">
-            <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-200 group-hover:shadow-lg group-hover:shadow-purple-300 transition-all duration-200 group-hover:scale-105">
+            <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-900/50 group-hover:shadow-lg group-hover:shadow-purple-800/50 transition-all duration-200 group-hover:scale-105">
               <span className="text-white font-bold text-sm">SA</span>
             </div>
             <div>
-              <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Admin</span>
-              <p className="text-[10px] text-gray-500 font-medium">Control Panel</p>
+              <span className="text-lg font-bold text-white">Admin</span>
+              <p className="text-[10px] text-gray-400 font-medium">Control Panel</p>
             </div>
           </Link>
           
           {/* Close button for mobile */}
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-gray-200"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <nav className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
           {/* 📦 Secțiunea 1: CATALOG */}
           {renderNavSection('Catalog', '📦', catalogSection, 'blue')}
 
@@ -195,19 +195,19 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200/80 bg-white/80">
-          <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-purple-50 rounded-xl p-4 border border-purple-100/50 shadow-sm">
+        <div className="p-4 border-t border-gray-800 bg-gray-900">
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-sm">
             <div className="flex items-start gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-lg">💡</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-900">Need Help?</p>
-                <p className="text-xs text-gray-600 mt-0.5">Check our documentation</p>
+                <p className="text-sm font-semibold text-white">Need Help?</p>
+                <p className="text-xs text-gray-400 mt-0.5">Check our documentation</p>
                 <Link 
                   href="/docs" 
                   prefetch={false}
-                  className="text-xs text-purple-600 hover:text-purple-700 font-semibold mt-2 inline-flex items-center gap-1 hover:gap-2 transition-all"
+                  className="text-xs text-purple-400 hover:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1 hover:gap-2 transition-all"
                 >
                   View Docs
                   <span>→</span>

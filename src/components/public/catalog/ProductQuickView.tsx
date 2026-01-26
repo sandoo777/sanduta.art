@@ -33,10 +33,14 @@ export function ProductQuickView({
 }: ProductQuickViewProps) {
   const [imageHovered, setImageHovered] = useState(false);
 
+  // Safe price calculation with fallback to 0
+  const safeBasePrice = typeof product.basePrice === 'number' ? product.basePrice : 0;
+  const safeDiscount = typeof product.discount === 'number' ? product.discount : 0;
+  
   const finalPrice =
-    product.discount && product.discount > 0
-      ? product.basePrice * (1 - product.discount / 100)
-      : product.basePrice;
+    safeDiscount > 0
+      ? safeBasePrice * (1 - safeDiscount / 100)
+      : safeBasePrice;
 
   const badgeConfig = {
     bestseller: {
@@ -118,17 +122,17 @@ export function ProductQuickView({
           <div className="mb-6 pb-6 border-b border-gray-200">
             <p className="text-sm text-gray-500 mb-2">Preț de la</p>
             <div className="flex items-baseline gap-3">
-              {product.discount && product.discount > 0 && (
+              {safeDiscount > 0 && (
                 <span className="text-lg text-gray-400 line-through">
-                  {product.basePrice.toFixed(2)} MDL
+                  {safeBasePrice.toFixed(2)} MDL
                 </span>
               )}
               <span className="text-4xl font-bold text-gray-900">
                 {finalPrice.toFixed(2)} MDL
               </span>
-              {product.discount && product.discount > 0 && (
+              {safeDiscount > 0 && (
                 <span className="text-sm text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
-                  -{product.discount}%
+                  -{safeDiscount}%
                 </span>
               )}
             </div>

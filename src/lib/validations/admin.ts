@@ -50,6 +50,13 @@ export const categoryFormSchema = z.object({
       message: 'Slug cannot contain spaces',
     }),
   
+  parentId: z.string()
+    .nullable()
+    .optional()
+    .refine((val) => val === null || val === undefined || val.length > 0, {
+      message: 'Parent ID must be a valid string or null',
+    }),
+  
   color: z.string()
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid color format (must be hex color)')
     .default('#3B82F6'),

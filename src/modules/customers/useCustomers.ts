@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // Types
 export interface Customer {
-  id: number;
+  id: string;
   name: string;
   email: string | null;
   phone: string | null;
@@ -26,27 +26,27 @@ export interface Customer {
 }
 
 export interface CustomerNote {
-  id: number;
-  customerId: number;
+  id: string;
+  customerId: string;
   content: string;
-  createdById: number;
+  createdById: string;
   createdAt: string;
   createdBy?: {
-    id: number;
+    id: string;
     name: string | null;
     email: string;
   };
 }
 
 export interface CustomerTag {
-  id: number;
-  customerId: number;
+  id: string;
+  customerId: string;
   label: string;
   color: string;
 }
 
 export interface CustomerOrder {
-  id: number;
+  id: string;
   status: string;
   total: number;
   createdAt: string;
@@ -138,7 +138,7 @@ export function useCustomers() {
   };
 
   // 2. Get single customer with details and statistics
-  const getCustomer = async (id: number): Promise<Customer> => {
+  const getCustomer = async (id: string): Promise<Customer> => {
     return apiCall<Customer>(`/api/admin/customers/${id}`);
   };
 
@@ -152,7 +152,7 @@ export function useCustomers() {
 
   // 4. Update customer
   const updateCustomer = async (
-    id: number,
+    id: string,
     data: UpdateCustomerData
   ): Promise<Customer> => {
     return apiCall<Customer>(`/api/admin/customers/${id}`, {
@@ -162,7 +162,7 @@ export function useCustomers() {
   };
 
   // 5. Delete customer
-  const deleteCustomer = async (id: number): Promise<{ message: string }> => {
+  const deleteCustomer = async (id: string): Promise<{ message: string }> => {
     return apiCall<{ message: string }>(`/api/admin/customers/${id}`, {
       method: "DELETE",
     });
@@ -170,7 +170,7 @@ export function useCustomers() {
 
   // 6. Add note to customer
   const addNote = async (
-    customerId: number,
+    customerId: string,
     content: string
   ): Promise<CustomerNote> => {
     return apiCall<CustomerNote>(`/api/admin/customers/${customerId}/notes`, {
@@ -181,8 +181,8 @@ export function useCustomers() {
 
   // 7. Delete customer note
   const deleteNote = async (
-    customerId: number,
-    noteId: number
+    customerId: string,
+    noteId: string
   ): Promise<{ message: string }> => {
     return apiCall<{ message: string }>(
       `/api/admin/customers/${customerId}/notes/${noteId}`,
@@ -192,7 +192,7 @@ export function useCustomers() {
 
   // 8. Add tag to customer
   const addTag = async (
-    customerId: number,
+    customerId: string,
     label: string,
     color?: string
   ): Promise<CustomerTag> => {
@@ -204,8 +204,8 @@ export function useCustomers() {
 
   // 9. Delete customer tag
   const deleteTag = async (
-    customerId: number,
-    tagId: number
+    customerId: string,
+    tagId: string
   ): Promise<{ message: string }> => {
     return apiCall<{ message: string }>(
       `/api/admin/customers/${customerId}/tags/${tagId}`,

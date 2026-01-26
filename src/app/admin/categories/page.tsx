@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, List, Grid } from "lucide-react";
 import { useCategories } from "@/modules/categories/useCategories";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CategoryCard } from "./_components/CategoryCard";
 import { CategoryModal, CategoryFormData } from "./_components/CategoryModal";
+import { CategoryTreeView } from "./_components/CategoryTreeView";
 import { Card, CardContent } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Category } from '@/types/models';
+import { buildCategoryTree, flattenCategoryTree } from '@/lib/categoryTree';
 
 interface CategoryWithCount extends Category {
   _count: {
@@ -22,6 +24,7 @@ export default function AdminCategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'tree'>('tree'); // Tree view by default
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -84,6 +87,9 @@ export default function AdminCategoriesPage() {
     cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Build category tree for tree view
+  const categoryTree = buildCategoryTree(filteredCategories);
 
   return (
     <div className="space-y-6">
@@ -148,7 +154,34 @@ export default function AdminCategoriesPage() {
         </Card>
       </div>
 
-      {/* Categories Grid */}
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-sm text-gray-600">View:</span>
+        <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+          <button
+            onClick={() => setViewMode('tree')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
+              viewMode === 'tree'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
+              viewMode === 'grid'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Grid className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Categories - Tree View or Grid View */}
       {loading ? (
         <LoadingState text="Loading categories..." />
       ) : filteredCategories.length === 0 ? (
@@ -167,6 +200,16 @@ export default function AdminCategoriesPage() {
             </button>
           )}
         </div>
+      ) : viewMode === 'tree' ? (
+        <Card>
+          <CardContent className="p-4">
+            <CategoryTreeView
+              nodes={categoryTree}
+              onEdit={handleOpenModal}
+              onDelete={handleDelete}
+            />
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredCategories.map((category) => (
@@ -185,6 +228,7 @@ export default function AdminCategoriesPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSave}
+        categories={categories}
         category={editingCategory}
       />
       <Dialog />

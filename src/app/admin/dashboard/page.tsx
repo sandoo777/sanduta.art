@@ -93,6 +93,7 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500">1 hour ago</p>
             </div>
           </div>
+          </div>
         </CardContent>
       </Card>
     </div>
