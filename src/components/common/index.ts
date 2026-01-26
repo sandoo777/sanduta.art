@@ -1,18 +1,22 @@
 /**
- * ⚠️ BARREL FILE - DEPRECATED
+ * ⚠️ BARREL FILE DEPRECATED - DO NOT USE
  * 
- * TOATE componentele din acest folder sunt Client Components.
- * În Server Components, importați DIRECT din fișierele sursă:
+ * TOATE componentele din acest folder sunt Client Components ('use client').
+ * În Server Components, importați DIRECT din fișierele sursă.
  * 
- * ❌ BAD:  import { PublicHeader } from '@/components/common'
- * ✅ GOOD: import { PublicHeader } from '@/components/common/headers/PublicHeader'
+ * ❌ WRONG (Server Component imports):
+ * import { PublicHeader } from '@/components/common'
  * 
- * Acest barrel file va fi ELIMINAT în viitorul apropiat.
+ * ✅ CORRECT (Direct imports):
+ * import { PublicHeader } from '@/components/common/headers/PublicHeader'
+ * 
+ * ⚠️ NOTE: Barrel imports sunt SIGURE doar în Client Components ('use client'),
+ * dar pentru consistență, folosiți ÎNTOTDEAUNA import direct.
  */
 
-// ⚠️ CLIENT COMPONENTS - Import direct în Server Components!
-export { PublicHeader } from './headers/PublicHeader';
-export { PanelHeader } from './headers/PanelHeader';
-export { PublicFooter } from './footers/PublicFooter';
-export { PanelSidebar } from './sidebars/PanelSidebar';
-export type { SidebarItem } from './sidebars/PanelSidebar';
+// ❌ DEPRECATED - Import direct!
+// export { PublicHeader } from './headers/PublicHeader';
+// export { PanelHeader } from './headers/PanelHeader';
+// export { PublicFooter } from './footers/PublicFooter';
+// export { PanelSidebar } from './sidebars/PanelSidebar';
+// export type { SidebarItem } from './sidebars/PanelSidebar';

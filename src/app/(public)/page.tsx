@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
-import { Hero, PopularProducts } from '@/components/public/home';
+import { Hero } from '@/components/public/home/Hero';
+import { PopularProducts } from '@/components/public/home/PopularProducts';
 
 // ISR: Revalidate homepage every 60 seconds
 export const revalidate = 60;
