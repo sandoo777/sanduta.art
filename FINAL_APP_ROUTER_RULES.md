@@ -1,575 +1,1023 @@
-# Final App Router Rules — Anti-502 Architecture Guarantee
+# FINAL APP ROUTER RULES — PERMANENT ARCHITECTURE
 
-## 🎯 Scopul acestui document
-
-Acest document stabilește **regulile arhitecturale finale** pentru proiectul sanduta.art, garantând că **502 Bad Gateway errors devin imposibile** prin cod valid și respectarea pattern-urilor Next.js App Router.
-
-**Status**: ✅ **REGULI FINALE BLOCATE** (2026-01-25)
-
----
-
-## 📋 PARTEA I: Reguli de Import (CRITICE)
-
-### 1.1 Barrel Files — Când DA, când NU
-
-#### ✅ PERMIS în barrel files (index.ts):
-
-```typescript
-// src/components/ui/index.ts
-
-// ✅ Componente UI pure (fără hooks React)
-export { Button } from './Button';
-export { Card } from './Card';
-export { Badge } from './Badge';
-
-// ✅ Utilities și helpers
-export { formatDate } from './utils/dateUtils';
-export { cn } from './utils/classNames';
-
-// ✅ Types și interfaces
-export type { ButtonProps } from './Button';
-export type { CardProps } from './Card';
-```
-
-#### ❌ INTERZIS în barrel files:
-
-```typescript
-// ❌ Componente cu 'use client'
-export { Form } from './Form';              // FOLOSEȘTE react-hook-form
-export { FormField } from './FormField';    // Client Component
-
-// ❌ Re-exporturi de biblioteci third-party cu hooks
-export { useForm } from 'react-hook-form';  // Poate cauza ambiguitate Server/Client
-```
-
-### 1.2 Import Direct vs Barrel File
-
-#### Pentru Server Components (page.tsx, layout.tsx):
-
-```typescript
-// ❌ GREȘIT
-import { Form, Button } from '@/components/ui';
-
-// ✅ CORECT
-import { Button } from '@/components/ui';           // UI pur — OK prin barrel
-import { Form } from '@/components/ui/Form';        // Client — import direct
-```
-
-#### Pentru Client Components:
-
-```typescript
-'use client';
-
-// ✅ CORECT — poți folosi ambele metode
-import { Button } from '@/components/ui';           // OK
-import { Form } from '@/components/ui/Form';        // OK și mai explicit
-```
-
-### 1.3 Regula de AUR pentru Imports
-
-> **Dacă componenta are `'use client'` sau folosește hooks React:**
-> - **NU** o re-exporta prin `index.ts`
-> - **IMPORTĂ** întotdeauna direct din fișierul ei
+**Проект:** sanduta.art  
+**Версія:** 1.0 (Final)  
+**Дата:** 2026-01-26  
+**Статус:** 🔒 **LOCKED** — ці правила не можна порушувати
 
 ---
 
-## 🏗️ PARTEA II: Server Components Architecture
+## 🎯 Мета цього документа
 
-### 2.1 Error Handling Obligatoriu
+Після циклу hardening (barrel files → Server Components → auth/prefetch) встановлюємо **незмінні правила** для App Router архітектури.
 
-Toate Server Components (page.tsx, layout.tsx) care fac:
-- Prisma queries
-- API calls
-- File operations
+**Критерій успіху:**
+- ✅ Debug predictibil (помилки легко знаходити)
+- ✅ Zero регресії (нові фічі не ламають старе)
+- ✅ Архітектура зрозуміла (новачок швидко розуміється)
 
-**TREBUIE** să aibă try/catch sau error boundaries.
+---
 
-#### Pattern corect:
+## 📚 Ієрархія правил
 
+### 1. CRITICAL (🔴 MUST FOLLOW)
+Порушення = проект ламається (502, infinite loops, memory leaks).
+
+### 2. IMPORTANT (🟠 SHOULD FOLLOW)
+Порушення = unpredictable behavior, погана maintainability.
+
+### 3. RECOMMENDED (🟡 NICE TO HAVE)
+Порушення = sub-optimal, але працює.
+
+---
+
+## 🏗️ PART 1: SERVER vs CLIENT COMPONENTS
+
+### 🔴 RULE 1.1: Server Component розмежування
+
+**ДОЗВОЛЕНО в Server Components:**
 ```typescript
-// src/app/products/[slug]/page.tsx
-import { notFound } from 'next/navigation';
+// ✅ Prisma queries
+const products = await prisma.product.findMany();
 
-export default async function ProductPage({ params }: Props) {
-  const { slug } = await params;
-  
-  // ✅ CORECT — folosește notFound() pentru resurse lipsă
-  const product = await prisma.product.findFirst({
-    where: { slug, active: true },
-  });
-  
-  if (!product) {
-    notFound(); // Returnează 404, NU 502
-  }
-  
-  return <div>{product.name}</div>;
-}
-```
-
-#### Anti-pattern (interzis):
-
-```typescript
-// ❌ GREȘIT — throw necontrolat produce 502
-export default async function ProductPage({ params }: Props) {
-  const { slug } = await params;
-  const product = await prisma.product.findFirst({ /* ... */ });
-  
-  // ❌ Va crash cu 502 dacă product e null
-  return <div>{product.name}</div>;
-}
-```
-
-### 2.2 Prisma Query Safety
-
-#### Reguli:
-
-1. **Întotdeauna** verifică rezultatul înainte de utilizare
-2. **Folosește** `notFound()` pentru resurse lipsă
-3. **Evită** `.findUniqueOrThrow()` — preferă `.findUnique()` + check manual
-
-```typescript
-// ✅ CORECT
-const order = await prisma.order.findUnique({
-  where: { id },
-  include: { customer: true, items: true },
+// ✅ Direct API calls (server-to-server)
+const data = await fetch('https://api.example.com', {
+  headers: { 'Authorization': `Bearer ${process.env.API_KEY}` }
 });
 
-if (!order) {
-  notFound(); // 404, nu 502
-}
+// ✅ fs, path, crypto (Node.js APIs)
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-// ✅ SIGUR — order e garantat non-null aici
-return <OrderDetails order={order} />;
+// ✅ getServerSession (NextAuth)
+import { getServerSession } from 'next-auth';
+const session = await getServerSession(authOptions);
+
+// ✅ Environment variables (server-only)
+const secret = process.env.NEXTAUTH_SECRET;
 ```
 
-### 2.3 Redirect Safety
-
-#### Reguli:
-
-1. `redirect()` **NU** trebuie wrappat în try/catch (aruncă excepție internă Next.js)
-2. Verifică condiția **înainte** de redirect
-3. Nu combina redirect cu returnări de JSX pe același branch
-
+**ЗАБОРОНЕНО в Server Components:**
 ```typescript
-// ✅ CORECT
-export default async function Page() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session) {
-    redirect('/login'); // OK — Next.js gestionează excepția
-  }
-  
-  // Session garantat valid aici
-  return <Dashboard user={session.user} />;
-}
+// ❌ useState, useEffect, useContext
+import { useState } from 'react'; // NEVER!
 
-// ❌ GREȘIT
-export default async function Page() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session) {
-    try {
-      redirect('/login'); // ❌ Nu wrappa redirect în try/catch
-    } catch (e) {
-      return <ErrorPage />;
-    }
-  }
-}
+// ❌ Browser APIs
+window.localStorage.setItem('key', 'value'); // NEVER!
+document.querySelector('.class'); // NEVER!
+
+// ❌ Event handlers
+<button onClick={() => {}}>Click</button> // NEVER!
+
+// ❌ useSession (NextAuth client)
+import { useSession } from 'next-auth/react'; // NEVER!
 ```
 
-### 2.4 Data Validation
-
-Toate datele din `params`, `searchParams`, `cookies` TREBUIE validate:
-
-```typescript
-// ✅ CORECT
-export default async function Page({ params }: Props) {
-  const { id } = await params;
-  
-  // Validare
-  if (!id || typeof id !== 'string' || id.length === 0) {
-    notFound();
-  }
-  
-  // Sigur de folosit
-  const item = await prisma.item.findUnique({ where: { id } });
-  // ...
-}
-```
+**Чому важливо:**
+- Server Components рендеряться на сервері (Node.js environment)
+- Browser APIs не існують на сервері
+- Client hooks не працюють в async Server Components
 
 ---
 
-## 🔄 PARTEA III: Client Components Architecture
+### 🔴 RULE 1.2: Client Component позначення
 
-### 3.1 Marker 'use client' Obligatoriu
+**Завжди додавай `'use client'` якщо:**
+```typescript
+// ✅ Використовуєш hooks
+'use client';
+import { useState, useEffect } from 'react';
 
-Toate componentele care folosesc:
-- React hooks (`useState`, `useEffect`, `useContext`)
-- Browser APIs (`window`, `document`, `localStorage`)
-- Event handlers (`onClick`, `onChange`)
+// ✅ Обробляєш events
+'use client';
+export function Button({ onClick }) {
+  return <button onClick={onClick}>Click</button>;
+}
 
-**TREBUIE** să aibă `'use client';` pe prima linie.
+// ✅ Використовуєш browser APIs
+'use client';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+
+// ✅ Використовуєш Context
+'use client';
+import { useCart } from '@/context/CartContext';
+
+// ✅ Використовуєш useSession (NextAuth)
+'use client';
+import { useSession } from 'next-auth/react';
+```
+
+**Важливо:**
+- `'use client'` має бути **першою лінією файлу** (before imports)
+- Один файл = один mode (або Server, або Client)
+- Client Components можуть містити Server Components як children через props
+
+---
+
+### 🔴 RULE 1.3: Server Component safety patterns
+
+**ЗАВЖДИ використовуй захисні wrapper:**
 
 ```typescript
-// ✅ CORECT
-'use client';
+// ❌ НЕБЕЗПЕЧНО
+export default async function Page() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect('/login'); // Може викликати NEXT_REDIRECT error
+  }
+  const data = await prisma.table.findMany(); // Може timeout
+  return <Component data={data} />;
+}
 
-import { useState } from 'react';
+// ✅ БЕЗПЕЧНО
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 
-export function Counter() {
-  const [count, setCount] = useState(0);
-  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+export default async function Page() {
+  try {
+    // 1. Safe redirect
+    const session = await getServerSession(authOptions);
+    if (!session) return safeRedirect('/login'); // ← return!
+    
+    // 2. Validate data
+    const userId = validateServerData(session?.user?.id, 'User ID missing');
+    
+    // 3. Fetch with timeout + retry
+    const data = await fetchServerData(
+      () => prisma.table.findMany({ where: { userId } }),
+      { timeout: 10000, retries: 2 }
+    );
+    
+    return <Component data={data} />;
+  } catch (error) {
+    logger.error('Page', 'Failed to load', { error });
+    throw error; // Next.js error boundary
+  }
 }
 ```
 
-### 3.2 Separare Server/Client
+**Правила:**
+1. ✅ **ЗАВЖДИ** `return safeRedirect()` (not just `safeRedirect()`)
+2. ✅ **ЗАВЖДИ** `validateServerData()` для session/params
+3. ✅ **ЗАВЖДИ** `fetchServerData()` для Prisma queries
+4. ✅ **ЗАВЖДИ** try/catch з logger.error()
+5. ✅ **ЗАВЖДИ** throw для Next.js error boundary
 
-#### Pattern recomandat:
+**Документація:** `docs/SERVER_COMPONENT_SAFETY_GUIDE.md`
 
+---
+
+### 🟠 RULE 1.4: Composition pattern (Server + Client)
+
+**Правильна композиція:**
 ```typescript
-// src/app/products/[slug]/page.tsx (Server Component)
-export default async function ProductPage({ params }: Props) {
-  const { slug } = await params;
-  const product = await prisma.product.findFirst({ where: { slug } });
+// app/products/page.tsx (Server Component)
+import { ClientFilter } from './_components/ClientFilter';
+import { ProductList } from './_components/ProductList';
+
+export default async function ProductsPage() {
+  // Server-side data fetching
+  const products = await prisma.product.findMany();
   
-  if (!product) notFound();
-  
-  // ✅ Pasează date către Client Component
-  return <ProductConfigurator product={product} />;
-}
-
-// src/components/configurator/ProductConfigurator.tsx (Client Component)
-'use client';
-
-import { useState } from 'react';
-
-export function ProductConfigurator({ product }: { product: Product }) {
-  const [quantity, setQuantity] = useState(1);
-  // Logic interactiv aici
-}
-```
-
-#### Anti-pattern:
-
-```typescript
-// ❌ GREȘIT — Nu pune fetch în Client Component când poate fi Server
-'use client';
-
-export function ProductPage({ slug }: { slug: string }) {
-  const [product, setProduct] = useState(null);
-  
-  useEffect(() => {
-    // ❌ Fetch inutil pe client — ar trebui în Server Component
-    fetch(`/api/products/${slug}`)
-      .then(r => r.json())
-      .then(setProduct);
-  }, [slug]);
-}
-```
-
-### 3.3 Error Boundaries pentru Client Components
-
-Client Components cu logică complexă trebuie wrappate în Error Boundary:
-
-```typescript
-// src/app/configurator/page.tsx
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import ConfiguratorClient from './ConfiguratorClient';
-
-export default function ConfiguratorPage() {
   return (
-    <ErrorBoundary fallback={<ErrorState />}>
-      <ConfiguratorClient />
-    </ErrorBoundary>
+    <div>
+      {/* Client Component for interactivity */}
+      <ClientFilter />
+      
+      {/* Server Component for data */}
+      <ProductList products={products} />
+    </div>
+  );
+}
+
+// _components/ClientFilter.tsx (Client Component)
+'use client';
+import { useState } from 'react';
+
+export function ClientFilter() {
+  const [filter, setFilter] = useState('');
+  return <input value={filter} onChange={(e) => setFilter(e.target.value)} />;
+}
+
+// _components/ProductList.tsx (Server Component - no 'use client')
+export function ProductList({ products }) {
+  return (
+    <div>
+      {products.map(p => <ProductCard key={p.id} product={p} />)}
+    </div>
   );
 }
 ```
 
+**Паттерн:**
+- Page (Server) → fetchує дані
+- Client Components → інтерактивність
+- Server Components → static UI, дані
+
 ---
 
-## 🔗 PARTEA IV: Link și Navigation
+## 🔐 PART 2: AUTHENTICATION & AUTHORIZATION
 
-### 4.1 Prefetch Rules
+### 🔴 RULE 2.1: Auth в middleware (server-side)
 
-#### Reguli:
-
-1. **Pagini admin/manager/operator**: `prefetch={false}` (date dinamic)
-2. **Pagini publice stabile**: `prefetch={true}` sau default
-3. **Pagini cu params dinamice**: testează prefetch înainte de activare
+**Єдине правильне місце для auth check:**
 
 ```typescript
-// ✅ CORECT — Admin sidebar
-<Link href="/admin/orders" prefetch={false}>
-  Orders
-</Link>
+// middleware.ts
+import { getToken } from 'next-auth/jwt';
 
-// ✅ CORECT — Public navigation
-<Link href="/products">
-  Products
-</Link>
-```
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ 
+    req: request, 
+    secret: process.env.NEXTAUTH_SECRET 
+  });
 
-#### Anti-pattern:
-
-```typescript
-// ❌ GREȘIT — prefetch pe pagină cu auth check poate cauza 502
-<Link href="/admin/users">
-  Users
-</Link>
-
-// Dacă /admin/users face redirect neprotejat, prefetch-ul poate crash
-```
-
-### 4.2 Dynamic Imports pentru Componente Heavy
-
-Componente mari (charts, editors, maps) TREBUIE lazy-loaded:
-
-```typescript
-// ✅ CORECT
-import dynamic from 'next/dynamic';
-
-const RichTextEditor = dynamic(
-  () => import('@/components/editor/RichTextEditor'),
-  {
-    loading: () => <LoadingState />,
-    ssr: false, // Dacă folosește browser APIs
+  // Check auth
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
-);
-```
 
----
+  // Check role
+  if (path.startsWith('/admin') && token.role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/unauthorized', request.url));
+  }
 
-## 🛡️ PARTEA V: Anti-Patterns (INTERZISE)
-
-### 5.1 ❌ Fetch în Server Components fără Error Handling
-
-```typescript
-// ❌ INTERZIS
-export default async function Page() {
-  const data = await fetch('/api/data').then(r => r.json()); // Poate crash
-  return <div>{data.title}</div>;
+  return NextResponse.next();
 }
 
-// ✅ CORECT
+export const config = {
+  matcher: ['/admin/:path*', '/manager/:path*', '/operator/:path*', '/account/:path*']
+};
+```
+
+**Правила:**
+1. ✅ Використовуй `getToken()` (JWT-based, fast)
+2. ✅ Не використовуй `getServerSession()` в middleware (slow)
+3. ✅ Redirect неавторизованих ОДРАЗУ (before page render)
+4. ✅ Matcher має містити всі protected routes
+
+---
+
+### 🔴 RULE 2.2: Auth в layouts (client-side UI)
+
+**Protected layouts - завжди Client Components:**
+
+```typescript
+// app/admin/layout.tsx
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { LoadingState } from '@/components/ui/LoadingState';
+
+export default function AdminLayout({ children }) {
+  const { data: session, status } = useSession();
+
+  // 1. Show loading
+  if (status === 'loading') {
+    return <LoadingState />;
+  }
+
+  // 2. Middleware guarantees auth
+  // If user reaches here, they are authenticated
+  
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <main>{children}</main>
+    </div>
+  );
+}
+```
+
+**Правила:**
+1. ✅ Layout = Client Component (може використовувати `useSession()`)
+2. ✅ Показуй loading state поки `status === 'loading'`
+3. ❌ **НІКОЛИ** не роби `router.replace('/login')` в useEffect (race condition!)
+4. ✅ Middleware вже захищає, layout - тільки UI
+
+**Документація:** `AUTH_PREFETCH_HARDENING_REPORT.md`
+
+---
+
+### 🔴 RULE 2.3: Auth в API routes
+
+**Завжди перевіряй auth:**
+
+```typescript
+// app/api/admin/orders/route.ts
+import { requireRole } from '@/lib/auth-helpers';
+import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+
+export async function GET(req: NextRequest) {
+  try {
+    // 1. Auth check
+    const { user, error } = await requireRole(['ADMIN']);
+    if (error) return error;
+
+    // 2. Log request
+    logger.info('API:Orders', 'Fetching orders', { userId: user.id });
+
+    // 3. Business logic
+    const orders = await prisma.order.findMany({
+      where: { /* ... */ }
+    });
+
+    // 4. Return response
+    return NextResponse.json(orders);
+    
+  } catch (err) {
+    logApiError('API:Orders', err);
+    return createErrorResponse('Failed to fetch orders', 500);
+  }
+}
+```
+
+**Правила:**
+1. ✅ **ЗАВЖДИ** `requireRole()` або `requireAuth()` на початку
+2. ✅ **ЗАВЖДИ** try/catch wrapper
+3. ✅ **ЗАВЖДИ** logging через `logger`
+4. ✅ **ЗАВЖДИ** `createErrorResponse()` для помилок
+5. ❌ **НІКОЛИ** не довіряй client-side даним (validate все!)
+
+---
+
+### 🟠 RULE 2.4: Prefetch для auth routes
+
+**ЗАВЖДИ відключай prefetch для protected routes:**
+
+```typescript
+// ✅ Використовуй AuthLink
+import { AuthLink } from '@/components/common/links/AuthLink';
+
+<AuthLink href="/admin/orders">Orders</AuthLink>
+// Default: prefetch={false}
+
+// ✅ Або явно вказуй prefetch={false}
+import Link from 'next/link';
+
+<Link href="/admin/orders" prefetch={false}>Orders</Link>
+
+// ❌ НІКОЛИ без prefetch={false} для auth routes
+<Link href="/admin/orders">Orders</Link>
+// Prefetch може спрацювати ДО middleware check!
+```
+
+**Правила:**
+1. ✅ AuthLink для всіх auth routes
+2. ✅ `prefetch={false}` для /admin, /manager, /operator, /account
+3. ✅ Default prefetch OK для public routes (/, /products, /about)
+
+**Чому важливо:**
+- Prefetch = Next.js завантажує page ДО кліку
+- Якщо page має auth check → може викликати помилки
+- AuthLink вимикає prefetch для безпеки
+
+---
+
+## 📦 PART 3: DATA FETCHING
+
+### 🔴 RULE 3.1: Server Components - direct Prisma
+
+**В Server Components можеш напряму використовувати Prisma:**
+
+```typescript
+// app/products/page.tsx (Server Component)
+import { prisma } from '@/lib/db';
+import { fetchServerData } from '@/lib/serverSafe';
+
+export default async function ProductsPage() {
+  // ✅ Direct Prisma query wrapped in fetchServerData
+  const products = await fetchServerData(
+    () => prisma.product.findMany({
+      include: { category: true },
+      orderBy: { createdAt: 'desc' }
+    }),
+    { timeout: 10000, retries: 2 }
+  );
+
+  return <ProductList products={products} />;
+}
+```
+
+**Правила:**
+1. ✅ Використовуй `fetchServerData()` wrapper (timeout + retry)
+2. ✅ Select тільки потрібні поля (`select: { id: true, name: true }`)
+3. ✅ Include тільки необхідні relations
+4. ❌ Уникай N+1 queries (використовуй include/select wisely)
+
+---
+
+### 🔴 RULE 3.2: Client Components - API routes або hooks
+
+**В Client Components завжди через API або custom hooks:**
+
+```typescript
+// ❌ НІКОЛИ в Client Component
+'use client';
+import { prisma } from '@/lib/db';
+const products = await prisma.product.findMany(); // ПОМИЛКА!
+
+// ✅ Через API route
+'use client';
+export function ProductList() {
+  const [products, setProducts] = useState([]);
+  
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(setProducts);
+  }, []);
+  
+  return <div>{products.map(...)}</div>;
+}
+
+// ✅ АБО через custom hook зі safeFetch
+'use client';
+import { useProducts } from '@/hooks/useProducts';
+
+export function ProductList() {
+  const { data: products, isLoading, error } = useProducts();
+  
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  
+  return <div>{products.map(...)}</div>;
+}
+```
+
+**Правила:**
+1. ✅ Client Components → API routes → Prisma
+2. ✅ Використовуй custom hooks з `safeFetch`
+3. ✅ Handle loading/error states
+4. ❌ **НІКОЛИ** Prisma безпосередньо в Client Component
+
+---
+
+### 🟠 RULE 3.3: Caching strategy
+
+**ISR (Incremental Static Regeneration) для public routes:**
+
+```typescript
+// app/products/page.tsx
+export const revalidate = 3600; // 1 година
+
+export default async function ProductsPage() {
+  const products = await prisma.product.findMany();
+  return <ProductList products={products} />;
+}
+```
+
+**Dynamic для auth routes:**
+
+```typescript
+// app/admin/orders/page.tsx
+export const dynamic = 'force-dynamic'; // Always fresh
+
+export default async function AdminOrdersPage() {
+  const orders = await prisma.order.findMany();
+  return <OrdersList orders={orders} />;
+}
+```
+
+**Правила:**
+1. ✅ Public routes → ISR (revalidate: 3600)
+2. ✅ Auth routes → force-dynamic
+3. ✅ API routes → cache headers (Cache-Control)
+4. ❌ Уникай over-caching sensitive data
+
+---
+
+## ⚠️ PART 4: ERROR HANDLING
+
+### 🔴 RULE 4.1: Try/catch everywhere async
+
+**ЗАВЖДИ обгортай async code:**
+
+```typescript
+// ❌ НЕБЕЗПЕЧНО
+export default async function Page() {
+  const data = await prisma.table.findMany(); // Може fail!
+  return <Component data={data} />;
+}
+
+// ✅ БЕЗПЕЧНО
 export default async function Page() {
   try {
-    const response = await fetch('/api/data');
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    const data = await response.json();
-    return <div>{data.title}</div>;
+    const data = await fetchServerData(
+      () => prisma.table.findMany(),
+      { timeout: 10000, retries: 2 }
+    );
+    return <Component data={data} />;
   } catch (error) {
-    return <ErrorState error={error} />;
+    logger.error('Page', 'Failed to load', { error });
+    throw error; // Next.js error boundary
   }
 }
 ```
 
-### 5.2 ❌ JSX Invalid sau Undefined Access
+**Правила:**
+1. ✅ Try/catch для всіх async Server Components
+2. ✅ logger.error() для logging
+3. ✅ throw для Next.js error boundary
+4. ✅ Graceful fallbacks де можливо
+
+---
+
+### 🔴 RULE 4.2: API routes error responses
+
+**Стандартизовані HTTP коди:**
 
 ```typescript
-// ❌ INTERZIS
-return <div>{product.name}</div>; // product poate fi null
+import { createErrorResponse } from '@/lib/logger';
 
-// ✅ CORECT
-if (!product) return <EmptyState />;
-return <div>{product.name}</div>;
-```
-
-### 5.3 ❌ Mixed Server/Client în Aceeași Componentă
-
-```typescript
-// ❌ INTERZIS — nu poți avea ambele în același fișier
-export default async function Page() { // Server
-  const data = await prisma.product.findMany();
-  const [count, setCount] = useState(0); // ❌ hooks nu funcționează în Server
-  return <div>{data.length}</div>;
+// ✅ 400 - Bad Request (client error)
+if (!email) {
+  return createErrorResponse('Email is required', 400);
 }
 
-// ✅ CORECT — separă Server și Client
+// ✅ 401 - Unauthorized (not authenticated)
+if (!session) {
+  return createErrorResponse('Authentication required', 401);
+}
+
+// ✅ 403 - Forbidden (not authorized)
+if (user.role !== 'ADMIN') {
+  return createErrorResponse('Admin access required', 403);
+}
+
+// ✅ 404 - Not Found
+if (!order) {
+  return createErrorResponse('Order not found', 404);
+}
+
+// ✅ 409 - Conflict (duplicate, constraint violation)
+if (existingUser) {
+  return createErrorResponse('Email already exists', 409);
+}
+
+// ✅ 500 - Internal Server Error
+catch (error) {
+  logApiError('API:Route', error);
+  return createErrorResponse('Server error', 500);
+}
+```
+
+**Правила:**
+1. ✅ Використовуй правильні HTTP коди
+2. ✅ `createErrorResponse()` для consistency
+3. ✅ Log всі 500 errors через `logApiError()`
+4. ❌ Не expose internal details в error messages (security!)
+
+---
+
+### 🟠 RULE 4.3: Client-side error handling
+
+**Graceful degradation:**
+
+```typescript
+'use client';
+
+export function ProductList() {
+  const { data, isLoading, error } = useProducts();
+
+  // 1. Loading state
+  if (isLoading) {
+    return <LoadingState message="Loading products..." />;
+  }
+
+  // 2. Error state
+  if (error) {
+    return (
+      <ErrorState 
+        error={error}
+        retry={() => window.location.reload()}
+      />
+    );
+  }
+
+  // 3. Empty state
+  if (data?.length === 0) {
+    return <EmptyState message="No products found" />;
+  }
+
+  // 4. Success state
+  return <div>{data.map(...)}</div>;
+}
+```
+
+**Правила:**
+1. ✅ Handle: loading, error, empty, success states
+2. ✅ Provide retry mechanism для errors
+3. ✅ User-friendly messages (не технічні деталі)
+4. ✅ Використовуй UI components (LoadingState, ErrorState, EmptyState)
+
+---
+
+## 📝 PART 5: VALIDATION & SECURITY
+
+### 🔴 RULE 5.1: Validate all inputs
+
+**Server-side validation ЗАВЖДИ:**
+
+```typescript
+// app/api/orders/route.ts
+import { validateCheckoutForm } from '@/lib/validation';
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  
+  // 1. Validate
+  const errors = validateCheckoutForm(body);
+  if (errors.length > 0) {
+    return NextResponse.json({ errors }, { status: 400 });
+  }
+  
+  // 2. Sanitize (якщо потрібно)
+  const email = body.email.toLowerCase().trim();
+  
+  // 3. Process
+  // ...
+}
+```
+
+**Правила:**
+1. ✅ **ЗАВЖДИ** validate на сервері (never trust client)
+2. ✅ Використовуй `src/lib/validation.ts` functions
+3. ✅ Return 400 з описом помилок
+4. ❌ Client-side validation = UX, не security
+
+---
+
+### 🔴 RULE 5.2: Environment variables security
+
+**НІКОЛИ не expose secrets на client:**
+
+```typescript
+// ✅ Server-side OK
+const apiKey = process.env.PAYNET_API_KEY;
+const secret = process.env.NEXTAUTH_SECRET;
+
+// ❌ НЕБЕЗПЕЧНО - client може побачити!
+const apiKey = process.env.NEXT_PUBLIC_API_KEY; // Exposed!
+```
+
+**Правила:**
+1. ✅ Secrets → без `NEXT_PUBLIC_` prefix
+2. ✅ Public config → з `NEXT_PUBLIC_` prefix
+3. ✅ Validate env vars при старті (у `next.config.ts`)
+4. ❌ **НІКОЛИ** не commit `.env` в git
+
+---
+
+## 📋 PART 6: PRE-FEATURE CHECKLIST
+
+### 🔴 Pre-Development Checklist
+
+- [ ] Визначено тип компонента: Server або Client?
+- [ ] Якщо Server → чи потрібен `safeRedirect`, `fetchServerData`?
+- [ ] Якщо Client → чи є `'use client'` directive?
+- [ ] Чи потрібна auth? → Middleware + requireRole()
+- [ ] Чи потрібна валідація? → використовуй `lib/validation.ts`
+- [ ] Чи є async код? → try/catch + logger
+
+### 🟠 Development Checklist
+
+- [ ] Imports: alias (`@/`), не barrel files для Client Components (див. IMPORT_RULES.md)
+- [ ] Error handling: try/catch, logging, graceful fallback
+- [ ] Types: TypeScript без `any`, використовуй Prisma types
+- [ ] Validation: server-side через `lib/validation.ts`
+- [ ] Auth: middleware + API routes з `requireRole()`
+- [ ] Prefetch: `AuthLink` або `prefetch={false}` для auth routes
+
+### 🟡 Post-Development Checklist
+
+- [ ] Tests: додані для critical logic
+- [ ] Lint: `npm run lint` без помилок
+- [ ] Types: `npm run type-check` (якщо є) без помилок
+- [ ] Manual test: перевірено в browser (dev mode)
+- [ ] Performance: немає зайвих re-renders, оптимізовані зображення
+- [ ] Security: немає exposed secrets, validated inputs
+
+---
+
+## 🔒 STABLE ZONES
+
+### ✅ ZONE 1: Authentication & Authorization
+
+**Файли:**
+- `middleware.ts` — server-side auth check
+- `src/modules/auth/nextauth.ts` — NextAuth config
+- `src/lib/auth-helpers.ts` — requireRole, requireAuth
+- Protected layouts: `app/admin/layout.tsx`, `app/manager/layout.tsx`, `app/operator/layout.tsx`, `app/account/layout.tsx`
+
+**Статус:** 🔒 **STABLE** — працює правильно, не чіпати без extreme need
+
+**Правила:**
+1. ❌ Не додавай getServerSession() в Client Components
+2. ❌ Не додавай auth redirects в useEffect
+3. ❌ Не змінюй middleware matcher без review
+4. ✅ Використовуй існуючі helpers (requireRole, requireAuth)
+
+**Документація:** `AUTH_PREFETCH_HARDENING_REPORT.md`
+
+---
+
+### ✅ ZONE 2: Server Component Safety Layer
+
+**Файли:**
+- `src/lib/serverSafe.ts` — safeRedirect, validateServerData, fetchServerData
+- Server Components в `app/account/` — використовують safety patterns
+
+**Статус:** 🔒 **STABLE** — tested & hardened
+
+**Правила:**
+1. ✅ **ЗАВЖДИ** `return safeRedirect()`
+2. ✅ **ЗАВЖДИ** `validateServerData()` для critical data
+3. ✅ **ЗАВЖДИ** `fetchServerData()` для Prisma
+4. ❌ Не обходь ці helpers (вони захищають від crashes)
+
+**Документація:** `docs/SERVER_COMPONENT_SAFETY_GUIDE.md`
+
+---
+
+### ✅ ZONE 3: Validation & Error Handling
+
+**Файли:**
+- `src/lib/validation.ts` — форми validation
+- `src/lib/logger.ts` — logging utilities
+- `src/lib/safeFetch.ts` — client-side fetch wrapper
+
+**Статус:** 🔒 **STABLE** — comprehensive coverage
+
+**Правила:**
+1. ✅ Використовуй існуючі validation functions (не дублюй логіку)
+2. ✅ Логуй через `logger` (structured logging)
+3. ✅ Client fetches через `safeFetch` (автоматичний retry + error handling)
+4. ❌ Не створюй нові validation functions без перевірки існуючих
+
+**Документація:** `docs/RELIABILITY.md`
+
+---
+
+### ✅ ZONE 4: UI Components Library
+
+**Файли:**
+- `src/components/ui/` — Button, Card, Badge, Input, Select, etc.
+
+**Статус:** 🔒 **STABLE** — standardized across project
+
+**Правила:**
+1. ✅ Використовуй існуючі UI components
+2. ✅ Variants через props (не створюй нові компоненти для кожної варіації)
+3. ❌ Не імпортуй з barrel file (`ui/index.ts`) — див. IMPORT_RULES.md
+4. ✅ Direct imports: `@/components/ui/Button`
+
+**Документація:** `docs/UI_COMPONENTS.md`
+
+---
+
+### ⚠️ ZONE 5: Public Home Page
+
+**Файли:**
+- `src/app/page.tsx` — homepage
+- `src/components/public/home/` — homepage components
+
+**Статус:** ⚠️ **CAREFUL** — був barrel file issue, зараз виправлено
+
+**Правила:**
+1. ✅ Direct imports (не через `public/home/index.ts`)
+2. ✅ Prefetch OK для public routes
+3. ❌ Не додавай Client Component exports в barrel files
+
+**Документація:** `RAPORT_BARREL_FILES_FINAL.md`, `IMPORT_RULES.md`
+
+---
+
+### 🟢 ZONE 6: Admin Panel
+
+**Файли:**
+- `src/app/admin/` — всі admin routes
+- `src/app/admin/_components/` — AdminSidebar, AdminTopbar
+
+**Статус:** 🟢 **ACTIVE DEVELOPMENT** — можна змінювати
+
+**Правила:**
+1. ✅ Використовуй AuthLink або `prefetch={false}`
+2. ✅ API routes через `requireRole(['ADMIN'])`
+3. ✅ Direct imports для components (див. IMPORT_RULES.md)
+4. ✅ Force-dynamic для fresh data
+
+---
+
+## 🚨 FORBIDDEN PATTERNS
+
+### ❌ PATTERN 1: Client Component в barrel file
+
+```typescript
+// ❌ ЗАБОРОНЕНО
+// src/components/ui/index.ts
+'use client';
+export { Button } from './Button';
+```
+
+**Наслідки:** 502 errors, infinite loops, unpredictable behavior
+
+**Рішення:** Видали Client Component exports з barrel files, використовуй direct imports. Детально в `IMPORT_RULES.md`.
+
+---
+
+### ❌ PATTERN 2: redirect() без return
+
+```typescript
+// ❌ ЗАБОРОНЕНО
 export default async function Page() {
-  const data = await prisma.product.findMany();
-  return <ProductList products={data} />; // Client Component separat
+  if (!session) {
+    redirect('/login'); // Missing return!
+  }
+  return <div>Content</div>; // Може виконатись!
+}
+
+// ✅ ПРАВИЛЬНО
+export default async function Page() {
+  if (!session) {
+    return safeRedirect('/login'); // ← return!
+  }
+  return <div>Content</div>;
 }
 ```
 
-### 5.4 ❌ Re-export Client Components prin Barrel Files
+**Наслідки:** NEXT_REDIRECT errors, unexpected renders
+
+---
+
+### ❌ PATTERN 3: Prisma в Client Component
 
 ```typescript
-// ❌ INTERZIS — src/components/forms/index.ts
-export { LoginForm } from './LoginForm'; // 'use client'
+// ❌ ЗАБОРОНЕНО
+'use client';
+import { prisma } from '@/lib/db';
 
-// ✅ CORECT — nu exporta, importează direct
-// import { LoginForm } from '@/components/forms/LoginForm';
+export function ProductList() {
+  const products = await prisma.product.findMany(); // RUNTIME ERROR!
+}
 ```
 
----
+**Наслідки:** Runtime crash, Prisma не працює в browser
 
-## ✅ PARTEA VI: Checklist Pre-Feature
-
-Înainte de a adăuga orice feature nou, verifică:
-
-### Server Component Checklist:
-
-- [ ] Toate Prisma queries au check pentru `null`
-- [ ] `notFound()` folosit pentru resurse lipsă
-- [ ] `redirect()` nu e wrappat în try/catch
-- [ ] Params și searchParams sunt validate
-- [ ] Nu folosește hooks React (`useState`, etc.)
-- [ ] Nu are event handlers (`onClick`, etc.)
-- [ ] Importuri de Client Components sunt directe (nu prin barrel files)
-
-### Client Component Checklist:
-
-- [ ] Are `'use client';` pe prima linie
-- [ ] Nu face data fetching care ar trebui în Server Component
-- [ ] Error boundaries configurate pentru logică complexă
-- [ ] Event handlers au error handling
-- [ ] Nu importă Server-only modules (Prisma, fs, etc.)
-
-### Link & Navigation Checklist:
-
-- [ ] Link-uri admin au `prefetch={false}`
-- [ ] Link-uri către pagini cu auth check sunt testate
-- [ ] Componente heavy sunt lazy-loaded cu `dynamic()`
+**Рішення:** Використовуй API route або Server Component
 
 ---
 
-## 📊 PARTEA VII: Audit Complet Realizat (2026-01-25)
+### ❌ PATTERN 4: useEffect auth redirect
 
-### Barrel Files Audited:
+```typescript
+// ❌ ЗАБОРОНЕНО
+'use client';
+export default function AccountLayout() {
+  const { session } = useSession();
+  
+  useEffect(() => {
+    if (!session) {
+      router.replace('/login'); // RACE CONDITION!
+    }
+  }, [session]);
+}
+```
 
-| Fișier | Status | Acțiune |
-|--------|--------|---------|
-| `src/components/ui/index.ts` | ✅ Curățat | Form components comentate |
-| `src/components/common/index.ts` | ✅ Sigur | Doar exports UI cu 'use client' explicit |
-| `src/components/public/home/index.ts` | ✅ Sigur | Componente fără probleme |
-| `src/components/layout/index.ts` | ✅ Sigur | Minimal export |
+**Наслідки:** Race condition з prefetch, flickering UI
 
-### Server Components Audited:
-
-16 page.tsx verificate pentru:
-- ✅ Error handling
-- ✅ Prisma query safety
-- ✅ Redirect patterns
-- ✅ Data validation
-
-**Rezultat**: Toate respectă regulile stabilite.
-
-### Importuri Audited:
-
-- ✅ 0 importuri problematice găsite
-- ✅ Toate Client Components importate corect
-- ✅ Separare clară Server/Client
+**Рішення:** Middleware робить redirect, layout - тільки UI
 
 ---
 
-## 🎯 PARTEA VIII: Garanții Arhitecturale
+### ❌ PATTERN 5: Exposed secrets
 
-### Prin respectarea regulilor din acest document, garantăm:
+```typescript
+// ❌ ЗАБОРОНЕНО
+const apiKey = process.env.NEXT_PUBLIC_SECRET_KEY; // Client може побачити!
 
-1. **Zero 502 errors din cauze logice** — toate excepțiile sunt gestionate
-2. **Zero module resolution failures** — importuri deterministe
-3. **Zero Server/Client conflicts** — separare clară
-4. **Zero prefetch crashes** — toate rutele pot fi prefetch-uite sigur
-5. **Zero runtime errors evitabile** — validare completă
+// ✅ ПРАВИЛЬНО
+const apiKey = process.env.SECRET_KEY; // Тільки server-side
+```
 
-### Ce NU garantăm (dar sunt extrem de improbabile):
-
-1. Probleme de rețea (Prisma connection timeout) — gestionăm graceful cu ErrorState
-2. OOM crash (imposibil cu 2048 MB pentru 66 MB folosiți)
-3. Third-party API failures — wrapped în try/catch
+**Наслідки:** Security vulnerability, leaked credentials
 
 ---
 
-## 🔐 PARTEA IX: Enforcement și Mentenanță
+## 📖 DOCUMENTATION REFERENCES
 
-### Când adaugi cod nou:
+### Critical Docs (READ FIRST)
 
-1. **Citește** acest document înainte
-2. **Verifică** checklist-urile relevante
-3. **Testează** local pentru 502 errors
-4. **Review** import-urile pentru conformitate
+1. **`IMPORT_RULES.md`** ← **NEW! Обов'язково читати**
+   - Import/export patterns
+   - Barrel file rules
+   - Module organization
 
-### Code Review Checklist:
+2. **`AUTH_PREFETCH_HARDENING_REPORT.md`**
+   - Auth architecture
+   - Prefetch rules
+   - Protected layouts patterns
 
-Reviewer-ul trebuie să verifice:
-- [ ] Server Components nu importă din barrel files cu Client Components
-- [ ] Toate Prisma queries au null checks
-- [ ] Client Components au `'use client'`
-- [ ] Links admin au `prefetch={false}`
-- [ ] No try/catch around `redirect()`
+3. **`docs/SERVER_COMPONENT_SAFETY_GUIDE.md`**
+   - safeRedirect usage
+   - fetchServerData patterns
+   - Error handling
 
-### Actualizări viitoare:
+4. **`RAPORT_BARREL_FILES_FINAL.md`**
+   - Barrel file anti-patterns
+   - Case studies
 
-Acest document este **FINAL** pentru arhitectura curentă. Actualizări vor fi făcute doar pentru:
-- Modificări majore în Next.js App Router
-- Noi pattern-uri oficiale recomandate de Vercel
-- Bug-uri critice descoperite în producție
+### Supporting Docs
 
-**Nu** actualiza pentru:
-- Feature requests individuale
-- Preferințe personale de stil
-- "Optimizări" speculative
-
----
-
-## 📚 Referințe și Documentație Internă
-
-- [BARREL_FILE_RULES.md](BARREL_FILE_RULES.md) — Reguli detaliate barrel files
-- [SERVER_STABILITY_RULES.md](SERVER_STABILITY_RULES.md) — Server Component patterns
-- [NODE_MEMORY_MYTH.md](NODE_MEMORY_MYTH.md) — De ce memoria NU e problema
-- [STABLE_ZONES.md](STABLE_ZONES.md) — Zone protejate arhitectural
-
-### Documentație Oficială:
-
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [React Server Components](https://react.dev/reference/rsc/server-components)
-- [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/routing/error-handling)
+- `docs/RELIABILITY.md` — error handling patterns
+- `docs/UI_COMPONENTS.md` — UI library reference
+- `docs/TESTING.md` — testing strategy
+- `.github/copilot-instructions.md` — AI agent rules
 
 ---
 
-## 🏆 Concluzie
+## 🎓 LESSONS LEARNED (War Stories)
 
-Acest document reprezintă **cunoașterea acumulată** din debugging-ul intensiv al proiectului sanduta.art și stabilește **reguli permanente** pentru prevenirea completă a 502 errors prin arhitectură corectă.
+### 1. Barrel File 502s
 
-### Regula Supremă:
+**Problem:** Homepage 502 errors, random crashes  
+**Root Cause:** Client Components re-exported through barrel files  
+**Solution:** Eliminated Client Component exports, direct imports only  
+**Prevention:** IMPORT_RULES.md — never export Client Components from barrel files
 
-> **502 Bad Gateway = Bug Logic în Cod**
->
-> **NU este:**
-> - Memorie insuficientă (96% headroom)
-> - Server insuficient (66 MB / 2048 MB)
-> - Proiect prea mare (300 files = mic)
->
-> **ESTE întotdeauna:**
-> - Import greșit (barrel file)
-> - Excepție necontrolată (throw fără try/catch)
-> - JSX invalid (undefined access)
-> - Redirect greșit (condiție nepotrivită)
+### 2. Missing return before redirect()
 
-**Urmărește regulile → Zero 502. Garantat.**
+**Problem:** NEXT_REDIRECT errors, pages render after redirect  
+**Root Cause:** `redirect()` without `return` statement  
+**Solution:** `return safeRedirect()` everywhere  
+**Prevention:** RULE 1.3 — always return safeRedirect()
+
+### 3. Prisma timeout crashes
+
+**Problem:** Server Components hang, no timeout  
+**Root Cause:** Prisma queries without timeout protection  
+**Solution:** `fetchServerData()` wrapper з timeout + retry  
+**Prevention:** RULE 1.3 — wrap all Prisma in fetchServerData()
+
+### 4. useEffect auth redirect race
+
+**Problem:** Flickering UI, race conditions з prefetch  
+**Root Cause:** `router.replace('/login')` в useEffect  
+**Solution:** Видалили useEffect, middleware робить redirect  
+**Prevention:** RULE 2.2 — no redirects in useEffect
 
 ---
 
-**Data creării**: 2026-01-25 14:15 UTC  
-**Status**: ✅ **REGULI FINALE — BLOCATE**  
-**Versiune**: 1.0.0  
-**Autor**: GitHub Copilot (Claude Sonnet 4.5)  
-**Ultima actualizare**: 2026-01-25 14:15 UTC
+## ✅ SUCCESS CRITERIA
+
+**Досягнуто якщо:**
+
+✅ **Debug predictibil** — помилки легко знайти через structured logging  
+✅ **Zero регресії** — нові фічі не ламають існуючі (stable zones)  
+✅ **Архітектура зрозуміла** — новий dev розуміється за 1 день
+
+**Metrics:**
+- 🟢 0 barrel file imports Client Components
+- 🟢 100% auth routes через middleware
+- 🟢 100% protected routes з prefetch={false}
+- 🟢 100% async Server Components з try/catch
+- 🟢 100% API routes з requireRole()
 
 ---
 
-## 🔄 Change Log
+## 🔮 FUTURE-PROOFING
 
-### 2026-01-25 — v1.0.0 (Initial Release)
-- ✅ Reguli complete de import (barrel files)
-- ✅ Server Component safety patterns
-- ✅ Client Component architecture
-- ✅ Link și navigation rules
-- ✅ Anti-patterns documentation
-- ✅ Pre-feature checklists
-- ✅ Audit complet efectuat
-- ✅ Garanții arhitecturale stabilite
+**Ці правила стабільні для:**
+- Next.js 14-15 App Router
+- React 18-19 Server Components
+- NextAuth 4.x JWT strategy
 
-**Status**: Proiectul respectă toate regulile. Zero 502 errors posibile prin cod valid.
+**Якщо оновлюєш Next.js:**
+1. Перечитай BREAKING CHANGES
+2. Протестуй stable zones
+3. Оновлюй ці правила якщо потрібно
+
+**Якщо додаєш нову бібліотеку:**
+1. Перевір чи вона працює в Server Components
+2. Якщо ні → додай до Client Components або dynamic import
+3. Не експортуй через barrel files (див. IMPORT_RULES.md)
+
+---
+
+## 📞 SUPPORT
+
+**Якщо щось незрозуміло:**
+1. Перечитай відповідний PART вище
+2. Подивись Documentation References
+3. Grep codebase для прикладів: `grep -r "pattern" src/`
+
+**Якщо знайшов bug related to ці правила:**
+1. Створи issue з тегом `architecture`
+2. Опиши який RULE порушено
+3. Запропонуй fix
+
+---
+
+**VERSION:** 1.0 Final  
+**LAST UPDATED:** 2026-01-26  
+**STATUS:** 🔒 LOCKED — do not violate these rules  
+**NEXT REVIEW:** After major Next.js version upgrade
