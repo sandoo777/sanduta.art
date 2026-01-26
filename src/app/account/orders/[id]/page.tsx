@@ -18,7 +18,7 @@ export default async function OrderDetailPage({ params }: Props) {
     // 2. Auth check server-side
     const session = await getServerSession(authOptions);
     if (!session) {
-      safeRedirect('/login?callbackUrl=/account/orders');
+      return safeRedirect('/login?callbackUrl=/account/orders');
     }
 
     // Validate session has user ID

@@ -1,30 +1,35 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
-import { safeRedirect, validateServerData } from '@/lib/serverSafe';
+import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 import OrdersClient from './OrdersClient';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AccountOrdersPage() {
-  console.log('[/account/orders] Page rendering started');
-  
-  // Verificare autentificare server-side
-  console.log('[/account/orders] Getting session...');
-  const session = await getServerSession(authOptions);
-  console.log('[/account/orders] Session:', session?.user?.email || 'not authenticated');
-  
-  if (!session?.user?.id) {
-    console.log('[/account/orders] No session, redirecting to signin');
-    safeRedirect('/auth/signin');
-  }
+  try {
+    console.log('[/account/orders] Page rendering started');
+    
+    // Verificare autentificare server-side
+    console.log('[/account/orders] Getting session...');
+    const session = await getServerSession(authOptions);
+    console.log('[/account/orders] Session:', session?.user?.email || 'not authenticated');
+    
+    if (!session?.user?.id) {
+      console.log('[/account/orders] No session, redirecting to signin');
+      return safeRedirect('/auth/signin');
+    }
 
-  console.log('[/account/orders] Fetching orders for user:', session.user.id);
-  
-  // Query direct Prisma pentru comenzile utilizatorului
-  const orders = await prisma.order.findMany({
-    where: {
-      customerId: session.user.id,
+    // Validate user ID
+    const userId = validateServerData(session.user.id, 'User ID missing');
+
+    console.log('[/account/orders] Fetching orders for user:', userId);
+    
+    // Query direct Prisma pentru comenzile utilizatorului cu safe wrapper
+    const orders = await fetchServerData(
+      () => prisma.order.findMany({
+        where: {
+      customerId: userId,
     },
     select: {
       id: true,
@@ -57,7 +62,12 @@ export default async function AccountOrdersPage() {
     orderBy: {
       createdAt: 'desc',
     },
-  });
+  }),
+      {
+        timeout: 10000,
+        retries: 2,
+      }
+    );
 
   console.log('[/account/orders] Found', orders.length, 'orders');
 
@@ -85,4 +95,9 @@ export default async function AccountOrdersPage() {
   console.log('[/account/orders] Rendering OrdersClient component');
   // Render Client Component cu datele prefetchate
   return <OrdersClient orders={ordersData} />;
+  } catch (error) {
+    console.error('[/account/orders] Error:', error);
+    // Return empty state on error
+    return <OrdersClient orders={[]} />;
+  }
 }

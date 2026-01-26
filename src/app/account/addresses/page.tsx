@@ -10,7 +10,7 @@ export default async function AddressesPage() {
     // 1. Auth check server-side
     const session = await getServerSession(authOptions);
     if (!session) {
-      safeRedirect('/login');
+      return safeRedirect('/login');
     }
 
     // Validate session has user ID
