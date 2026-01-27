@@ -56,36 +56,46 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, trigger }) {
-      // Initial sign in
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.name = user.name;
-        token.email = user.email;
-      }
-
-      // Session update
-      if (trigger === "update") {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.name = dbUser.name;
-          token.email = dbUser.email;
+      try {
+        // Initial sign in
+        if (user) {
+          token.id = user.id;
+          token.role = user.role;
+          token.name = user.name;
+          token.email = user.email;
         }
-      }
 
-      return token;
+        // Session update
+        if (trigger === "update") {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.name = dbUser.name;
+            token.email = dbUser.email;
+          }
+        }
+
+        return token;
+      } catch (error) {
+        console.error("[NextAuth JWT Callback Error]:", error);
+        return token;
+      }
     },
     async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
+      try {
+        if (session.user && token) {
+          session.user.id = token.id as string;
+          session.user.role = token.role;
+          session.user.name = token.name as string;
+          session.user.email = token.email as string;
+        }
+        return session;
+      } catch (error) {
+        console.error("[NextAuth Session Callback Error]:", error);
+        return session;
       }
-      return session;
     },
   },
   pages: {

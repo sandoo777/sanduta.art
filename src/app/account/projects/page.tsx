@@ -1,7 +1,7 @@
 // Server Component — Data fetching with direct Prisma access
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import ProjectsClient from './ProjectsClient';
 import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 
@@ -59,4 +59,8 @@ export default async function ProjectsPage() {
 
   // 4. Pass data to Client Component for interactivity
   return <ProjectsClient projects={projectsData} />;
+  } catch (error) {
+    console.error('Failed to fetch projects:', error);
+    throw error; // Let Next.js error boundary handle it
+  }
 }

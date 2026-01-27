@@ -158,8 +158,6 @@ export function useReports() {
       setLoading(false);
     }
   };
-    }
-  };
 
   return {
     loading,

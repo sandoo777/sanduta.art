@@ -8,6 +8,11 @@ console.log("[Middleware File] Loaded!");
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   
+  // Skip middleware for NextAuth endpoints to prevent CLIENT_FETCH_ERROR
+  if (path.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+  
   // Check i18n routing first
   const i18nResponse = i18nMiddleware(req);
   if (i18nResponse) {

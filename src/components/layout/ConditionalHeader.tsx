@@ -4,35 +4,34 @@ import { usePathname } from 'next/navigation';
 import { PublicHeader } from '@/components/common/headers/PublicHeader';
 
 /**
- * ConditionalHeader - Afișează headerul pe paginile publice
- * Nu afișează headerul pe:
- * - Pagini admin (/admin/*)
- * - Pagini manager (/manager/*)
- * - Pagini operator (/operator/*)
- * - Pagini account/user panel (/account/*)
- * - Pagini de autentificare speciale (/setup)
- * - Editor full-screen (/editor, /editor/*)
+ * ConditionalHeader - Afișează PublicHeader pe paginile publice
+ * 
+ * NU afișează headerul pe:
+ * - Pagini admin (/admin/*) - au AdminTopbar propriu
+ * - Pagini manager (/manager/*) - au PanelHeader propriu
+ * - Pagini operator (/operator/*) - au header propriu
+ * - Pagini account/user panel (/account/*) - au header propriu
+ * - Setup wizard (/setup) - pagină specială de setup
+ * - Editor full-screen (/editor, /editor/*) - fullscreen mode
+ * 
+ * AFIȘEAZĂ PublicHeader pe:
+ * - Homepage (/)
+ * - Catalog (/produse, /products)
+ * - Coș și checkout (/cart, /checkout)
+ * - Pagini informaționale (/about, /contact, /blog)
+ * - Orice alte pagini publice
  */
 export function ConditionalHeader() {
   const pathname = usePathname();
 
-  // Lista de path-uri unde NU vrem headerul
-  // Aceste secțiuni au propriul Header sau Topbar
+  // Path-uri unde NU vrem headerul (au propriul UI)
   const excludedPaths = [
     '/admin',     // AdminTopbar
-    '/manager',   // Header propriu
+    '/manager',   // PanelHeader
     '/operator',  // Header propriu
     '/account',   // Header propriu (User Panel)
     '/setup',     // Setup wizard
     '/editor',    // Editor full-screen
-    '/',          // Homepage are propriul header din (public) layout
-    '/produse',   // Catalog are propriul header din (public) layout
-    '/products',  // Products catalog are propriul header din products layout
-    '/cart',      // Cart are propriul header din (public) layout
-    '/checkout',  // Checkout are propriul header din (public) layout
-    '/about',     // About are propriul header din (public) layout
-    '/contact',   // Contact are propriul header din (public) layout
-    '/blog',      // Blog are propriul header din (public) layout
   ];
 
   // Verifică dacă path-ul începe cu unul din cele excluse
@@ -45,6 +44,6 @@ export function ConditionalHeader() {
     return null;
   }
 
-  // Afișează headerul pe toate celelalte pagini publice
+  // Afișează PublicHeader pe toate paginile publice
   return <PublicHeader />;
 }

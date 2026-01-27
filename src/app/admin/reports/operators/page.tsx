@@ -267,12 +267,14 @@ export default function OperatorsReportPage() {
         </Card>
       )}
 
-      {/* Completion Time Details */
-      {operators && operators.completionTimesByOperator && operators.completionTimesByOperator.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Completion Time Statistics</CardTitle>
-          </CardHeader>
+      {/* Completion Time Details */}
+      {operators &&
+        operators.completionTimesByOperator &&
+        operators.completionTimesByOperator.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Completion Time Statistics</CardTitle>
+            </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {operators.completionTimesByOperator.map((operator) => (

@@ -1,7 +1,7 @@
 // Server Component — Data fetching with direct Prisma access
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import ManagerOrdersClient from './ManagerOrdersClient';
 import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 

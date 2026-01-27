@@ -2,7 +2,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import AddressesClient from './AddressesClient';
 
 export default async function AddressesPage() {
@@ -22,20 +22,25 @@ export default async function AddressesPage() {
         where: {
           userId,
         },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      street: true,
-      city: true,
-      county: true,
-      postalCode: true,
-      isDefault: true,
-    },
-    orderBy: {
-      isDefault: 'desc', // Default address first
-    },
-  });
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          street: true,
+          city: true,
+          county: true,
+          postalCode: true,
+          isDefault: true,
+        },
+        orderBy: {
+          isDefault: 'desc', // Default address first
+        },
+      }),
+      {
+        timeout: 10000,
+        retries: 2,
+      }
+    );
 
   // 3. Transform data for client
   const addressesData = addresses.map(address => ({
@@ -51,4 +56,8 @@ export default async function AddressesPage() {
 
   // 4. Pass data to Client Component for interactivity
   return <AddressesClient addresses={addressesData} />;
+  } catch (error) {
+    console.error('Failed to fetch addresses:', error);
+    throw error; // Let Next.js error boundary handle it
+  }
 }

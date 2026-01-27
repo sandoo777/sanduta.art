@@ -270,5 +270,6 @@ export default function AdminUsersPage() {
         </div>
       </div>
       <Dialog />
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { notFound } from 'next/navigation';
 import { safeRedirect, validateServerData } from '@/lib/serverSafe';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import OrderDetailClient from './OrderDetailClient';
 
 interface Props {
@@ -76,37 +76,41 @@ export default async function OrderDetailPage({ params }: Props) {
         },
       },
     },
-  });
+    });
 
-  // 4. If order not found, show 404
-  if (!order) {
-    notFound();
+    // 4. If order not found, show 404
+    if (!order) {
+      notFound();
+    }
+
+    // 5. Transform data for client
+    const orderData = {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt.toISOString(),
+      paynetSessionId: order.paynetSessionId,
+      customer: order.customer,
+      delivery: order.delivery,
+      payment: order.payment,
+      orderItems: order.orderItems.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          category: item.product.category,
+          price: item.product.price,
+          image_url: item.product.image_url,
+        },
+      })),
+    };
+
+    // 6. Pass data to Client Component
+    return <OrderDetailClient order={orderData} />;
+  } catch (error) {
+    console.error('Failed to fetch order:', error);
+    throw error; // Let Next.js error boundary handle it
   }
-
-  // 5. Transform data for client
-  const orderData = {
-    id: order.id,
-    orderNumber: order.orderNumber,
-    status: order.status,
-    totalAmount: order.totalAmount,
-    createdAt: order.createdAt.toISOString(),
-    paynetSessionId: order.paynetSessionId,
-    customer: order.customer,
-    delivery: order.delivery,
-    payment: order.payment,
-    orderItems: order.orderItems.map(item => ({
-      id: item.id,
-      quantity: item.quantity,
-      product: {
-        id: item.product.id,
-        name: item.product.name,
-        category: item.product.category,
-        price: item.product.price,
-        image_url: item.product.image_url,
-      },
-    })),
-  };
-
-  // 6. Pass data to Client Component
-  return <OrderDetailClient order={orderData} />;
 }

@@ -10,7 +10,7 @@ import { CategoryTreeView } from "./_components/CategoryTreeView";
 import { Card, CardContent } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Category } from '@/types/models';
-import { buildCategoryTree, flattenCategoryTree } from '@/lib/categoryTree';
+import { buildCategoryTree, flattenCategoryTree, filterTree } from '@/lib/categoryTree';
 
 interface CategoryWithCount extends Category {
   _count: {
@@ -83,13 +83,19 @@ export default function AdminCategoriesPage() {
     });
   };
 
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cat.slug.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Build full category tree from all categories
+  const fullCategoryTree = buildCategoryTree(categories);
 
-  // Build category tree for tree view
-  const categoryTree = buildCategoryTree(filteredCategories);
+  // Filter tree while preserving hierarchy
+  const categoryTree = filterTree(fullCategoryTree, searchTerm);
+
+  // For grid view, use flat filtered list
+  const filteredCategories = searchTerm
+    ? categories.filter(cat =>
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cat.slug.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : categories;
 
   return (
     <div className="space-y-6">
@@ -184,7 +190,7 @@ export default function AdminCategoriesPage() {
       {/* Categories - Tree View or Grid View */}
       {loading ? (
         <LoadingState text="Loading categories..." />
-      ) : filteredCategories.length === 0 ? (
+      ) : (viewMode === 'tree' && categoryTree.length === 0) || (viewMode === 'grid' && filteredCategories.length === 0) ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
           <div className="text-6xl mb-4">📦</div>
           <p className="text-gray-600 mb-4">

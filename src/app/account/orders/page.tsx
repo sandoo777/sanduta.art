@@ -29,40 +29,40 @@ export default async function AccountOrdersPage() {
     const orders = await fetchServerData(
       () => prisma.order.findMany({
         where: {
-      customerId: userId,
-    },
-    select: {
-      id: true,
-      customerId: true,
-      status: true,
-      paymentStatus: true,
-      totalPrice: true,
-      createdAt: true,
-      updatedAt: true,
-      orderItems: {
+          customerId: userId,
+        },
         select: {
           id: true,
-          quantity: true,
-          product: {
+          customerId: true,
+          status: true,
+          paymentStatus: true,
+          totalPrice: true,
+          createdAt: true,
+          updatedAt: true,
+          orderItems: {
             select: {
               id: true,
-              name: true,
-              price: true,
-              images: {
+              quantity: true,
+              product: {
                 select: {
-                  url: true,
+                  id: true,
+                  name: true,
+                  price: true,
+                  images: {
+                    select: {
+                      url: true,
+                    },
+                    take: 1,
+                  },
                 },
-                take: 1,
               },
             },
           },
         },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  }),
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
       {
         timeout: 10000,
         retries: 2,
