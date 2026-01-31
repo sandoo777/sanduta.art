@@ -3,9 +3,12 @@
 import { Menu, LogOut, User, ChevronDown, ExternalLink } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useCurrentUser } from '@/modules/auth/useCurrentUser';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { Badge } from '@/components/ui/Badge';
+import { CategoriesDropdown } from './CategoriesDropdown';
+import { buildCategoryTree } from '@/lib/categoryTree';
+import { Category } from '@/types/models';
 
 interface AdminTopbarProps {
   onMenuClick: () => void;
@@ -14,16 +17,45 @@ interface AdminTopbarProps {
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
   const { user } = useCurrentUser();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch categories
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/admin/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/login' });
   };
 
+  // Build category tree
+  const categoryTree = buildCategoryTree(categories);
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="h-full flex items-center justify-between px-4 lg:px-6">
-        {/* Left side - Mobile menu button */}
-        <div className="flex items-center space-x-4">
+        {/* Left side - Categories dropdown + Menu button + Logo */}
+        <div className="flex items-center gap-3">
+          {/* Categories Dropdown - Always visible */}
+          {!loading && categoryTree.length > 0 && (
+            <CategoriesDropdown categories={categoryTree} />
+          )}
+
+          {/* Mobile menu button */}
           <button
             onClick={onMenuClick}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600"

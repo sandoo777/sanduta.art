@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
-import { PanelHeader } from "@/components/common/headers/PanelHeader";
 import { PanelSidebar, SidebarItem } from "@/components/common/sidebars/PanelSidebar";
 
 interface UserLayoutProps {
@@ -48,8 +47,6 @@ export function UserLayout({ children }: UserLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PanelHeader />
-      
       <div className="flex">
         <PanelSidebar
           title="My Account"

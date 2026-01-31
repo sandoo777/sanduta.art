@@ -15,8 +15,8 @@ import {
   Award,
 } from "lucide-react";
 import { KpiCard } from "@/components/KpiCard";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { LineChart, BarChart, PieChart, DonutChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";

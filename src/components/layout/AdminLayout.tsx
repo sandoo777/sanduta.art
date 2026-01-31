@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
 
 interface AdminLayoutProps {

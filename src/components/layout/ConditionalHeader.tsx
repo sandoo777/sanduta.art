@@ -4,13 +4,12 @@ import { usePathname } from 'next/navigation';
 import { PublicHeader } from '@/components/common/headers/PublicHeader';
 
 /**
- * ConditionalHeader - Afișează PublicHeader pe paginile publice
+ * ConditionalHeader - Afișează PublicHeader pe paginile publice și user account
  * 
  * NU afișează headerul pe:
  * - Pagini admin (/admin/*) - au AdminTopbar propriu
  * - Pagini manager (/manager/*) - au PanelHeader propriu
  * - Pagini operator (/operator/*) - au header propriu
- * - Pagini account/user panel (/account/*) - au header propriu
  * - Setup wizard (/setup) - pagină specială de setup
  * - Editor full-screen (/editor, /editor/*) - fullscreen mode
  * 
@@ -18,6 +17,7 @@ import { PublicHeader } from '@/components/common/headers/PublicHeader';
  * - Homepage (/)
  * - Catalog (/produse, /products)
  * - Coș și checkout (/cart, /checkout)
+ * - User Account (/account/*) - zona publică de user
  * - Pagini informaționale (/about, /contact, /blog)
  * - Orice alte pagini publice
  */
@@ -29,7 +29,6 @@ export function ConditionalHeader() {
     '/admin',     // AdminTopbar
     '/manager',   // PanelHeader
     '/operator',  // Header propriu
-    '/account',   // Header propriu (User Panel)
     '/setup',     // Setup wizard
     '/editor',    // Editor full-screen
   ];
