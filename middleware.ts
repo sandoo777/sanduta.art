@@ -19,7 +19,6 @@ export async function middleware(req: NextRequest) {
     return i18nResponse;
   }
   
-  console.log(`[Middleware] ==================`);
   console.log(`[Middleware] Path: ${path}`);
   
   // Get token using getToken
@@ -28,9 +27,7 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET 
   });
   
-  console.log(`[Middleware] Token:`, JSON.stringify(token, null, 2));
   console.log(`[Middleware] Role: ${token?.role || 'NO ROLE'}`);
-  console.log(`[Middleware] ==================`);
 
   // Admin routes - only ADMIN
   if (path.startsWith("/admin")) {

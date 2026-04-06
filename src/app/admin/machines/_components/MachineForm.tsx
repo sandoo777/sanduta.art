@@ -24,10 +24,10 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
     defaultValues: {
       name: machine?.name || '',
       type: machine?.type || 'Digital Printer',
-      costPerHour: machine?.costPerHour || undefined,
+      costPerHour: machine?.costPerHour ?? 0,
       speed: machine?.speed || '',
-      maxWidth: machine?.maxWidth || undefined,
-      maxHeight: machine?.maxHeight || undefined,
+      maxWidth: machine?.maxWidth ?? 0,
+      maxHeight: machine?.maxHeight ?? 0,
       compatibleMaterialIds: machine?.compatibleMaterialIds || [],
       compatiblePrintMethodIds: machine?.compatiblePrintMethodIds || [],
       description: machine?.description || '',

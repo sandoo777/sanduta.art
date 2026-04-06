@@ -61,7 +61,7 @@ export async function GET(_request: NextRequest) {
  * POST /api/admin/materials
  * Create a new material
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 

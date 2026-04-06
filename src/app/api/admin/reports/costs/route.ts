@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest) {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;
 
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = _req.nextUrl.searchParams;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     
@@ -37,7 +37,7 @@ export async function GET(_req: NextRequest) {
     // Fetch material usage
     const materialUsage = await prisma.materialUsage.findMany({
       where: {
-        usedAt: dateRange
+        createdAt: dateRange
       },
       include: {
         material: true
@@ -50,18 +50,18 @@ export async function GET(_req: NextRequest) {
         createdAt: dateRange
       },
       include: {
-        operator: true
+        assignedTo: true
       }
     });
 
     // Calculate costs
     const materialsCost = materialUsage.reduce((sum, usage) => {
-      return sum + (usage.material.pricePerUnit * usage.quantityUsed);
+      return sum + (Number(usage.material.costPerUnit) * usage.quantity);
     }, 0);
 
-    const laborCost = jobs.reduce((sum, job) => {
+    const laborCost = jobs.reduce((sum) => {
       const hourlyRate = 50; // RON per hour
-      return sum + (job.actualTime || 0) * hourlyRate;
+      return sum + hourlyRate;
     }, 0);
 
     const equipmentCost = jobs.length * 20; // Mock: 20 RON per job
@@ -89,8 +89,8 @@ export async function GET(_req: NextRequest) {
       };
       materialMap.set(key, {
         ...current,
-        quantity: current.quantity + usage.quantityUsed,
-        totalCost: current.totalCost + (usage.material.pricePerUnit * usage.quantityUsed)
+        quantity: current.quantity + usage.quantity,
+        totalCost: current.totalCost + (Number(usage.material.costPerUnit) * usage.quantity)
       });
     });
 
@@ -101,18 +101,18 @@ export async function GET(_req: NextRequest) {
     // Labor by operator
     const operatorMap = new Map();
     jobs.forEach(job => {
-      if (job.operator) {
-        const key = job.operatorId;
+      if (job.assignedTo) {
+        const key = job.assignedToId;
         const current = operatorMap.get(key) || {
-          operatorName: job.operator.name,
+          operatorName: job.assignedTo.name,
           hoursWorked: 0,
           totalCost: 0
         };
         const hourlyRate = 50;
         operatorMap.set(key, {
           ...current,
-          hoursWorked: current.hoursWorked + (job.actualTime || 0),
-          totalCost: current.totalCost + ((job.actualTime || 0) * hourlyRate)
+          hoursWorked: current.hoursWorked + 1,
+          totalCost: current.totalCost + hourlyRate
         });
       }
     });

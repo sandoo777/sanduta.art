@@ -29,8 +29,8 @@ export function MaterialModal({ material, onClose, onSuccess }: MaterialModalPro
       name: "",
       type: "",
       unit: "",
-      quantity: "",
-      price: "",
+      quantity: "0",
+      price: "0",
       supplier: "",
     },
   });
@@ -39,11 +39,11 @@ export function MaterialModal({ material, onClose, onSuccess }: MaterialModalPro
     if (material) {
       form.reset({
         name: material.name,
-        type: material.type || "",
+        type: "",
         unit: material.unit,
-        quantity: material.stock?.toString() || "0",
-        price: material.costPerUnit?.toString() || "0",
-        supplier: material.supplier || "",
+        quantity: material.stock?.toString() ?? "0",
+        price: material.costPerUnit?.toString() ?? "0",
+        supplier: "",
       });
     }
   }, [material, form]);
@@ -52,25 +52,19 @@ export function MaterialModal({ material, onClose, onSuccess }: MaterialModalPro
     const success = material
       ? await updateMaterial(material.id, {
           name: data.name,
-          type: data.type,
           unit: data.unit,
           stock: parseFloat(data.quantity),
           costPerUnit: parseFloat(data.price),
-          supplier: data.supplier,
-          sku: material.sku,
           minStock: material.minStock,
-          notes: material.notes,
+          notes: data.supplier ? `Furnizor: ${data.supplier}` : (material.notes ?? null),
         })
       : await createMaterial({
           name: data.name,
-          type: data.type,
           unit: data.unit,
           stock: parseFloat(data.quantity),
           costPerUnit: parseFloat(data.price),
-          supplier: data.supplier,
-          sku: "",
           minStock: 0,
-          notes: "",
+          notes: data.supplier ? `Furnizor: ${data.supplier}` : undefined,
         });
 
     if (success) {

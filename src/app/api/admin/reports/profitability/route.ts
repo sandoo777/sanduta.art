@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest) {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
 
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = _req.nextUrl.searchParams;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     
@@ -53,7 +53,7 @@ export async function GET(_req: NextRequest) {
       }
     });
 
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
 
     // Estimate costs (simplified - în production ar fi din DB)
     const estimatedCosts = totalRevenue * 0.45; // 45% costs
@@ -70,7 +70,7 @@ export async function GET(_req: NextRequest) {
     orders.forEach(order => {
       order.orderItems.forEach(item => {
         const key = item.productId;
-        const revenue = item.price * item.quantity;
+        const revenue = Number(item.unitPrice) * item.quantity;
         const cost = revenue * 0.45; // 45% cost estimate
         const profit = revenue - cost;
         
@@ -104,7 +104,7 @@ export async function GET(_req: NextRequest) {
     orders.forEach(order => {
       order.orderItems.forEach(item => {
         const categoryName = item.product.category?.name || 'Uncategorized';
-        const revenue = item.price * item.quantity;
+        const revenue = Number(item.unitPrice) * item.quantity;
         const cost = revenue * 0.45;
         const profit = revenue - cost;
         

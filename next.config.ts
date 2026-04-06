@@ -28,7 +28,8 @@ const nextConfig: NextConfig = {
   // Security headers
   headers: async () => [
     {
-      source: '/:path*',
+      // Apply security headers only to page routes, not static assets
+      source: '/((?!_next/static|_next/image|favicon.ico).*)',
       headers: [
         {
           key: 'X-Content-Type-Options',
@@ -45,6 +46,26 @@ const nextConfig: NextConfig = {
         {
           key: 'Referrer-Policy',
           value: 'strict-origin-when-cross-origin',
+        },
+      ],
+    },
+    {
+      // Explicitly set correct MIME type for JS static chunks
+      source: '/_next/static/chunks/:path*.js',
+      headers: [
+        {
+          key: 'Content-Type',
+          value: 'application/javascript; charset=utf-8',
+        },
+      ],
+    },
+    {
+      // Explicitly set correct MIME type for CSS static files
+      source: '/_next/static/css/:path*.css',
+      headers: [
+        {
+          key: 'Content-Type',
+          value: 'text/css; charset=utf-8',
         },
       ],
     },

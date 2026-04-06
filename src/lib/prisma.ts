@@ -8,13 +8,24 @@ const globalForPrisma = globalThis as unknown as {
 
 // Parse DATABASE_URL to avoid issues with password
 const databaseUrl = process.env.DATABASE_URL || '';
-const pool = new Pool({ 
-  connectionString: databaseUrl,
-});
+let pool;
+
+if (databaseUrl) {
+  pool = new Pool({ connectionString: databaseUrl });
+} else {
+  // Fallback for local development
+  pool = new Pool({
+    host: 'localhost',
+    port: 5432,
+    user: 'postgres',
+    password: 'password',
+    database: 'sanduta'
+  });
+}
 
 const adapter = new PrismaPg(pool);
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ 
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   adapter,
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 });

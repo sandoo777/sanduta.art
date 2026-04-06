@@ -21,36 +21,51 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        // Find user in database
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        try {
+          // Find user in database
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+            },
+          });
 
-        if (!user) {
-          throw new Error("Invalid email or password");
+          if (!user) {
+            throw new Error("Invalid email or password");
+          }
+
+          if (!user.password) {
+            throw new Error("Invalid email or password");
+          }
+
+          // Verify password
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            throw new Error("Invalid email or password");
+          }
+
+          // Return user object
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (error) {
+          if (error instanceof Error && error.message === "Invalid email or password") {
+            throw error;
+          }
+          console.error("[NextAuth Authorize Error]:", error);
+          throw new Error("Authentication service unavailable. Please try again.");
         }
-
-        if (!user.password) {
-          throw new Error("Invalid email or password");
-        }
-
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Invalid email or password");
-        }
-
-        // Return user object
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
       },
     }),
   ],

@@ -192,10 +192,10 @@ export default function OrderDetailClient({ order }: Props) {
                     <p className="text-sm text-gray-600">{item.product.category}</p>
                     <div className="flex justify-between items-center mt-2">
                       <p className="text-gray-700">
-                        ${item.product.price.toFixed(2)} × {item.quantity}
+                        ${Number(item.product.price).toFixed(2)} × {item.quantity}
                       </p>
                       <p className="font-semibold text-lg">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        ${(Number(item.product.price) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>

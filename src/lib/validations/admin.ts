@@ -141,22 +141,19 @@ export const materialFormSchema = z.object({
     .min(2, 'Material name must be at least 2 characters')
     .max(100, 'Material name must be less than 100 characters'),
   
-  type: z.string()
-    .min(1, 'Type is required'),
+  type: z.string().optional().or(z.literal('')),
   
   unit: z.string()
     .min(1, 'Unit is required'),
   
   quantity: z.string()
-    .min(1, 'Quantity is required')
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: 'Quantity must be a non-negative number',
     }),
   
   price: z.string()
-    .min(1, 'Price is required')
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: 'Price must be a positive number',
+    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+      message: 'Price must be a non-negative number',
     }),
   
   supplier: z.string().optional().or(z.literal('')),

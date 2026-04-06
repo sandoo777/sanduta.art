@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest) {
     const { user, error: authError } = await requireRole(["ADMIN", "MANAGER"]);
     if (authError) return authError;
 
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = _req.nextUrl.searchParams;
     const limit = parseInt(searchParams.get("limit") || "10", 10);
 
     logger.info("API:Analytics:RecentOrders", "Fetching recent orders", {

@@ -27,55 +27,47 @@ export default async function OrderDetailPage({ params }: Props) {
     // 3. Fetch order directly from database
     const order = await prisma.order.findUnique({
       where: {
-        id: parseInt(id, 10),
+        id: id,
         userId: session!.user.id, // Security: only user's own orders
       },
-    select: {
-      id: true,
-      orderNumber: true,
-      status: true,
-      totalAmount: true,
-      createdAt: true,
-      paynetSessionId: true,
-      customer: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
-      delivery: {
-        select: {
-          address: true,
-          city: true,
-          county: true,
-          postalCode: true,
-          trackingNumber: true,
-        },
-      },
-      payment: {
-        select: {
-          status: true,
-          method: true,
-          amount: true,
-        },
-      },
-      orderItems: {
-        select: {
-          id: true,
-          quantity: true,
-          product: {
-            select: {
-              id: true,
-              name: true,
-              category: true,
-              price: true,
-              image_url: true,
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        totalPrice: true,
+        createdAt: true,
+        paynetSessionId: true,
+        paymentStatus: true,
+        paymentMethod: true,
+        deliveryAddress: true,
+        city: true,
+        trackingNumber: true,
+        customerName: true,
+        customerEmail: true,
+        customerPhone: true,
+        orderItems: {
+          select: {
+            id: true,
+            quantity: true,
+            unitPrice: true,
+            lineTotal: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                images: {
+                  take: 1,
+                  select: { url: true },
+                },
+                category: {
+                  select: { name: true },
+                },
+              },
             },
           },
         },
       },
-    },
     });
 
     // 4. If order not found, show 404
@@ -83,17 +75,26 @@ export default async function OrderDetailPage({ params }: Props) {
       notFound();
     }
 
-    // 5. Transform data for client
+    // 5. Transform data for client (convert Decimal to number for serialization)
     const orderData = {
       id: order.id,
       orderNumber: order.orderNumber,
       status: order.status,
-      totalAmount: order.totalAmount,
+      totalAmount: Number(order.totalPrice),
       createdAt: order.createdAt.toISOString(),
       paynetSessionId: order.paynetSessionId,
-      customer: order.customer,
-      delivery: order.delivery,
-      payment: order.payment,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      deliveryAddress: order.deliveryAddress,
+      city: order.city,
+      trackingNumber: order.trackingNumber,
+      customer: {
+        name: order.customerName,
+        email: order.customerEmail,
+        phone: order.customerPhone,
+      },
+      delivery: null,
+      payment: null,
       orderItems: order.orderItems.map(item => ({
         id: item.id,
         quantity: item.quantity,
@@ -101,8 +102,8 @@ export default async function OrderDetailPage({ params }: Props) {
           id: item.product.id,
           name: item.product.name,
           category: item.product.category,
-          price: item.product.price,
-          image_url: item.product.image_url,
+          price: Number(item.product.price),
+          image_url: item.product.images[0]?.url || null,
         },
       })),
     };

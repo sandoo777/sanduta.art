@@ -13,7 +13,7 @@ export async function GET(_req: NextRequest) {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;
 
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = _req.nextUrl.searchParams;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     
@@ -39,9 +39,7 @@ export async function GET(_req: NextRequest) {
         createdAt: dateRange
       },
       include: {
-        user: true,
-        payment: true,
-        delivery: true
+        user: true
       }
     });
 
@@ -93,33 +91,33 @@ export async function GET(_req: NextRequest) {
     const paymentAnalysis = [
       {
         status: 'PAID',
-        count: orders.filter(o => o.payment?.status === 'PAID').length,
-        totalAmount: orders.filter(o => o.payment?.status === 'PAID').reduce((sum, o) => sum + o.total, 0)
+        count: orders.filter(o => o.paymentStatus === 'PAID').length,
+        totalAmount: orders.filter(o => o.paymentStatus === 'PAID').reduce((sum, o) => sum + Number(o.totalPrice), 0)
       },
       {
         status: 'PENDING',
-        count: orders.filter(o => o.payment?.status === 'PENDING').length,
-        totalAmount: orders.filter(o => o.payment?.status === 'PENDING').reduce((sum, o) => sum + o.total, 0)
+        count: orders.filter(o => o.paymentStatus === 'PENDING').length,
+        totalAmount: orders.filter(o => o.paymentStatus === 'PENDING').reduce((sum, o) => sum + Number(o.totalPrice), 0)
       },
       {
         status: 'FAILED',
-        count: orders.filter(o => o.payment?.status === 'FAILED').length,
-        totalAmount: orders.filter(o => o.payment?.status === 'FAILED').reduce((sum, o) => sum + o.total, 0)
+        count: orders.filter(o => o.paymentStatus === 'FAILED').length,
+        totalAmount: orders.filter(o => o.paymentStatus === 'FAILED').reduce((sum, o) => sum + Number(o.totalPrice), 0)
       }
     ];
 
-    // Delivery analysis
+    // Delivery analysis (using deliveryMethod field)
     const deliveryAnalysis = [
       {
         method: 'Nova Poshta',
-        count: orders.filter(o => o.delivery?.method === 'NOVA_POSHTA').length,
-        percentage: totalOrders > 0 ? (orders.filter(o => o.delivery?.method === 'NOVA_POSHTA').length / totalOrders) * 100 : 0,
+        count: orders.filter(o => o.deliveryMethod === 'novaposhta').length,
+        percentage: totalOrders > 0 ? (orders.filter(o => o.deliveryMethod === 'novaposhta').length / totalOrders) * 100 : 0,
         averageDeliveryTime: 48
       },
       {
         method: 'Pickup',
-        count: orders.filter(o => o.delivery?.method === 'PICKUP').length,
-        percentage: totalOrders > 0 ? (orders.filter(o => o.delivery?.method === 'PICKUP').length / totalOrders) * 100 : 0,
+        count: orders.filter(o => o.deliveryMethod === 'pickup').length,
+        percentage: totalOrders > 0 ? (orders.filter(o => o.deliveryMethod === 'pickup').length / totalOrders) * 100 : 0,
         averageDeliveryTime: 24
       }
     ];
