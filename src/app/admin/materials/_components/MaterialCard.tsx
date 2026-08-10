@@ -30,15 +30,15 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
       <CardContent className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className={`mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xl ${getCategoryIconBg(normalizedMaterial.category)}`}>
-              {getMaterialCategoryIcon(normalizedMaterial.category)}
+            <div className={`mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xl ${getCategoryIconBg(normalizedMaterial)}`}>
+              {getMaterialCategoryIcon(normalizedMaterial)}
             </div>
             <div className="min-w-0">
               <AuthLink href={`/admin/materials/${normalizedMaterial.id}`} className="block truncate font-semibold text-gray-900 hover:text-blue-700">
                 {normalizedMaterial.name}
               </AuthLink>
               <div className="mt-1 flex items-center gap-2">
-                <Badge variant="default" size="sm">{getMaterialCategoryLabel(normalizedMaterial.category)}</Badge>
+                <Badge variant="default" size="sm">{getMaterialCategoryLabel(normalizedMaterial)}</Badge>
                 {normalizedMaterial.sku ? (
                   <span className="truncate text-xs text-gray-500">SKU: {normalizedMaterial.sku}</span>
                 ) : null}

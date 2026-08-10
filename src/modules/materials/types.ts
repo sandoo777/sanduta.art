@@ -55,11 +55,16 @@ export interface Material {
   compatibleEquipment?: MaterialCompatibleEquipment[];
   compatibleEquipmentIds?: string[];
   sku: string | null;
-  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
+  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs' | 'sheet';
   stock: number;
   minStock: number;
   costPerUnit?: number;
   notes: string | null;
+  finishType: 'mat' | 'lucios' | 'satin' | 'soft-touch' | null;
+  packagingLabel: string | null;
+  packagingQty: number | null;
+  packagingPrice: number | null;
+  properties: Record<string, string | number | boolean> | null;
   createdAt: string;
   updatedAt: string;
   lowStock?: boolean;

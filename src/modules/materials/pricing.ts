@@ -29,6 +29,7 @@ const DIRECT_DEFAULT_UNITS = [
   MaterialUnit.kg,
   MaterialUnit.unit,
   MaterialUnit.pcs,
+  MaterialUnit.sheet,
 ] as const;
 
 const AREA_DEFAULT_UNITS = [
@@ -47,6 +48,7 @@ const UNIT_GROUP: Record<MaterialUnit, UnitGroup> = {
   [MaterialUnit.kg]: 'mass',
   [MaterialUnit.unit]: 'count',
   [MaterialUnit.pcs]: 'count',
+  [MaterialUnit.sheet]: 'count',
   [MaterialUnit.m2]: 'area',
   [MaterialUnit.meter]: 'length',
 };
@@ -60,6 +62,7 @@ const BASE_FACTOR: Record<MaterialUnit, number> = {
   [MaterialUnit.m2]: 1,
   [MaterialUnit.unit]: 1,
   [MaterialUnit.pcs]: 1,
+  [MaterialUnit.sheet]: 1,
 };
 
 function roundCurrency(value: number): number {

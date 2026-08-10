@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { logger } from '@/lib/logger';
-import { X, Info, AlertCircle, Check } from 'lucide-react';
+import { X, AlertCircle, Check } from 'lucide-react';
 import type { MaterialCategoryTree } from '@/modules/material-categories/types';
 
 interface CategoryModalProps {
@@ -14,15 +14,6 @@ interface CategoryModalProps {
   onClose: (success: boolean) => void;
 }
 
-const fieldTooltips = {
-  thickness: 'Câmpul Grosime (mm) va fi obligatoriu în formularul de material',
-  density: 'Câmpul Densitate (g/m²) va fi obligatoriu în formularul de material',
-  pricePerSqm: 'Câmpul Preț per m² va fi obligatoriu în formularul de material',
-  pricePerMeter: 'Câmpul Preț per metru va fi obligatoriu în formularul de material',
-  pricePerUnit: 'Câmpul Preț per unitate va fi obligatoriu în formularul de material',
-  wastePercent: 'Câmpul Procent waste (%) va fi obligatoriu în formularul de material',
-};
-
 export default function CategoryModal({ category, parentId, onClose }: CategoryModalProps) {
   const isEditing = !!category;
   
@@ -30,12 +21,6 @@ export default function CategoryModal({ category, parentId, onClose }: CategoryM
   const [formData, setFormData] = useState({
     name: category?.name || '',
     description: category?.description || '',
-    requiresThickness: category?.requiresThickness || false,
-    requiresDensity: category?.requiresDensity || false,
-    requiresPricePerSqm: category?.requiresPricePerSqm || false,
-    requiresPricePerMeter: category?.requiresPricePerMeter || false,
-    requiresPricePerUnit: category?.requiresPricePerUnit || false,
-    requiresWastePercent: category?.requiresWastePercent || false,
     active: category?.active ?? true,
   });
 
@@ -157,92 +142,6 @@ export default function CategoryModal({ category, parentId, onClose }: CategoryM
               </div>
             </div>
 
-            {/* Section: Required Fields */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b pb-2">
-                <div className="w-1 h-6 bg-green-600 rounded"></div>
-                <h3 className="text-lg font-semibold text-gray-900">Câmpuri Necesare</h3>
-                <div className="group/info relative ml-auto">
-                  <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                  <div className="absolute right-0 top-full mt-2 hidden group-hover/info:block z-10 w-72">
-                    <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2">
-                      Selectează câmpurile care vor fi obligatorii în formularul de adăugare a materialelor din această categorie.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Thickness */}
-                <CheckboxField
-                  id="thickness"
-                  label="Grosime (mm)"
-                  checked={formData.requiresThickness}
-                  onChange={(checked) => handleChange('requiresThickness', checked)}
-                  tooltip={fieldTooltips.thickness}
-                  icon="📏"
-                />
-
-                {/* Density */}
-                <CheckboxField
-                  id="density"
-                  label="Densitate (g/m²)"
-                  checked={formData.requiresDensity}
-                  onChange={(checked) => handleChange('requiresDensity', checked)}
-                  tooltip={fieldTooltips.density}
-                  icon="⚖️"
-                />
-
-                {/* Price per sqm */}
-                <CheckboxField
-                  id="pricePerSqm"
-                  label="Preț per m²"
-                  checked={formData.requiresPricePerSqm}
-                  onChange={(checked) => handleChange('requiresPricePerSqm', checked)}
-                  tooltip={fieldTooltips.pricePerSqm}
-                  icon="💰"
-                  badge="m²"
-                  badgeColor="bg-blue-500 text-white"
-                />
-
-                {/* Price per meter */}
-                <CheckboxField
-                  id="pricePerMeter"
-                  label="Preț per metru"
-                  checked={formData.requiresPricePerMeter}
-                  onChange={(checked) => handleChange('requiresPricePerMeter', checked)}
-                  tooltip={fieldTooltips.pricePerMeter}
-                  icon="📏"
-                  badge="metru"
-                  badgeColor="bg-violet-500 text-white"
-                />
-
-                {/* Price per unit */}
-                <CheckboxField
-                  id="pricePerUnit"
-                  label="Preț per unitate"
-                  checked={formData.requiresPricePerUnit}
-                  onChange={(checked) => handleChange('requiresPricePerUnit', checked)}
-                  tooltip={fieldTooltips.pricePerUnit}
-                  icon="📦"
-                  badge="buc"
-                  badgeColor="bg-green-500 text-white"
-                />
-
-                {/* Waste Percent */}
-                <CheckboxField
-                  id="wastePercent"
-                  label="Procent waste (%)"
-                  checked={formData.requiresWastePercent}
-                  onChange={(checked) => handleChange('requiresWastePercent', checked)}
-                  tooltip={fieldTooltips.wastePercent}
-                  icon="♻️"
-                  badge="waste"
-                  badgeColor="bg-orange-500 text-white"
-                />
-              </div>
-            </div>
-
             {/* Section: Status */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 border-b pb-2">
@@ -297,72 +196,4 @@ export default function CategoryModal({ category, parentId, onClose }: CategoryM
   );
 }
 
-// Helper Component: CheckboxField with tooltip
-interface CheckboxFieldProps {
-  id: string;
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  tooltip: string;
-  icon?: string;
-  badge?: string;
-  badgeColor?: string;
-}
-
-function CheckboxField({
-  id,
-  label,
-  checked,
-  onChange,
-  tooltip,
-  icon,
-  badge,
-  badgeColor,
-}: CheckboxFieldProps) {
-  return (
-    <label
-      htmlFor={id}
-      className={`
-        group/checkbox relative flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer
-        transition-all duration-150
-        ${checked 
-          ? 'border-blue-500 bg-blue-50' 
-          : 'border-gray-200 hover:border-gray-300 bg-white'}
-      `}
-    >
-      <input
-        type="checkbox"
-        id={id}
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors"
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-lg">{icon}</span>}
-          <span className="font-medium text-gray-900">{label}</span>
-          {badge && (
-            <span className={`px-2 py-0.5 rounded text-xs font-medium ${badgeColor}`}>
-              {badge}
-            </span>
-          )}
-        </div>
-      </div>
-      
-      {/* Tooltip */}
-      <div className="group/tooltip relative">
-        <Info className="w-4 h-4 text-gray-400 group-hover/checkbox:text-gray-600 transition-colors" />
-        <div className="absolute right-0 top-full mt-2 hidden group-hover/tooltip:block z-20 w-64">
-          <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
-            {tooltip}
-          </div>
-        </div>
-      </div>
-      
-      {/* Checkmark indicator */}
-      {checked && (
-        <div className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none animate-in fade-in zoom-in-95 duration-150"></div>
-      )}
-    </label>
-  );
-}
+// CheckboxField removed — field configuration belongs at the material level, not the category level

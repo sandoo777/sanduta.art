@@ -9,6 +9,7 @@ import { MaterialsSection } from './sections/MaterialsSection';
 import { PrintMethodsSection } from './sections/PrintMethodsSection';
 import { FinishingSection } from './sections/FinishingSection';
 import { CustomOptionsSection } from './sections/CustomOptionsSection';
+import { AttributesSection } from './sections/AttributesSection';
 import { QuantitySection } from './sections/QuantitySection';
 import { ProductPreview } from './sections/ProductPreview';
 import { PriceSummary } from './sections/PriceSummary';
@@ -164,6 +165,9 @@ export function Configurator({ productId }: ConfiguratorProps) {
               onChange={setOption}
             />
           )}
+
+          {/* Dynamic product attributes (defined in admin Atribute tab) */}
+          <AttributesSection productId={productId} />
 
           {/* Project Section - Editor Integration */}
           <ProjectSection

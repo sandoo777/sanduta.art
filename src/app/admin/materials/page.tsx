@@ -22,7 +22,7 @@ import {
 
 interface MaterialListFilters {
   search: string;
-  category: 'all' | MaterialCategory;
+  category: 'all' | string; // DB category ID
   status: 'all' | 'active' | 'inactive';
 }
 
@@ -66,6 +66,7 @@ export default function MaterialsPage() {
   const [editingMaterial, setEditingMaterial] = useState<Material | undefined>();
   const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [dbCategories, setDbCategories] = useState<Array<{ id: string; name: string }>>([]);
   const { getMaterials, deleteMaterial, isLoading, lastError } = useMaterials();
 
   const fetchMaterials = useCallback(async () => {
@@ -77,14 +78,18 @@ export default function MaterialsPage() {
     let active = true;
 
     void fetchMaterials().then((data) => {
-      if (active) {
-        setMaterials(data);
-      }
+      if (active) setMaterials(data);
     });
 
-    return () => {
-      active = false;
-    };
+    // Load real DB categories
+    fetch('/api/admin/material-categories', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data: Array<{ id: string; name: string }>) => {
+        if (active) setDbCategories(data.filter((c) => c.name));
+      })
+      .catch(() => { /* non-critical */ });
+
+    return () => { active = false; };
   }, [fetchMaterials]);
 
   const filteredMaterials = useMemo(() => {
@@ -98,7 +103,7 @@ export default function MaterialsPage() {
         }
       }
 
-      if (filters.category !== 'all' && material.category !== filters.category) {
+      if (filters.category !== 'all' && material.categoryId !== filters.category) {
         return false;
       }
 
@@ -115,8 +120,10 @@ export default function MaterialsPage() {
   }, [filters, materials]);
 
   const categories = useMemo(() => {
-    return Array.from(new Set(materials.map((material) => material.category))).sort();
-  }, [materials]);
+    // Show only categories that have at least one material, preserving DB order
+    const usedIds = new Set(materials.map((m) => m.categoryId).filter(Boolean));
+    return dbCategories.filter((c) => usedIds.has(c.id));
+  }, [materials, dbCategories]);
 
   const handleModalClose = async () => {
     setIsModalOpen(false);
@@ -197,9 +204,9 @@ export default function MaterialsPage() {
               className="rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Toate categoriile</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {getMaterialCategoryLabel(category)}
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
                 </option>
               ))}
             </select>
@@ -231,7 +238,7 @@ export default function MaterialsPage() {
               ) : null}
               {filters.category !== 'all' ? (
                 <Badge variant="primary" size="sm">
-                  {getMaterialCategoryLabel(filters.category)}
+                  {dbCategories.find((c) => c.id === filters.category)?.name ?? filters.category}
                   <button onClick={() => setFilters((current) => ({ ...current, category: 'all' }))} className="ml-1 hover:text-blue-900">
                     ×
                   </button>
@@ -281,12 +288,12 @@ export default function MaterialsPage() {
               key: 'category',
               label: 'Categorie',
               sortable: true,
-              accessor: (material) => getMaterialCategoryLabel(material.category),
+              accessor: (material) => getMaterialCategoryLabel(material),
               width: '10%',
               render: (material) => (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-base leading-none">{getMaterialCategoryIcon(material.category)}</span>
-                  <Badge variant="default" size="sm">{getMaterialCategoryLabel(material.category)}</Badge>
+                  <span className="text-base leading-none">{getMaterialCategoryIcon(material)}</span>
+                  <Badge variant="default" size="sm">{getMaterialCategoryLabel(material)}</Badge>
                 </div>
               ),
             },

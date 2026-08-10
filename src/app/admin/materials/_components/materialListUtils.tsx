@@ -120,11 +120,12 @@ export function getMaterialCategoryLabel(categoryOrMaterial: MaterialCategory | 
   // Handle new category object structure
   if (isCategoryCarrier(categoryOrMaterial)) {
     const material = categoryOrMaterial as Material;
-    if (typeof material.category === 'string') {
-      return categoryLabels[material.category] ?? 'Other';
-    }
+    // Prefer the real DB category name over the hardcoded enum label
     if (material.categoryInfo?.name) {
       return material.categoryInfo.name;
+    }
+    if (typeof material.category === 'string') {
+      return categoryLabels[material.category] ?? 'Other';
     }
   }
   

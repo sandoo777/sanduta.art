@@ -125,6 +125,7 @@ enum MaterialUnit {
   m2
   meter
   pcs
+  sheet
 }
 
 enum NotificationType {
@@ -318,6 +319,7 @@ model Product {
   defaultMaterial    Material?            @relation("ProductDefaultMaterial", fields: [materialId], references: [id], onDelete: SetNull)
   images             ProductImage[]
   variants           ProductVariant[]
+  attributes         ProductAttribute[]
   orderItems         OrderItem[]
   materials          ProductMaterial[]
   printMethods       ProductPrintMethod[]
@@ -359,6 +361,62 @@ model ProductVariant {
   @@map("product_variants")
 }
 
+// ─── Product Configurator Attributes ───────────────────────────────────────
+
+model ProductAttribute {
+  id        String        @id @default(cuid())
+  productId String
+  name      String        // internal key: "size", "finish", "quantity", "colors"
+  label     String        // display label: "Mărime", "Finisaj", "Cantitate"
+  type      AttributeType @default(SELECT)
+  required  Boolean       @default(true)
+  helpText  String?       // tooltip shown to customer
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  product Product                  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  options ProductAttributeOption[]
+
+  @@index([productId])
+  @@map("product_attributes")
+}
+
+model ProductAttributeOption {
+  id                String            @id @default(cuid())
+  attributeId       String
+  label             String            // "A4 (210×297 mm)", "Lucios", "500 buc"
+  value             String            // "a4", "glossy", "500"
+  description       String?           // extra info shown to customer
+  priceModifier     Decimal           @default(0) @db.Decimal(10, 4)
+  priceModifierType PriceModifierType @default(FIXED)
+  materialId        String?           // optional: this option links to a specific material
+  sortOrder         Int               @default(0)
+  isDefault         Boolean           @default(false)
+  active            Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+
+  attribute ProductAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  material  Material?        @relation("AttributeOptionMaterial", fields: [materialId], references: [id], onDelete: SetNull)
+
+  @@index([attributeId])
+  @@map("product_attribute_options")
+}
+
+enum AttributeType {
+  SELECT      // dropdown / radio (alege una)
+  MULTISELECT // checkbox (alege mai multe)
+  NUMBER      // input numeric (ex: lățime custom)
+  TOGGLE      // da/nu (ex: laminare)
+}
+
+enum PriceModifierType {
+  FIXED    // ±X MDL fix
+  PERCENT  // ±X% din prețul de bază
+  PER_SQM  // X MDL/m² (pentru dimensiuni)
+  REPLACE  // înlocuiește prețul de bază
+}
+
 model ProductImage {
   id        String   @id @default(cuid())
   productId String
@@ -389,6 +447,11 @@ model Material {
   stock              Float                    @default(0)
   minStock           Float                    @default(0) // alert threshold
   notes              String?                  @db.Text
+  finishType         String?                  // "mat" | "lucios" | "satin" | "soft-touch" | null
+  packagingLabel     String?                  // ex: "cutie", "rolă", "palet"
+  packagingQty       Float?                   // câte unități de consum per ambalaj
+  packagingPrice     Decimal?                 @db.Decimal(10, 2) // preț per ambalaj
+  properties         Json?                    // flexible key-value properties per material type
   createdAt          DateTime                 @default(now())
   updatedAt          DateTime                 @updatedAt
 
@@ -397,8 +460,9 @@ model Material {
   productionJobs       ProductionJob[]
   defaultProducts      Product[]                 @relation("ProductDefaultMaterial")
   productMaterials     ProductMaterial[]
-  equipmentConsumables EquipmentConsumable[]   // Materiale consumabile folosite de echipamente
-  printMethodConsumables PrintMethodConsumable[] @relation("PrintMethodConsumableMaterial") // Consumabile indirecte pentru metode de printare
+  equipmentConsumables EquipmentConsumable[]
+  printMethodConsumables PrintMethodConsumable[] @relation("PrintMethodConsumableMaterial")
+  attributeOptions     ProductAttributeOption[] @relation("AttributeOptionMaterial")
 
   @@index([categoryId])
   @@index([active])

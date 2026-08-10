@@ -16,7 +16,7 @@ type PrintMethodConsumableDto = {
     name: string;
     unit: string;
     stock: number;
-    pricePerUnit: Prisma.Decimal | null;
+    pricePerUnit: Prisma.Decimal | null;  // mapped from salePrice
   };
 };
 
@@ -41,7 +41,7 @@ function serializeConsumables(consumables: PrintMethodConsumableDto[]) {
     updatedAt: consumable.updatedAt.toISOString(),
     material: {
       ...consumable.material,
-      pricePerUnit: consumable.material.pricePerUnit ? Number(consumable.material.pricePerUnit) : null,
+      pricePerUnit: consumable.material.salePrice ? Number(consumable.material.salePrice) : null,
     },
   }));
 }
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
                   name: true,
                   unit: true,
                   stock: true,
-                  pricePerUnit: true,
+                  salePrice: true,
                 },
               },
             },
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
                   name: true,
                   unit: true,
                   stock: true,
-                  pricePerUnit: true,
+                  salePrice: true,
                 },
               },
             },

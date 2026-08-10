@@ -27,11 +27,14 @@ import type { Category } from '@prisma/client';
 export function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const { getTotals } = useCartStore();
-  const cartItemCount = getTotals().itemCount;
+  const cartItemCount = mounted ? getTotals().itemCount : 0;
   const { data: session } = useSession();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,7 +109,7 @@ export function PublicHeader() {
               <Link
                 href="/cart"
                 className="relative p-2 text-gray-700 transition-colors hover:text-primary hover:bg-gray-100 rounded-lg"
-                aria-label={`Coș de cumpărături (${cartItemCount} produse)`}
+                aria-label={`Coș de cumpărături${mounted && cartItemCount > 0 ? ` (${cartItemCount} produse)` : ''}`}
               >
                 <ShoppingCart className="h-5 w-5" />
                 {cartItemCount > 0 && (

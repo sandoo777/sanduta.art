@@ -211,20 +211,22 @@ function TreeOptions({ categories, onSelect, selectedId, level }: TreeOptionsPro
               `}
               style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
             >
-              {/* Expand/Collapse Button */}
+              {/* Expand/Collapse Toggle */}
               {hasChildren ? (
-                <button
+                <div
+                  role="button"
+                  tabIndex={-1}
                   onClick={(e) => toggleExpand(category.id, e)}
-                  className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                  className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 flex-shrink-0"
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4" />
                   ) : (
                     <ChevronRight className="w-4 h-4" />
                   )}
-                </button>
+                </div>
               ) : (
-                <div className="w-4" />
+                <div className="w-4 flex-shrink-0" />
               )}
 
               {/* Folder Icon */}

@@ -29,6 +29,11 @@ export interface MaterialMutationInput {
   stock?: unknown;
   minStock?: unknown;
   notes?: unknown;
+  finishType?: unknown;
+  properties?: unknown;
+  packagingLabel?: unknown;
+  packagingQty?: unknown;
+  packagingPrice?: unknown;
   printMethodIds?: unknown;
   compatibleMethods?: unknown;
 }
@@ -232,6 +237,11 @@ export function normalizeMaterialResponse(material: MaterialListRecord | Materia
     stock: material.stock,
     minStock: material.minStock,
     notes: material.notes,
+    finishType: (material.finishType as 'mat' | 'lucios' | 'satin' | 'soft-touch' | null) ?? null,
+    packagingLabel: material.packagingLabel ?? null,
+    packagingQty: material.packagingQty ?? null,
+    packagingPrice: material.packagingPrice ? Number(material.packagingPrice) : null,
+    properties: (material.properties as Record<string, string | number | boolean> | null) ?? null,
     createdAt: material.createdAt,
     updatedAt: material.updatedAt,
     lowStock: material.stock < material.minStock,
@@ -533,6 +543,34 @@ async function buildMaterialMutationData(
       : existing?.notes ?? null;
   const active = toBoolean(payload.active, existing?.active ?? true);
 
+  // Packaging fields
+  const packagingLabel = typeof payload.packagingLabel === 'string'
+    ? payload.packagingLabel.trim() || null
+    : existing?.packagingLabel ?? null;
+  const finishType = typeof payload.finishType === 'string'
+    ? payload.finishType.trim() || null
+    : payload.finishType === null
+      ? null
+      : (existing?.finishType ?? null);
+
+  // properties JSON — merge with existing if partial update
+  let properties: Record<string, string | number | boolean> | null = null;
+  if (payload.properties !== undefined) {
+    if (payload.properties === null) {
+      properties = null;
+    } else if (typeof payload.properties === 'object' && !Array.isArray(payload.properties)) {
+      const existingProps = (existing?.properties as Record<string, string | number | boolean> | null) ?? {};
+      properties = { ...existingProps, ...(payload.properties as Record<string, string | number | boolean>) };
+    }
+  } else {
+    properties = (existing?.properties as Record<string, string | number | boolean> | null) ?? null;
+  }
+  const packagingQty = toOptionalNumber(payload.packagingQty) ?? (existing?.packagingQty ?? null);
+  const rawPackagingPrice = payload.packagingPrice !== undefined
+    ? toOptionalNumber(payload.packagingPrice)
+    : existing?.packagingPrice ? Number(existing.packagingPrice) : null;
+  const packagingPrice = (rawPackagingPrice !== undefined ? rawPackagingPrice : null) as number | null;
+
   const relationEnvelope = options.replaceRelations
     ? {
         compatibleMethods: {
@@ -565,6 +603,11 @@ async function buildMaterialMutationData(
     stock: stockValue,
     minStock: minStockValue,
     notes,
+    finishType,
+    packagingLabel,
+    packagingQty: packagingQty !== null && packagingQty !== undefined ? packagingQty : null,
+    packagingPrice: packagingPrice !== null ? new Prisma.Decimal(packagingPrice) : null,
+    properties: properties ?? undefined,
     ...relationEnvelope,
   };
 }

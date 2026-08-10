@@ -156,8 +156,13 @@ export const materialFormSchema = z.object({
 
   sku: z.string().max(100, 'SKU must be less than 100 characters').optional().or(z.literal('')),
 
-  unit: z.enum(['liter', 'ml', 'gram', 'kg', 'unit', 'm2', 'meter', 'pcs']),
+  unit: z.enum(['liter', 'ml', 'gram', 'kg', 'unit', 'm2', 'meter', 'pcs', 'sheet']),
 
+  packagingLabel: z.string().max(50).optional().or(z.literal('')),
+  packagingQty: z.string().optional().or(z.literal('')),
+  packagingPrice: z.string().optional().or(z.literal('')),
+
+  finishType: z.string().max(50).optional().or(z.literal('')),
   stock: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: 'Stock must be a non-negative number',
