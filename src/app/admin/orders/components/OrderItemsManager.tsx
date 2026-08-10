@@ -35,7 +35,6 @@ export function OrderItemsManager({
 }: OrderItemsManagerProps) {
   const { confirm, Dialog } = useConfirmDialog();
   const [isAddingItem, setIsAddingItem] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [formData, setFormData] = useState({

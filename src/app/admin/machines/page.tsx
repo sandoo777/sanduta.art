@@ -1,75 +1,73 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Plus, Search, Filter } from 'lucide-react';
 import { MachineCard } from './_components/MachineCard';
 import { MachineForm } from './_components/MachineForm';
-import { useMachines } from '@/modules/machines/useMachines';
+import { useMachines, searchMachines, filterMachines } from '@/modules/machines/useMachines';
 import type { Machine } from '@/modules/machines/types';
-import { MACHINE_TYPES } from '@/modules/machines/types';
+import { MACHINE_TYPES, MACHINE_STATUS_CONFIG } from '@/modules/machines/types';
 
 export default function MachinesPage() {
   const {
-    loading,
     getMachines,
     createMachine,
     updateMachine,
     deleteMachine,
-    searchMachines,
-    filterMachines,
   } = useMachines();
 
   const [machines, setMachines] = useState<Machine[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [activeOnly, setActiveOnly] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingMachine, setEditingMachine] = useState<Machine | undefined>();
   const [loadingData, setLoadingData] = useState(true);
 
-  useEffect(() => {
-    loadMachines();
-  }, []);
+  const getMachinesRef = useRef(getMachines);
+  getMachinesRef.current = getMachines;
 
-  const loadMachines = async () => {
-    try {
-      setLoadingData(true);
-      const data = await getMachines();
-      setMachines(data);
-    } catch (_error) {
-      console.error('Error loading machines:', error);
-    } finally {
-      setLoadingData(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingData(true);
+    getMachinesRef.current()
+      .then((data) => { if (!cancelled) setMachines(data); })
+      .catch((err) => console.error('Error loading machines:', err))
+      .finally(() => { if (!cancelled) setLoadingData(false); });
+    return () => { cancelled = true; };
+  }, []); // empty deps — runs exactly once on mount
+
+  const loadMachines = () => {
+    setLoadingData(true);
+    getMachinesRef.current()
+      .then((data) => setMachines(data))
+      .catch((err) => console.error('Error loading machines:', err))
+      .finally(() => setLoadingData(false));
   };
 
   const filteredMachines = useMemo(() => {
     let result = searchMachines(machines, searchTerm);
-    result = filterMachines(result, { type: typeFilter, activeOnly });
+    result = filterMachines(result, { type: typeFilter, status: statusFilter, activeOnly });
     return result;
-  }, [machines, searchTerm, typeFilter, activeOnly]);
+  }, [machines, searchTerm, typeFilter, statusFilter, activeOnly]);
 
   const stats = useMemo(() => {
-    const active = machines.filter((m) => m.active).length;
-    const inactive = machines.length - active;
+    const available = machines.filter((m) => m.status === 'AVAILABLE').length;
+    const busy = machines.filter((m) => m.status === 'BUSY').length;
+    const maintenance = machines.filter((m) => m.status === 'MAINTENANCE').length;
     const types = new Set(machines.map((m) => m.type)).size;
-
-    return {
-      total: machines.length,
-      active,
-      inactive,
-      types,
-    };
+    return { total: machines.length, available, busy, maintenance, types };
   }, [machines]);
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: Parameters<typeof createMachine>[0]) => {
     await createMachine(data);
     await loadMachines();
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: Parameters<typeof updateMachine>[1]) => {
     if (editingMachine) {
       await updateMachine(editingMachine.id, data);
       await loadMachines();
@@ -98,98 +96,106 @@ export default function MachinesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Machines & Equipment</h1>
-        <p className="text-gray-600 mt-2">
-          Gestionează echipamentele utilizate în producție
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Echipamente</h1>
+          <p className="text-gray-600 mt-1">Gestionează echipamentele utilizate în producție</p>
+        </div>
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Adaugă Echipament</span>
+        </button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4">
         <Card padding="sm">
           <CardContent>
-            <div className="text-sm text-gray-600">Total Echipamente</div>
+            <div className="text-xs text-gray-500">Total</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
           </CardContent>
         </Card>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Active</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">{stats.active}</div>
+        <div className="bg-green-50 rounded-lg border border-green-200 p-4">
+          <div className="text-xs text-green-700">Libere</div>
+          <div className="text-2xl font-bold text-green-700 mt-1">{stats.available}</div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-sm text-gray-600">Inactive</div>
-          <div className="text-2xl font-bold text-gray-400 mt-1">{stats.inactive}</div>
+        <div className="bg-yellow-50 rounded-lg border border-yellow-200 p-4">
+          <div className="text-xs text-yellow-700">Ocupate</div>
+          <div className="text-2xl font-bold text-yellow-700 mt-1">{stats.busy}</div>
+        </div>
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+          <div className="text-xs text-red-700">Mentenanță</div>
+          <div className="text-2xl font-bold text-red-700 mt-1">{stats.maintenance}</div>
         </div>
         <Card padding="sm">
           <CardContent>
-            <div className="text-sm text-gray-600">Tipuri</div>
+            <div className="text-xs text-gray-500">Tipuri</div>
             <div className="text-2xl font-bold text-blue-600 mt-1">{stats.types}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <div className="flex-1 min-w-48 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Caută după nume..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
         </div>
 
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+        >
+          <option value="all">Toate statusurile</option>
+          {(Object.entries(MACHINE_STATUS_CONFIG) as [string, { label: string }][]).map(([key, cfg]) => (
+            <option key={key} value={key}>{cfg.label}</option>
+          ))}
+        </select>
+
         {/* Type Filter */}
-        <div className="sm:w-48">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">Toate tipurile</option>
-            {MACHINE_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+        >
+          <option value="all">Toate tipurile</option>
+          {MACHINE_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>{type.label}</option>
+          ))}
+        </select>
 
         {/* Active Only */}
-        <label className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+        <label className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm">
           <input
             type="checkbox"
             checked={activeOnly}
             onChange={(e) => setActiveOnly(e.target.checked)}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
           />
-          <span className="text-sm font-medium text-gray-700">Doar active</span>
+          <span className="font-medium text-gray-700">Doar active</span>
         </label>
-
-        {/* Add Button */}
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          <span className="hidden sm:inline">Adaugă Echipament</span>
-        </button>
       </div>
 
       {/* Machines Grid */}
       {filteredMachines.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <div className="text-gray-400 mb-2">
-            <Filter className="h-12 w-12 mx-auto" />
-          </div>
-          <p className="text-gray-600">
-            {searchTerm || typeFilter !== 'all' || activeOnly
+        <div className="text-center py-16 bg-white rounded-lg border border-gray-200">
+          <Filter className="h-10 w-10 mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500">
+            {searchTerm || typeFilter !== 'all' || statusFilter !== 'all' || activeOnly
               ? 'Nu s-au găsit echipamente cu filtrele aplicate'
-              : 'Nu există echipamente'}
+              : 'Nu există echipamente. Adaugă primul echipament.'}
           </p>
         </div>
       ) : (

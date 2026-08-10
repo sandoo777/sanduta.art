@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, createErrorResponse } from '@/lib/logger';
 
+const invoiceOrderInclude = {
+  user: true,
+  orderItems: {
+    include: {
+      product: true,
+    },
+  },
+} satisfies Prisma.OrderInclude;
+
+type InvoiceOrder = Prisma.OrderGetPayload<{
+  include: typeof invoiceOrderInclude;
+}>;
+
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -19,14 +33,7 @@ export async function GET(
         id: id,
         userId: user.id,
       },
-      include: {
-        user: true,
-        orderItems: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      include: invoiceOrderInclude,
     });
 
     if (!order) {
@@ -48,7 +55,7 @@ export async function GET(
   }
 }
 
-function generateInvoicePDF(order: any): string {
+function generateInvoicePDF(order: InvoiceOrder): string {
   // Placeholder - implement actual PDF generation
   // Use libraries like pdfkit, puppeteer, or similar
   const pdfText = `
@@ -61,11 +68,11 @@ function generateInvoicePDF(order: any): string {
     Email: ${order.user.email}
     
     Comandă: ${order.id}
-    Total: ${order.total} RON
+    Total: ${Number(order.totalPrice)} RON
     
     Articole:
-    ${order.orderItems.map((item: any) => 
-      `- ${item.product.name} x${item.quantity} = ${item.price} RON`
+    ${order.orderItems.map((item) => 
+      `- ${item.product.name} x${item.quantity} = ${Number(item.lineTotal)} RON`
     ).join('\n')}
   `;
   

@@ -12,7 +12,7 @@ export interface ProjectData {
   };
   bleed: number;
   dpi?: number;
-  layers?: any[];
+  layers?: unknown[];
   finalFileUrl?: string;
   previewImage?: string;
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState, useCallback } from "react";
+
 import { useEffect, useState } from 'react';
 import { useSecurity, UserSession } from '@/modules/account/useSecurity';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,9 +17,19 @@ export default function ActiveSessions() {
   const { sessions, loading, fetchSessions, revokeSession, revokeAllSessions } = useSecurity();
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const loadSessions = useCallback(() => {
+    void fetchSessions();
+  }, [fetchSessions]);
+
   useEffect(() => {
-    fetchSessions();
-  }, []);
+    const timerId = setTimeout(() => {
+      loadSessions();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadSessions]);
 
   const handleRevokeSession = async (sessionId: string) => {
     if (!confirm('Sigur vrei să închizi această sesiune?')) return;
@@ -26,7 +38,7 @@ export default function ActiveSessions() {
     try {
       const result = await revokeSession(sessionId);
       setMessage({ type: 'success', text: result.message });
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -42,7 +54,7 @@ export default function ActiveSessions() {
       setMessage({ type: 'success', text: result.message });
       // Reload after short delay
       setTimeout(() => window.location.reload(), 2000);
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };

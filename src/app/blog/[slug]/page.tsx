@@ -5,6 +5,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Eye, ArrowLeft, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
@@ -116,11 +117,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       {/* Featured Image */}
       {post.featuredImage && (
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            <img
+          <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            <Image
               src={post.featuredImage}
               alt={post.title}
-              className="w-full h-full object-cover"
+              fill
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
             />
           </div>
         </div>

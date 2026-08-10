@@ -5,6 +5,8 @@ import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverS
 import { prisma } from '@/lib/prisma';
 import AddressesClient from './AddressesClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AddressesPage() {
   try {
     // 1. Auth check server-side

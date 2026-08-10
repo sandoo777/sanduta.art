@@ -137,7 +137,7 @@ export async function GET(_req: NextRequest) {
       // Merge with mock data or return actual results
       logger.info('API:QA', 'Returning actual test results');
       return NextResponse.json(actualResults);
-    } catch (fileError) {
+    } catch (_fileError) {
       // Fall back to mock data if file doesn't exist
       logger.info('API:QA', 'Returning mock test results');
       return NextResponse.json(mockTestRuns);

@@ -11,8 +11,8 @@
  * - Queue health status
  */
 
-import { useLogger, LogCategory } from './useLogger';
-import { useMetrics, MetricType } from './useMetrics';
+import { getLogger, LogCategory } from './useLogger';
+import { getMetrics } from './useMetrics';
 
 // Job status
 export enum JobStatus {
@@ -39,7 +39,7 @@ export interface JobInfo {
   id: string;
   type: JobType;
   status: JobStatus;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
@@ -64,8 +64,8 @@ export interface QueueStats {
 }
 
 class QueueMonitor {
-  private logger = useLogger();
-  private metrics = useMetrics();
+  private logger = getLogger();
+  private metrics = getMetrics();
   private jobs = new Map<string, JobInfo>();
   private completedJobs: JobInfo[] = [];
   private readonly MAX_COMPLETED_HISTORY = 1000;
@@ -76,7 +76,7 @@ class QueueMonitor {
   async registerJob(
     id: string,
     type: JobType,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
     maxRetries: number = 3
   ): Promise<JobInfo> {
     const job: JobInfo = {
@@ -403,7 +403,7 @@ class QueueMonitor {
     failed: number;
     averageProcessingTime: number;
   }> {
-    const statsByType: Record<string, any> = {};
+    const statsByType: Record<string, unknown> = {};
 
     for (const type of Object.values(JobType)) {
       const jobs = this.completedJobs.filter(j => j.type === type);
@@ -423,7 +423,7 @@ class QueueMonitor {
       };
     }
 
-    return statsByType as Record<JobType, any>;
+    return statsByType as Record<JobType, unknown>;
   }
 }
 
@@ -433,11 +433,15 @@ let queueMonitorInstance: QueueMonitor | null = null;
 /**
  * Get queue monitor instance
  */
-export function useQueueMonitoring(): QueueMonitor {
+export function getQueueMonitoring(): QueueMonitor {
   if (!queueMonitorInstance) {
     queueMonitorInstance = new QueueMonitor();
   }
   return queueMonitorInstance;
+}
+
+export function useQueueMonitoring(): QueueMonitor {
+  return getQueueMonitoring();
 }
 
 export default QueueMonitor;

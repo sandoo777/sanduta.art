@@ -55,3 +55,8 @@ export function Form<TFieldValues extends FieldValues>({
 
 // Hook pentru acces ușor la form context
 export { useFormContext, useWatch } from 'react-hook-form';
+
+// Re-export field helpers for compatibility with imports from ui/form.
+export { FormField } from './FormField';
+export { FormLabel } from './FormLabel';
+export { FormMessage } from './FormMessage';

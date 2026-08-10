@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 interface Material {
   id: string;
   name: string;
-  type: string;
+  unit: string;
 }
 
 interface MaterialCompatibilitySelectorProps {
@@ -35,7 +35,7 @@ export function MaterialCompatibilitySelector({
         const data = await response.json();
         setMaterials(data);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching materials:', error);
     } finally {
       setLoading(false);
@@ -103,7 +103,7 @@ export function MaterialCompatibilitySelector({
               <div className="text-sm font-medium text-gray-900 truncate">
                 {material.name}
               </div>
-              <div className="text-xs text-gray-500">{material.type}</div>
+              <div className="text-xs text-gray-500">{material.unit}</div>
             </div>
           </label>
         ))}
@@ -111,7 +111,7 @@ export function MaterialCompatibilitySelector({
 
       {selectedMaterialIds.length === 0 && (
         <p className="text-xs text-red-500">
-          * Selectează cel puțin un material compatibil
+          * Selectează cel puțin un material compatibil.
         </p>
       )}
     </div>

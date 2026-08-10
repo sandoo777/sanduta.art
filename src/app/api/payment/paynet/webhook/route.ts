@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { paynetClient } from '@/lib/paynet';
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const signature = request.headers.get('x-signature') || '';
     const body = await request.text();
@@ -14,7 +14,7 @@ export async function POST(_request: NextRequest) {
     }
 
     const data = JSON.parse(body);
-    const { session_id, order_id, status, amount } = data;
+    const { session_id, order_id, status } = data;
 
     if (!session_id || !order_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

@@ -275,7 +275,7 @@ export function ThemePreview({ theme, previewUrl = '/' }: ThemePreviewProps) {
                   <strong>Device Mode:</strong> {deviceMode} ({device.width} × {device.height})
                 </p>
                 <p className="text-xs font-mono mb-2">
-                  <strong>Theme Version:</strong> {(theme as any).version || 'draft'}
+                  <strong>Theme Version:</strong> {theme.version || 'draft'}
                 </p>
                 <p className="text-xs font-mono">
                   <strong>Last Updated:</strong> {new Date().toLocaleString()}
@@ -291,23 +291,21 @@ export function ThemePreview({ theme, previewUrl = '/' }: ThemePreviewProps) {
 
 // Standalone preview page component
 export function ThemePreviewPage() {
-  const [theme, setTheme] = useState<ThemeConfig | null>(null);
-
-  useEffect(() => {
-    // Get theme from URL params
+  const [theme] = useState<ThemeConfig | null>(() => {
     const params = new URLSearchParams(window.location.search);
     const themeParam = params.get('theme');
-    
-    if (themeParam) {
-      try {
-        const parsedTheme = JSON.parse(decodeURIComponent(themeParam));
-        setTheme(parsedTheme);
-      } catch (_error) {
-        console.error('Failed to parse theme:', error);
-      }
+
+    if (!themeParam) {
+      return null;
     }
-     
-  }, []);
+
+    try {
+      return JSON.parse(decodeURIComponent(themeParam)) as ThemeConfig;
+    } catch (error) {
+      console.error('Failed to parse theme:', error);
+      return null;
+    }
+  });
 
   if (!theme) {
     return null; // Let the actual page content show

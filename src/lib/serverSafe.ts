@@ -90,7 +90,7 @@ export async function serverSafe<T>(
   } catch (error) {
     // Permite NEXT_REDIRECT să treacă
     if (error && typeof error === 'object' && 'digest' in error) {
-      const digest = (error as any).digest;
+      const digest = (error as { digest?: unknown }).digest;
       if (typeof digest === 'string' && digest.includes('NEXT_REDIRECT')) {
         logger.info(logTag, 'Allowing Next.js redirect', { digest });
         throw error;
@@ -128,7 +128,7 @@ export async function serverSafe<T>(
  * Wrapper pentru async Server Component pages
  * Previne 502 prin error boundaries
  */
-export function withServerSafety<P extends Record<string, any>>(
+export function withServerSafety<P extends Record<string, unknown>>(
   Component: (props: P) => Promise<React.ReactElement>,
   options: {
     fallbackComponent?: React.ReactElement;
@@ -142,7 +142,7 @@ export function withServerSafety<P extends Record<string, any>>(
     } catch (error) {
       // Permite NEXT_REDIRECT
       if (error && typeof error === 'object' && 'digest' in error) {
-        const digest = (error as any).digest;
+        const digest = (error as { digest?: unknown }).digest;
         if (typeof digest === 'string' && digest.includes('NEXT_REDIRECT')) {
           throw error;
         }
@@ -247,7 +247,7 @@ export function isValidObject(data: unknown): data is Record<string, unknown> {
   return typeof data === 'object' && data !== null && !Array.isArray(data);
 }
 
-export function hasRequiredFields<T extends Record<string, any>>(
+export function hasRequiredFields<T extends Record<string, unknown>>(
   data: unknown,
   fields: (keyof T)[]
 ): data is T {

@@ -78,7 +78,7 @@ export interface CreateCustomerData {
   country?: string;
 }
 
-export interface UpdateCustomerData extends Partial<CreateCustomerData> {}
+export type UpdateCustomerData = Partial<CreateCustomerData>;
 
 // Custom hook for Customers API
 export function useCustomers() {

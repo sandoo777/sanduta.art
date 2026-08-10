@@ -155,10 +155,13 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
         const product = (await response.json()) as ConfiguratorProduct;
         
         // Build initial selections with all defaults including dimensions
-        const initialDimension = product.dimensions ? {
-          width: product.dimensions.widthMin ?? 100,
-          height: product.dimensions.heightMin ?? 100,
-        } : undefined;
+        const initialDimension = product.dimensions
+          ? {
+              width: product.dimensions.widthMin ?? 100,
+              height: product.dimensions.heightMin ?? 100,
+              unit: product.dimensions.unit,
+            }
+          : undefined;
 
         const selections: ConfiguratorSelections = {
           ...defaultSelections,

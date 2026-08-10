@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/modules/i18n";
 
 export type Language = "RO" | "EN" | "RU";
@@ -90,7 +90,7 @@ export const usePreferences = (): UsePreferencesReturn => {
   const { setLanguage } = useI18n();
 
   // Funcție pentru obținerea preferințelor
-  const fetchPreferences = async () => {
+  const fetchPreferences = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -119,7 +119,7 @@ export const usePreferences = (): UsePreferencesReturn => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLanguage]);
 
   // Funcție generică pentru actualizare
   const updatePreferences = async (data: Partial<UserPreferences>) => {
@@ -221,8 +221,8 @@ export const usePreferences = (): UsePreferencesReturn => {
 
   // Încarcă preferințele la mount
   useEffect(() => {
-    fetchPreferences();
-  }, []);
+    void fetchPreferences();
+  }, [fetchPreferences]);
 
   return {
     preferences,

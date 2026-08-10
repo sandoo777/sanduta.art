@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEditorStore } from '@/modules/editor/editorStore';
@@ -119,9 +120,12 @@ export default function ImageTool({ onClose }: ImageToolProps) {
             <div className="space-y-4">
               {/* Preview */}
               <div className="relative border border-gray-200 rounded-lg overflow-hidden">
-                <img
+                <Image
                   src={preview}
                   alt="Preview"
+                  width={1200}
+                  height={800}
+                  unoptimized
                   className="w-full h-auto max-h-64 object-contain bg-gray-50"
                 />
                 <button

@@ -88,6 +88,15 @@ export function Configurator({ productId }: ConfiguratorProps) {
   const showFinishing = finishing.length > 0;
   const showOptions = visibleOptions.length > 0;
 
+  const editorDimensions =
+    selections.dimension?.width && selections.dimension?.height
+      ? {
+          width: selections.dimension.width,
+          height: selections.dimension.height,
+          unit: selections.dimension.unit ?? product.dimensions?.unit ?? 'mm',
+        }
+      : undefined;
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -161,17 +170,7 @@ export function Configurator({ productId }: ConfiguratorProps) {
             projectId={projectId}
             previewImage={previewImage}
             productId={product.id}
-            dimensions={
-              selections.dimension?.width &&
-              selections.dimension?.height &&
-              selections.dimension?.unit
-                ? {
-                    width: selections.dimension.width,
-                    height: selections.dimension.height,
-                    unit: selections.dimension.unit,
-                  }
-                : undefined
-            }
+            dimensions={editorDimensions}
             materialId={selections.materialId}
             printMethodId={selections.printMethodId}
             finishingIds={selections.finishingIds}

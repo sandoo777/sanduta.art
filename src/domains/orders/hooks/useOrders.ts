@@ -9,9 +9,11 @@ import {
   OrdersQueryParams,
   OrdersListResponse,
   OrderWithRelations,
-  CreateOrderDTO,
+  CreateOrderItemDTO,
   UpdateOrderItemDTO,
   OrderServiceResult,
+  OrderStatus,
+  PaymentStatus,
 } from '../types';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -54,7 +56,7 @@ export function useOrders() {
   // ───────────────────────────────────────────────────────────────────────────
 
   const updateStatus = useCallback(
-    async (id: string, status: string): Promise<OrderServiceResult> => {
+    async (id: string, status: OrderStatus): Promise<OrderServiceResult> => {
       setLoading(true);
       try {
         // Note: userId should be obtained from session/context
@@ -68,7 +70,7 @@ export function useOrders() {
   );
 
   const updatePaymentStatus = useCallback(
-    async (id: string, paymentStatus: string): Promise<OrderServiceResult> => {
+    async (id: string, paymentStatus: PaymentStatus): Promise<OrderServiceResult> => {
       setLoading(true);
       try {
         return await ordersService.updatePaymentStatus(id, paymentStatus, '');
@@ -96,7 +98,7 @@ export function useOrders() {
   // ───────────────────────────────────────────────────────────────────────────
 
   const addItem = useCallback(
-    async (orderId: string, item: any): Promise<OrderServiceResult> => {
+    async (orderId: string, item: CreateOrderItemDTO): Promise<OrderServiceResult> => {
       setLoading(true);
       try {
         return await ordersService.addItem(orderId, item, '');
@@ -152,8 +154,8 @@ export function useOrders() {
         if (!response.ok) throw new Error('Failed to add file');
         const data = await response.json();
         return { success: true, data };
-      } catch (error: any) {
-        return { success: false, error: error.message };
+      } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to add file' };
       } finally {
         setLoading(false);
       }
@@ -171,8 +173,8 @@ export function useOrders() {
         });
         if (!response.ok) throw new Error('Failed to delete file');
         return { success: true };
-      } catch (error: any) {
-        return { success: false, error: error.message };
+      } catch (error: unknown) {
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to delete file' };
       } finally {
         setLoading(false);
       }

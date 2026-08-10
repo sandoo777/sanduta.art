@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database Monitoring Module
  * Tracks database performance and health metrics
  * 
@@ -13,9 +13,10 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { useLogger, LogCategory } from './useLogger';
-import { useMetrics, MetricType } from './useMetrics';
+import { getLogger, LogCategory } from './useLogger';
+import { getMetrics } from './useMetrics';
 
+// Removed unused MetricType import
 // Query performance thresholds
 const SLOW_QUERY_THRESHOLD_MS = 200;
 const VERY_SLOW_QUERY_THRESHOLD_MS = 1000;
@@ -57,8 +58,8 @@ interface DbHealthMetrics {
 }
 
 class DatabaseMonitor {
-  private logger = useLogger();
-  private metrics = useMetrics();
+  private logger = getLogger();
+  private metrics = getMetrics();
   private queryStats: QueryStats[] = [];
   private readonly MAX_QUERY_HISTORY = 1000;
   private errorCount = 0;
@@ -77,7 +78,7 @@ class DatabaseMonitor {
     });
 
     // Monitor queries
-    prisma.$on('query' as any, async (e: any) => {
+    prisma.$on('query' as unknown, async (e: unknown) => {
       const duration = e.duration;
       const query = e.query;
       const params = e.params;
@@ -121,7 +122,7 @@ class DatabaseMonitor {
     });
 
     // Monitor errors
-    prisma.$on('error' as any, async (e: any) => {
+    prisma.$on('error' as unknown, async (e: unknown) => {
       this.errorCount++;
       
       await this.logger.error(
@@ -133,7 +134,7 @@ class DatabaseMonitor {
     });
 
     // Monitor warnings
-    prisma.$on('warn' as any, async (e: any) => {
+    prisma.$on('warn' as unknown, async (e: unknown) => {
       await this.logger.warning(
         LogCategory.DATABASE,
         'Database warning',
@@ -456,11 +457,15 @@ let dbMonitorInstance: DatabaseMonitor | null = null;
 /**
  * Get database monitor instance
  */
-export function useDbMonitoring(): DatabaseMonitor {
+export function getDbMonitoring(): DatabaseMonitor {
   if (!dbMonitorInstance) {
     dbMonitorInstance = new DatabaseMonitor();
   }
   return dbMonitorInstance;
+}
+
+export function useDbMonitoring(): DatabaseMonitor {
+  return getDbMonitoring();
 }
 
 export default DatabaseMonitor;

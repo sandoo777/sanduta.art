@@ -2,7 +2,6 @@
 
 import { ManagerLayout } from "@/components/layout/ManagerLayout";
 import { useState } from "react";
-import { Badge } from "@/components/ui/Badge";
 
 export interface OrderListView {
   id: number;

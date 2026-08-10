@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { 
   AlertTriangle, 
   FileWarning, 
@@ -25,18 +25,25 @@ export default function AlertsPanel() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [filter, setFilter] = useState<"all" | "error" | "warning" | "info">("all");
 
-  useEffect(() => {
-    loadAlerts();
-    const interval = setInterval(loadAlerts, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     const data = await fetchAlerts();
     if (data) {
       setAlerts(data);
     }
-  };
+  }, [fetchAlerts]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadAlerts();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadAlerts();
+    }, 30000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadAlerts]);
 
   const filteredAlerts = alerts.filter(
     (alert) => filter === "all" || alert.type === filter

@@ -1,7 +1,7 @@
 'use client';
 
 import { AuthLink } from "@/components/common/links/AuthLink";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 
 export default function AdminPage() {
   const stats = [

@@ -52,7 +52,6 @@ async function verifySlugsSEO() {
     
     for (const cat of mainCategories) {
       const isDuplicate = (slugCounts.get(cat.slug) || 0) > 1;
-      const hasHyphen = cat.slug.includes('-');
       const hasSpecialChars = /[^a-z0-9-]/.test(cat.slug);
       
       let status = '✅';
@@ -91,7 +90,7 @@ async function verifySlugsSEO() {
     
     for (const cat of subCategories) {
       const isDuplicate = (slugCounts.get(cat.slug) || 0) > 1;
-      const hasHyphen = cat.slug.includes('-');
+      const _hasHyphen = cat.slug.includes('-');
       const hasSpecialChars = /[^a-z0-9-]/.test(cat.slug);
       
       let status = '✅';

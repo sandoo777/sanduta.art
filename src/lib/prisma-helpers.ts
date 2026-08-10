@@ -191,15 +191,15 @@ export function buildOrderBy(
 /**
  * Optimizare pentru count queries - folosește cursor pagination pentru liste mari
  */
-export async function getCursorPaginatedData<T>(
-  prismaModel: any,
+export async function getCursorPaginatedData<TItem extends { id: string | number }>(
+  prismaModel: { findMany: (args: Record<string, unknown>) => Promise<TItem[]> },
   params: {
-    where?: any;
-    cursor?: any;
+    where?: Record<string, unknown>;
+    cursor?: string | number;
     take?: number;
-    orderBy?: any;
-    select?: any;
-    include?: any;
+    orderBy?: Record<string, unknown>;
+    select?: Record<string, unknown>;
+    include?: Record<string, unknown>;
   }
 ) {
   const { where, cursor, take = 20, orderBy, select, include } = params;

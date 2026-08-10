@@ -14,7 +14,7 @@
  * - Uptime fail
  */
 
-import { useLogger, LogCategory } from './useLogger';
+import { getLogger, LogCategory } from './useLogger';
 
 // Alert severity
 export enum AlertSeverity {
@@ -37,7 +37,7 @@ export interface Alert {
   severity: AlertSeverity;
   title: string;
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   timestamp: string;
   channels: AlertChannel[];
   acknowledged: boolean;
@@ -56,7 +56,7 @@ interface AlertConfig {
 }
 
 class AlertingSystem {
-  private logger = useLogger();
+  private logger = getLogger();
   private config: AlertConfig;
   private alerts: Alert[] = [];
   private alertCounts = new Map<string, { count: number; resetTime: number }>();
@@ -112,7 +112,7 @@ class AlertingSystem {
     severity: AlertSeverity,
     title: string,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     channels?: AlertChannel[]
   ): Promise<Alert> {
     // Create alert object
@@ -444,13 +444,20 @@ class AlertingSystem {
 let alertingInstance: AlertingSystem | null = null;
 
 /**
- * Get alerting system instance
+ * Get alerting system instance (non-hook helper)
  */
-export function useAlerts(): AlertingSystem {
+export function getAlerts(): AlertingSystem {
   if (!alertingInstance) {
     alertingInstance = new AlertingSystem();
   }
   return alertingInstance;
+}
+
+/**
+ * Get alerting system instance
+ */
+export function useAlerts(): AlertingSystem {
+  return getAlerts();
 }
 
 export default AlertingSystem;

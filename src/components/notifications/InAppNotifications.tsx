@@ -29,7 +29,7 @@ interface InAppNotificationsProps {
 
 export default function InAppNotifications({ 
   userId, 
-  position = 'header' 
+  position: _position = 'header' 
 }: InAppNotificationsProps) {
   const {
     notifications,
@@ -291,25 +291,25 @@ export function NotificationToast({
 }: NotificationToastProps) {
   const [isExiting, setIsExiting] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(onClose, 300);
+  }, [onClose]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       handleClose();
     }, 5000); // Auto-close after 5 seconds
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [handleClose]);
 
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(onClose, 300);
-  };
-
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (_type: string) => {
     // Same as above
     return <Bell className="w-5 h-5" />;
   };
 
-  const getNotificationColor = (type: string) => {
+  const getNotificationColor = (_type: string) => {
     // Same as above
     return 'bg-indigo-100 text-indigo-600';
   };

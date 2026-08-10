@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import type { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+const orderDetailsInclude = {
+  orderItems: {
+    include: {
+      product: {
+        include: {
+          images: true,
+        },
+      },
+    },
+  },
+  user: true,
+} satisfies Prisma.OrderInclude;
+
+type AccountOrderDetails = Prisma.OrderGetPayload<{
+  include: typeof orderDetailsInclude;
+}>;
 
 export async function GET(
   request: NextRequest,
@@ -28,18 +46,7 @@ export async function GET(
         id: orderId,
         userId: user.id,
       },
-      include: {
-        orderItems: {
-          include: {
-            product: {
-              include: {
-                images: true,
-              },
-            },
-          },
-        },
-        user: true,
-      },
+      include: orderDetailsInclude,
     });
 
     if (!order) {
@@ -120,7 +127,7 @@ export async function GET(
 }
 
 // Generate timeline events from order
-function generateTimeline(order: any) {
+function generateTimeline(order: AccountOrderDetails) {
   const timeline = [];
 
   // Order placed
@@ -191,7 +198,7 @@ function generateTimeline(order: any) {
 }
 
 // Generate history events from order
-function generateHistory(order: any) {
+function generateHistory(order: AccountOrderDetails) {
   const history = [];
 
   history.push({

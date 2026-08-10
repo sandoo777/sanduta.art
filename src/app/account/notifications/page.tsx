@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNotifications } from '@/modules/notifications/useNotifications';
 import { useSession } from 'next-auth/react';
-import { InAppNotification } from '@/lib/notifications/notificationTypes';
 import { 
   Bell, 
   Check, 
@@ -22,6 +21,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { AuthLink } from '@/components/common/links/AuthLink';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 export default function NotificationsPage() {
   const { data: session } = useSession();
@@ -39,21 +39,21 @@ export default function NotificationsPage() {
   } = useNotifications(userId);
 
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const [filteredNotifications, setFilteredNotifications] = useState<InAppNotification[]>([]);
 
   // Memoize callbacks to prevent recreation
   const unreadNotifications = useMemo(() => getUnreadNotifications(), [getUnreadNotifications]);
   const readNotifications = useMemo(() => getReadNotifications(), [getReadNotifications]);
 
-  useEffect(() => {
+  const filteredNotifications = useMemo(() => {
     if (filter === 'unread') {
-      setFilteredNotifications(unreadNotifications);
-    } else if (filter === 'read') {
-      setFilteredNotifications(readNotifications);
-    } else {
-      setFilteredNotifications(notifications);
+      return unreadNotifications;
     }
-     
+
+    if (filter === 'read') {
+      return readNotifications;
+    }
+
+    return notifications;
   }, [filter, notifications, unreadNotifications, readNotifications]);
 
   const getNotificationIcon = (type: string) => {

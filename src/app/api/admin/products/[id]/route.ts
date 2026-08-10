@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
+
+function parseNonNegative(value: unknown) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return null;
+  }
+
+  return parsed;
+}
 
 /**
  * GET /api/admin/products/[id]
  * Get a single product by ID
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,6 +40,7 @@ export async function GET(
       where: { id },
       include: {
         category: true,
+        defaultPrintMethod: true,
         images: true,
         variants: true,
         _count: {
@@ -82,7 +97,21 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, slug, sku, description, type, price, categoryId, active } = body;
+    const {
+      name,
+      slug,
+      sku,
+      description,
+      type,
+      saleUnit,
+      price,
+      pricePerM2,
+      pricePerUnit,
+      printMethodId,
+      materialId,
+      categoryId,
+      active,
+    } = body;
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
@@ -127,22 +156,146 @@ export async function PATCH(
       }
     }
 
+    if (saleUnit !== undefined && saleUnit !== 'M2' && saleUnit !== 'UNIT') {
+      return NextResponse.json(
+        { error: 'saleUnit trebuie să fie M2 sau UNIT' },
+        { status: 400 }
+      );
+    }
+
+    if (pricePerM2 !== undefined && Number(pricePerM2) < 0) {
+      return NextResponse.json(
+        { error: 'pricePerM2 trebuie să fie >= 0' },
+        { status: 400 }
+      );
+    }
+
+    if (pricePerUnit !== undefined && Number(pricePerUnit) < 0) {
+      return NextResponse.json(
+        { error: 'pricePerUnit trebuie să fie >= 0' },
+        { status: 400 }
+      );
+    }
+
+    const nextSaleUnit = saleUnit ?? existingProduct.saleUnit;
+    const nextPrintMethodId = printMethodId !== undefined ? (printMethodId || null) : existingProduct.printMethodId;
+    const nextMaterialId = materialId !== undefined ? (materialId || null) : existingProduct.materialId;
+    const parsedPricePerM2 = pricePerM2 !== undefined ? parseNonNegative(pricePerM2) : parseNonNegative(existingProduct.pricePerM2);
+    const parsedPricePerUnit = pricePerUnit !== undefined ? parseNonNegative(pricePerUnit) : parseNonNegative(existingProduct.pricePerUnit);
+
+    let selectedPrintMethod: {
+      isOutsourced: boolean;
+      costFurnizorPerM2: number | null;
+      costFurnizorPerUnit: number | null;
+      markup: number | null;
+    } | null = null;
+
+    if (nextPrintMethodId) {
+      const method = await prisma.printMethod.findUnique({
+        where: { id: nextPrintMethodId },
+        select: {
+          id: true,
+          active: true,
+          isOutsourced: true,
+          costFurnizorPerM2: true,
+          costFurnizorPerUnit: true,
+          markup: true,
+        },
+      });
+
+      if (!method || !method.active) {
+        return NextResponse.json(
+          { error: 'Metoda de print selectată nu există sau este inactivă' },
+          { status: 400 }
+        );
+      }
+
+      selectedPrintMethod = {
+        isOutsourced: method.isOutsourced,
+        costFurnizorPerM2: method.costFurnizorPerM2 ? Number(method.costFurnizorPerM2) : null,
+        costFurnizorPerUnit: method.costFurnizorPerUnit ? Number(method.costFurnizorPerUnit) : null,
+        markup: method.markup ? Number(method.markup) : null,
+      };
+    }
+
+    const isOutsourced = selectedPrintMethod?.isOutsourced ?? existingProduct.isOutsourced;
+
+    if (!isOutsourced && nextSaleUnit === 'M2' && parsedPricePerM2 === null) {
+      return NextResponse.json(
+        { error: 'Pentru produse la m², pricePerM2 este obligatoriu' },
+        { status: 400 }
+      );
+    }
+
+    if (!isOutsourced && nextSaleUnit === 'UNIT' && parsedPricePerUnit === null) {
+      return NextResponse.json(
+        { error: 'Pentru produse la bucată, pricePerUnit este obligatoriu' },
+        { status: 400 }
+      );
+    }
+
+    if (!isOutsourced && nextMaterialId === null) {
+      return NextResponse.json(
+        { error: 'Pentru metode interne, materialul implicit este obligatoriu' },
+        { status: 400 }
+      );
+    }
+
+    let nextPrice = price !== undefined ? Number(price) : Number(existingProduct.price);
+    if (isOutsourced) {
+      const supplierCostBase = nextSaleUnit === 'M2'
+        ? Number(selectedPrintMethod?.costFurnizorPerM2 ?? NaN)
+        : Number(selectedPrintMethod?.costFurnizorPerUnit ?? NaN);
+      const markupPercent = Number(selectedPrintMethod?.markup ?? NaN);
+
+      if (!Number.isFinite(supplierCostBase) || supplierCostBase < 0) {
+        return NextResponse.json(
+          { error: 'supplierCost este obligatoriu și trebuie să fie >= 0 pentru outsource' },
+          { status: 400 }
+        );
+      }
+
+      if (!Number.isFinite(markupPercent) || markupPercent < 0) {
+        return NextResponse.json(
+          { error: 'markup este obligatoriu și trebuie să fie >= 0 pentru outsource' },
+          { status: 400 }
+        );
+      }
+
+      nextPrice = supplierCostBase + (supplierCostBase * markupPercent) / 100;
+    } else {
+      nextPrice = nextSaleUnit === 'M2' ? Number(parsedPricePerM2) : Number(parsedPricePerUnit);
+    }
+
     // Update product
-    const updateData: any = {};
+    const updateData: Prisma.ProductUpdateInput = {};
     if (name !== undefined) updateData.name = name;
     if (slug !== undefined) updateData.slug = slug;
     if (sku !== undefined) updateData.sku = sku;
     if (description !== undefined) updateData.description = description;
     if (type !== undefined) updateData.type = type;
-    if (price !== undefined) updateData.price = price;
+    if (saleUnit !== undefined) updateData.saleUnit = saleUnit;
+    updateData.price = nextPrice;
+    if (isOutsourced) {
+      updateData.pricePerM2 = null;
+      updateData.pricePerUnit = null;
+      updateData.materialId = null;
+    } else {
+      if (pricePerM2 !== undefined) updateData.pricePerM2 = pricePerM2;
+      if (pricePerUnit !== undefined) updateData.pricePerUnit = pricePerUnit;
+      if (materialId !== undefined) updateData.materialId = materialId;
+    }
+    if (printMethodId !== undefined) updateData.printMethodId = printMethodId;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
     if (active !== undefined) updateData.active = active;
+    updateData.isOutsourced = isOutsourced;
 
     const product = await prisma.product.update({
       where: { id },
       data: updateData,
       include: {
         category: true,
+        defaultPrintMethod: true,
         images: true,
         variants: true,
       },
@@ -156,6 +309,13 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PATCH(req, { params });
 }
 
 /**
@@ -206,12 +366,13 @@ export async function DELETE(
       );
     }
 
-    // Delete product (cascade will delete images and variants)
-    await prisma.product.delete({
+    // Soft delete product to preserve historical relations
+    await prisma.product.update({
       where: { id },
+      data: { active: false },
     });
 
-    return NextResponse.json({ message: "Product deleted successfully" });
+    return NextResponse.json({ message: "Product deactivated successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
     return NextResponse.json(

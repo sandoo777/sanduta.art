@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePreferences } from "@/modules/account/usePreferences";
 import { useTranslations } from "@/modules/i18n";
 import { Mail, CheckCircle2 } from "lucide-react";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { communicationPreferencesSchema, type CommunicationPreferencesFormData } from "@/lib/validations/user-panel";
 
@@ -113,7 +113,7 @@ export const CommunicationSettings = () => {
                   <Toggle
                     checked={value as boolean}
                     onChange={async (newValue) => {
-                      onChange({ target: { value: newValue } } as any);
+                      onChange({ target: { value: newValue } });
                       // Auto-submit on toggle
                       const newData = {
                         newsletter: item.field === 'newsletter' ? newValue : (preferences?.newsletter ?? false),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Package, Calendar, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,7 @@ interface MaterialConsumptionProps {
 
 export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionProps) {
   const [isConsumeModalOpen, setIsConsumeModalOpen] = useState(false);
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Array<{ id: string; name: string }>>([]);
 
   const { consumeMaterial, isLoading } = useMaterials();
 
@@ -27,27 +27,48 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
     defaultValues: {
       jobId: "",
       quantity: 0,
+      unit: material.unit,
+      rollWidthMeters: undefined,
     },
   });
 
-  useEffect(() => {
-    loadJobs();
-  }, []);
+  const selectedUnit = form.watch('unit') ?? material.unit;
 
-  const loadJobs = async () => {
+  const loadJobs = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/production");
       if (response.ok) {
-        const data = await response.json();
-        setJobs(data);
+        const data = await response.json() as unknown;
+        if (Array.isArray(data)) {
+          setJobs(data);
+          return;
+        }
+
+        if (data && typeof data === 'object' && 'jobs' in data && Array.isArray((data as { jobs?: unknown }).jobs)) {
+          setJobs((data as { jobs: Array<{ id: string; name: string }> }).jobs);
+          return;
+        }
+
+        setJobs([]);
       }
-    } catch (_error) {
-      console.error("Error loading jobs:", error);
+    } catch (loadError) {
+      console.error("Error loading jobs:", loadError);
+      setJobs([]);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      void loadJobs();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadJobs]);
 
   const onSubmit = async (data: MaterialConsumptionFormData) => {
-    if (data.quantity > material.stock) {
+    if ((data.unit ?? material.unit) === material.unit && data.quantity > material.stock) {
       form.setError("quantity", {
         type: "manual",
         message: `Stoc insuficient (disponibil: ${material.stock} ${material.unit})`,
@@ -189,7 +210,7 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="">Selectează job-ul</option>
-                      {jobs.map((job) => (
+                      {(Array.isArray(jobs) ? jobs : []).map((job) => (
                         <option key={job.id} value={job.id}>
                           {job.name} - {job.status}
                         </option>
@@ -205,13 +226,13 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
                 name="quantity"
                 render={({ field }) => (
                   <div>
-                    <FormLabel required>Cantitate ({material.unit})</FormLabel>
+                    <FormLabel required>Cantitate ({selectedUnit})</FormLabel>
                     <Input
                       type="number"
                       min="0.01"
                       step="0.01"
-                      max={material.stock}
-                      placeholder={`Max ${material.stock}`}
+                      max={(selectedUnit === material.unit) ? material.stock : undefined}
+                      placeholder={(selectedUnit === material.unit) ? `Max ${material.stock}` : 'Cantitate de consum'}
                       {...field}
                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
@@ -219,6 +240,55 @@ export function MaterialConsumption({ material, onUpdate }: MaterialConsumptionP
                   </div>
                 )}
               />
+
+              <FormField
+                name="unit"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Unitate consum</FormLabel>
+                    <select
+                      {...field}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="liter">Litru (L)</option>
+                      <option value="ml">Mililitru (ml)</option>
+                      <option value="kg">Kilogram (kg)</option>
+                      <option value="gram">Gram (g)</option>
+                      <option value="m2">Metru pătrat (m²)</option>
+                      <option value="meter">Metru (m)</option>
+                      <option value="pcs">Bucăți (buc)</option>
+                      <option value="unit">Unitate</option>
+                    </select>
+                    <FormMessage />
+                  </div>
+                )}
+              />
+
+              {(selectedUnit === 'm2' || selectedUnit === 'meter' || material.unit === 'm2' || material.unit === 'meter') && (
+                <FormField
+                  name="rollWidthMeters"
+                  render={({ field }) => (
+                    <div>
+                      <FormLabel>Lățime rolă (m)</FormLabel>
+                      <Input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="Ex: 1.6"
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+                          field.onChange(Number.isFinite(value) ? value : undefined);
+                        }}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Necesar doar pentru conversii m² ↔ m când lățimea rolei diferă de 1m.
+                      </p>
+                      <FormMessage />
+                    </div>
+                  )}
+                />
+              )}
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-2">

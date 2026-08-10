@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Badge } from '@/components/ui/Badge';
 
@@ -60,7 +61,13 @@ export default function OrderDetailClient({ order }: Props) {
     order.orderItems.forEach(item => {
       // Add product multiple times based on quantity
       for (let i = 0; i < item.quantity; i++) {
-        addToCart(item.product as any); // Type assertion for compatibility
+        addToCart({
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          image_url: item.product.image_url,
+          category: item.product.category,
+        });
       }
     });
 
@@ -68,29 +75,6 @@ export default function OrderDetailClient({ order }: Props) {
       setReordering(false);
       router.push('/checkout');
     }, 500);
-  };
-
-  const getStatusBadgeColor = (status: string) => {
-    const normalized = status.toUpperCase();
-    switch (normalized) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'PROCESSING':
-      case 'IN_PRODUCTION':
-        return 'bg-blue-100 text-blue-800';
-      case 'SHIPPED':
-        return 'bg-purple-100 text-purple-800';
-      case 'DELIVERED':
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'CANCELLED':
-      case 'FAILED':
-        return 'bg-red-100 text-red-800';
-      case 'PAID':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
   };
 
   return (
@@ -181,9 +165,11 @@ export default function OrderDetailClient({ order }: Props) {
               {order.orderItems.map((item) => (
                 <div key={item.id} className="flex gap-4 pb-4 border-b last:border-0 last:pb-0">
                   {item.product.image_url && (
-                    <img
+                    <Image
                       src={item.product.image_url}
                       alt={item.product.name}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                   )}

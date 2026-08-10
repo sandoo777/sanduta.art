@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -73,7 +73,7 @@ export async function PATCH(
       active
     } = body;
 
-    const updateData: any = {};
+    const updateData: Prisma.FinishingOperationUpdateInput = {};
     if (name !== undefined) updateData.name = name;
     if (type !== undefined) updateData.type = type;
     if (costFix !== undefined) updateData.costFix = costFix ? Number(costFix) : null;

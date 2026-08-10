@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Activity, Filter, Download, Search, User, CheckCircle, XCircle } from "lucide-react";
-import { Table, LoadingState, Badge } from "@/components/ui";
+import { Activity, Download, Search, User, CheckCircle, XCircle } from "lucide-react";
+import { Table, Badge } from "@/components/ui";
 import { ActivityType } from "@prisma/client";
 
 interface AuditLog {

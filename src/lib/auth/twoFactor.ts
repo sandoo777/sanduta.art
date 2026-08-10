@@ -266,7 +266,7 @@ export class TwoFactorAuth {
    * @param userId - User ID
    * @param password - User's password (required for security)
    */
-  async disable(userId: string, password: string): Promise<void> {
+  async disable(userId: string, _password: string): Promise<void> {
     // TODO: Verify password before disabling
     // const isValidPassword = await verifyPassword(user.password, password);
     

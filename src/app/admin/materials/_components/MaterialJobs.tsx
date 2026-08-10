@@ -5,6 +5,9 @@ import { AuthLink } from '@/components/common/links/AuthLink';
 import { Briefcase, ExternalLink } from "lucide-react";
 import type { MaterialWithDetails } from "@/modules/materials/types";
 
+type MaterialConsumption = MaterialWithDetails['consumption'][number];
+type MaterialJob = NonNullable<MaterialConsumption['job']>;
+
 interface MaterialJobsProps {
   material: MaterialWithDetails;
 }
@@ -13,9 +16,9 @@ export function MaterialJobs({ material }: MaterialJobsProps) {
   // Group consumption by job
   const jobsWithConsumption = useMemo(() => {
     const jobMap = new Map<string, {
-      job: any;
+      job: MaterialJob;
       totalQuantity: number;
-      consumptions: any[];
+      consumptions: MaterialConsumption[];
     }>();
 
     material.consumption.forEach((consumption) => {

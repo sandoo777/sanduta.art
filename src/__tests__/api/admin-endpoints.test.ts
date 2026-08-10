@@ -98,14 +98,19 @@ describe('Production Schedule API', () => {
         id: '1',
         status: 'IN_PRODUCTION',
         createdAt: new Date('2026-01-15'),
-        priority: 'HIGH',
         customer: { name: 'John Doe', email: 'john@test.com' },
         customerName: 'John Doe',
-        items: [
+        orderItems: [
           {
             quantity: 2,
-            product: { id: 'p1', name: 'Canvas', productionTime: 3 }
+            product: { id: 'p1', name: 'Canvas' }
           }
+        ],
+        productionJobs: [
+          {
+            estimatedMinutes: 360,
+            priority: 'HIGH',
+          },
         ]
       }
     ];

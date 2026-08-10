@@ -5,18 +5,6 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { fetchCategories } from '@/lib/api';
 
-interface CategoryMenu {
-  id: number;
-  name: string;
-  slug: string;
-  icon?: string;
-  color?: string;
-  parentId?: number | null;
-  _count?: {
-    products: number;
-  };
-}
-
 interface CategoriesHierarchy {
   parent: Category;
   children: Category[];

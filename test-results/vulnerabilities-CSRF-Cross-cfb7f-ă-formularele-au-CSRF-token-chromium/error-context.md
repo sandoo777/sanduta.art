@@ -1,0 +1,128 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Categorii produse" [ref=e8]:
+          - img [ref=e9]
+        - link "S Sanduta.Art" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e12]: S
+          - generic [ref=e13]: Sanduta.Art
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - button "Switch to Română" [ref=e16]: 🇷🇴
+          - button "Switch to English" [ref=e17]: 🇬🇧
+          - button "Switch to Русский" [ref=e18]: 🇷🇺
+        - link "Coș de cumpărături (0 produse)" [ref=e19] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e20]
+        - link "Login" [ref=e25] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e26]
+          - generic [ref=e29]: Login
+        - link "Explorează produsele" [ref=e30] [cursor=pointer]:
+          - /url: /produse
+          - button "Explorează produsele" [ref=e31]:
+            - generic [ref=e32]: Explorează produsele
+    - navigation [ref=e35]:
+      - link "Produse" [ref=e36] [cursor=pointer]:
+        - /url: /produse
+      - link "Despre noi" [ref=e37] [cursor=pointer]:
+        - /url: /about
+      - link "Contact" [ref=e38] [cursor=pointer]:
+        - /url: /contact
+  - generic [ref=e39]:
+    - main [ref=e40]
+    - contentinfo [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - link "S Sanduta.Art" [ref=e45] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e47]: S
+              - generic [ref=e48]: Sanduta.Art
+            - paragraph [ref=e49]: Transformăm fotografiile tale în opere de artă. Calitate superioară, livrare rapidă, prețuri accesibile.
+            - generic [ref=e50]:
+              - link "Facebook" [ref=e51] [cursor=pointer]:
+                - /url: https://facebook.com
+                - img [ref=e52]
+              - link "Instagram" [ref=e54] [cursor=pointer]:
+                - /url: https://instagram.com
+                - img [ref=e55]
+              - link "YouTube" [ref=e58] [cursor=pointer]:
+                - /url: https://youtube.com
+                - img [ref=e59]
+          - generic [ref=e62]:
+            - heading "Categorii" [level=3] [ref=e63]
+            - list [ref=e64]:
+              - listitem [ref=e65]:
+                - link "🎴 Cărți de vizită" [ref=e66] [cursor=pointer]:
+                  - /url: /produse/carti-de-vizita
+              - listitem [ref=e67]:
+                - link "📢 Marketing" [ref=e68] [cursor=pointer]:
+                  - /url: /produse/marketing
+              - listitem [ref=e69]:
+                - link "🖼️ Foto & Artă" [ref=e70] [cursor=pointer]:
+                  - /url: /produse/foto-arta
+              - listitem [ref=e71]:
+                - link "👕 Textile & Merch" [ref=e72] [cursor=pointer]:
+                  - /url: /produse/textile-merch
+              - listitem [ref=e73]:
+                - link "Vezi toate →" [ref=e74] [cursor=pointer]:
+                  - /url: /products
+          - generic [ref=e75]:
+            - heading "Produse" [level=3] [ref=e76]
+            - list [ref=e77]:
+              - listitem [ref=e78]:
+                - link "Toate produsele" [ref=e79] [cursor=pointer]:
+                  - /url: /products
+              - listitem [ref=e80]:
+                - link "Produse populare" [ref=e81] [cursor=pointer]:
+                  - /url: /products?featured=true
+              - listitem [ref=e82]:
+                - link "Produse noi" [ref=e83] [cursor=pointer]:
+                  - /url: /products?new=true
+          - generic [ref=e84]:
+            - heading "Informații" [level=3] [ref=e85]
+            - list [ref=e86]:
+              - listitem [ref=e87]:
+                - link "Despre noi" [ref=e88] [cursor=pointer]:
+                  - /url: /about
+              - listitem [ref=e89]:
+                - link "Contact" [ref=e90] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e91]:
+                - link "Termeni și condiții" [ref=e92] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e93]:
+                - link "Politica de confidențialitate" [ref=e94] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e95]:
+            - heading "Contact" [level=3] [ref=e96]
+            - list [ref=e97]:
+              - listitem [ref=e98]:
+                - img [ref=e99]
+                - generic [ref=e102]: contact@sanduta.art
+              - listitem [ref=e103]:
+                - img [ref=e104]
+                - generic [ref=e106]: +40 123 456 789
+              - listitem [ref=e107]:
+                - img [ref=e108]
+                - generic [ref=e111]: București, România
+        - generic [ref=e113]:
+          - paragraph [ref=e114]: © 2026 Sanduta.Art. Toate drepturile rezervate.
+          - generic [ref=e115]:
+            - link "Termeni" [ref=e116] [cursor=pointer]:
+              - /url: /terms
+            - link "Confidențialitate" [ref=e117] [cursor=pointer]:
+              - /url: /privacy
+            - link "Cookies" [ref=e118] [cursor=pointer]:
+              - /url: /cookies
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e124] [cursor=pointer]:
+    - img [ref=e125]
+  - alert [ref=e128]
+```

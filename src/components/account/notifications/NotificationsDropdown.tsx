@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { formatDistanceToNow } from 'date-fns';
 import { ro } from 'date-fns/locale';
-import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@heroicons/react/24/outline';
 import { useNotificationsStore } from '@/modules/notifications/notificationsStore';
 import { NotificationType } from '@prisma/client';
 import { useSession } from 'next-auth/react';
 
 export default function NotificationsDropdown() {
   const { data: session } = useSession();
+  const router = useRouter();
   const { 
     notifications, 
     unreadCount, 
@@ -41,7 +43,7 @@ export default function NotificationsDropdown() {
     if (isOpen && notifications.length === 0 && session?.user) {
       fetchNotifications(true);
     }
-  }, [isOpen, session?.user]);
+  }, [fetchNotifications, isOpen, notifications.length, session?.user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,7 +60,7 @@ export default function NotificationsDropdown() {
     await markAsRead(notificationId);
     setIsOpen(false);
     if (link) {
-      window.location.href = link;
+      router.push(link);
     }
   };
 

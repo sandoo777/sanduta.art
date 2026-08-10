@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import { sendOrderEmails, OrderEmailData } from '@/lib/email';
-import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
 
 /**
  * POST /api/orders/create
@@ -10,7 +9,7 @@ import { logAuditAction, AUDIT_ACTIONS } from '@/lib/audit-log';
  * Creează o comandă nouă cu datele din checkout
  * Acest endpoint este folosit de useCheckout hook
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 

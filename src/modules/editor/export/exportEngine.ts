@@ -6,7 +6,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { EditorElement } from '../editorStore';
-import { hexToCmyk, rgbToCmyk, cmykToHex, makePrintSafe } from './colorConversion';
+import { hexToCmyk, cmykToHex, makePrintSafe } from './colorConversion';
 import {
   ExportOptions,
   ExportValidation,
@@ -14,7 +14,6 @@ import {
   ExportError,
   DEFAULT_EXPORT_OPTIONS,
   DEFAULT_PRINT_READY_SETTINGS,
-  PrintReadySettings,
 } from './exportTypes';
 
 interface CanvasSize {
@@ -216,7 +215,7 @@ export async function exportPrintReady(
   const finalHeight = canvasSize.height + bleedPx * 2;
 
   // Convertim culorile în CMYK (simulat)
-  const cmykElements = opts.cmyk ? convertElementsToCMYK(elements) : elements;
+  const _cmykElements = opts.cmyk ? convertElementsToCMYK(elements) : elements;
 
   // Creăm canvas extins cu bleed
   const extendedCanvas = document.createElement('canvas');
@@ -434,3 +433,38 @@ function drawCropMarks(
   ctx.lineTo(width - bleedPx, height - bleedPx + offsetPx + lengthPx);
   ctx.stroke();
 }
+
+type LegacyCanvasData = {
+  width?: number;
+  height?: number;
+  elements?: EditorElement[];
+};
+
+function assertBrowserRuntime(): void {
+  if (typeof document === 'undefined') {
+    throw new Error('Editor export PNG/PDF este disponibil doar în browser.');
+  }
+}
+
+// Backward compatibility for older server/client callers still using exportEngine.* API.
+export const exportEngine = {
+  async exportToPNG(_canvasData: LegacyCanvasData, _options: Record<string, unknown> = {}) {
+    assertBrowserRuntime();
+    throw new Error('Folosește exportPNG cu un element canvas din editor.');
+  },
+
+  async exportToPDF(_canvasData: LegacyCanvasData, _options: Record<string, unknown> = {}) {
+    assertBrowserRuntime();
+    throw new Error('Folosește exportPDF cu un element canvas din editor.');
+  },
+
+  async exportToSVG(canvasData: LegacyCanvasData) {
+    return exportSVG(
+      Array.isArray(canvasData.elements) ? canvasData.elements : [],
+      {
+        width: canvasData.width ?? 800,
+        height: canvasData.height ?? 600,
+      }
+    );
+  },
+};

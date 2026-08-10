@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { templates, categories, styles, filterTemplates, TemplateCategory, TemplateStyle, Template } from '@/modules/editor/templates/templateList';
+import { filterTemplates, TemplateCategory, TemplateStyle, Template } from '@/modules/editor/templates/templateList';
 import TemplateCard from './TemplateCard';
 import TemplatePreviewModal from './TemplatePreviewModal';
 

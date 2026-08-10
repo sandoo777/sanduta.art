@@ -6,7 +6,7 @@ import { UserRole } from "@prisma/client";
 
 // GET /api/admin/settings/users - List all users
 export async function GET(_request: NextRequest) {
-  const { user, error } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
+  const { user: _user, error } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
   
   if (error) {
     return error;

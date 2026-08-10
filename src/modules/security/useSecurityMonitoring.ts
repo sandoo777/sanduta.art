@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Security Monitoring & Alerting System
  * Real-time security event detection and alerting
  */
@@ -183,7 +183,7 @@ export class SecurityMonitoring {
    * Trigger security alert
    */
   private static async triggerAlert(event: SecurityEvent, recentEvents: SecurityEvent[]): Promise<void> {
-    logger.error('SecurityMonitoring', '🚨 SECURITY ALERT TRIGGERED', {
+    logger.error('SecurityMonitoring', 'ðŸš¨ SECURITY ALERT TRIGGERED', {
       type: event.type,
       severity: event.severity,
       eventCount: recentEvents.length,
@@ -206,13 +206,13 @@ export class SecurityMonitoring {
       if (!webhookUrl) return;
 
       const message = {
-        text: `🚨 Security Alert: ${event.type}`,
+        text: `ðŸš¨ Security Alert: ${event.type}`,
         blocks: [
           {
             type: 'header',
             text: {
               type: 'plain_text',
-              text: `🚨 Security Alert: ${event.type}`,
+              text: `ðŸš¨ Security Alert: ${event.type}`,
             },
           },
           {
@@ -242,7 +242,7 @@ export class SecurityMonitoring {
   /**
    * Send email alert (placeholder)
    */
-  private static async sendEmailAlert(event: SecurityEvent, recentEvents: SecurityEvent[]): Promise<void> {
+  private static async sendEmailAlert(event: SecurityEvent, _recentEvents: SecurityEvent[]): Promise<void> {
     try {
       const adminEmail = process.env.SECURITY_ADMIN_EMAIL;
       if (!adminEmail) return;
@@ -265,7 +265,7 @@ export class SecurityMonitoring {
           userId: event.userId || null,
           resourceType: 'SECURITY_EVENT',
           resourceId: null,
-          changes: event.details as any,
+          changes: event.details as unknown,
           ipAddress: event.ip,
           userAgent: event.userAgent,
         },

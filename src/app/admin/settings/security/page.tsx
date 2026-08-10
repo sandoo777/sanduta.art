@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ErrorState } from "@/components/ui";
+import { useState } from "react";
 import { Lock, AlertTriangle, CheckCircle, Shield, Key } from "lucide-react";
 
 interface SecuritySettings {
@@ -82,6 +81,12 @@ export default function SecuritySettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

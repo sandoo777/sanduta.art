@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { safeGet, safePost, safePut, safeDelete } from '@/lib/safeFetch';
 import type {
@@ -13,7 +13,18 @@ import type {
 export function useProducts() {
   const [loading, setLoading] = useState(false);
 
-  const getProducts = async (): Promise<Product[]> => {
+  const getProductSourcing = useCallback((product: Product): boolean => {
+    const productWithRelations = product as Product & {
+      defaultPrintMethod?: { isOutsourced?: boolean } | null;
+      isOutsourced?: boolean;
+    };
+
+    return Boolean(
+      productWithRelations.defaultPrintMethod?.isOutsourced ?? productWithRelations.isOutsourced
+    );
+  }, []);
+
+  const getProducts = useCallback(async (): Promise<Product[]> => {
     try {
       const data = await safeGet<Product[]>(
         '/api/admin/products',
@@ -26,9 +37,9 @@ export function useProducts() {
       toast.error('Eroare la încărcarea produselor');
       return [];
     }
-  };
+  }, []);
 
-  const createProduct = async (input: CreateProductInput): Promise<Product> => {
+  const createProduct = useCallback(async (input: CreateProductInput): Promise<Product> => {
     setLoading(true);
     try {
       const product = await safePost<Product | null>(
@@ -51,9 +62,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateProduct = async (
+  const updateProduct = useCallback(async (
     id: string,
     input: UpdateProductInput
   ): Promise<Product> => {
@@ -79,9 +90,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const deleteProduct = async (id: string): Promise<void> => {
+  const deleteProduct = useCallback(async (id: string): Promise<void> => {
     setLoading(true);
     try {
       await safeDelete<{ success: boolean }>(
@@ -98,9 +109,9 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const duplicateProduct = async (id: string): Promise<Product> => {
+  const duplicateProduct = useCallback(async (id: string): Promise<Product> => {
     setLoading(true);
     try {
       const product = await safePost<Product | null>(
@@ -123,16 +134,16 @@ export function useProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const toggleProductStatus = async (
+  const toggleProductStatus = useCallback(async (
     id: string,
     active: boolean
   ): Promise<Product> => {
     return updateProduct(id, { active });
-  };
+  }, [updateProduct]);
 
-  const searchProducts = (products: Product[], searchTerm: string): Product[] => {
+  const searchProducts = useCallback((products: Product[], searchTerm: string): Product[] => {
     if (!searchTerm.trim()) return products;
 
     const term = searchTerm.toLowerCase();
@@ -142,9 +153,9 @@ export function useProducts() {
         product.sku?.toLowerCase().includes(term) ||
         product.description?.toLowerCase().includes(term)
     );
-  };
+  }, []);
 
-  const filterProducts = (
+  const filterProducts = useCallback((
     products: Product[],
     filters: ProductFilters
   ): Product[] => {
@@ -162,12 +173,23 @@ export function useProducts() {
       filtered = filtered.filter((p) => p.type === filters.type);
     }
 
+    if (filters.printMethodId && filters.printMethodId !== 'all') {
+      filtered = filtered.filter((p) => p.printMethodId === filters.printMethodId);
+    }
+
+    if (filters.sourcing && filters.sourcing !== 'all') {
+      filtered = filtered.filter((p) => {
+        const isOutsourced = getProductSourcing(p);
+        return filters.sourcing === 'OUTSOURCE' ? isOutsourced : !isOutsourced;
+      });
+    }
+
     if (filters.activeOnly) {
       filtered = filtered.filter((p) => p.active);
     }
 
     return filtered;
-  };
+  }, [getProductSourcing, searchProducts]);
 
   return {
     loading,

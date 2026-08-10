@@ -20,7 +20,7 @@ export function useProductBuilder() {
       }
 
       return await response.json();
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching product:', error);
       toast.error('Eroare la încărcarea produsului');
       throw error;
@@ -49,7 +49,7 @@ export function useProductBuilder() {
       const product = await response.json();
       toast.success('Produs creat cu succes');
       return product;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error creating product:', error);
       const message = error instanceof Error ? error.message : 'Eroare la crearea produsului';
       toast.error(message);
@@ -80,7 +80,7 @@ export function useProductBuilder() {
       const product = await response.json();
       toast.success('Produs actualizat cu succes');
       return product;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error updating product:', error);
       const message = error instanceof Error ? error.message : 'Eroare la actualizarea produsului';
       toast.error(message);
@@ -92,6 +92,7 @@ export function useProductBuilder() {
 
   const validateProduct = (data: Partial<CreateFullProductInput>): string[] => {
     const errors: string[] = [];
+    const isOutsourced = Boolean(data.isOutsourced);
 
     if (!data.name?.trim()) {
       errors.push('Numele produsului este obligatoriu');
@@ -103,6 +104,43 @@ export function useProductBuilder() {
 
     if (!data.categoryId) {
       errors.push('Categoria este obligatorie');
+    }
+
+    if (!data.printMethodId) {
+      errors.push('Metoda de print implicită este obligatorie');
+    }
+
+    if (!data.saleUnit) {
+      errors.push('Unitatea de vânzare este obligatorie');
+    }
+
+    if (!data.minOrderQty || data.minOrderQty < 1) {
+      errors.push('Cantitatea minimă trebuie să fie cel puțin 1');
+    }
+
+    if ((data.pricePerM2 ?? 0) < 0 || (data.pricePerUnit ?? 0) < 0) {
+      errors.push('Prețurile per m2/per unitate nu pot fi negative');
+    }
+
+    if (!isOutsourced && data.saleUnit === 'M2' && (data.pricePerM2 === undefined || data.pricePerM2 === null)) {
+      errors.push('Pentru produse la m², prețul per m² este obligatoriu');
+    }
+
+    if (!isOutsourced && data.saleUnit === 'UNIT' && (data.pricePerUnit === undefined || data.pricePerUnit === null)) {
+      errors.push('Pentru produse la bucată, prețul per unitate este obligatoriu');
+    }
+
+    if (isOutsourced) {
+      if (data.supplierCost === undefined || data.supplierCost === null || Number(data.supplierCost) < 0) {
+        errors.push('Pentru produse outsource, supplierCost trebuie să fie >= 0');
+      }
+      if (data.markup === undefined || data.markup === null || Number(data.markup) < 0) {
+        errors.push('Pentru produse outsource, markup trebuie să fie >= 0');
+      }
+    }
+
+    if (!data.isOutsourced && !data.materialId) {
+      errors.push('Pentru metode interne, materialul implicit este obligatoriu');
     }
 
     if (data.type === 'CONFIGURABLE') {

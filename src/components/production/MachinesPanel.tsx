@@ -41,12 +41,12 @@ export default function MachinesPanel() {
 
   const fetchMachines = async () => {
     try {
-      const response = await fetch('/api/machines');
+      const response = await fetch('/api/admin/machines');
       if (response.ok) {
         const data = await response.json();
         setMachines(data);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to fetch machines:', error);
     } finally {
       setLoading(false);

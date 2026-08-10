@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { Shield, Users, Key, Info } from "lucide-react";
-import { UserRole } from "@prisma/client";
+import { Shield, Key, Info } from "lucide-react";
 
 interface Role {
   id: string;
@@ -38,8 +37,8 @@ export default function RolesManagementPage() {
       const data = await response.json();
       setRoles(data.roles || []);
       setPermissionGroups(data.permissionGroups || {});
-    } catch (_error) {
-      console.error("Failed to fetch roles:", error);
+    } catch (fetchError) {
+      console.error("Failed to fetch roles:", fetchError);
     } finally {
       setLoading(false);
     }

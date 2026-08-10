@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Database Optimization Module
  * Query optimization, batching, caching, indexing recommendations
  */
@@ -60,12 +60,12 @@ export async function paginateQuery<T>(
 
   // Use cursor-based pagination for better performance on large datasets
   const [data, total] = await Promise.all([
-    (prisma[model.toLowerCase() as keyof typeof prisma] as any).findMany({
+    (prisma[model.toLowerCase() as keyof typeof prisma] as unknown).findMany({
       ...queryOptions,
       skip,
       take,
     }),
-    (prisma[model.toLowerCase() as keyof typeof prisma] as any).count({
+    (prisma[model.toLowerCase() as keyof typeof prisma] as unknown).count({
       where: queryOptions.where,
     }),
   ]);
@@ -183,7 +183,7 @@ export const OrderQueries = {
     const { skip, take, status, userId } = options;
 
     const where: Prisma.OrderWhereInput = {
-      ...(status && { status: status as any }), // Type assertion for OrderStatus enum
+      ...(status && { status: status as unknown }), // Type assertion for OrderStatus enum
       ...(userId && { userId }),
     };
 
@@ -276,7 +276,7 @@ export const IndexRecommendations = {
 export function generateIndexes() {
   const schemas: string[] = [];
 
-  Object.entries(IndexRecommendations).forEach(([model, indexes]) => {
+  Object.entries(IndexRecommendations).forEach(([_model, indexes]) => {
     indexes.forEach((index) => {
       if (Array.isArray(index)) {
         schemas.push(`@@index([${index.join(', ')}]) // Composite index`);

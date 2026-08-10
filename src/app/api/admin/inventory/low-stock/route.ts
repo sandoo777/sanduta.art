@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
     const enrichedProducts = products.map(product => {
       const outOfStock = product.stock === 0;
       const critical = product.stock > 0 && product.stock <= 5;
-      const lowStock = product.stock > 5 && product.stock <= threshold;
 
       return {
         id: product.id,

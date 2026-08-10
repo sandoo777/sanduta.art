@@ -6,9 +6,9 @@ import { Locale } from '@/i18n/config';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 
 interface HomePageProps {
-  params: {
+  params: Promise<{
     lang: Locale;
-  };
+  }>;
 }
 
 export default async function HomePage({ params }: HomePageProps) {

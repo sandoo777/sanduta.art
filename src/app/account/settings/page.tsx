@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { Lock, Bell, Globe, Save, Loader2 } from 'lucide-react';
+import { Lock, Bell, Globe, Save } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, loading: userLoading } = useCurrentUser();
+  const { user: _user, loading: userLoading } = useCurrentUser();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 

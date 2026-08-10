@@ -22,7 +22,7 @@ interface ProductView {
 }
 
 interface ProductGridProps {
-  products: Product[];
+  products: ProductView[];
   loading?: boolean;
 }
 

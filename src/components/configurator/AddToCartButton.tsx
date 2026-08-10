@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { ConfiguratorSelections, ConfiguratorProduct } from '@/modules/configurator/types';
 import type { ExtendedPriceSummary } from '@/lib/pricing/calculateProductPrice';
+import { useCartStore } from '@/modules/cart/cartStore';
+import { useRouter } from 'next/navigation';
 
 interface AddToCartButtonProps {
   product: ConfiguratorProduct;
@@ -26,6 +28,8 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const addItem = useCartStore((state) => state.addItem);
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     // Validate selections
@@ -43,43 +47,58 @@ export function AddToCartButton({
 
     setIsLoading(true);
 
-    // Generate cart item payload with project data
+    const selectedMaterial = product.materials.find((material) => material.id === selections.materialId);
+    const selectedFinishes = product.finishing.filter((entry) =>
+      selections.finishingIds.includes(entry.id)
+    );
+
+    const dimensions = {
+      width: selections.dimension?.width ?? product.dimensions?.widthMin ?? 0,
+      height: selections.dimension?.height ?? product.dimensions?.heightMin ?? 0,
+    };
+
     const cartItem = {
       productId: product.id,
+      productSlug: product.slug,
       name: product.name,
-      slug: product.slug,
-      quantity: selections.quantity,
-      price: priceSummary?.total || 0,
-      configuration: {
-        dimensions: selections.dimension,
-        materialId: selections.materialId,
-        printMethodId: selections.printMethodId,
-        finishingIds: selections.finishingIds,
-        options: selections.options,
-      },
-      // Project data (if available)
+      previewUrl: previewImage,
+      fileUrl: finalFileUrl,
       projectId,
-      previewImage,
       finalFileUrl,
-      // Metadata for display
-      metadata: {
-        material: selections.materialId,
-        printMethod: selections.printMethodId,
-        finishing: selections.finishingIds.join(', '),
-        dimensions: selections.dimension
-          ? `${selections.dimension.width} × ${selections.dimension.height} ${selections.dimension.unit}`
-          : undefined,
+      specifications: {
+        dimensions,
+        material: {
+          id: selectedMaterial?.id ?? selections.materialId ?? 'material-unknown',
+          name: selectedMaterial?.name ?? 'Material nespecificat',
+        },
+        finishes: selectedFinishes.map((entry) => ({
+          id: entry.id,
+          name: entry.name,
+          type: 'finishing',
+        })),
+        quantity: selections.quantity,
+        productionTime: product.production?.estimatedTime
+          ? `~${product.production.estimatedTime} min`
+          : 'Conform specificațiilor produsului',
       },
+      upsells: [],
+      priceBreakdown: {
+        basePrice: priceSummary?.basePrice ?? 0,
+        materialCost: priceSummary?.materialCost ?? 0,
+        finishingCost: priceSummary?.finishingCost ?? 0,
+        upsellsCost: (priceSummary?.printCost ?? 0) + (priceSummary?.optionCost ?? 0),
+        quantityDiscount: priceSummary?.discounts ?? 0,
+        subtotal: priceSummary?.subtotal ?? 0,
+      },
+      totalPrice: priceSummary?.total ?? 0,
     };
 
     try {
-      // TODO: Call cart API to add item
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log('Added to cart:', cartItem);
-      // TODO: Add toast notification
-    } catch (_error) {
+      addItem(cartItem);
+      setShowErrors(false);
+      router.push('/cart');
+    } catch (error) {
       console.error('Failed to add to cart:', error);
-      // TODO: Show error notification
     } finally {
       setIsLoading(false);
     }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 /**
  * PATCH /api/admin/products/[id]/variants/[variantId]
@@ -68,7 +69,7 @@ export async function PATCH(
     }
 
     // Update variant
-    const updateData: any = {};
+    const updateData: Prisma.ProductVariantUpdateInput = {};
     if (name !== undefined) updateData.name = name;
     if (price !== undefined) updateData.price = price;
     if (stock !== undefined) updateData.stock = stock;

@@ -11,7 +11,7 @@ async function recalculateOrderTotal(orderId: string) {
     where: { orderId },
   });
 
-  const totalPrice = items.reduce((sum: number, item: any) => {
+  const totalPrice = items.reduce((sum, item) => {
     return sum + Number(item.lineTotal);
   }, 0);
 
@@ -91,7 +91,7 @@ export async function POST(
     // Get unit price
     let unitPrice = Number(product.price) || 0;
     if (variantId) {
-      const variant = product.variants.find((v: any) => v.id === variantId);
+      const variant = product.variants.find((v) => v.id === variantId);
       if (!variant) {
         return NextResponse.json(
           { error: "Variant not found" },

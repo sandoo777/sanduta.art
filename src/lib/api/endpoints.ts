@@ -7,7 +7,7 @@
  * @module lib/api/endpoints
  */
 
-import { apiClient, ApiResponse } from './client';
+import { apiClient, ApiResponse, type ApiRequestOptions } from './client';
 import type { 
   User, 
   Product, 
@@ -40,7 +40,7 @@ export interface UserUpdateData {
  * Fetch all users cu filtre opționale
  */
 export async function fetchUsers(filters?: UserFilters): Promise<ApiResponse<User[]>> {
-  return apiClient.get<User[]>('/api/admin/users', { params: filters as any });
+  return apiClient.get<User[]>('/api/admin/users', { params: filters } as ApiRequestOptions);
 }
 
 /**
@@ -101,7 +101,7 @@ export interface OrderUpdateData {
  * Fetch all orders cu filtre
  */
 export async function fetchOrders(filters?: OrderFilters): Promise<ApiResponse<Order[]>> {
-  return apiClient.get<Order[]>('/api/admin/orders', { params: filters as any });
+  return apiClient.get<Order[]>('/api/admin/orders', { params: filters } as ApiRequestOptions);
 }
 
 /**
@@ -161,13 +161,13 @@ export interface ProductCreateData {
   stock?: number;
 }
 
-export interface ProductUpdateData extends Partial<ProductCreateData> {}
+export type ProductUpdateData = Partial<ProductCreateData>;
 
 /**
  * Fetch all products cu filtre
  */
 export async function fetchProducts(filters?: ProductFilters): Promise<ApiResponse<Product[]>> {
-  return apiClient.get<Product[]>('/api/admin/products', { params: filters as any });
+  return apiClient.get<Product[]>('/api/admin/products', { params: filters } as ApiRequestOptions);
 }
 
 /**
@@ -210,7 +210,7 @@ export async function deleteProduct(productId: string): Promise<ApiResponse<void
 export interface ThemeConfig {
   colors?: Record<string, string>;
   fonts?: Record<string, string>;
-  layout?: Record<string, any>;
+  layout?: Record<string, unknown>;
 }
 
 /**
@@ -282,7 +282,7 @@ export interface PublicProductFilters {
 export async function fetchPublicProducts(
   filters?: PublicProductFilters
 ): Promise<ApiResponse<Product[]>> {
-  return apiClient.get<Product[]>('/api/products', { params: filters as any });
+  return apiClient.get<Product[]>('/api/products', { params: filters } as ApiRequestOptions);
 }
 
 /**

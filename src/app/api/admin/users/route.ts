@@ -6,7 +6,7 @@ import { rateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const GET = withRole(
   [UserRole.ADMIN],
-  async (request: NextRequest, { user }) => {
+  async (request: NextRequest) => {
     try {
       // Rate limiting
       const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);

@@ -257,7 +257,7 @@ describe('Configurator UI Tests', () => {
 
   describe('Test 10: Error Handling', () => {
     it('should show loading state', () => {
-      const mockLoadingState = vi.fn(() => ({
+      const _mockLoadingState = vi.fn(() => ({
         ...vi.importActual('@/modules/configurator/useConfigurator'),
         useConfigurator: () => ({
           loading: true,

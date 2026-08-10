@@ -3,13 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
-import { Notification } from '@prisma/client';
+import { Notification, Prisma } from '@prisma/client';
 
 /**
  * GET /api/notifications
  * Fetch notifications for the authenticated user
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest) {
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
 
     // Build where clause
-    const where: any = { userId };
+    const where: Prisma.NotificationWhereInput = { userId };
     
     if (!includeArchived) {
       where.archived = false;
@@ -62,7 +62,7 @@ export async function GET(_req: NextRequest) {
  * POST /api/notifications
  * Create a new notification (admin/system only)
  */
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     

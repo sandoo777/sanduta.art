@@ -293,7 +293,7 @@ export default function MaterialsReportPage() {
         </Card>
       )}
 
-      {/* Monthly Summary */
+      {/* Monthly Summary */}
       {materials && (
         <Card>
           <CardHeader>

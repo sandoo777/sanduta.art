@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Server, Activity } from "lucide-react";
-import { useAnalytics, MachineUtilization as AnalyticsMachine } from "@/modules/admin/useAnalytics";
+import { useAnalytics } from "@/modules/admin/useAnalytics";
 
 interface MachineUtilization {
   id: string;
@@ -18,23 +18,29 @@ export default function MachinesUtilization() {
   const { fetchMachinesUtilization, loading } = useAnalytics();
   const [machines, setMachines] = useState<MachineUtilization[]>([]);
 
-  useEffect(() => {
-    loadMachines();
-    const interval = setInterval(loadMachines, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadMachines = async () => {
+  const loadMachines = useCallback(async () => {
     const data = await fetchMachinesUtilization();
     if (data) {
-      // Add type field to each machine
       const transformed = data.map(item => ({
         ...item,
-        type: "Laser", // Default type - can be improved with actual data
+        type: "Laser",
       }));
       setMachines(transformed);
     }
-  };
+  }, [fetchMachinesUtilization]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadMachines();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadMachines();
+    }, 60000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadMachines]);
 
   if (loading && machines.length === 0) {
     return (

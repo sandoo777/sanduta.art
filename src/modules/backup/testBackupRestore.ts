@@ -10,8 +10,8 @@
  * - Performance benchmarks
  */
 
-import { BackupEngine, BackupCategory, BackupStatus } from './useBackupEngine';
-import { RestoreEngine, RestoreMode } from './useRestore';
+import { BackupEngine } from './useBackupEngine';
+import { RestoreEngine } from './useRestore';
 import { BackupMonitoring, AlertSeverity } from './useBackupMonitoring';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
@@ -136,7 +136,7 @@ export class BackupRestoreTester {
       logger.info('BackupTest', 'Testing database backup/restore');
 
       // Step 1: Snapshot current DB state
-      const beforeSnapshot = await this.snapshotDatabaseState();
+      const _beforeSnapshot = await this.snapshotDatabaseState();
 
       // Step 2: Create test data
       const testProduct = await prisma.product.create({
@@ -289,7 +289,7 @@ export class BackupRestoreTester {
 
     try {
       // Step 1: Snapshot current config
-      const beforeCount = await prisma.user.count();
+      const _beforeCount = await prisma.user.count();
 
       // Step 2: Create test user
       const testUser = await prisma.user.create({
@@ -497,7 +497,6 @@ export class BackupRestoreTester {
 
     try {
       const fs = await import('fs/promises');
-      const crypto = await import('crypto');
 
       // Step 1: Create test file
       const testFile = '/tmp/test-encryption.txt';

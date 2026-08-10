@@ -30,7 +30,7 @@ const EMAIL_CONFIG = {
 /**
  * Render template with data variables
  */
-export function renderTemplate(template: string, data: Record<string, any>): string {
+export function renderTemplate(template: string, data: Record<string, unknown>): string {
   let rendered = template;
   
   // Replace all {{variable}} with data[variable]
@@ -39,7 +39,7 @@ export function renderTemplate(template: string, data: Record<string, any>): str
     rendered = rendered.replace(regex, String(value || ''));
   });
   
-  // Remove any remaining unreplaced variables
+  // Remove unknown remaining unreplaced variables
   rendered = rendered.replace(/{{[^}]+}}/g, '');
   
   return rendered;
@@ -50,7 +50,7 @@ export function renderTemplate(template: string, data: Record<string, any>): str
  */
 export async function renderNotificationTemplate(
   type: NotificationType,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): Promise<{ subject: string; htmlBody: string; textBody: string } | null> {
   try {
     // Fetch template from database
@@ -117,7 +117,7 @@ export async function sendEmail(
 export async function sendEmailWithTemplate(
   type: NotificationType,
   to: string | string[],
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     // Render template
@@ -147,7 +147,7 @@ interface QueuedNotification {
   id: string;
   type: NotificationType;
   to: string | string[];
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   scheduledAt: Date;
   attempts: number;
   maxAttempts: number;
@@ -164,7 +164,7 @@ const notificationQueue: QueuedNotification[] = [];
 export function queueEmail(
   type: NotificationType,
   to: string | string[],
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   scheduledAt: Date = new Date()
 ): string {
   const id = `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -258,7 +258,7 @@ export async function sendOrderPlacedEmail(
 export async function sendOrderStatusEmail(
   type: NotificationType,
   customerEmail: string,
-  orderData: Record<string, any>
+  orderData: Record<string, unknown>
 ) {
   return await sendEmailWithTemplate(type, customerEmail, orderData);
 }
@@ -268,7 +268,7 @@ export async function sendOrderStatusEmail(
  */
 export async function sendAdminNotification(
   type: NotificationType,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ) {
   return await sendEmailWithTemplate(type, EMAIL_CONFIG.adminEmail, data);
 }
@@ -279,7 +279,7 @@ export async function sendAdminNotification(
 export async function sendProductionNotification(
   operatorEmail: string,
   type: NotificationType,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ) {
   return await sendEmailWithTemplate(type, operatorEmail, data);
 }
@@ -290,106 +290,106 @@ export async function sendProductionNotification(
 
 export const defaultEmailTemplates: Record<string, { subject: string; html: string; text: string }> = {
   order_placed: {
-    subject: 'Comanda ta #{{orderNumber}} a fost plasată',
+    subject: 'Comanda ta #{{orderNumber}} a fost plasatÄƒ',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">Comandă Confirmată</h1>
-        <p>Bună {{customerName}},</p>
-        <p>Îți mulțumim pentru comandă! Am primit comanda ta <strong>#{{orderNumber}}</strong>.</p>
+        <h1 style="color: #4F46E5;">ComandÄƒ ConfirmatÄƒ</h1>
+        <p>BunÄƒ {{customerName}},</p>
+        <p>ÃŽÈ›i mulÈ›umim pentru comandÄƒ! Am primit comanda ta <strong>#{{orderNumber}}</strong>.</p>
         <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Număr comandă:</strong> {{orderNumber}}</p>
+          <p><strong>NumÄƒr comandÄƒ:</strong> {{orderNumber}}</p>
           <p><strong>Total:</strong> {{total}}</p>
-          <p><strong>Dată:</strong> {{date}}</p>
+          <p><strong>DatÄƒ:</strong> {{date}}</p>
         </div>
-        <p>Vei primi un email când comanda va intra în producție.</p>
+        <p>Vei primi un email cÃ¢nd comanda va intra Ã®n producÈ›ie.</p>
         <p style="margin-top: 30px;">
           <a href="{{trackingUrl}}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
             Vezi Comanda
           </a>
         </p>
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Cu stimă,<br>
+          Cu stimÄƒ,<br>
           Echipa Sanduta.art
         </p>
       </div>
     `,
     text: `
-      Bună {{customerName}},
+      BunÄƒ {{customerName}},
       
-      Îți mulțumim pentru comandă! Am primit comanda ta #{{orderNumber}}.
+      ÃŽÈ›i mulÈ›umim pentru comandÄƒ! Am primit comanda ta #{{orderNumber}}.
       
-      Număr comandă: {{orderNumber}}
+      NumÄƒr comandÄƒ: {{orderNumber}}
       Total: {{total}}
-      Dată: {{date}}
+      DatÄƒ: {{date}}
       
-      Vei primi un email când comanda va intra în producție.
+      Vei primi un email cÃ¢nd comanda va intra Ã®n producÈ›ie.
       
       Vezi comanda: {{trackingUrl}}
       
-      Cu stimă,
+      Cu stimÄƒ,
       Echipa Sanduta.art
     `,
   },
   
   order_in_production: {
-    subject: 'Comanda ta #{{orderNumber}} este în producție',
+    subject: 'Comanda ta #{{orderNumber}} este Ã®n producÈ›ie',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">Comandă în Producție</h1>
-        <p>Bună {{customerName}},</p>
-        <p>Comanda ta <strong>#{{orderNumber}}</strong> a intrat în producție!</p>
-        <p>Livrare estimată: <strong>{{estimatedDelivery}}</strong></p>
-        <p>Vei primi o notificare când comanda este gata.</p>
+        <h1 style="color: #4F46E5;">ComandÄƒ Ã®n ProducÈ›ie</h1>
+        <p>BunÄƒ {{customerName}},</p>
+        <p>Comanda ta <strong>#{{orderNumber}}</strong> a intrat Ã®n producÈ›ie!</p>
+        <p>Livrare estimatÄƒ: <strong>{{estimatedDelivery}}</strong></p>
+        <p>Vei primi o notificare cÃ¢nd comanda este gata.</p>
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Cu stimă,<br>
+          Cu stimÄƒ,<br>
           Echipa Sanduta.art
         </p>
       </div>
     `,
     text: `
-      Bună {{customerName}},
+      BunÄƒ {{customerName}},
       
-      Comanda ta #{{orderNumber}} a intrat în producție!
+      Comanda ta #{{orderNumber}} a intrat Ã®n producÈ›ie!
       
-      Livrare estimată: {{estimatedDelivery}}
+      Livrare estimatÄƒ: {{estimatedDelivery}}
       
-      Vei primi o notificare când comanda este gata.
+      Vei primi o notificare cÃ¢nd comanda este gata.
       
-      Cu stimă,
+      Cu stimÄƒ,
       Echipa Sanduta.art
     `,
   },
   
   admin_new_order: {
-    subject: 'Comandă nouă #{{orderNumber}} primită',
+    subject: 'ComandÄƒ nouÄƒ #{{orderNumber}} primitÄƒ',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #EF4444;">🔔 Comandă Nouă</h1>
-        <p>O comandă nouă a fost plasată:</p>
+        <h1 style="color: #EF4444;">ðŸ”” ComandÄƒ NouÄƒ</h1>
+        <p>O comandÄƒ nouÄƒ a fost plasatÄƒ:</p>
         <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 20px; margin: 20px 0;">
-          <p><strong>Comandă:</strong> #{{orderNumber}}</p>
+          <p><strong>ComandÄƒ:</strong> #{{orderNumber}}</p>
           <p><strong>Client:</strong> {{customerName}}</p>
           <p><strong>Produs:</strong> {{productName}}</p>
           <p><strong>Total:</strong> {{total}}</p>
         </div>
         <p>
           <a href="{{adminUrl}}" style="background: #EF4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            Vezi în Admin
+            Vezi Ã®n Admin
           </a>
         </p>
       </div>
     `,
     text: `
-      🔔 Comandă Nouă
+      ðŸ”” ComandÄƒ NouÄƒ
       
-      O comandă nouă a fost plasată:
+      O comandÄƒ nouÄƒ a fost plasatÄƒ:
       
-      Comandă: #{{orderNumber}}
+      ComandÄƒ: #{{orderNumber}}
       Client: {{customerName}}
       Produs: {{productName}}
       Total: {{total}}
       
-      Vezi în admin: {{adminUrl}}
+      Vezi Ã®n admin: {{adminUrl}}
     `,
   },
 };

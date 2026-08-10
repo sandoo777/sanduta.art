@@ -8,7 +8,7 @@ import request from 'supertest';
 
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
-describe('XSS (Cross-Site Scripting) Tests', () => {
+test.describe('XSS (Cross-Site Scripting) Tests', () => {
   test('previne XSS în input-uri text', async ({ page }) => {
     await page.goto('/products');
     
@@ -74,8 +74,8 @@ describe('XSS (Cross-Site Scripting) Tests', () => {
   });
 });
 
-describe('CSRF (Cross-Site Request Forgery) Tests', () => {
-  it('necesită CSRF token pentru POST requests', async () => {
+test.describe('CSRF (Cross-Site Request Forgery) Tests', () => {
+  test('necesită CSRF token pentru POST requests', async () => {
     const response = await request(API_URL)
       .post('/api/admin/products')
       .send({
@@ -87,7 +87,7 @@ describe('CSRF (Cross-Site Request Forgery) Tests', () => {
     expect([401, 403]).toContain(response.status);
   });
 
-  it('validează CSRF token în header', async () => {
+  test('validează CSRF token în header', async () => {
     const response = await request(API_URL)
       .post('/api/admin/products')
       .set('X-CSRF-Token', 'invalid-token')
@@ -110,8 +110,8 @@ describe('CSRF (Cross-Site Request Forgery) Tests', () => {
   });
 });
 
-describe('SQL Injection Tests', () => {
-  it('previne SQL injection în search', async () => {
+test.describe('SQL Injection Tests', () => {
+  test('previne SQL injection în search', async () => {
     const sqlPayload = "' OR '1'='1";
     
     const response = await request(API_URL)
@@ -123,7 +123,7 @@ describe('SQL Injection Tests', () => {
     // Verifică că nu execută SQL raw
   });
 
-  it('previne SQL injection în parametri URL', async () => {
+  test('previne SQL injection în parametri URL', async () => {
     const sqlPayload = "1; DROP TABLE products;--";
     
     const response = await request(API_URL).get(`/api/products/${sqlPayload}`);
@@ -131,7 +131,7 @@ describe('SQL Injection Tests', () => {
     expect([400, 404]).toContain(response.status);
   });
 
-  it('previne SQL injection în filtre', async () => {
+  test('previne SQL injection în filtre', async () => {
     const response = await request(API_URL)
       .get('/api/orders')
       .query({
@@ -143,14 +143,14 @@ describe('SQL Injection Tests', () => {
   });
 });
 
-describe('Authentication & Authorization Tests', () => {
-  it('protejează rute admin', async () => {
+test.describe('Authentication & Authorization Tests', () => {
+  test('protejează rute admin', async () => {
     const response = await request(API_URL).get('/api/admin/orders');
 
     expect(response.status).toBe(401);
   });
 
-  it('previne escalare privilegii', async () => {
+  test('previne escalare privilegii', async () => {
     // User normal încearcă să acceseze admin
     const response = await request(API_URL)
       .get('/api/admin/users')
@@ -159,7 +159,7 @@ describe('Authentication & Authorization Tests', () => {
     expect([401, 403]).toContain(response.status);
   });
 
-  it('invalidează sesiuni expirate', async () => {
+  test('invalidează sesiuni expirate', async () => {
     const expiredToken = 'expired.jwt.token';
     
     const response = await request(API_URL)
@@ -181,7 +181,7 @@ describe('Authentication & Authorization Tests', () => {
   });
 });
 
-describe('File Upload Security Tests', () => {
+test.describe('File Upload Security Tests', () => {
   test('acceptă doar tipuri de fișiere permise', async ({ page }) => {
     await page.goto('/editor');
     
@@ -210,7 +210,7 @@ describe('File Upload Security Tests', () => {
     
     if (await fileInput.isVisible()) {
       // Fișier foarte mare (simulat)
-      const largefile = Buffer.alloc(50 * 1024 * 1024); // 50MB
+        const largeFile = Buffer.alloc(50 * 1024 * 1024); // 50MB
       
       await fileInput.setInputFiles({
         name: 'large-image.jpg',
@@ -219,12 +219,12 @@ describe('File Upload Security Tests', () => {
       });
       
       // Ar trebui să valideze dimensiunea
-      const error = page.locator('text=/file too large|fișier prea mare/i');
+        page.locator('text=/file too large|fișier prea mare/i');
       // Poate sau nu să apară în funcție de implementare
     }
   });
 
-  it('scanează fișiere pentru malware (mock)', async () => {
+  test('scanează fișiere pentru malware (mock)', async () => {
     // În producție ar folosi un scanner real (ClamAV, VirusTotal)
     const maliciousFile = Buffer.from('X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*');
     
@@ -238,8 +238,8 @@ describe('File Upload Security Tests', () => {
   });
 });
 
-describe('Rate Limiting Tests', () => {
-  it('limitează numărul de requests', async () => {
+test.describe('Rate Limiting Tests', () => {
+  test('limitează numărul de requests', async () => {
     const requests = Array(100)
       .fill(null)
       .map(() => request(API_URL).get('/api/products'));
@@ -251,7 +251,7 @@ describe('Rate Limiting Tests', () => {
     expect(rateLimited.length).toBeGreaterThan(0);
   });
 
-  it('limitează login attempts', async () => {
+  test('limitează login attempts', async () => {
     const attempts = Array(10)
       .fill(null)
       .map(() =>
@@ -271,7 +271,7 @@ describe('Rate Limiting Tests', () => {
   });
 });
 
-describe('Session Security Tests', () => {
+test.describe('Session Security Tests', () => {
   test('setează cookie-uri secure', async ({ page }) => {
     await page.goto('/');
     
@@ -307,7 +307,7 @@ describe('Session Security Tests', () => {
   });
 });
 
-describe('Content Security Policy (CSP) Tests', () => {
+test.describe('Content Security Policy (CSP) Tests', () => {
   test('verifică CSP headers', async ({ page }) => {
     const response = await page.goto('/');
     
@@ -326,8 +326,8 @@ describe('Content Security Policy (CSP) Tests', () => {
   });
 });
 
-describe('Data Exposure Tests', () => {
-  it('nu expune informații în error messages', async () => {
+test.describe('Data Exposure Tests', () => {
+  test('nu expune informații în error messages', async () => {
     const response = await request(API_URL).get('/api/products/999999');
 
     expect(response.status).toBe(404);
@@ -339,7 +339,7 @@ describe('Data Exposure Tests', () => {
     expect(body).not.toMatch(/prisma/i);
   });
 
-  it('nu expune structure DB în răspunsuri', async () => {
+  test('nu expune structure DB în răspunsuri', async () => {
     const response = await request(API_URL).get('/api/products');
 
     if (response.status === 200 && response.body.length > 0) {
@@ -353,7 +353,7 @@ describe('Data Exposure Tests', () => {
   });
 });
 
-describe('Clickjacking Protection Tests', () => {
+test.describe('Clickjacking Protection Tests', () => {
   test('verifică X-Frame-Options header', async ({ page }) => {
     const response = await page.goto('/');
     
@@ -365,3 +365,4 @@ describe('Clickjacking Protection Tests', () => {
     }
   });
 });
+

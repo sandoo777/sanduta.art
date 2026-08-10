@@ -181,7 +181,7 @@ export async function GET(_request: NextRequest) {
     // ─────────────────────────────────────────────────────────
     // 3. JOBS IN PROGRESS (total count)
     // ─────────────────────────────────────────────────────────
-    const jobsInProgress = await prisma.productionJob.count({
+    await prisma.productionJob.count({
       where: {
         status: ProductionStatus.IN_PROGRESS,
       },

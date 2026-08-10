@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useAnalytics } from "@/modules/admin/useAnalytics";
 
@@ -17,16 +17,9 @@ export default function OrdersOverview() {
   const [stats, setStats] = useState<OrderStats[]>([]);
   const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    loadStats();
-    const interval = setInterval(loadStats, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     const data = await fetchOrdersStats();
     if (data) {
-      // Transform data to add color and label
       const statusColors: Record<string, string> = {
         PENDING: "#fbbf24",
         IN_PREPRODUCTION: "#a78bfa",
@@ -60,7 +53,20 @@ export default function OrdersOverview() {
       setStats(transformed);
       setTotal(data.reduce((sum, item) => sum + item.count, 0));
     }
-  };
+  }, [fetchOrdersStats]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadStats();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadStats();
+    }, 60000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadStats]);
 
   if (loading && stats.length === 0) {
     return (

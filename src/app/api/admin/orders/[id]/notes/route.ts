@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+import type { Prisma } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +18,7 @@ export async function GET(
 
     logger.info('API:OrderNotes', 'Fetching notes', { userId: user.id, orderId });
 
-    const where: any = { orderId };
+    const where: Prisma.OrderNoteWhereInput = { orderId };
     
     // Operators can only see non-internal notes unless explicitly requested
     if (user.role === 'OPERATOR' && includeInternal) {

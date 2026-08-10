@@ -7,7 +7,7 @@ import { Download, FileSpreadsheet, FileText } from 'lucide-react';
 interface ExportButtonProps {
   reportType: 'sales' | 'orders' | 'products' | 'inventory' | 'operators';
   dateRange?: { start: string; end: string };
-  filters?: any;
+  filters?: Record<string, unknown>;
   label?: string;
 }
 

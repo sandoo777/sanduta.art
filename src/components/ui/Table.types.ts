@@ -5,7 +5,7 @@
 
 export type SortDirection = 'asc' | 'desc' | null;
 
-export interface Column<T = any> {
+export interface Column<T = unknown> {
   /** Identificator unic pentru coloană */
   key: string;
   /** Label afișat în header */
@@ -52,7 +52,7 @@ export interface SortState {
   direction: SortDirection;
 }
 
-export interface TableProps<T = any> {
+export interface TableProps<T = unknown> {
   /** Coloanele tabelului */
   columns: Column<T>[];
   /** Datele pentru rânduri */

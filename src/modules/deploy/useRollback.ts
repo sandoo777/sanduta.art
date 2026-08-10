@@ -1,7 +1,6 @@
-// Rollback System
+﻿// Rollback System
 // src/modules/deploy/useRollback.ts
 
-import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -63,7 +62,7 @@ export class RollbackSystem {
   private errors: string[] = [];
 
   /**
-   * Execută rollback complet
+   * ExecutÄƒ rollback complet
    */
   async rollback(options: RollbackOptions): Promise<RollbackResult> {
     this.startTime = Date.now();
@@ -235,7 +234,7 @@ export class RollbackSystem {
       }
 
       // Find previous deployment
-      const { stdout } = await execAsync(
+      await execAsync(
         `vercel list --token ${vercelToken} --scope ${process.env.VERCEL_ORG_ID} ${vercelProjectId}`
       );
 
@@ -338,7 +337,7 @@ export class RollbackSystem {
    */
   private async rollbackTheme(
     deployment: DeploymentRecord,
-    environment: string
+    _environment: string
   ): Promise<boolean> {
     try {
       logger.info('Rollback:Theme', 'Rolling back theme settings', {
@@ -363,7 +362,7 @@ export class RollbackSystem {
    */
   private async rollbackCMS(
     deployment: DeploymentRecord,
-    environment: string
+    _environment: string
   ): Promise<boolean> {
     try {
       logger.info('Rollback:CMS', 'Rolling back CMS content', {
@@ -388,7 +387,7 @@ export class RollbackSystem {
    */
   private async verifyRollback(
     deployment: DeploymentRecord,
-    environment: string
+    _environment: string
   ): Promise<void> {
     logger.info('Rollback:Verify', 'Verifying rollback', {
       version: deployment.version,
@@ -440,7 +439,7 @@ export class RollbackSystem {
   ): Promise<void> {
     try {
       const message = `
-🔄 **Rollback Completed**
+ðŸ”„ **Rollback Completed**
 
 Environment: ${options.environment}
 Version: ${options.version}
@@ -448,11 +447,11 @@ Reason: ${options.reason || 'Manual rollback'}
 Duration: ${result.duration}ms
 
 Steps:
-- Deployment: ${result.rollbackSteps.deployment ? '✅' : '❌'}
-- Database: ${result.rollbackSteps.database ? '✅' : '❌'}
-- Storage: ${result.rollbackSteps.storage ? '✅' : '❌'}
-- Theme: ${result.rollbackSteps.theme ? '✅' : '❌'}
-- CMS: ${result.rollbackSteps.cms ? '✅' : '❌'}
+- Deployment: ${result.rollbackSteps.deployment ? 'âœ…' : 'âŒ'}
+- Database: ${result.rollbackSteps.database ? 'âœ…' : 'âŒ'}
+- Storage: ${result.rollbackSteps.storage ? 'âœ…' : 'âŒ'}
+- Theme: ${result.rollbackSteps.theme ? 'âœ…' : 'âŒ'}
+- CMS: ${result.rollbackSteps.cms ? 'âœ…' : 'âŒ'}
       `.trim();
 
       // Send to Slack
@@ -477,17 +476,17 @@ Steps:
    */
   private async notifyRollbackFailure(
     options: RollbackOptions,
-    error: any
+    error: unknown
   ): Promise<void> {
     try {
       const message = `
-🚨 **CRITICAL: Rollback Failed**
+ðŸš¨ **CRITICAL: Rollback Failed**
 
 Environment: ${options.environment}
 Version: ${options.version}
 Error: ${error instanceof Error ? error.message : String(error)}
 
-⚠️ Manual intervention required immediately!
+âš ï¸ Manual intervention required immediately!
       `.trim();
 
       // Send to Slack with @channel mention

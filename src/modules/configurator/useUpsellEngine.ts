@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { usePriceCalculator, type PriceSelection } from './usePriceCalculator';
 
 type QuantitySuggestion = {
@@ -146,14 +145,11 @@ export function useUpsellEngine() {
     ];
   };
 
-  return useMemo(
-    () => ({
-      getQuantityUpsell,
-      getFinishUpsell,
-      getCrossSellProducts,
-    }),
-    []
-  );
+  return {
+    getQuantityUpsell,
+    getFinishUpsell,
+    getCrossSellProducts,
+  };
 }
 
 export type { QuantitySuggestion, FinishSuggestion, CrossSellSuggestion };

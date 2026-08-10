@@ -43,7 +43,7 @@ export interface LogEntry {
   level: LogLevel;
   category: LogCategory;
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   userId?: string;
   ip?: string;
   timestamp: string;
@@ -117,7 +117,7 @@ class Logger {
     level: LogLevel,
     category: LogCategory,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string,
     error?: Error
   ): LogEntry {
@@ -353,7 +353,7 @@ class Logger {
   async info(
     category: LogCategory,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.INFO)) return;
@@ -378,7 +378,7 @@ class Logger {
   async warning(
     category: LogCategory,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.WARNING)) return;
@@ -404,7 +404,7 @@ class Logger {
     category: LogCategory,
     message: string,
     error?: Error,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.ERROR)) return;
@@ -430,7 +430,7 @@ class Logger {
     category: LogCategory,
     message: string,
     error?: Error,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.CRITICAL)) return;
@@ -455,7 +455,7 @@ class Logger {
    */
   async audit(
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.AUDIT)) return;
@@ -481,7 +481,7 @@ class Logger {
     category: LogCategory,
     message: string,
     duration: number,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.PERFORMANCE)) return;
@@ -505,7 +505,7 @@ class Logger {
    */
   async security(
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     userId?: string
   ) {
     if (!this.shouldLog(LogLevel.SECURITY)) return;
@@ -532,11 +532,15 @@ let loggerInstance: Logger | null = null;
 /**
  * Get logger instance
  */
-export function useLogger(): Logger {
+export function getLogger(): Logger {
   if (!loggerInstance) {
     loggerInstance = new Logger();
   }
   return loggerInstance;
+}
+
+export function useLogger(): Logger {
+  return getLogger();
 }
 
 /**
@@ -547,7 +551,7 @@ export function useClientLogger() {
     level: LogLevel,
     category: LogCategory,
     message: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) => {
     try {
       await fetch('/api/logs', {
@@ -569,11 +573,11 @@ export function useClientLogger() {
   };
 
   return {
-    info: (category: LogCategory, message: string, context?: Record<string, any>) =>
+    info: (category: LogCategory, message: string, context?: Record<string, unknown>) =>
       sendLog(LogLevel.INFO, category, message, context),
-    warning: (category: LogCategory, message: string, context?: Record<string, any>) =>
+    warning: (category: LogCategory, message: string, context?: Record<string, unknown>) =>
       sendLog(LogLevel.WARNING, category, message, context),
-    error: (category: LogCategory, message: string, context?: Record<string, any>) =>
+    error: (category: LogCategory, message: string, context?: Record<string, unknown>) =>
       sendLog(LogLevel.ERROR, category, message, context),
   };
 }

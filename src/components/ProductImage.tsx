@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 /**
  * Fallback component for missing product images
  */
@@ -50,19 +52,14 @@ export function ProductImage({
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={1200}
+      height={800}
       className={className}
-      onError={(e) => {
-        // Replace failed image with fallback
-        const target = e.target as HTMLImageElement;
-        target.style.display = 'none';
-        const fallback = target.nextSibling as HTMLElement;
-        if (fallback) fallback.style.display = 'flex';
-        onError?.();
-      }}
-      loading="lazy"
+      onError={onError}
+      unoptimized
     />
   );
 }

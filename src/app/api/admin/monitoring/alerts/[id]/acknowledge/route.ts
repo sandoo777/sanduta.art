@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
-import { useAlerts } from '@/modules/monitoring/useAlerts';
+import { getAlerts } from '@/modules/monitoring/useAlerts';
 
 export async function POST(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function POST(
   if (error) return error;
 
   try {
-    const alerts = useAlerts();
+    const alerts = getAlerts();
     await alerts.acknowledgeAlert(params.id, user.id);
 
     return NextResponse.json({ success: true });

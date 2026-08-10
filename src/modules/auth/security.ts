@@ -312,7 +312,7 @@ export class SessionSecurity {
    * Validate session token
    */
   static async validateSession(
-    token: string
+    _token: string
   ): Promise<{ valid: boolean; userId?: string; expired?: boolean }> {
     try {
       // TODO: Implement session validation with database
@@ -327,10 +327,10 @@ export class SessionSecurity {
   /**
    * Invalidate session (logout)
    */
-  static async invalidateSession(token: string): Promise<void> {
+  static async invalidateSession(_token: string): Promise<void> {
     try {
       // TODO: Implement session invalidation
-      logger.info('SessionSecurity', 'Session invalidated', { token: token.substring(0, 8) });
+      logger.info('SessionSecurity', 'Session invalidated', { tokenPrefix: _token.substring(0, 8) });
     } catch (_error) {
       logger.error('SessionSecurity', 'Failed to invalidate session', { error });
       throw new Error('Failed to invalidate session');
@@ -365,7 +365,7 @@ export class RefreshTokenManager {
   /**
    * Store refresh token
    */
-  static async storeRefreshToken(userId: string, token: string): Promise<void> {
+  static async storeRefreshToken(userId: string, _token: string): Promise<void> {
     try {
       // TODO: Store in database with expiration
       logger.info('RefreshTokenManager', 'Refresh token stored', { userId });
@@ -379,7 +379,7 @@ export class RefreshTokenManager {
    * Validate and rotate refresh token
    */
   static async validateAndRotate(
-    token: string
+    _token: string
   ): Promise<{ valid: boolean; userId?: string; newToken?: string }> {
     try {
       // TODO: Implement validation and rotation
@@ -393,7 +393,7 @@ export class RefreshTokenManager {
   /**
    * Revoke refresh token
    */
-  static async revokeRefreshToken(token: string): Promise<void> {
+  static async revokeRefreshToken(_token: string): Promise<void> {
     try {
       // TODO: Revoke in database
       logger.info('RefreshTokenManager', 'Refresh token revoked');

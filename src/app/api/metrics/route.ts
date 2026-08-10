@@ -4,12 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { useMetrics, MetricType } from '@/modules/monitoring/useMetrics';
+import { getMetrics, MetricType } from '@/modules/monitoring/useMetrics';
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { type, value, context, timestamp } = body;
+    const { type, value, context } = body as {
+      type?: MetricType;
+      value?: number;
+      context?: Record<string, unknown>;
+      timestamp?: string;
+    };
 
     if (!type || value === undefined) {
       return NextResponse.json(
@@ -26,7 +31,7 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    const metrics = useMetrics();
+    const metrics = getMetrics();
 
     // Route to appropriate metrics method
     switch (type) {

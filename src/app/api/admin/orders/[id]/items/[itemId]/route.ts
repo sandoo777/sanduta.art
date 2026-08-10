@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 /**
  * Helper function to recalculate order total
@@ -11,7 +12,7 @@ async function recalculateOrderTotal(orderId: string) {
     where: { orderId },
   });
 
-  const totalPrice = items.reduce((sum: number, item: any) => {
+  const totalPrice = items.reduce((sum, item) => {
     return sum + Number(item.lineTotal);
   }, 0);
 
@@ -78,7 +79,7 @@ export async function PATCH(
     }
 
     // Update item
-    const updateData: any = {};
+    const updateData: Prisma.OrderItemUpdateInput = {};
     if (quantity !== undefined) {
       updateData.quantity = quantity;
       updateData.lineTotal = Number(existingItem.unitPrice) * quantity;

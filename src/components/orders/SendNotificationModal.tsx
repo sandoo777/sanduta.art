@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { NotificationType, getNotificationTypeName } from '@/lib/notifications/notificationTypes';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { X, Send, AlertTriangle } from 'lucide-react';
+
+interface NotificationTemplate {
+  id: string;
+  label: string;
+  subject: string;
+  message: string;
+}
 
 interface SendNotificationModalProps {
   orderId: string;
@@ -22,7 +28,6 @@ export default function SendNotificationModal({
   onClose,
   onSent,
 }: SendNotificationModalProps) {
-  const [selectedType, setSelectedType] = useState<string>('');
   const [customSubject, setCustomSubject] = useState('');
   const [customMessage, setCustomMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -68,9 +73,9 @@ export default function SendNotificationModal({
     },
   ];
 
-  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
 
-  const handleTemplateSelect = (template: unknown) => {
+  const handleTemplateSelect = (template: NotificationTemplate) => {
     setSelectedTemplate(template);
     
     if (template.id === 'custom') {
@@ -144,7 +149,7 @@ export default function SendNotificationModal({
 
       onSent?.();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to send notification:', err);
       setError('Eroare la trimiterea notificării. Încearcă din nou.');
     } finally {

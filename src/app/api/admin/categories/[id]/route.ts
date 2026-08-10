@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json({ 
         error: "Invalid JSON body" 
       }, { status: 400 });
@@ -148,17 +148,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     });
 
     return NextResponse.json(category);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating category:', error);
+    const prismaError = error as { code?: string; message?: string } | null;
     
     // Check for Prisma-specific errors
-    if (error?.code === 'P2025') {
+    if (prismaError?.code === 'P2025') {
       return NextResponse.json({ 
         error: "Category not found" 
       }, { status: 404 });
     }
     
-    if (error?.code === 'P2002') {
+    if (prismaError?.code === 'P2002') {
       return NextResponse.json({ 
         error: "Category with this slug already exists" 
       }, { status: 400 });
@@ -166,7 +167,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     
     return NextResponse.json({ 
       error: "Failed to update category",
-      details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      details: process.env.NODE_ENV === 'development' ? prismaError?.message : undefined
     }, { status: 500 });
   }
 }

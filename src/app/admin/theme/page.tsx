@@ -5,8 +5,7 @@
  * Interfață completă pentru personalizare tema
  */
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/Button';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -209,11 +208,7 @@ export default function ThemeCustomizerPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Load theme on mount
-  useEffect(() => {
-    loadTheme();
-  }, []);
-
-  const loadTheme = async () => {
+  const loadTheme = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -234,7 +229,11 @@ export default function ThemeCustomizerPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadTheme();
+  }, [loadTheme]);
 
   const saveTheme = async () => {
     try {

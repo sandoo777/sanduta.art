@@ -3,9 +3,12 @@
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Calendar, Eye, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+
+export const dynamic = 'force-dynamic';
 
 interface BlogPost {
   id: string;
@@ -72,11 +75,14 @@ export default async function BlogPage() {
               <Card className="overflow-hidden hover:shadow-xl transition-shadow h-full cursor-pointer">
                 {/* Featured Image */}
                 {post.featuredImage && (
-                  <div className="h-48 bg-gray-100">
-                    <img
+                  <div className="relative h-48 bg-gray-100">
+                    <Image
                       src={post.featuredImage}
                       alt={post.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      unoptimized
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover"
                     />
                   </div>
                 )}

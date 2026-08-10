@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, type Prisma } from '@prisma/client';
 
-export async function GET(_request: Request) {
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
@@ -27,7 +27,7 @@ export async function GET(_request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const where: any = {
+    const where: Prisma.NotificationWhereInput = {
       userId: user.id,
       archived: false
     };

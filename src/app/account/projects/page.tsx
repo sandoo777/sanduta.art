@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import ProjectsClient from './ProjectsClient';
 import { safeRedirect, validateServerData, fetchServerData } from '@/lib/serverSafe';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProjectsPage() {
   try {
     // 1. Auth check server-side

@@ -46,7 +46,7 @@ export function sanitizeHtml(html: string): string {
     });
 
     return clean;
-  } catch (_error) {
+  } catch (error) {
     logger.error('Sanitize', 'Failed to sanitize HTML', { error });
     return '';
   }
@@ -72,7 +72,7 @@ export function sanitizePlainText(text: string): string {
     });
 
     return clean.trim();
-  } catch (_error) {
+  } catch (error) {
     logger.error('Sanitize', 'Failed to sanitize plain text', { error });
     return '';
   }
@@ -111,7 +111,7 @@ export function sanitizeUrl(url: string): string | null {
       }
       return null;
     }
-  } catch (_error) {
+  } catch (error) {
     logger.error('Sanitize', 'Failed to sanitize URL', { error });
     return null;
   }
@@ -135,25 +135,24 @@ export function escapeHtml(text: string): string {
 /**
  * Sanitize object (recursively sanitize all string values)
  */
-export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
-  const sanitized = { ...obj };
+type SanitizableObject = Record<string, unknown>;
 
-  for (const key in sanitized) {
-    const value = sanitized[key];
+export function sanitizeObject<T extends SanitizableObject>(obj: T): T {
+  const sanitized: SanitizableObject = { ...obj };
 
+  for (const [key, value] of Object.entries(sanitized)) {
     if (typeof value === 'string') {
-      sanitized[key] = sanitizePlainText(value) as any;
+      sanitized[key] = sanitizePlainText(value);
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      sanitized[key] = sanitizeObject(value);
+      sanitized[key] = sanitizeObject(value as SanitizableObject);
     } else if (Array.isArray(value)) {
-      // @ts-ignore - Type inference issue with array map
       sanitized[key] = value.map((item: unknown) =>
         typeof item === 'string' ? sanitizePlainText(item) : item
-      ) as any;
+      );
     }
   }
 
-  return sanitized;
+  return sanitized as T;
 }
 
 /**

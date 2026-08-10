@@ -7,7 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
+  const { user: _user, error } = await requireRole(['ADMIN', 'MANAGER']);
   if (error) return error;
 
   try {

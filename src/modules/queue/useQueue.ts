@@ -247,8 +247,8 @@ export const QueueTasks = {
  * @returns Promise<boolean> - true if signature is valid
  */
 export async function verifyQStashSignature(
-  signature: string,
-  body: string
+  _signature: string,
+  _body: string
 ): Promise<boolean> {
   if (!qstash) return false;
 

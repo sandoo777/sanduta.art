@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { useLogger, LogCategory } from '@/modules/monitoring/useLogger';
+import { getLogger, LogCategory } from '@/modules/monitoring/useLogger';
 
 interface ApiMetrics {
   endpoint: string;
@@ -42,17 +42,6 @@ function getClientIp(request: NextRequest): string {
     request.ip ||
     'unknown'
   );
-}
-
-/**
- * Get payload size from request/response
- */
-function getPayloadSize(data: unknown): number {
-  try {
-    return new Blob([JSON.stringify(data)]).size;
-  } catch {
-    return 0;
-  }
 }
 
 /**
@@ -104,7 +93,7 @@ export async function withApiMonitoring(
   handler: (req: NextRequest) => Promise<NextResponse>
 ): Promise<NextResponse> {
   const startTime = Date.now();
-  const logger = useLogger();
+  const logger = getLogger();
   
   const endpoint = request.nextUrl.pathname;
   const method = request.method;
@@ -166,7 +155,7 @@ export async function withApiMonitoring(
   let payloadSize = 0;
   try {
     const body = await response.clone().text();
-    payloadSize = new Blob([body]).size;
+    payloadSize = getPayloadSize(body);
   } catch {
     // Body not readable
   }

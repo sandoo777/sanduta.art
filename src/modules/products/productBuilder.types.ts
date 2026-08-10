@@ -1,4 +1,4 @@
-import type { Product, ProductType } from './types';
+import type { Product, ProductType, SaleUnit } from './types';
 
 export interface ProductOption {
   id?: string;
@@ -61,6 +61,15 @@ export interface ProductDimensions {
 
 export interface FullProduct extends Product {
   descriptionShort?: string | null;
+  saleUnit: SaleUnit;
+  printMethodId?: string | null;
+  materialId?: string | null;
+  isOutsourced: boolean;
+  pricePerM2?: number | null;
+  pricePerUnit?: number | null;
+  minOrderQty: number;
+  supplierCost?: number | null;
+  markup?: number | null;
   options: ProductOption[];
   dimensions?: ProductDimensions;
   compatibleMaterials: string[];
@@ -79,8 +88,17 @@ export interface CreateFullProductInput {
   description?: string;
   descriptionShort?: string;
   type: ProductType;
+  saleUnit: SaleUnit;
   categoryId: string;
   active: boolean;
+  printMethodId?: string;
+  materialId?: string;
+  isOutsourced: boolean;
+  pricePerM2?: number;
+  pricePerUnit?: number;
+  minOrderQty: number;
+  supplierCost?: number;
+  markup?: number;
 
   // Options & Configuration
   options?: ProductOption[];

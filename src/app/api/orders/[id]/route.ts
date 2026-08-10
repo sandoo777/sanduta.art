@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/modules/auth/nextauth';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+import { requireAuth } from '@/lib/auth-helpers';
 
 /**
  * GET /api/orders/[id]
@@ -16,6 +15,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { user, error } = await requireAuth();
+    if (error) {
+      return error;
+    }
+
     // Rate limiting
     const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);
     if (!rateLimitResult.allowed) {
@@ -28,9 +32,6 @@ export async function GET(
     const { id } = await params;
 
     logger.info('API:Orders:GetById', 'Fetching order', { orderId: id });
-
-    // Check if user is authenticated
-    const session = await getServerSession(authOptions);
 
     // Fetch order with items
     const order = await prisma.order.findUnique({
@@ -57,11 +58,11 @@ export async function GET(
       return createErrorResponse('Comanda nu a fost găsită', 404);
     }
 
-    // If user is authenticated, verify ownership
-    if (session?.user?.id && order.userId && order.userId !== session.user.id) {
+    // Verify ownership for authenticated users.
+    if (order.userId && order.userId !== user.id) {
       logger.warn('API:Orders:GetById', 'Unauthorized access attempt', {
         orderId: id,
-        requestedBy: session.user.id,
+        requestedBy: user.id,
         ownerId: order.userId,
       });
       return createErrorResponse('Nu aveți permisiunea de a accesa această comandă', 403);

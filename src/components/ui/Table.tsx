@@ -52,7 +52,7 @@ const TableContext = createContext<TableContextValue>({});
  * />
  * ```
  */
-export function Table<T = any>({
+export function Table<T = unknown>({
   columns,
   data,
   rowKey = 'id',

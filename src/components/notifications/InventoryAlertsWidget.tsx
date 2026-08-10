@@ -5,7 +5,7 @@ import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export function InventoryAlertsWidget() {
-  const { alerts, isConnected } = useInventoryAlerts();
+  const { alerts } = useInventoryAlerts();
 
   if (alerts.length === 0) return null;
 

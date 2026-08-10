@@ -3,13 +3,18 @@ import { requireRole } from "@/lib/auth-helpers";
 import { logger, logApiError, createErrorResponse } from "@/lib/logger";
 import { UserRole } from "@prisma/client";
 import {
-  RolePermissions,
-  Permission,
   PermissionGroups,
   PermissionDescriptions,
   getAllPermissions,
   getPermissionsForRole,
 } from "@/lib/auth/permissions";
+
+interface RolePermissionGroupSummary {
+  name: string;
+  permissions: string[];
+  total: number;
+  granted: number;
+}
 
 /**
  * GET /api/admin/settings/roles
@@ -81,11 +86,11 @@ function getRoleDescription(role: UserRole): string {
   return descriptions[role];
 }
 
-function getPermissionGroupsForRole(role: UserRole): any {
+function getPermissionGroupsForRole(role: UserRole): Record<string, RolePermissionGroupSummary> {
   const permissions = getPermissionsForRole(role);
   const permissionSet = new Set(permissions);
 
-  const result: any = {};
+  const result: Record<string, RolePermissionGroupSummary> = {};
   
   Object.entries(PermissionGroups).forEach(([key, group]) => {
     const groupPermissions = group.permissions.filter(p => permissionSet.has(p));

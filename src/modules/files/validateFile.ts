@@ -5,6 +5,7 @@
 
 import { logger } from '@/lib/logger';
 import { sanitizeFilename } from '@/lib/security/sanitize';
+import crypto from 'crypto';
 
 /**
  * File validation configuration
@@ -227,7 +228,6 @@ export class FileUploadValidator {
    * Generate secure random filename
    */
   static generateSecureFilename(originalFilename: string): string {
-    const crypto = require('crypto');
     const extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
     const randomName = crypto.randomBytes(16).toString('hex');
     const timestamp = Date.now();

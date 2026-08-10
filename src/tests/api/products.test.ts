@@ -3,11 +3,11 @@
  * Tests pentru /api/products
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 
 const API_URL = process.env.API_URL || 'http://localhost:3000';
-
+import { describe, it, expect } from 'vitest';
 describe('GET /api/products', () => {
   it('returnează lista de produse', async () => {
     const response = await request(API_URL).get('/api/products');

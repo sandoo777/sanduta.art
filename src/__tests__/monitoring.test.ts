@@ -2,13 +2,12 @@
  * Monitoring System Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useLogger, LogLevel, LogCategory } from '@/modules/monitoring/useLogger';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useLogger, LogCategory } from '@/modules/monitoring/useLogger';
 import { useMetrics, MetricType } from '@/modules/monitoring/useMetrics';
-import { useDbMonitoring } from '@/modules/monitoring/useDbMonitoring';
 import { useQueueMonitoring, JobType, JobStatus } from '@/modules/monitoring/useQueueMonitoring';
 import { useAlerts, AlertSeverity } from '@/modules/monitoring/useAlerts';
-import { useSecurityMonitoring, SecurityEventType } from '@/modules/monitoring/useSecurityMonitoring';
+import { useSecurityMonitoring } from '@/modules/monitoring/useSecurityMonitoring';
 import { useProfiler } from '@/modules/monitoring/useProfiler';
 
 describe('Monitoring System', () => {

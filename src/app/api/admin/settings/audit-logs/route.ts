@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { logger, logApiError, createErrorResponse } from "@/lib/logger";
-import { ActivityType } from "@prisma/client";
+import { ActivityType, Prisma } from "@prisma/client";
 
 /**
  * GET /api/admin/settings/audit-logs
  * Obține audit logs cu filtrare și paginare
  */
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
     if (error) return error;
@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
 
     // Build filters
-    const where: any = {};
+    const where: Prisma.SecurityActivityWhereInput = {};
 
     if (userId) {
       where.userId = userId;
@@ -88,12 +88,18 @@ export async function GET(_req: NextRequest) {
  * POST /api/admin/settings/audit-logs
  * Creează un nou audit log entry (pentru acțiuni custom)
  */
-export async function POST(_req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
     if (error) return error;
 
-    const body = await req.json();
+    const body = await req.json() as {
+      targetUserId?: string;
+      type?: ActivityType;
+      action?: string;
+      resource?: string;
+      metadata?: Record<string, unknown>;
+    };
     const { targetUserId, type, action, resource, metadata } = body;
 
     logger.info("API:Settings:AuditLogs", "Creating audit log", {
@@ -114,7 +120,7 @@ export async function POST(_req: NextRequest) {
           performedBy: user.id,
           ip: req.headers.get("x-forwarded-for") || "unknown",
           ...metadata,
-        },
+        } as Prisma.InputJsonValue,
       },
       include: {
         user: {
@@ -141,7 +147,7 @@ export async function POST(_req: NextRequest) {
  */
 export async function getAuditStats(_req: NextRequest) {
   try {
-    const { user, error } = await requireRole(["ADMIN"]);
+    const { user: _user, error } = await requireRole(["ADMIN"]);
     if (error) return error;
 
     const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);

@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { signOut } from 'next-auth/react';
 
-export async function POST(_request: Request) {
+export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {

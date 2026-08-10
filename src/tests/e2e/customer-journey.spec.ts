@@ -280,7 +280,7 @@ test.describe('Customer Journey - Complete Flow', () => {
       await page.waitForLoadState('networkidle');
       
       // Verifică că produsele sunt sortate
-      const prices = await page.locator('[data-testid="product-price"]').allTextContents();
+        const _prices = await page.locator('[data-testid="product-price"]').allTextContents();
       // Parsează prețurile și verifică sortarea
     }
   });

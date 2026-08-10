@@ -67,6 +67,66 @@ enum ProductionPriority {
   URGENT
 }
 
+enum MachineStatus {
+  AVAILABLE
+  BUSY
+  MAINTENANCE
+}
+
+enum EquipmentType {
+  LARGE_FORMAT
+  DIGITAL
+  HOURLY
+}
+
+model MaterialCategory {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  parentId    String?
+  parent      MaterialCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    MaterialCategory[] @relation("CategoryHierarchy")
+
+  // Dynamic flags
+  requiresThickness     Boolean @default(false)
+  requiresDensity       Boolean @default(false)
+  requiresPricePerSqm   Boolean @default(false)
+  requiresPricePerMeter Boolean @default(false)
+  requiresPricePerUnit  Boolean @default(false)
+  requiresWastePercent  Boolean @default(false)
+  active                Boolean @default(true)
+
+  materials Material[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@map("material_categories")
+}
+
+enum UsageUnit {
+  sqm
+  meter
+  unit
+}
+
+enum MaterialConsumptionType {
+  AREA_BASED // Consum bazat pe arie (m2) - ex: PVC, banner
+  DIRECT     // Consum direct (unit, ml, gram) - ex: vopsea, consumabile
+}
+
+enum MaterialUnit {
+  liter
+  ml
+  gram
+  kg
+  unit
+  m2
+  meter
+  pcs
+}
+
 enum NotificationType {
   ORDER
   PROJECT
@@ -121,31 +181,31 @@ model User {
   phone         String?
   company       String?
   cui           String?
-  
-  // Two-Factor Authentication
-  twoFactorEnabled Boolean   @default(false)
-  twoFactorSecret  String?
-  backupCodes      String[]  @default([])
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  orders         Order[]
-  assignedOrders Order[]          @relation("AssignedOrders")
-  customerNotes  CustomerNote[]   @relation("CustomerNotes")
-  productionJobs ProductionJob[]  @relation("AssignedProductionJobs")
-  editorProjects EditorProject[]
-  userFiles      UserFile[]
-  projectFolders ProjectFolder[]
-  addresses      Address[]
-  notifications  Notification[]
-  userSessions   UserSession[]
+  // Two-Factor Authentication
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorSecret  String?
+  backupCodes      String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  orders           Order[]
+  assignedOrders   Order[]            @relation("AssignedOrders")
+  customerNotes    CustomerNote[]     @relation("CustomerNotes")
+  productionJobs   ProductionJob[]    @relation("AssignedProductionJobs")
+  editorProjects   EditorProject[]
+  userFiles        UserFile[]
+  projectFolders   ProjectFolder[]
+  addresses        Address[]
+  notifications    Notification[]
+  userSessions     UserSession[]
   securityActivity SecurityActivity[]
-  preferences    UserPreferences?
-  orderTimeline  OrderTimeline[]  @relation("OrderTimelineEvents")
-  orderNotes     OrderNote[]      @relation("OrderNotes")
+  preferences      UserPreferences?
+  orderTimeline    OrderTimeline[]    @relation("OrderTimelineEvents")
+  orderNotes       OrderNote[]        @relation("OrderNotes")
 
   @@map("users")
 }
@@ -190,32 +250,32 @@ model VerificationToken {
 }
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  slug        String    @unique
-  description String?   @db.Text
-  image       String?   // URL imagine categorie
-  color       String?   @default("#3B82F6")
-  icon        String?   @default("📦")
-  
+  slug        String  @unique
+  description String? @db.Text
+  image       String? // URL imagine categorie
+  color       String? @default("#3B82F6")
+  icon        String? @default("📦")
+
   // Ierarhie categorii (parent-child pentru subcategorii)
-  parentId    String?
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[] @relation("CategoryHierarchy")
-  
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryHierarchy")
+
   // Management vizibilitate și ordine
-  order       Int       @default(0)  // Ordinea de afișare
-  active      Boolean   @default(true)  // Status activ/inactiv
-  featured    Boolean   @default(false) // Categorie featured pentru homepage
-  
+  order    Int     @default(0) // Ordinea de afișare
+  active   Boolean @default(true) // Status activ/inactiv
+  featured Boolean @default(false) // Categorie featured pentru homepage
+
   // SEO și metadata
   metaTitle       String?
   metaDescription String?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 
-  products    Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
 
   @@unique([name, parentId]) // Nume unic în cadrul aceluiași părinte
   @@index([parentId])
@@ -226,37 +286,49 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  sku         String?     @unique
-  description String?     @db.Text
-  descriptionShort String? @db.Text
-  type        ProductType @default(STANDARD)
-  price       Decimal     @default(0) @db.Decimal(10, 2)
-  categoryId  String
-  active      Boolean     @default(true)
-  metaTitle       String?
-  metaDescription String?
-  ogImage         String?
-  options         Json?
-  dimensions      Json?
-  pricing         Json?
-  production      Json?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id               String      @id @default(cuid())
+  name             String
+  slug             String      @unique
+  sku              String?     @unique
+  description      String?     @db.Text
+  descriptionShort String?     @db.Text
+  type             ProductType @default(STANDARD)
+  saleUnit         SaleUnit    @default(UNIT)
+  price            Decimal     @default(0) @db.Decimal(10, 2)
+  pricePerM2       Decimal?    @db.Decimal(10, 4)
+  pricePerUnit     Decimal?    @db.Decimal(10, 4)
+  minOrderQty      Int         @default(1)
+  isOutsourced     Boolean     @default(false)
+  categoryId       String
+  printMethodId    String?
+  materialId       String?
+  active           Boolean     @default(true)
+  metaTitle        String?
+  metaDescription  String?
+  ogImage          String?
+  options          Json?
+  dimensions       Json?
+  pricing          Json?
+  production       Json?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  category    Category         @relation(fields: [categoryId], references: [id])
-  images      ProductImage[]
-  variants    ProductVariant[]
-  orderItems  OrderItem[]
-  materials   ProductMaterial[]
-  printMethods ProductPrintMethod[]
-  finishing   ProductFinishing[]
-  editorProjects EditorProject[]
+  category           Category             @relation(fields: [categoryId], references: [id])
+  defaultPrintMethod PrintMethod?         @relation("ProductDefaultPrintMethod", fields: [printMethodId], references: [id], onDelete: SetNull)
+  defaultMaterial    Material?            @relation("ProductDefaultMaterial", fields: [materialId], references: [id], onDelete: SetNull)
+  images             ProductImage[]
+  variants           ProductVariant[]
+  orderItems         OrderItem[]
+  materials          ProductMaterial[]
+  printMethods       ProductPrintMethod[]
+  finishing          ProductFinishing[]
+  productionJobs     ProductionJob[]
+  editorProjects     EditorProject[]
 
   @@index([categoryId])
   @@index([slug])
+  @@index([printMethodId])
+  @@index([materialId])
   @@index([createdAt])
   @@index([active])
   @@map("products")
@@ -266,6 +338,11 @@ enum ProductType {
   STANDARD
   CONFIGURABLE
   CUSTOM
+}
+
+enum SaleUnit {
+  M2
+  UNIT
 }
 
 model ProductVariant {
@@ -291,6 +368,42 @@ model ProductImage {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model Material {
+  id                 String                   @id @default(cuid())
+  name               String
+  categoryId         String
+  category           MaterialCategory         @relation(fields: [categoryId], references: [id])
+  consumptionType    MaterialConsumptionType  @default(AREA_BASED)
+  thickness          Float?
+  density            Float?
+  purchasePrice      Decimal?                 @db.Decimal(10, 2)
+  salePrice          Decimal?                 @db.Decimal(10, 2)
+  salePriceMode      String                   @default("amount")
+  salePricePercent   Float?
+  wastePercent       Float                    @default(0)
+  active             Boolean                  @default(true)
+  sku                String?                  @unique
+  unit               MaterialUnit             @default(pcs)
+  stock              Float                    @default(0)
+  minStock           Float                    @default(0) // alert threshold
+  notes              String?                  @db.Text
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  compatibleMethods    PrintMethod[]             @relation("PrintMethodMaterials")
+  consumption          MaterialUsage[]
+  productionJobs       ProductionJob[]
+  defaultProducts      Product[]                 @relation("ProductDefaultMaterial")
+  productMaterials     ProductMaterial[]
+  equipmentConsumables EquipmentConsumable[]   // Materiale consumabile folosite de echipamente
+  printMethodConsumables PrintMethodConsumable[] @relation("PrintMethodConsumableMaterial") // Consumabile indirecte pentru metode de printare
+
+  @@index([categoryId])
+  @@index([active])
+  @@index([consumptionType])
+  @@map("materials")
 }
 
 model ProductMaterial {
@@ -321,11 +434,11 @@ model ProductPrintMethod {
 }
 
 model ProductFinishing {
-  id           String   @id @default(cuid())
-  productId    String
-  finishingId  String
+  id            String   @id @default(cuid())
+  productId     String
+  finishingId   String
   priceModifier Decimal? @db.Decimal(10, 2)
-  createdAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
   finishing FinishingOperation @relation(fields: [finishingId], references: [id], onDelete: Cascade)
@@ -380,41 +493,41 @@ model CustomerTag {
 }
 
 model Order {
-  id                   String        @id @default(cuid())
-  orderNumber          String?       @unique // Număr comandă unic pentru clienți
-  customerId           String?
-  customerName         String
-  customerEmail        String
-  customerPhone        String?
-  source               OrderSource   @default(ONLINE)
-  channel              OrderChannel  @default(WEB)
-  status               OrderStatus   @default(PENDING)
-  paymentStatus        PaymentStatus @default(PENDING)
-  paymentMethod        String?       // card, cash, bank_transfer
-  deliveryStatus       String        @default("pending") // pending, shipped, delivered
-  deliveryMethod       String?       // novaposhta, courier, pickup
-  deliveryAddress      String?
-  city                 String?
-  country              String?       // Țara pentru adresă
-  postalCode           String?       // Cod poștal
-  novaPoshtaWarehouse  String?
-  trackingNumber       String?
-  paynetSessionId      String?
-  totalPrice           Decimal       @default(0) @db.Decimal(10, 2)
-  subtotal             Decimal?      @db.Decimal(10, 2) // Subtotal fără taxe
-  discount             Decimal?      @default(0) @db.Decimal(10, 2) // Discount aplicat
-  vat                  Decimal?      @db.Decimal(10, 2) // TVA
-  shippingCost         Decimal?      @default(0) @db.Decimal(10, 2) // Cost livrare
-  currency             String        @default("MDL")
-  dueDate              DateTime?
-  estimatedDeliveryDate DateTime?    // Data estimată de livrare
-  internalNotes        String?       @db.Text // Note interne despre comandă (renumit)
-  companyName          String?       // Pentru comenzi B2B
-  taxId                String?       // CUI/VAT pentru firme
-  userId               String?
-  assignedToUserId     String?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @default(now()) @updatedAt
+  id                    String        @id @default(cuid())
+  orderNumber           String?       @unique // Număr comandă unic pentru clienți
+  customerId            String?
+  customerName          String
+  customerEmail         String
+  customerPhone         String?
+  source                OrderSource   @default(ONLINE)
+  channel               OrderChannel  @default(WEB)
+  status                OrderStatus   @default(PENDING)
+  paymentStatus         PaymentStatus @default(PENDING)
+  paymentMethod         String? // card, cash, bank_transfer
+  deliveryStatus        String        @default("pending") // pending, shipped, delivered
+  deliveryMethod        String? // novaposhta, courier, pickup
+  deliveryAddress       String?
+  city                  String?
+  country               String? // Țara pentru adresă
+  postalCode            String? // Cod poștal
+  novaPoshtaWarehouse   String?
+  trackingNumber        String?
+  paynetSessionId       String?
+  totalPrice            Decimal       @default(0) @db.Decimal(10, 2)
+  subtotal              Decimal?      @db.Decimal(10, 2) // Subtotal fără taxe
+  discount              Decimal?      @default(0) @db.Decimal(10, 2) // Discount aplicat
+  vat                   Decimal?      @db.Decimal(10, 2) // TVA
+  shippingCost          Decimal?      @default(0) @db.Decimal(10, 2) // Cost livrare
+  currency              String        @default("MDL")
+  dueDate               DateTime?
+  estimatedDeliveryDate DateTime? // Data estimată de livrare
+  internalNotes         String?       @db.Text // Note interne despre comandă (renumit)
+  companyName           String? // Pentru comenzi B2B
+  taxId                 String? // CUI/VAT pentru firme
+  userId                String?
+  assignedToUserId      String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @default(now()) @updatedAt
 
   customer       Customer?       @relation(fields: [customerId], references: [id])
   user           User?           @relation(fields: [userId], references: [id])
@@ -439,10 +552,10 @@ model Order {
 model OrderTimeline {
   id          String   @id @default(cuid())
   orderId     String
-  eventType   String   // status_change, payment_update, note_added, file_uploaded, etc.
-  eventData   Json?    // Additional event data (old status, new status, etc.)
-  description String   // Human-readable description
-  createdById String?  // User who triggered the event
+  eventType   String // status_change, payment_update, note_added, file_uploaded, etc.
+  eventData   Json? // Additional event data (old status, new status, etc.)
+  description String // Human-readable description
+  createdById String? // User who triggered the event
   createdAt   DateTime @default(now())
 
   order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -458,7 +571,7 @@ model OrderNote {
   id          String   @id @default(cuid())
   orderId     String
   content     String   @db.Text
-  isInternal  Boolean  @default(true)  // true = note internal, false = note vizibilă pentru client
+  isInternal  Boolean  @default(true) // true = note internal, false = note vizibilă pentru client
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -481,13 +594,13 @@ model OrderItem {
   quantity          Int     @default(1)
   unitPrice         Decimal @default(0) @db.Decimal(10, 2)
   lineTotal         Decimal @default(0) @db.Decimal(10, 2)
-  
+
   // Editor integration fields
   projectId      String? // Link to EditorProject
   previewImage   String? // Project preview URL
   finalFileUrl   String? // Final file for printing
-  configuration  Json?   // Configurator selections
-  specifications Json?   // Product specifications (dimensions, material, etc.)
+  configuration  Json? // Configurator selections
+  specifications Json? // Product specifications (dimensions, material, etc.)
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -508,54 +621,61 @@ model OrderFile {
 }
 
 model ProductionJob {
-  id           String             @id @default(cuid())
-  orderId      String
-  name         String
-  status       ProductionStatus   @default(PENDING)
-  priority     ProductionPriority @default(NORMAL)
-  assignedToId String?
-  startedAt    DateTime?
-  completedAt  DateTime?
-  dueDate      DateTime?
-  notes        String?            @db.Text
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id               String             @id @default(cuid())
+  orderId          String
+  productId        String?
+  name             String
+  status           ProductionStatus   @default(PENDING)
+  priority         ProductionPriority @default(NORMAL)
+  assignedToId     String?
+  machineId        String?
+  printMethodId    String?
+  materialId       String?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  dueDate          DateTime?
+  notes            String?            @db.Text
+  quantity         Decimal?           @db.Decimal(10, 4) // m² sau pagini color sau ore
+  bwPages          Decimal?           @db.Decimal(10, 4) // pagini alb-negru (doar DIGITAL)
+  estimatedMinutes Int?
+  estimatedCost    Decimal?           @db.Decimal(10, 2)
+  outsourcedCost   Decimal?           @db.Decimal(10, 2)
+  outsourcedProfit Decimal?           @db.Decimal(10, 2)
+  actualCost       Decimal?           @db.Decimal(10, 2)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
-  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  assignedTo      User?           @relation("AssignedProductionJobs", fields: [assignedToId], references: [id])
-  materialUsages  MaterialUsage[]
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  assignedTo     User?           @relation("AssignedProductionJobs", fields: [assignedToId], references: [id])
+  machine        Machine?        @relation(fields: [machineId], references: [id], onDelete: SetNull)
+  printMethod    PrintMethod?    @relation(fields: [printMethodId], references: [id], onDelete: SetNull)
+  material       Material?       @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  materialUsages MaterialUsage[]
 
+  @@index([machineId])
+  @@index([productId])
+  @@index([printMethodId])
+  @@index([materialId])
   @@map("production_jobs")
 }
 
-model Material {
-  id          String          @id @default(cuid())
-  name        String
-  sku         String?         @unique
-  unit        String          // ex: "kg", "m2", "ml", "pcs"
-  stock       Float           @default(0)
-  minStock    Float           @default(0)   // alert threshold
-  costPerUnit Decimal         @default(0) @db.Decimal(10, 2)
-  notes       String?         @db.Text
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  consumption MaterialUsage[]
-  productMaterials ProductMaterial[]
-
-  @@map("materials")
-}
-
 model MaterialUsage {
-  id         String        @id @default(cuid())
-  materialId String
-  jobId      String
-  quantity   Float
-  createdAt  DateTime      @default(now())
+  id           String       @id @default(cuid())
+  materialId   String
+  jobId        String
+  quantity     Float
+  unit         MaterialUnit @default(pcs)
+  wastePercent Float        @default(0)
+  totalUsed    Float        @default(0)
+  cost         Decimal      @default(0) @db.Decimal(10, 2)
+  createdAt    DateTime     @default(now())
 
-  material Material       @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  job      ProductionJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  material Material      @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  job      ProductionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
+  @@index([materialId])
+  @@index([jobId])
   @@map("material_usages")
 }
 
@@ -569,23 +689,23 @@ model SystemSetting {
 }
 
 model EditorProject {
-  id         String   @id @default(cuid())
-  name       String
-  userId     String
-  productId  String?  // Link to Product
-  data       String   @db.Text  // JSON stringified project data
-  layers     Json?    // Layer structure for validation
-  metadata   Json?    // Dimensions, bleed, DPI, etc.
-  thumbnail  String?
+  id           String   @id @default(cuid())
+  name         String
+  userId       String
+  productId    String? // Link to Product
+  data         String   @db.Text // JSON stringified project data
+  layers       Json? // Layer structure for validation
+  metadata     Json? // Dimensions, bleed, DPI, etc.
+  thumbnail    String?
   previewImage String? // Final preview URL
-  finalFile  String?  // Final file URL for printing
-  status     String   @default("draft") // draft, saved, validated
-  folderId   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  finalFile    String? // Final file URL for printing
+  status       String   @default("draft") // draft, saved, validated
+  folderId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
   folder  ProjectFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
   @@index([userId])
@@ -609,7 +729,7 @@ model ProjectFolder {
 }
 
 model UserFile {
-  id           String      @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
   name         String
   type         String
@@ -618,10 +738,10 @@ model UserFile {
   previewUrl   String?
   originalUrl  String
   lastUsedAt   DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions FileVersion[]
 
   @@index([userId])
@@ -631,7 +751,7 @@ model UserFile {
 model FileVersion {
   id        String   @id @default(cuid())
   fileId    String
-  variant   String   // original, preview, print_ready, editor
+  variant   String // original, preview, print_ready, editor
   format    String
   size      Int
   url       String
@@ -696,9 +816,9 @@ model UserSession {
   lastActivity DateTime @default(now())
   expiresAt    DateTime
   createdAt    DateTime @default(now())
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([userId, isActive])
   @@index([sessionToken])
@@ -715,22 +835,22 @@ model SecurityActivity {
   location    String?
   success     Boolean      @default(true)
   createdAt   DateTime     @default(now())
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([userId, createdAt])
   @@map("security_activity")
 }
 
 model UserPreferences {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  
+  id     String @id @default(cuid())
+  userId String @unique
+
   // Language & Theme
-  language  Language @default(RO)
-  theme     Theme    @default(SYSTEM)
-  
+  language Language @default(RO)
+  theme    Theme    @default(SYSTEM)
+
   // Notifications
   emailOrders        Boolean @default(true)
   emailProjects      Boolean @default(true)
@@ -738,84 +858,111 @@ model UserPreferences {
   emailPromotions    Boolean @default(false)
   pushNotifications  Boolean @default(true)
   inAppNotifications Boolean @default(true)
-  
+
   // Editor Preferences
-  editorSnapToGrid    Boolean    @default(true)
-  editorGridVisible   Boolean    @default(true)
-  editorGridSize      Int        @default(10)
-  editorUnit          EditorUnit @default(PX)
-  editorAutoSave      Int        @default(10) // seconds
-  editorUIDensity     UIDensity  @default(STANDARD)
-  
+  editorSnapToGrid  Boolean    @default(true)
+  editorGridVisible Boolean    @default(true)
+  editorGridSize    Int        @default(10)
+  editorUnit        EditorUnit @default(PX)
+  editorAutoSave    Int        @default(10) // seconds
+  editorUIDensity   UIDensity  @default(STANDARD)
+
   // Configurator Preferences
   configDefaultQuantity       Int    @default(1)
   configDefaultProductionTime String @default("standard")
   configDefaultDelivery       String @default("courier")
   configDefaultPayment        String @default("card")
-  
+
   // Communications & Marketing
-  newsletter              Boolean @default(false)
-  specialOffers           Boolean @default(false)
-  personalizedRecommend   Boolean @default(false)
-  productNews             Boolean @default(false)
-  
+  newsletter            Boolean @default(false)
+  specialOffers         Boolean @default(false)
+  personalizedRecommend Boolean @default(false)
+  productNews           Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@map("user_preferences")
 }
 
 model PrintMethod {
-  id               String   @id @default(cuid())
-  name             String
-  type             String   // Digital, Offset, Inkjet, UV, Latex, Serigrafie, etc.
-  costPerM2        Decimal? @db.Decimal(10, 2)
-  costPerSheet     Decimal? @db.Decimal(10, 2)
-  speed            String?  // Viteza de producție (ex: "100 m²/oră")
-  maxWidth         Int?     // în mm
-  maxHeight        Int?     // în mm
-  description      String?  @db.Text
-  active           Boolean  @default(true)
-  materialIds      String[] @default([]) // IDs materiale compatibile
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String   @unique
+  type         String // Digital, Offset, Inkjet, UV, Latex, Serigrafie, etc.
+  
+  // Costuri și performanță
+  baseCost     Decimal? @db.Decimal(10, 2) // Cost de bază per lucrare
+  costPerM2    Decimal? @db.Decimal(10, 2)
+  costPerSheet Decimal? @db.Decimal(10, 2)
+  speed        String? // Viteza de producție (ex: "100 m²/oră")
 
+  // Outsource
+  isOutsourced        Boolean  @default(false)
+  costFurnizorPerM2   Decimal? @db.Decimal(10, 2)
+  costFurnizorPerUnit Decimal? @db.Decimal(10, 2)
+  termenFurnizor      String?
+  markup              Decimal? @db.Decimal(5, 2)
+  
+  // Specificații tehnice
+  colorMode    String? // Full Color, B&W, CMYK, CMYK+White, etc.
+  maxWidth     Int? // în mm
+  maxHeight    Int? // în mm
+  
+  description  String?  @db.Text
+  active       Boolean  @default(true)
+  materialIds  String[] @default([]) // IDs materiale compatibile (DEPRECATED - folosește relația)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relazioni
+  compatibleMaterials Material[]               @relation("PrintMethodMaterials")
+  compatibleEquipment Machine[]                @relation("PrintMethodMachines")
+  consumables         PrintMethodConsumable[]
+  productionJobs      ProductionJob[]
   productPrintMethods ProductPrintMethod[]
+  defaultProducts     Product[]                @relation("ProductDefaultPrintMethod")
 
+  @@index([active])
+  @@index([name])
+  @@index([isOutsourced])
   @@map("print_methods")
 }
 
-model FinishingOperation {
-  id                      String   @id @default(cuid())
-  name                    String
-  type                    String   // Tăiere, Laminare, Băgăuire, Capsare, etc.
-  costFix                 Decimal? @db.Decimal(10, 2)
-  costPerUnit             Decimal? @db.Decimal(10, 2)
-  costPerM2               Decimal? @db.Decimal(10, 2)
-  timeSeconds             Int?     // Timp execuție în secunde
-  compatibleMaterialIds   String[] @default([]) // IDs materiale compatibile
-  compatiblePrintMethodIds String[] @default([]) // IDs metode tipărire compatibile
-  description             String?  @db.Text
-  active                  Boolean  @default(true)
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+model PrintMethodConsumable {
+  id            String   @id @default(cuid())
+  printMethodId String
+  materialId    String
+  
+  // Costuri consumabile indirecte (vopsea UV, soluții, etc.)
+  costPerSqm    Decimal? @db.Decimal(10, 4) // Cost per m²
+  costPerJob    Decimal? @db.Decimal(10, 4) // Cost fix per job
+  
+  active        Boolean  @default(true)
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  productFinishing ProductFinishing[]
+  printMethod   PrintMethod @relation(fields: [printMethodId], references: [id], onDelete: Cascade)
+  material      Material    @relation("PrintMethodConsumableMaterial", fields: [materialId], references: [id], onDelete: Cascade)
 
-  @@map("finishing_operations")
+  @@unique([printMethodId, materialId])
+  @@index([printMethodId])
+  @@index([materialId])
+  @@index([active])
+  @@map("print_method_consumables")
 }
 
-model Machine {
+model FinishingOperation {
   id                       String   @id @default(cuid())
   name                     String
-  type                     String   // Digital Printer, Offset Press, Large Format, etc.
-  costPerHour              Decimal? @db.Decimal(10, 2)
-  speed                    String?  // ex: "100 ppm", "50 m²/oră"
-  maxWidth                 Int?     // în mm
-  maxHeight                Int?     // în mm
+  type                     String // Tăiere, Laminare, Băgăuire, Capsare, etc.
+  costFix                  Decimal? @db.Decimal(10, 2)
+  costPerUnit              Decimal? @db.Decimal(10, 2)
+  costPerM2                Decimal? @db.Decimal(10, 2)
+  timeSeconds              Int? // Timp execuție în secunde
   compatibleMaterialIds    String[] @default([]) // IDs materiale compatibile
   compatiblePrintMethodIds String[] @default([]) // IDs metode tipărire compatibile
   description              String?  @db.Text
@@ -823,5 +970,83 @@ model Machine {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 
+  productFinishing ProductFinishing[]
+
+  @@map("finishing_operations")
+}
+
+model Machine {
+  id            String        @id @default(cuid())
+  name          String
+  type          String // Digital Printer, Offset Press, Large Format, etc.
+  equipmentType EquipmentType @default(HOURLY)
+  status        MachineStatus @default(AVAILABLE)
+
+  // Câmpuri comune
+  costPerHour         Decimal? @db.Decimal(10, 2)
+  speed               String? // ex: "100 ppm", "50 m²/oră"
+  maxWidth            Int? // în mm
+  maxHeight           Int? // în mm
+  operatorCostPerHour Decimal? @db.Decimal(10, 2)
+  energyConsumptionKw Decimal? @db.Decimal(10, 2)
+
+  // Câmpuri Large Format (m²)
+  speedM2PerHour    Decimal? @db.Decimal(10, 2)
+  inkPerM2          Decimal? @db.Decimal(10, 4)
+  materialPerM2     Decimal? @db.Decimal(10, 4)
+  headAmortPerM2    Decimal? @db.Decimal(10, 4)
+  printerAmortPerM2 Decimal? @db.Decimal(10, 4)
+  maintCostPerM2    Decimal? @db.Decimal(10, 4)
+
+  // Câmpuri Digital (click)
+  costClickColor  Decimal? @db.Decimal(10, 4)
+  costClickBW     Decimal? @db.Decimal(10, 4)
+  servicePerClick Decimal? @db.Decimal(10, 6)
+  maxFormat       String? // A4/A3/SRA3
+  maxGramWeight   Int?
+  speedPpm        Int?
+
+  compatibleMaterialIds    String[]  @default([]) // IDs materiale compatibile
+  compatiblePrintMethodIds String[]  @default([]) // IDs metode tipărire compatibile
+  description              String?   @db.Text
+  notes                    String?   @db.Text // observații tehnice
+  lastMaintenance          DateTime?
+  active                   Boolean   @default(true)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  compatiblePrintMethodRelations PrintMethod[]  @relation("PrintMethodMachines")
+  productionJobs                 ProductionJob[]
+  consumables                    EquipmentConsumable[]
+
+  @@index([status])
+  @@index([active])
   @@map("machines")
+}
+
+model EquipmentConsumable {
+  id                  String       @id @default(cuid())
+  machineId           String
+  materialId          String
+  
+  // Consum pe diferite unități
+  consumptionPerSqm   Decimal?     @db.Decimal(10, 4) // pentru echipamente Large Format
+  consumptionPerUnit  Decimal?     @db.Decimal(10, 4) // pentru echipamente Digital (per click/pagină)
+  consumptionPerJob   Decimal?     @db.Decimal(10, 4) // consum fix per job
+  
+  unit                MaterialUnit @default(unit)     // unitatea în care se măsoară consumul
+  
+  active              Boolean      @default(true)
+  notes               String?      @db.Text
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  machine             Machine      @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  material            Material     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([machineId, materialId]) // O mașină poate avea un singur consumabil de un anumit tip
+  @@index([machineId])
+  @@index([materialId])
+  @@index([active])
+  @@map("equipment_consumables")
 }

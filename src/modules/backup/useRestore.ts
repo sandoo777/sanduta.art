@@ -7,10 +7,17 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { promises as fs } from 'fs';
 import { logger } from '@/lib/logger';
-import { BackupEngine, BackupMetadata, BackupCategory } from './useBackupEngine';
+import { BackupEngine, BackupMetadata } from './useBackupEngine';
 import { prisma } from '@/lib/prisma';
 
 const execAsync = promisify(exec);
+
+type RestoreRecord = { id: string } & Record<string, unknown>;
+type RestoreConfig = {
+  products?: RestoreRecord[];
+  categories?: RestoreRecord[];
+  users?: RestoreRecord[];
+};
 
 /**
  * Restore modes
@@ -227,40 +234,40 @@ export class RestoreEngine {
       await BackupEngine.decompressFile(decryptedFile, decompressedFile);
 
       // Read config
-      const config = JSON.parse(await fs.readFile(decompressedFile, 'utf-8'));
+      const config = JSON.parse(await fs.readFile(decompressedFile, 'utf-8')) as RestoreConfig;
 
       const restoredItems: string[] = [];
 
       // Restore specific items
       for (const item of items) {
         if (item.type === 'product') {
-          const product = config.products.find((p: any) => p.id === item.id);
+          const product = config.products?.find((p) => p.id === item.id);
           if (product) {
             // Restore product (upsert)
             await prisma.product.upsert({
               where: { id: product.id },
-              create: product,
-              update: product,
+              create: product as never,
+              update: product as never,
             });
             restoredItems.push(`product:${item.id}`);
           }
         } else if (item.type === 'category') {
-          const category = config.categories.find((c: any) => c.id === item.id);
+          const category = config.categories?.find((c) => c.id === item.id);
           if (category) {
             await prisma.category.upsert({
               where: { id: category.id },
-              create: category,
-              update: category,
+              create: category as never,
+              update: category as never,
             });
             restoredItems.push(`category:${item.id}`);
           }
         } else if (item.type === 'user') {
-          const user = config.users.find((u: any) => u.id === item.id);
+          const user = config.users?.find((u) => u.id === item.id);
           if (user) {
             await prisma.user.upsert({
               where: { id: user.id },
-              create: user as any,
-              update: user as any,
+              create: user as never,
+              update: user as never,
             });
             restoredItems.push(`user:${item.id}`);
           }
@@ -387,7 +394,7 @@ export class RestoreEngine {
       await BackupEngine.decompressFile(decryptedFile, decompressedFile);
 
       // Read config
-      const config = JSON.parse(await fs.readFile(decompressedFile, 'utf-8'));
+      const config = JSON.parse(await fs.readFile(decompressedFile, 'utf-8')) as RestoreConfig;
 
       // Restore configurations to database
       // Note: This will overwrite existing data
@@ -397,8 +404,8 @@ export class RestoreEngine {
         for (const user of config.users) {
           await prisma.user.upsert({
             where: { id: user.id },
-            create: user as any,
-            update: user as any,
+            create: user as never,
+            update: user as never,
           });
         }
       }
@@ -419,8 +426,8 @@ export class RestoreEngine {
         for (const product of config.products) {
           await prisma.product.upsert({
             where: { id: product.id },
-            create: product as any,
-            update: product as any,
+            create: product as never,
+            update: product as never,
           });
         }
       }

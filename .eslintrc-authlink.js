@@ -24,7 +24,7 @@
  * ];
  */
 
-export default {
+const noUnsafeLinkInAuthRoutesRule = {
   meta: {
     type: 'problem',
     docs: {
@@ -116,3 +116,5 @@ export default {
     };
   },
 };
+
+export default noUnsafeLinkInAuthRoutesRule;

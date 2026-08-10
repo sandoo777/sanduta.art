@@ -30,54 +30,83 @@ const defaultSpecs: ProductSpecs = {
   aspectTolerance: 0.1,
 };
 
+type EditorDesignPayload = {
+  fileUrl: string;
+  previewUrl: string;
+  projectId: string;
+  projectName: string;
+  width: number;
+  height: number;
+  bleed: number;
+};
+
+type InitialEditorState = {
+  fromEditor: boolean;
+  activeTab: 'upload' | 'design';
+  previewUrl?: string;
+  validation?: FileValidationResult;
+  status: FileStatusState;
+};
+
+function getInitialEditorState(searchParams: ReturnType<typeof useSearchParams>): InitialEditorState {
+  const fromEditorFlag = searchParams.get('fromEditor') === 'true';
+  if (!fromEditorFlag || typeof window === 'undefined') {
+    return {
+      fromEditor: false,
+      activeTab: 'upload',
+      status: { overall: 'pending' },
+    };
+  }
+
+  const raw = sessionStorage.getItem('editorDesignPayload');
+  if (!raw) {
+    return {
+      fromEditor: false,
+      activeTab: 'upload',
+      status: { overall: 'pending' },
+    };
+  }
+
+  try {
+    const payload = JSON.parse(raw) as EditorDesignPayload;
+    return {
+      fromEditor: true,
+      activeTab: 'upload',
+      previewUrl: payload.previewUrl,
+      validation: { resolution: 'ok', bleed: 'ok', dimensions: 'ok', color: 'ok', fonts: 'ok' },
+      status: {
+        overall: 'ok',
+        message: 'Designul tău a fost importat automat din editor.',
+      },
+    };
+  } catch (error) {
+    console.error('Cannot parse editorDesignPayload', error);
+    return {
+      fromEditor: false,
+      activeTab: 'upload',
+      status: { overall: 'pending' },
+    };
+  }
+}
+
 export function Step2UploadDesign({ productName, onStatusChange, onContinue }: Step2UploadDesignProps) {
   const validator = useFileValidation();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'upload' | 'design'>('upload');
+  const initialEditorState = useMemo(() => getInitialEditorState(searchParams), [searchParams]);
+  const [activeTab, setActiveTab] = useState<'upload' | 'design'>(initialEditorState.activeTab);
   const [file, setFile] = useState<File | undefined>();
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>();
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(initialEditorState.previewUrl);
   const [pages, setPages] = useState<number | undefined>();
-  const [validation, setValidation] = useState<FileValidationResult | undefined>();
-  const [status, setStatus] = useState<FileStatusState>({ overall: 'pending' });
+  const [validation, setValidation] = useState<FileValidationResult | undefined>(initialEditorState.validation);
+  const [status, setStatus] = useState<FileStatusState>(initialEditorState.status);
   const [designReady, setDesignReady] = useState(false);
-  const [fromEditor, setFromEditor] = useState(false);
+  const [fromEditor, setFromEditor] = useState(initialEditorState.fromEditor);
   const [libraryModalOpen, setLibraryModalOpen] = useState(false);
   const [libraryFile, setLibraryFile] = useState<SavedFile | null>(null);
 
-  // Preia payload din editor dacă query fromEditor=true
   useEffect(() => {
-    const fromEditorFlag = searchParams.get('fromEditor') === 'true';
-    if (!fromEditorFlag) return;
-
-    const raw = typeof window !== 'undefined' ? sessionStorage.getItem('editorDesignPayload') : null;
-    if (!raw) return;
-
-    try {
-      const payload = JSON.parse(raw) as {
-        fileUrl: string;
-        previewUrl: string;
-        projectId: string;
-        projectName: string;
-        width: number;
-        height: number;
-        bleed: number;
-      };
-
-      setFromEditor(true);
-      setActiveTab('upload');
-      setPreviewUrl(payload.previewUrl);
-      setValidation({ resolution: 'ok', bleed: 'ok', dimensions: 'ok', color: 'ok', fonts: 'ok' });
-      const nextStatus: FileStatusState = {
-        overall: 'ok',
-        message: 'Designul tău a fost importat automat din editor.',
-      };
-      setStatus(nextStatus);
-      onStatusChange?.(nextStatus);
-    } catch (_error) {
-      console.error('Cannot parse editorDesignPayload', error);
-    }
-     
-  }, [searchParams, onStatusChange]);
+    onStatusChange?.(status);
+  }, [onStatusChange, status]);
 
   const handleFileSelect = (selected: File, meta?: UploadMeta) => {
     setFile(selected);

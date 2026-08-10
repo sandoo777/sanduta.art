@@ -89,7 +89,7 @@ export interface Notification {
   
   title: string;
   message: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   
   read: boolean;
   readAt?: Date;
@@ -115,7 +115,7 @@ export interface EmailNotification {
   textBody?: string;
   
   templateId?: string;
-  templateData?: Record<string, any>;
+  templateData?: Record<string, unknown>;
   
   attachments?: EmailAttachment[];
 }

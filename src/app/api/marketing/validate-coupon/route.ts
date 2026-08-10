@@ -36,10 +36,10 @@ const mockCoupons = [
   },
 ];
 
-export async function POST(_req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const { code, userId, cartTotal, productIds, categoryIds } = body;
+    const body = await request.json();
+    const { code, userId: _userId, cartTotal, productIds: _productIds, categoryIds: _categoryIds } = body;
 
     logger.info('API:ValidateCoupon', 'Validating coupon', { code, cartTotal });
 

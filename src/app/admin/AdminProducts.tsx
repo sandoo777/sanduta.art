@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productFormSchema, type ProductFormData } from "@/lib/validations/admin";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
@@ -12,8 +12,9 @@ import { FormMessage } from "@/components/ui/FormMessage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Table } from "@/components/ui/Table";
-import type { Column } from "@/components/ui/Table.types";
+import Image from "next/image";
 import { Product } from '@/types/models';
+import type { CreateProductDTO } from '@/domains/products/types';
 import { useProducts } from '@/domains/products/hooks/useProducts';
 
 export default function AdminProducts() {
@@ -35,16 +36,22 @@ export default function AdminProducts() {
     },
   });
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     const result = await getProducts();
     if (result.success && result.data) {
       setProducts(result.data.products);
     }
-  };
+  }, [getProducts]);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      void fetchProducts();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [fetchProducts]);
 
   const handleImageUpload = async (file: File) => {
     setUploading(true);
@@ -78,13 +85,13 @@ export default function AdminProducts() {
       // Add other required fields based on CreateProductDTO
       type: 'STANDARD' as const,
       active: true,
-    };
+    } satisfies CreateProductDTO;
 
     let result;
     if (editing) {
       result = await updateProduct(editing.id, productData);
     } else {
-      result = await createProduct(productData as any);
+      result = await createProduct(productData);
     }
 
     if (result.success) {
@@ -230,10 +237,12 @@ export default function AdminProducts() {
             label: 'Image',
             render: (product) => (
               product.image_url ? (
-                <img 
-                  src={product.image_url} 
-                  alt={product.name} 
-                  className="w-12 h-12 md:w-16 md:h-16 object-cover rounded" 
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  width={64}
+                  height={64}
+                  className="w-12 h-12 md:w-16 md:h-16 object-cover rounded"
                 />
               ) : null
             )

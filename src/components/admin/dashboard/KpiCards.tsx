@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -28,14 +28,7 @@ export default function KpiCards() {
   const { fetchKpis, loading } = useAnalytics();
   const [kpis, setKpis] = useState<KPI[]>([]);
 
-  useEffect(() => {
-    loadKpis();
-    // Revalidare la 60 secunde
-    const interval = setInterval(loadKpis, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadKpis = async () => {
+  const loadKpis = useCallback(async () => {
     const data = await fetchKpis();
     if (data) {
       setKpis([
@@ -111,7 +104,20 @@ export default function KpiCards() {
         },
       ]);
     }
-  };
+  }, [fetchKpis]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadKpis();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadKpis();
+    }, 60000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadKpis]);
 
   if (loading && kpis.length === 0) {
     return (

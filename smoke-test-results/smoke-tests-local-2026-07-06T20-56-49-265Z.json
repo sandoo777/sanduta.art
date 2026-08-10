@@ -1,0 +1,89 @@
+{
+  "environment": "local",
+  "baseUrl": "http://localhost:3102",
+  "timestamp": "2026-07-06T20:56:49.266Z",
+  "results": [
+    {
+      "name": "Homepage",
+      "status": "passed",
+      "duration": 550,
+      "url": "http://localhost:3102/",
+      "httpStatus": 200
+    },
+    {
+      "name": "Product Page",
+      "status": "passed",
+      "duration": 195,
+      "url": "http://localhost:3102/products/brosura-a4",
+      "httpStatus": 200
+    },
+    {
+      "name": "Products Listing",
+      "status": "passed",
+      "duration": 202,
+      "url": "http://localhost:3102/products",
+      "httpStatus": 200
+    },
+    {
+      "name": "Configurator",
+      "status": "passed",
+      "duration": 1281,
+      "url": "http://localhost:3102/public/configurator/step-4",
+      "httpStatus": 200
+    },
+    {
+      "name": "Editor",
+      "status": "passed",
+      "duration": 495,
+      "url": "http://localhost:3102/editor",
+      "httpStatus": 200
+    },
+    {
+      "name": "Cart",
+      "status": "passed",
+      "duration": 513,
+      "url": "http://localhost:3102/cart",
+      "httpStatus": 200
+    },
+    {
+      "name": "Checkout",
+      "status": "passed",
+      "duration": 574,
+      "url": "http://localhost:3102/checkout",
+      "httpStatus": 200
+    },
+    {
+      "name": "Login",
+      "status": "passed",
+      "duration": 640,
+      "url": "http://localhost:3102/login",
+      "httpStatus": 200
+    },
+    {
+      "name": "API Health",
+      "status": "passed",
+      "duration": 1089,
+      "url": "http://localhost:3102/api/health",
+      "httpStatus": 200
+    },
+    {
+      "name": "API Products",
+      "status": "passed",
+      "duration": 52,
+      "url": "http://localhost:3102/api/products",
+      "httpStatus": 200
+    },
+    {
+      "name": "API Categories",
+      "status": "passed",
+      "duration": 455,
+      "url": "http://localhost:3102/api/categories",
+      "httpStatus": 200
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Mail, Phone, User } from 'lucide-react';
 import type { CustomerData } from '@/modules/checkout/useCheckout';
 

@@ -83,7 +83,7 @@ export default function AccountSidebar() {
     return pathname?.startsWith(href);
   };
 
-  const SidebarContent = () => (
+  const sidebarContent = (
     <>
       <div className="px-6 py-6 border-b border-gray-200">
         <h2 className="text-xl font-bold text-gray-900">Contul meu</h2>
@@ -110,14 +110,14 @@ export default function AccountSidebar() {
             >
               <Icon className="w-5 h-5" />
               {item.label}
-            </Link>
+            </AuthLink>
           );
         })}
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-200">
         <div className="mb-4">
-          <LanguageSwitcher />
+          <LanguageSwitcher currentLocale="ro" />
         </div>
       </div>
 
@@ -167,13 +167,13 @@ export default function AccountSidebar() {
         `}
       >
         <div className="flex flex-col h-full">
-          <SidebarContent />
+          {sidebarContent}
         </div>
       </aside>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-72 bg-white border-r border-gray-200 min-h-screen">
-        <SidebarContent />
+        {sidebarContent}
       </aside>
     </>
   );

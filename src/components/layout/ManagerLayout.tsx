@@ -11,7 +11,6 @@ interface ManagerLayoutProps {
 
 export function ManagerLayout({ children }: ManagerLayoutProps) {
   const { data: session, status } = useSession();
-  const pathname = usePathname();
 
   // Show loading state
   if (status === 'loading') {

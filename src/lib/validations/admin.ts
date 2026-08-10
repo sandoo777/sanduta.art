@@ -135,56 +135,153 @@ export const customerFormSchema = z.object({
 export type CustomerFormData = z.infer<typeof customerFormSchema>;
 
 // ==================== Material Schema ====================
+const optionalMaterialNumber = (message: string) => z.string()
+  .optional()
+  .or(z.literal(''))
+  .refine((val) => val === '' || (!isNaN(Number(val)) && Number(val) >= 0), {
+    message,
+  });
+
 export const materialFormSchema = z.object({
   name: z.string()
     .min(1, 'Material name is required')
     .min(2, 'Material name must be at least 2 characters')
     .max(100, 'Material name must be less than 100 characters'),
-  
-  type: z.string().optional().or(z.literal('')),
-  
-  unit: z.string()
-    .min(1, 'Unit is required'),
-  
-  quantity: z.string()
+
+  categoryId: z.string().min(1, 'Category is required'),
+
+  consumptionType: z.enum(['AREA_BASED', 'DIRECT']).default('AREA_BASED'),
+
+  active: z.boolean().default(true),
+
+  sku: z.string().max(100, 'SKU must be less than 100 characters').optional().or(z.literal('')),
+
+  unit: z.enum(['liter', 'ml', 'gram', 'kg', 'unit', 'm2', 'meter', 'pcs']),
+
+  stock: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: 'Quantity must be a non-negative number',
+      message: 'Stock must be a non-negative number',
     }),
-  
-  price: z.string()
+
+  minStock: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: 'Price must be a non-negative number',
+      message: 'Minimum stock must be a non-negative number',
     }),
-  
-  supplier: z.string().optional().or(z.literal('')),
+
+  purchasePrice: optionalMaterialNumber('Prețul de achiziție trebuie să fie un număr pozitiv'),
+  salePrice: optionalMaterialNumber('Prețul de vânzare trebuie să fie un număr pozitiv'),
+  salePriceMode: z.enum(['amount', 'percent']).default('amount'),
+  salePricePercent: optionalMaterialNumber('Procentul de adaos trebuie să fie un număr pozitiv'),
+  thickness: optionalMaterialNumber('Thickness must be a non-negative number'),
+  density: optionalMaterialNumber('Density must be a non-negative number'),
+  wastePercent: optionalMaterialNumber('Waste percent must be between 0 and 100'),
+
+  notes: z.string().optional().or(z.literal('')),
+  compatibleMethods: z.array(z.string()).default([]),
+  compatibleEquipment: z.array(z.string()).default([]),
+}).superRefine((data, ctx) => {
+  const hasPurchasePrice = data.purchasePrice !== undefined && data.purchasePrice !== '';
+  const hasSalePrice = data.salePrice !== undefined && data.salePrice !== '';
+
+  if (!hasPurchasePrice && !hasSalePrice) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Completează cel puțin un preț (achiziție sau vânzare)',
+      path: ['salePrice'],
+    });
+  }
+
+  if (data.salePriceMode === 'percent') {
+    if (!hasPurchasePrice) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Prețul de achiziție este obligatoriu pentru modul procent',
+        path: ['purchasePrice'],
+      });
+    }
+
+    if (data.salePricePercent === undefined || data.salePricePercent === '') {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Procentul de adaos este obligatoriu pentru modul procent',
+        path: ['salePricePercent'],
+      });
+    }
+  }
+
+  if (data.consumptionType === 'DIRECT' && !hasSalePrice && !hasPurchasePrice) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Consumabilele directe trebuie să aibă preț configurat',
+      path: ['salePrice'],
+    });
+  }
+
+  if (data.wastePercent !== undefined && data.wastePercent !== '') {
+    const wastePercent = Number(data.wastePercent);
+
+    if (wastePercent < 0 || wastePercent > 100) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Waste percent must be between 0 and 100',
+        path: ['wastePercent'],
+      });
+    }
+  }
+
+  // Note: Dynamic field validation based on category flags will be handled
+  // by the CategoryTreeSelector in MaterialForm
 });
 
 export type MaterialFormData = z.infer<typeof materialFormSchema>;
 
 // ==================== Machine Schema ====================
+const optionalDecimal = () => z.number().min(0).optional().nullable();
+const optionalInt    = () => z.number().int().min(0).optional().nullable();
+
 export const machineFormSchema = z.object({
   name: z.string()
-    .min(1, 'Machine name is required')
-    .min(2, 'Machine name must be at least 2 characters')
-    .max(100, 'Machine name must be less than 100 characters'),
-  
-  type: z.string()
-    .min(1, 'Type is required'),
-  
-  status: z.enum(['OPERATIONAL', 'MAINTENANCE', 'BROKEN'], {
-    message: 'Invalid machine status',
-  }),
-  
-  capacity: z.string()
-    .optional()
-    .refine((val) => {
-      if (!val || val === '') return true;
-      return !isNaN(Number(val)) && Number(val) > 0;
-    }, {
-      message: 'Capacity must be a positive number',
-    }),
-  
-  location: z.string().optional().or(z.literal('')),
+    .min(1, 'Numele echipamentului este obligatoriu')
+    .min(2, 'Minim 2 caractere')
+    .max(100, 'Maxim 100 caractere'),
+
+  type: z.string().min(1, 'Tipul este obligatoriu'),
+
+  equipmentType: z.enum(['LARGE_FORMAT', 'DIGITAL', 'HOURLY']).default('HOURLY'),
+
+  status: z.enum(['AVAILABLE', 'BUSY', 'MAINTENANCE'], { message: 'Status invalid' }),
+
+  // Comune
+  speed: z.string().optional().or(z.literal('')),
+  maxWidth:  optionalInt(),
+  maxHeight: optionalInt(),
+  operatorCostPerHour: optionalDecimal(),
+  energyConsumptionKw: optionalDecimal(),
+
+  // Large Format
+  costPerHour:      optionalDecimal(), // folosit și la Hourly
+  speedM2PerHour:   optionalDecimal(),
+  inkPerM2:         optionalDecimal(),
+  materialPerM2:    optionalDecimal(),
+  headAmortPerM2:   optionalDecimal(),
+  printerAmortPerM2: optionalDecimal(),
+  maintCostPerM2:   optionalDecimal(),
+
+  // Digital
+  costClickColor: optionalDecimal(),
+  costClickBW:    optionalDecimal(),
+  servicePerClick: optionalDecimal(),
+  maxFormat:       z.string().optional().nullable(),
+  maxGramWeight:   optionalInt(),
+  speedPpm:        optionalInt(),
+
+  compatibleMaterialIds:    z.array(z.string()).default([]),
+  compatiblePrintMethodIds: z.array(z.string()).default([]),
+
+  description:     z.string().optional().or(z.literal('')),
+  notes:           z.string().optional().or(z.literal('')),
+  lastMaintenance: z.string().optional().nullable(),
+  active:          z.boolean().default(true),
 });
 
 export type MachineFormData = z.infer<typeof machineFormSchema>;
@@ -233,19 +330,39 @@ export type PrintMethodFormData = z.infer<typeof printMethodFormSchema>;
 
 // ==================== Job Schema ====================
 export const jobFormSchema = z.object({
-  title: z.string()
-    .min(1, 'Job title is required')
-    .min(3, 'Job title must be at least 3 characters')
-    .max(200, 'Job title must be less than 200 characters'),
+  name: z.string()
+    .min(1, 'Numele jobului este obligatoriu')
+    .min(3, 'Numele trebuie să aibă cel puțin 3 caractere')
+    .max(200, 'Numele nu poate depăși 200 de caractere'),
   
   orderId: z.string()
-    .min(1, 'Order ID is required'),
+    .min(1, 'Comanda este obligatorie'),
+
+  productId: z.string().optional().or(z.literal('')),
   
   status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'], {
-    message: 'Invalid job status',
+    message: 'Status invalid',
   }),
+
+  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).optional().or(z.literal('')),
   
   assignedTo: z.string().optional().or(z.literal('')),
+
+  printMethodId: z.string().optional().or(z.literal('')),
+
+  materialId: z.string().optional().or(z.literal('')),
+
+  machineId: z.string().optional().or(z.literal('')),
+
+  quantity: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number().positive('Cantitatea trebuie să fie pozitivă').optional(),
+  ),
+
+  bwPages: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : Number(val)),
+    z.number().nonnegative('Paginile alb-negru nu pot fi negative').optional(),
+  ),
   
   deadline: z.string()
     .optional()
@@ -253,7 +370,7 @@ export const jobFormSchema = z.object({
       if (!val || val === '') return true;
       return !isNaN(Date.parse(val));
     }, {
-      message: 'Invalid deadline date',
+      message: 'Dată invalidă',
     }),
   
   notes: z.string().optional().or(z.literal('')),
@@ -293,3 +410,13 @@ export const productionSearchFormSchema = z.object({
 });
 
 export type ProductionSearchFormData = z.infer<typeof productionSearchFormSchema>;
+
+// ==================== Material Consumption Schema ====================
+export const materialConsumptionFormSchema = z.object({
+  jobId: z.string().min(1, 'Selectează un job de producție'),
+  quantity: z.number().positive('Cantitatea trebuie să fie pozitivă'),
+  unit: z.enum(['liter', 'ml', 'gram', 'kg', 'unit', 'm2', 'meter', 'pcs']).optional(),
+  rollWidthMeters: z.number().positive('Lățimea rolei trebuie să fie pozitivă').optional(),
+});
+
+export type MaterialConsumptionFormData = z.infer<typeof materialConsumptionFormSchema>;

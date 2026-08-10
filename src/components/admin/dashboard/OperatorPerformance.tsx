@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Users, Award, Clock, TrendingUp } from "lucide-react";
-import { useAnalytics, OperatorPerf as AnalyticsOperator } from "@/modules/admin/useAnalytics";
+import { useAnalytics } from "@/modules/admin/useAnalytics";
 
 interface OperatorPerf {
   id: string;
@@ -19,16 +19,9 @@ export default function OperatorPerformance() {
   const { fetchOperatorPerformance, loading } = useAnalytics();
   const [operators, setOperators] = useState<OperatorPerf[]>([]);
 
-  useEffect(() => {
-    loadOperators();
-    const interval = setInterval(loadOperators, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadOperators = async () => {
+  const loadOperators = useCallback(async () => {
     const data = await fetchOperatorPerformance();
     if (data) {
-      // Transform AnalyticsOperator to OperatorPerf
       const transformed = data.map(item => ({
         id: item.id,
         name: item.name,
@@ -40,7 +33,20 @@ export default function OperatorPerformance() {
       }));
       setOperators(transformed);
     }
-  };
+  }, [fetchOperatorPerformance]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadOperators();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadOperators();
+    }, 60000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadOperators]);
 
   if (loading && operators.length === 0) {
     return (

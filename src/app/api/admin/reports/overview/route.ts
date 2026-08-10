@@ -132,7 +132,6 @@ export async function GET(_request: NextRequest) {
       take: 1,
     });
 
-    let topCustomer = null;
     if (topCustomerData.length > 0 && topCustomerData[0].customerId) {
       const customerId = topCustomerData[0].customerId;
       const customer = await prisma.customer.findUnique({
@@ -140,14 +139,7 @@ export async function GET(_request: NextRequest) {
         select: { id: true, name: true, email: true },
       });
 
-      if (customer) {
-        topCustomer = {
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          totalSpent: Number(topCustomerData[0]._sum.totalPrice || 0),
-        };
-      }
+      void customer;
     }
 
     // ─────────────────────────────────────────────────────────

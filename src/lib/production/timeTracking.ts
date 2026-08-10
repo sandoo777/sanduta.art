@@ -225,10 +225,10 @@ export class TimeTracker {
    * Create tracker from JSON
    */
   static fromJSON(json: string): TimeTracker {
-    const entries = JSON.parse(json);
-    return new TimeTracker(entries.map((e: any) => ({
-      ...e,
-      timestamp: new Date(e.timestamp),
+    const entries = JSON.parse(json) as Array<{ timestamp: string } & Record<string, unknown>>;
+    return new TimeTracker(entries.map((entry) => ({
+      ...entry,
+      timestamp: new Date(entry.timestamp),
     })));
   }
 }

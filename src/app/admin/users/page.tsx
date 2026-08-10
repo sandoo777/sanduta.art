@@ -1,22 +1,14 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Button, Input, Card, CardContent, Badge } from "@/components/ui/Button";
+import { Button, Input, Card, CardContent } from "@/components/ui";
 import { Table } from "@/components/ui/Table";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
-import type { Column } from "@/components/ui/Table.types";
 import { useSession } from "next-auth/react";
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { ExternalLink } from "lucide-react";
-import { User } from '@/types/models';
 import { useUsers } from '@/domains/admin/hooks/useUsers';
 import type { UserRole } from '@prisma/client';
-
-interface UserWithCount extends User {
-  _count: {
-    orders: number;
-  };
-}
 
 export default function AdminUsersPage() {
   const { data: session } = useSession();
@@ -33,8 +25,8 @@ export default function AdminUsersPage() {
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    void loadUsers();
+  }, [loadUsers]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     await confirm({
@@ -137,7 +129,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-6">
               <div className="text-sm text-purple-600">Admins</div>
               <div className="text-2xl font-bold text-purple-900">
-                {users.filter(u => u.role === Role.ADMIN).length}
+                {users.filter((user) => user.role === 'ADMIN').length}
               </div>
             </CardContent>
           </Card>
@@ -145,7 +137,7 @@ export default function AdminUsersPage() {
             <CardContent className="p-6">
               <div className="text-sm text-blue-600">Managers</div>
               <div className="text-2xl font-bold text-blue-900">
-                {users.filter(u => u.role === Role.MANAGER).length}
+                {users.filter((user) => user.role === 'MANAGER').length}
               </div>
             </CardContent>
           </Card>
@@ -153,14 +145,14 @@ export default function AdminUsersPage() {
             <CardContent className="p-6">
               <div className="text-sm text-gray-600">Viewers</div>
               <div className="text-2xl font-bold text-gray-900">
-                {users.filter(u => u.role === Role.VIEWER).length}
+                {users.filter((user) => user.role === 'VIEWER').length}
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <Table<UserWithCount>
+          <Table
             columns={[
               {
                 key: 'name',
@@ -261,14 +253,13 @@ export default function AdminUsersPage() {
             ]}
             data={filteredUsers}
             rowKey="id"
-            loading={loading}
+            loading={isLoading}
             loadingMessage="Loading users..."
             emptyMessage="No users found"
             rowClassName={(user) => updatingUserId === user.id ? 'opacity-50' : ''}
             striped={true}
           />
         </div>
-      </div>
       <Dialog />
     </div>
   );

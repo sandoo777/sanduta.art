@@ -9,8 +9,11 @@ export type {
   ProductVariant,
   ProductImage as ProductImageBase, 
   Category,
-  ProductType 
+  ProductType,
+  SaleUnit,
 } from '@/types/models';
+
+import type { SaleUnit } from '@/types/models';
 
 // Legacy/extended ProductImage (keep if needed locally)
 export interface ProductImage {
@@ -25,7 +28,12 @@ export interface CreateProductInput {
   sku?: string;
   description?: string;
   type: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM';
+  saleUnit: SaleUnit;
   price: number;
+  pricePerM2?: number;
+  pricePerUnit?: number;
+  printMethodId?: string;
+  materialId?: string;
   categoryId: string;
   active?: boolean;
 }
@@ -36,7 +44,12 @@ export interface UpdateProductInput {
   sku?: string;
   description?: string;
   type?: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM';
+  saleUnit?: SaleUnit;
   price?: number;
+  pricePerM2?: number;
+  pricePerUnit?: number;
+  printMethodId?: string;
+  materialId?: string;
   categoryId?: string;
   active?: boolean;
 }
@@ -45,6 +58,8 @@ export interface ProductFilters {
   search?: string;
   categoryId?: string;
   type?: 'STANDARD' | 'CONFIGURABLE' | 'CUSTOM' | 'all';
+  printMethodId?: string;
+  sourcing?: 'INTERNAL' | 'OUTSOURCE' | 'all';
   activeOnly?: boolean;
 }
 

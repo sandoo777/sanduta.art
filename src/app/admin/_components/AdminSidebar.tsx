@@ -14,8 +14,9 @@ import {
   Settings,
   Printer,
   Scissors,
-  UserCog,
+  Cpu,
   X,
+  UserCog,
   type LucideIcon
 } from 'lucide-react';
 
@@ -38,6 +39,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const productionSection = [
     { name: 'Comenzi', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Coadă Producție', href: '/admin/production', icon: Factory },
+    { name: 'Echipamente', href: '/admin/machines', icon: Cpu },
     { name: 'Materiale', href: '/admin/materials', icon: Boxes },
     { name: 'Metode Printare', href: '/admin/print-methods', icon: Printer },
     { name: 'Finisare', href: '/admin/finishing', icon: Scissors },

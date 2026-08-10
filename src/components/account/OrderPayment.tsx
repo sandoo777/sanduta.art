@@ -5,6 +5,7 @@ import {
   ClockIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+import type { ForwardRefExoticComponent, RefAttributes, SVGProps } from 'react';
 
 interface OrderPaymentProps {
   paymentStatus: string;
@@ -29,7 +30,9 @@ const paymentStatusColors: Record<string, string> = {
   REFUNDED: "bg-gray-50 text-gray-700 border-gray-200",
 };
 
-const paymentStatusIcons: Record<string, any> = {
+type PaymentStatusIcon = ForwardRefExoticComponent<SVGProps<SVGSVGElement> & RefAttributes<SVGSVGElement>>;
+
+const paymentStatusIcons: Record<string, PaymentStatusIcon> = {
   PENDING: ClockIcon,
   PAID: CheckCircleIcon,
   FAILED: XCircleIcon,

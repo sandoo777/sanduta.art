@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth-helpers";
 import { logger, logApiError, createErrorResponse } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+
+type SalesOrderSummary = {
+  totalPrice: Prisma.Decimal;
+  createdAt: Date;
+};
 
 /**
  * GET /api/admin/analytics/sales
@@ -75,7 +81,7 @@ export async function GET(_req: NextRequest) {
       orderBy: { createdAt: "asc" },
     });
 
-    let compareOrders: { totalPrice: any; createdAt: Date }[] = [];
+    let compareOrders: SalesOrderSummary[] = [];
     if (compare && compareStartDate) {
       compareOrders = await prisma.order.findMany({
         where: {

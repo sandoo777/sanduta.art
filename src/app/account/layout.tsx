@@ -9,7 +9,7 @@ interface UserLayoutProps {
   children: ReactNode;
 }
 
-export function UserLayout({ children }: UserLayoutProps) {
+function UserLayout({ children }: UserLayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
 

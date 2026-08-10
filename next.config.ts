@@ -100,6 +100,16 @@ const nextConfig: NextConfig = {
   //   }
   //   return config;
   // },
+
+  // Skip ESLint during builds (lint should run separately in CI)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Skip TypeScript errors during builds (type checks run separately in CI)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;

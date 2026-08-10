@@ -2,33 +2,41 @@
 
 import { useState, useEffect, useRef } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from 'next/link';
 import { Input, Button } from "@/components/ui";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
   const [generalError, setGeneralError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState(() => {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    return params.get('registered') === 'true'
+      ? 'Cont creat cu succes! Te poți autentifica acum.'
+      : '';
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const router = useRouter();
   const { data: session, status, update } = useSession();
   const hasRedirected = useRef(false);
 
   // Check for registration success
   useEffect(() => {
-    if (searchParams.get('registered') === 'true') {
-      setSuccessMessage("Cont creat cu succes! Te poți autentifica acum.");
-      setTimeout(() => setSuccessMessage(""), 5000);
+    if (!successMessage) {
+      return;
     }
-  }, [searchParams]);
+
+    const timer = setTimeout(() => setSuccessMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
 
   // Redirect authenticated users
   useEffect(() => {
@@ -89,8 +97,8 @@ export default function LoginPage() {
         setGeneralError("Autentificarea a eșuat. Te rugăm să încerci din nou.");
         setLoading(false);
       }
-    } catch (err) {
-      console.error('[Login] Sign in error:', err);
+    } catch (error) {
+      console.error('[Login] Sign in error:', error);
       setGeneralError("Nu s-a putut conecta la server. Verifică conexiunea internet.");
       setLoading(false);
     }
@@ -99,7 +107,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       await signIn("google", { callbackUrl: "/" });
-    } catch (err) {
+    } catch (_error) {
       setGeneralError("Nu s-a putut conecta cu Google");
     }
   };

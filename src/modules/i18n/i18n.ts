@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -28,7 +28,7 @@ export const useI18n = create<I18nStore>()(
       language: "RO",
       setLanguage: (language: Language) => {
         set({ language });
-        // Salvează și în localStorage direct
+        // SalveazÄƒ È™i Ã®n localStorage direct
         if (typeof window !== "undefined") {
           localStorage.setItem("language", language);
         }
@@ -36,15 +36,15 @@ export const useI18n = create<I18nStore>()(
       t: (key: string) => {
         const { language } = get();
         const keys = key.split(".");
-        let value: any = translations[language];
+        let value: unknown = translations[language];
 
         for (const k of keys) {
           if (value && typeof value === "object" && k in value) {
             value = value[k];
           } else {
-            // Fallback la română dacă nu găsește cheia
+            // Fallback la romÃ¢nÄƒ dacÄƒ nu gÄƒseÈ™te cheia
             console.warn(`Translation key not found: ${key}`);
-            let fallback: any = translations.RO;
+            let fallback: unknown = translations.RO;
             for (const fk of keys) {
               if (fallback && typeof fallback === "object" && fk in fallback) {
                 fallback = fallback[fk];
@@ -71,7 +71,7 @@ export const useTranslations = () => {
   return { t, language };
 };
 
-// Detectare limbă browser
+// Detectare limbÄƒ browser
 export const detectBrowserLanguage = (): Language => {
   if (typeof window === "undefined") return "RO";
 
@@ -84,7 +84,7 @@ export const detectBrowserLanguage = (): Language => {
   return "RO"; // Default fallback
 };
 
-// Inițializare limbă
+// IniÈ›ializare limbÄƒ
 export const initializeLanguage = () => {
   if (typeof window === "undefined") return;
 

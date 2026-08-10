@@ -24,7 +24,7 @@ export async function loadTranslations(locale: Locale): Promise<TranslationDicti
     const data = translations.default || translations;
     translationsCache.set(locale, data);
     return data;
-  } catch (_error) {
+  } catch (error) {
     console.error(`Failed to load translations for ${locale}:`, error);
     
     // Fallback la limba implicită
@@ -46,7 +46,7 @@ export function getTranslation(
   fallbackChain?: Locale[]
 ): TranslationResult {
   const keys = key.split('.');
-  let value: any = translations;
+  let value: string | TranslationDictionary | undefined = translations;
 
   // Navighează prin obiectul de traduceri
   for (const k of keys) {
@@ -196,14 +196,14 @@ export function generateLocalizedSlug(
  * Validează dacă toate traducerile necesare există
  */
 export function validateTranslations(
-  translations: Record<string, any>,
+  translations: TranslationDictionary,
   requiredKeys: string[]
 ): { valid: boolean; missing: string[] } {
   const missing: string[] = [];
 
   for (const key of requiredKeys) {
     const keys = key.split('.');
-    let value: any = translations;
+    let value: string | TranslationDictionary | undefined = translations;
 
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {

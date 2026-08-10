@@ -8,7 +8,7 @@ interface PriceSummaryProps {
   quantity: number;
 }
 
-export function PriceSummary({ priceSummary, quantity }: PriceSummaryProps) {
+export function PriceSummary({ priceSummary, quantity: _quantity }: PriceSummaryProps) {
   if (!priceSummary) {
     return (
       <Card>

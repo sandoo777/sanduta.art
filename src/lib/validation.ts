@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole, OrderStatus, PaymentStatus } from '@prisma/client';
+import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 export interface ValidationError {
   field: string;

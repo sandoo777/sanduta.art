@@ -20,7 +20,7 @@ export interface ProductWithTranslations {
   description?: string;
   descriptionShort?: string;
   translations?: Record<string, ProductTranslation>;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

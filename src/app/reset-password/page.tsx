@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { Input, Button } from "@/components/ui";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -14,8 +14,8 @@ export default function ResetPasswordPage() {
   const [generalError, setGeneralError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword] = useState(false);
+  const [showConfirmPassword] = useState(false);
   const [passwordValue, setPasswordValue] = useState("");
   
   const router = useRouter();

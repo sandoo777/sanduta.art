@@ -21,6 +21,7 @@ export function LanguageSwitcher({
   variant = 'dropdown',
 }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingLocale, setPendingLocale] = useState<Locale | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,25 +40,32 @@ export function LanguageSwitcher({
     }
   }, [isOpen]);
 
-  const changeLocale = (newLocale: Locale) => {
-    // Salvează preferința în cookie
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`; // 1 an
+  useEffect(() => {
+    if (!pendingLocale) {
+      return;
+    }
 
-    // Construiește noul pathname
+    document.cookie = `NEXT_LOCALE=${pendingLocale}; path=/; max-age=31536000`;
+
     const segments = pathname.split('/').filter(Boolean);
-    
-    // Înlocuiește primul segment (locale) cu noul locale
     if (segments.length > 0 && SUPPORTED_LOCALES.includes(segments[0] as Locale)) {
-      segments[0] = newLocale;
+      segments[0] = pendingLocale;
     } else {
-      segments.unshift(newLocale);
+      segments.unshift(pendingLocale);
     }
 
     const newPath = `/${segments.join('/')}`;
-    
-    setIsOpen(false);
+    const resetPendingLocale = setTimeout(() => {
+      setPendingLocale(null);
+    }, 0);
     router.push(newPath);
     router.refresh();
+    return () => clearTimeout(resetPendingLocale);
+  }, [pathname, pendingLocale, router]);
+
+  const changeLocale = (newLocale: Locale) => {
+    setIsOpen(false);
+    setPendingLocale(newLocale);
   };
 
   if (variant === 'inline') {

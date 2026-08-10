@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "../src/lib/prisma";
-import { Material, ProductionJob, Order, MaterialUsage } from "@prisma/client";
+import { Material, ProductionJob, Order } from "@prisma/client";
 
 interface TestResult {
   test: string;

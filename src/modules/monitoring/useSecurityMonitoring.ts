@@ -11,8 +11,8 @@
  * - Suspicious activity tracking
  */
 
-import { useLogger, LogCategory } from './useLogger';
-import { useAlerts, AlertSeverity } from './useAlerts';
+import { getLogger } from './useLogger';
+import { getAlerts, AlertSeverity } from './useAlerts';
 
 // Security event type
 export enum SecurityEventType {
@@ -35,7 +35,7 @@ interface SecurityEvent {
   userId?: string;
   userAgent?: string;
   endpoint?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   timestamp: string;
   blocked: boolean;
 }
@@ -49,8 +49,8 @@ interface LoginAttempt {
 }
 
 class SecurityMonitor {
-  private logger = useLogger();
-  private alerts = useAlerts();
+  private logger = getLogger();
+  private alerts = getAlerts();
   private events: SecurityEvent[] = [];
   private loginAttempts: LoginAttempt[] = [];
   private blockedIps = new Set<string>();
@@ -383,7 +383,7 @@ class SecurityMonitor {
     userId?: string,
     userAgent?: string,
     endpoint?: string,
-    details?: Record<string, any>,
+    details?: Record<string, unknown>,
     blocked: boolean = false
   ) {
     const event: SecurityEvent = {
@@ -513,11 +513,16 @@ let securityMonitorInstance: SecurityMonitor | null = null;
 /**
  * Get security monitor instance
  */
-export function useSecurityMonitoring(): SecurityMonitor {
+export function getSecurityMonitoring(): SecurityMonitor {
   if (!securityMonitorInstance) {
     securityMonitorInstance = new SecurityMonitor();
   }
+
   return securityMonitorInstance;
+}
+
+export function useSecurityMonitoring(): SecurityMonitor {
+  return getSecurityMonitoring();
 }
 
 export default SecurityMonitor;

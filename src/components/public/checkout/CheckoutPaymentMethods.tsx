@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CreditCard, DollarSign, Banknote, Home } from 'lucide-react';
+import React from 'react';
+import { CreditCard } from 'lucide-react';
 import type { PaymentMethod } from '@/modules/checkout/useCheckout';
 
 interface CheckoutPaymentMethodsProps {

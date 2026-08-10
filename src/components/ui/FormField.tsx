@@ -12,8 +12,8 @@ import {
 interface FormFieldProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
   children?: (field: {
-    value: any;
-    onChange: (...event: any[]) => void;
+    value: unknown;
+    onChange: (...event: unknown[]) => void;
     onBlur: () => void;
     error?: string;
   }) => React.ReactNode;

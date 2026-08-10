@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Eye, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -43,21 +42,6 @@ export function ProductCard({
   const safeDiscount = typeof discount === 'number' && !isNaN(discount) ? discount : 0;
   const finalPrice = safeDiscount > 0 ? safeBasePrice * (1 - safeDiscount / 100) : safeBasePrice;
 
-  const badgeConfig = {
-    bestseller: {
-      label: 'Best Seller',
-      color: 'bg-blue-600 text-white',
-    },
-    promo: {
-      label: 'Promoție',
-      color: 'bg-yellow-400 text-gray-900',
-    },
-    eco: {
-      label: 'Eco',
-      color: 'bg-green-600 text-white',
-    },
-  };
-
   return (
     <>
       <Card hover className="group relative overflow-hidden">
@@ -87,7 +71,7 @@ export function ProductCard({
         <Link href={`/produse/${slug}`}>
           <div className="relative w-full h-64 overflow-hidden bg-gray-100">
             <Image
-              src={imageUrl || '/images/placeholder-product.jpg'}
+              src={imageUrl || '/placeholder-product.svg'}
             alt={name}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-500"

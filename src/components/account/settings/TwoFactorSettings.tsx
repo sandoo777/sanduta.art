@@ -1,40 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 import { useSecurity } from '@/modules/account/useSecurity';
-import { useSession } from 'next-auth/react';
 import { 
   ShieldCheckIcon, 
-  QrCodeIcon,
   DocumentDuplicateIcon,
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
 
 export default function TwoFactorSettings() {
-  const { data: session } = useSession();
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [disableCode, setDisableCode] = useState('');
-  const [showBackupCodes, setShowBackupCodes] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const { generate2FA, enable2FA, disable2FA, twoFactorSetup, loading } = useSecurity();
-
-  // Check if 2FA is enabled (would need to add this to session or fetch from API)
-  useEffect(() => {
-    // TODO: Fetch 2FA status from API
-    // setIs2FAEnabled(user.twoFactorEnabled);
-  }, []);
 
   const handleStartSetup = async () => {
     setMessage(null);
     try {
       await generate2FA();
       setShowSetup(true);
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -58,8 +49,7 @@ export default function TwoFactorSettings() {
       setIs2FAEnabled(true);
       setShowSetup(false);
       setVerificationCode('');
-      setShowBackupCodes(true);
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -78,7 +68,7 @@ export default function TwoFactorSettings() {
       setMessage({ type: 'success', text: result.message });
       setIs2FAEnabled(false);
       setDisableCode('');
-    } catch (_error: unknown) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     }
   };
@@ -157,9 +147,12 @@ export default function TwoFactorSettings() {
               Folosește Google Authenticator, Authy sau o aplicație similară pentru a scana acest cod:
             </p>
             <div className="flex justify-center mb-4">
-              <img
+              <Image
                 src={twoFactorSetup.qrCode}
                 alt="QR Code"
+                width={192}
+                height={192}
+                unoptimized
                 className="w-48 h-48 border-4 border-white rounded-lg shadow-lg"
               />
             </div>

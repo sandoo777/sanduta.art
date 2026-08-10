@@ -7,7 +7,7 @@ import {
 } from '@/lib/export/project-exporter';
 
 export async function POST(request: NextRequest) {
-  const { user, error } = await requireAuth();
+  const { error } = await requireAuth();
   if (error) return error;
 
   try {

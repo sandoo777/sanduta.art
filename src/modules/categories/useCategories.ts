@@ -3,12 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Category } from '@/types/models';
 
-interface CategoryWithCount extends Category {
-  _count: {
-    products: number;
-  };
-}
-
 interface CreateCategoryData {
   name: string;
   slug: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, Button } from "@/components/ui";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -161,7 +161,7 @@ export default function AddressForm({ editingAddress, onSubmit, onCancel }: Addr
                 type="checkbox"
                 id="isDefault"
                 checked={value}
-                onChange={(e) => onChange({ target: { value: e.target.checked } } as any)}
+                onChange={(e) => onChange({ target: { value: e.target.checked } })}
                 onBlur={onBlur}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />

@@ -4,12 +4,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { useLogger, LogLevel, LogCategory } from '@/modules/monitoring/useLogger';
+import { getLogger, LogLevel, LogCategory } from '@/modules/monitoring/useLogger';
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { level, category, message, context, timestamp } = body;
+    const { level, category, message, context } = body as {
+      level?: LogLevel;
+      category?: LogCategory;
+      message?: string;
+      context?: Record<string, unknown>;
+      timestamp?: string;
+    };
 
     if (!level || !category || !message) {
       return NextResponse.json(
@@ -34,7 +40,7 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    const logger = useLogger();
+    const logger = getLogger();
 
     // Route to appropriate logger method
     switch (level) {

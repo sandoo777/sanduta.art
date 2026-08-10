@@ -3,13 +3,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface CategoryView {
-  id: number;
-  name: string;
-  icon?: string;
-  parentId?: number | null;
-}
-
 interface FiltersProps {
   onFilterChange: (filters: FilterState) => void;
   categories: Category[];
@@ -94,7 +87,7 @@ export function Filters({ onFilterChange, categories }: FiltersProps) {
     }));
   }, [categories]);
 
-  const FilterContent = () => (
+  const filterContent = (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -254,7 +247,7 @@ export function Filters({ onFilterChange, categories }: FiltersProps) {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <FilterContent />
+        {filterContent}
       </div>
 
       {/* Mobile Drawer */}
@@ -300,7 +293,7 @@ export function Filters({ onFilterChange, categories }: FiltersProps) {
                     </svg>
                   </button>
                 </div>
-                <FilterContent />
+                {filterContent}
               </div>
             </motion.div>
           </>

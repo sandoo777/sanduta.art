@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Plus } from "lucide-react";
 import { Card, CardContent } from '@/components/ui/Card';
 import { usePrintMethods } from "@/modules/print-methods/usePrintMethods";
-import type { PrintMethod, PrintMethodFilters, CreatePrintMethodInput } from "@/modules/print-methods/types";
+import type { PrintMethodWithRelations, PrintMethodFilters, CreatePrintMethodInput } from "@/modules/print-methods/types";
 import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
 import { PrintMethodCard } from "./_components/PrintMethodCard";
 import { PrintMethodForm } from "./_components/PrintMethodForm";
 
 export default function PrintMethodsPage() {
-  const [printMethods, setPrintMethods] = useState<PrintMethod[]>([]);
+  const router = useRouter();
+  const [printMethods, setPrintMethods] = useState<PrintMethodWithRelations[]>([]);
   const [filters, setFilters] = useState<PrintMethodFilters>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMethod, setEditingMethod] = useState<PrintMethod | null>(null);
-  const { getPrintMethods, createPrintMethod, updatePrintMethod, deletePrintMethod, isLoading } = usePrintMethods();
+  const { getPrintMethods, createPrintMethod, deletePrintMethod, isLoading } = usePrintMethods();
 
   useEffect(() => {
     loadPrintMethods();
@@ -56,31 +57,24 @@ export default function PrintMethodsPage() {
   }, []);
 
   const handleSave = async (data: CreatePrintMethodInput) => {
-    if (editingMethod) {
-      await updatePrintMethod(editingMethod.id, data);
-    } else {
-      await createPrintMethod(data);
-    }
+    await createPrintMethod(data);
     loadPrintMethods();
     setIsModalOpen(false);
-    setEditingMethod(null);
   };
 
-  const handleEdit = (method: PrintMethod) => {
-    setEditingMethod(method);
-    setIsModalOpen(true);
+  const handleEdit = (method: PrintMethodWithRelations) => {
+    router.push(`/admin/print-methods/${method.id}`);
   };
 
   const handleDelete = async (id: string) => {
     const success = await deletePrintMethod(id);
     if (success) {
-      loadPrintMethods();
+      setPrintMethods((current) => current.filter((method) => method.id !== id));
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setEditingMethod(null);
   };
 
   return (
@@ -241,7 +235,7 @@ export default function PrintMethodsPage() {
       {/* Modal */}
       {isModalOpen && (
         <PrintMethodForm
-          printMethod={editingMethod}
+          printMethod={null}
           onClose={handleModalClose}
           onSave={handleSave}
         />

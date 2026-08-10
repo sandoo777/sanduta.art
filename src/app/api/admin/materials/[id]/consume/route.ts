@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/modules/auth/nextauth";
-import { prisma } from "@/lib/prisma";
+import { MaterialUnit, Prisma } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireRole } from '@/lib/auth-helpers';
+import { createErrorResponse, logApiError, logger } from '@/lib/logger';
+import { calculateConsumptionCost, convertMaterialQuantity } from '@/modules/materials/pricing';
+import { prisma } from '@/lib/prisma';
 
 /**
  * POST /api/admin/materials/[id]/consume
@@ -13,76 +15,144 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
-
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
-      return NextResponse.json({ error: "Acces interzis" }, { status: 403 });
-    }
+    const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
+    if (error) return error;
 
     const body = await request.json();
-    const { jobId, quantity } = body;
+    const { jobId, quantity, unit, rollWidthMeters } = body as {
+      jobId?: unknown;
+      quantity?: unknown;
+      unit?: unknown;
+      rollWidthMeters?: unknown;
+    };
 
-    // Validations
-    if (!jobId || typeof jobId !== "string") {
-      return NextResponse.json(
-        { error: "ID-ul job-ului este obligatoriu" },
-        { status: 400 }
-      );
+    if (!jobId || typeof jobId !== 'string') {
+      return createErrorResponse('ID-ul job-ului este obligatoriu', 400);
     }
 
-    if (!quantity || typeof quantity !== "number" || quantity <= 0) {
-      return NextResponse.json(
-        { error: "Cantitatea trebuie să fie un număr pozitiv" },
-        { status: 400 }
-      );
+    if (typeof quantity !== 'number' || quantity <= 0) {
+      return createErrorResponse('Cantitatea trebuie să fie un număr pozitiv', 400);
     }
 
-    // Check if material exists
+    const requestedUnit = typeof unit === 'string' ? unit.trim() : '';
+    if (requestedUnit && !(Object.values(MaterialUnit) as string[]).includes(requestedUnit)) {
+      return createErrorResponse('Unitatea de consum este invalidă', 400);
+    }
+
+    const width = typeof rollWidthMeters === 'number' ? rollWidthMeters : undefined;
+    if (width !== undefined && width <= 0) {
+      return createErrorResponse('Lățimea rolei trebuie să fie un număr pozitiv', 400);
+    }
+
+    logger.info('API:Admin:Materials:Consume', 'Consuming material', {
+      userId: user.id,
+      materialId: id,
+      jobId,
+      quantity,
+      unit: requestedUnit || null,
+    });
+
     const material = await prisma.material.findUnique({
       where: { id },
+      include: {
+        category: {
+          select: {
+            requiresPricePerSqm: true,
+            requiresPricePerMeter: true,
+            requiresPricePerUnit: true,
+          },
+        },
+      },
     });
 
     if (!material) {
-      return NextResponse.json(
-        { error: "Materialul nu a fost găsit" },
-        { status: 404 }
-      );
+      return createErrorResponse('Materialul nu a fost găsit', 404);
     }
 
-    // Check if job exists
     const job = await prisma.productionJob.findUnique({
       where: { id: jobId },
     });
 
     if (!job) {
-      return NextResponse.json(
-        { error: "Job-ul de producție nu a fost găsit" },
-        { status: 404 }
-      );
+      return createErrorResponse('Job-ul de producție nu a fost găsit', 404);
     }
 
-    // Check if there's enough stock
-    if (material.stock < quantity) {
+    const usageUnit = requestedUnit ? (requestedUnit as MaterialUnit) : material.unit;
+
+    let quantityInStockUnit: number;
+    try {
+      quantityInStockUnit = convertMaterialQuantity(quantity, usageUnit, material.unit, {
+        rollWidthMeters: width,
+      });
+    } catch (conversionError) {
+      const message = conversionError instanceof Error ? conversionError.message : 'Conversie invalidă';
+      return createErrorResponse(message, 400);
+    }
+
+    if (material.stock < quantityInStockUnit) {
       return NextResponse.json(
-        { 
-          error: "Stoc insuficient",
+        {
+          error: 'Stoc insuficient',
           available: material.stock,
-          requested: quantity
+          requested: quantityInStockUnit,
+          requestedRaw: quantity,
+          requestedUnit: usageUnit,
+          stockUnit: material.unit,
         },
         { status: 400 }
       );
     }
 
-    // Calculate new stock
-    const newStock = material.stock - quantity;
+    const pricingUnit =
+      material.consumptionType === 'AREA_BASED'
+        ? material.category.requiresPricePerSqm
+          ? MaterialUnit.m2
+          : material.category.requiresPricePerMeter
+            ? MaterialUnit.meter
+            : MaterialUnit.unit
+        : material.unit;
 
-    // Create material usage and update stock in a transaction
+    let quantityForPricing: number;
+    try {
+      quantityForPricing = convertMaterialQuantity(quantity, usageUnit, pricingUnit, {
+        rollWidthMeters: width,
+      });
+    } catch (conversionError) {
+      const message = conversionError instanceof Error ? conversionError.message : 'Conversie invalidă pentru pricing';
+      return createErrorResponse(message, 400);
+    }
+
+    let pricing;
+    try {
+      pricing = calculateConsumptionCost(quantityForPricing, {
+        consumptionType: material.consumptionType,
+        purchasePrice: material.purchasePrice ? Number(material.purchasePrice) : null,
+        salePrice: material.salePrice ? Number(material.salePrice) : null,
+        wastePercent: material.wastePercent,
+      });
+    } catch (pricingError) {
+      const message = pricingError instanceof Error ? pricingError.message : 'Configurare preț invalidă';
+      return createErrorResponse(message, 400);
+    }
+
+    const totalUsedInStockUnit = convertMaterialQuantity(
+      pricing.totalUsed,
+      pricingUnit,
+      material.unit,
+      { rollWidthMeters: width }
+    );
+    const newStock = material.stock - totalUsedInStockUnit;
+
     const result = await prisma.$transaction([
       prisma.materialUsage.create({
         data: {
           materialId: id,
           jobId,
           quantity,
+          unit: usageUnit,
+          wastePercent: pricing.effectiveWastePercent,
+          totalUsed: pricing.totalUsed,
+          cost: new Prisma.Decimal(pricing.totalCost),
         },
       }),
       prisma.material.update({
@@ -93,24 +163,28 @@ export async function POST(
 
     const [materialUsage, updatedMaterial] = result;
 
-    // Check if stock is below minimum threshold
     const lowStockWarning = newStock < material.minStock;
 
     return NextResponse.json({
       success: true,
       materialUsage,
       material: updatedMaterial,
+      pricing: {
+        unitPrice: pricing.unitPrice,
+        pricingUnit,
+        usageUnit,
+        quantityForPricing,
+        totalUsedInStockUnit,
+        totalCost: pricing.totalCost,
+      },
       warning: lowStockWarning ? {
-        message: "Atenție: Stocul este sub pragul minim!",
+        message: 'Atenție: Stocul este sub pragul minim!',
         currentStock: newStock,
         minStock: material.minStock,
       } : null,
     });
   } catch (error) {
-    console.error("Error consuming material:", error);
-    return NextResponse.json(
-      { error: "Eroare la consumul materialului" },
-      { status: 500 }
-    );
+    logApiError('API:Admin:Materials:Consume', error);
+    return createErrorResponse('Eroare la consumul materialului', 500);
   }
 }

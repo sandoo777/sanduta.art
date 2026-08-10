@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Table } from "@/components/ui/Table";
-import type { Column } from "@/components/ui/Table.types";
 import { useOrders } from '@/domains/orders/hooks/useOrders';
 
 interface OrderListItem {
@@ -20,21 +19,27 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const { getOrders, updateStatus, loading } = useOrders();
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     const result = await getOrders();
     if (result.success && result.data) {
       setOrders(result.data.orders as unknown as OrderListItem[]);
     }
-  };
+  }, [getOrders]);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      void fetchOrders();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [fetchOrders]);
 
   const handleUpdateStatus = async (id: string, status: string) => {
     const result = await updateStatus(id, status);
     if (result.success) {
-      fetchOrders();
+      void fetchOrders();
     } else {
       alert(result.error || 'Failed to update order status');
     }

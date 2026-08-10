@@ -1,11 +1,64 @@
+export type MaterialCategory = 'sheet' | 'roll' | 'rigid' | 'paper' | 'vinyl' | 'textile' | 'other';
+
+export interface MaterialCategoryInfo {
+  id: string;
+  name: string;
+  description?: string | null;
+  requiresThickness: boolean;
+  requiresDensity: boolean;
+  requiresPricePerSqm: boolean;
+  requiresPricePerMeter: boolean;
+  requiresPricePerUnit: boolean;
+  requiresWastePercent: boolean;
+  active: boolean;
+}
+
+export interface MaterialCompatibleMethod {
+  id: string;
+  name: string;
+  type: string;
+  active: boolean;
+}
+
+export interface MaterialCompatibleEquipment {
+  id: string;
+  name: string;
+  type: string;
+  equipmentType: string;
+  status: string;
+  active: boolean;
+}
+
 export interface Material {
   id: string;
   name: string;
+  categoryId: string;
+  category: MaterialCategory;
+  categoryInfo?: MaterialCategoryInfo | null;
+  consumptionType?: 'AREA_BASED' | 'DIRECT';
+  thickness: number | null;
+  density: number | null;
+  purchasePrice: number | null;
+  salePrice: number | null;
+  salePriceMode: 'amount' | 'percent';
+  salePricePercent: number | null;
+  // Backward-compatible aliases used in legacy forms/components.
+  pricePerSqm?: number | null;
+  pricePerMeter?: number | null;
+  pricePerUnit?: number | null;
+  wastePercent: number;
+  active: boolean;
+  printMethods?: MaterialCompatibleMethod[];
+  printMethodIds?: string[];
+  compatibleMethods?: string[];
+  compatibleMethodIds?: string[];
+  compatibleEquipment?: MaterialCompatibleEquipment[];
+  compatibleEquipmentIds?: string[];
   sku: string | null;
-  unit: string;
+  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
   stock: number;
   minStock: number;
-  costPerUnit: number;
+  costPerUnit?: number;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -13,11 +66,17 @@ export interface Material {
   totalConsumption?: number;
 }
 
+export type UsageUnitValue = "sqm" | "meter" | "unit";
+
 export interface MaterialUsage {
   id: string;
   materialId: string;
   jobId: string;
   quantity: number;
+  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
+  wastePercent: number;
+  totalUsed: number;
+  cost: number;
   createdAt: string;
   job?: {
     id: string;
@@ -38,6 +97,22 @@ export interface MaterialWithDetails extends Material {
 
 export interface CreateMaterialInput {
   name: string;
+  category?: MaterialCategory;
+  categoryId?: string;
+  thickness?: number | null;
+  density?: number | null;
+  purchasePrice?: number | null;
+  salePrice?: number | null;
+  salePriceMode?: 'amount' | 'percent';
+  salePricePercent?: number | null;
+  pricePerSqm?: number | null;
+  pricePerMeter?: number | null;
+  pricePerUnit?: number | null;
+  wastePercent?: number;
+  active?: boolean;
+  printMethodIds?: string[];
+  compatibleMethods?: string[];
+  compatibleEquipment?: string[];
   sku?: string;
   unit: string;
   stock?: number;
@@ -48,6 +123,22 @@ export interface CreateMaterialInput {
 
 export interface UpdateMaterialInput {
   name?: string;
+  category?: MaterialCategory;
+  categoryId?: string;
+  thickness?: number | null;
+  density?: number | null;
+  purchasePrice?: number | null;
+  salePrice?: number | null;
+  salePriceMode?: 'amount' | 'percent';
+  salePricePercent?: number | null;
+  pricePerSqm?: number | null;
+  pricePerMeter?: number | null;
+  pricePerUnit?: number | null;
+  wastePercent?: number;
+  active?: boolean;
+  printMethodIds?: string[];
+  compatibleMethods?: string[];
+  compatibleEquipment?: string[];
   sku?: string;
   unit?: string;
   stock?: number;
@@ -59,6 +150,8 @@ export interface UpdateMaterialInput {
 export interface ConsumeMaterialInput {
   jobId: string;
   quantity: number;
+  unit?: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
+  rollWidthMeters?: number;
 }
 
 export interface MaterialFilters {

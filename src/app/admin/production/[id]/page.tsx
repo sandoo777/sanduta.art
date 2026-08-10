@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { Card, CardContent } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { AuthLink } from '@/components/common/links/AuthLink';
@@ -42,18 +42,18 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    loadJob();
-  }, [jobId]);
-
-  const loadJob = async () => {
+  const loadJob = useCallback(async () => {
     try {
       const data = await getJob(jobId);
       setJob(data);
     } catch (err) {
       console.error("Error loading job:", err);
     }
-  };
+  }, [getJob, jobId]);
+
+  useEffect(() => {
+    loadJob();
+  }, [loadJob]);
 
   const handleUpdate = async (data: UpdateJobData) => {
     try {
@@ -190,6 +190,16 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                       <dt className="text-sm text-gray-500">Order Total</dt>
                       <dd className="mt-1 text-sm font-medium text-gray-900">
                         {job.order ? formatCurrency(job.order.totalPrice) : "N/A"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Metoda tiparire</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{job.printMethod?.name || "N/A"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Material</dt>
+                      <dd className="mt-1 text-sm text-gray-900">
+                        {job.material ? `${job.material.name} (${job.material.unit})` : "N/A"}
                       </dd>
                     </div>
                   </dl>

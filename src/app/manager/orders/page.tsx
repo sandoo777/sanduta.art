@@ -55,18 +55,21 @@ export default async function ManagerOrdersPage() {
       }
     );
 
-  // 4. Transform data for client
-  const ordersData = orders.map(order => ({
-    id: order.id,
-    orderNumber: order.orderNumber,
-    customerName: order.customer?.name || 'Unknown',
-    customerEmail: order.customer?.email || 'N/A',
-    status: order.status,
-    totalAmount: order.totalAmount,
-    createdAt: order.createdAt.toISOString(),
-    items: order.orderItems.length,
-  }));
+    // 4. Transform data for client
+    const ordersData = orders.map(order => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      customerName: order.customer?.name || 'Unknown',
+      customerEmail: order.customer?.email || 'N/A',
+      status: order.status,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt.toISOString(),
+      items: order.orderItems.length,
+    }));
 
-  // 5. Pass data to Client Component for interactivity
-  return <ManagerOrdersClient orders={ordersData} />;
+    // 5. Pass data to Client Component for interactivity
+    return <ManagerOrdersClient orders={ordersData} />;
+  } catch (error) {
+    throw error;
+  }
 }

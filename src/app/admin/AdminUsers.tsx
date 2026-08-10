@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Table } from "@/components/ui/Table";
-import type { Column } from "@/components/ui/Table.types";
 import { Badge } from "@/components/ui";
 import { useUsers } from '@/domains/admin/hooks/useUsers';
 import type { UserRole } from '@prisma/client';
@@ -21,9 +20,19 @@ interface UserWithCount {
 export default function AdminUsers() {
   const { users, isLoading, loadUsers, updateUserRole } = useUsers();
 
+  const fetchUsers = useCallback(() => {
+    void loadUsers();
+  }, [loadUsers]);
+
   useEffect(() => {
-    loadUsers();
-  }, []);
+    const timerId = setTimeout(() => {
+      fetchUsers();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [fetchUsers]);
 
   const handleUpdateRole = async (id: string, role: string) => {
     const success = await updateUserRole(id, role as UserRole);

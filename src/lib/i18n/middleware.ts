@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE, detectLocale, type Locale } from '@/i18n/config';
+import { SUPPORTED_LOCALES, detectLocale, type Locale } from '@/i18n/config';
 
 /**
  * Verifică dacă path-ul are un locale valid

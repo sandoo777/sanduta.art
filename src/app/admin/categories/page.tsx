@@ -10,13 +10,7 @@ import { CategoryTreeView } from "./_components/CategoryTreeView";
 import { Card, CardContent } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Category } from '@/types/models';
-import { buildCategoryTree, flattenCategoryTree, filterTree } from '@/lib/categoryTree';
-
-interface CategoryWithCount extends Category {
-  _count: {
-    products: number;
-  };
-}
+import { buildCategoryTree, filterTree } from '@/lib/categoryTree';
 
 export default function AdminCategoriesPage() {
   const { confirm, Dialog } = useConfirmDialog();

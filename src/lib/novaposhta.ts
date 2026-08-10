@@ -36,7 +36,7 @@ class NovaPoshtaClient {
     }
   }
 
-  private async makeRequest(method: string, data: any): Promise<any> {
+  private async makeRequest<T>(method: string, data: Record<string, unknown>): Promise<T> {
     try {
       const payload = {
         apiKey: this.config.apiKey,
@@ -58,14 +58,14 @@ class NovaPoshtaClient {
         throw new Error(`Nova Poshta API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as NovaPoshtaApiResponse<T>;
 
       if (!result.success) {
         throw new Error(`Nova Poshta error: ${result.errors?.join(', ') || 'Unknown error'}`);
       }
 
       return result.data;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error calling Nova Poshta API:', error);
       throw error;
     }
@@ -99,22 +99,22 @@ class NovaPoshtaClient {
         shipmentData.RecipientAddressName = data.pickupPointRef;
       }
 
-      const result = await this.makeRequest('InternetDocument.save', shipmentData);
+      const result = await this.makeRequest<NovaPoshtaDocumentResult[]>('InternetDocument.save', shipmentData);
 
       return {
         tracking_number: result[0]?.Number || '',
         status: 'created',
         reference: result[0]?.Ref || '',
       };
-    } catch (_error) {
+    } catch (error) {
       console.error('Error creating Nova Poshta shipment:', error);
       throw error;
     }
   }
 
-  async trackShipment(trackingNumber: string): Promise<any> {
+  async trackShipment(trackingNumber: string): Promise<Record<string, unknown> | null> {
     try {
-      const result = await this.makeRequest('TrackingDocument.getStatusDocuments', {
+      const result = await this.makeRequest<Array<Record<string, unknown>>>('TrackingDocument.getStatusDocuments', {
         Documents: [
           {
             DocumentNumber: trackingNumber,
@@ -124,36 +124,36 @@ class NovaPoshtaClient {
       });
 
       return result?.[0] || null;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error tracking Nova Poshta shipment:', error);
       throw error;
     }
   }
 
-  async getPickupPoints(cityName: string): Promise<any[]> {
+  async getPickupPoints(cityName: string): Promise<Record<string, unknown>[]> {
     try {
-      const result = await this.makeRequest('AddressGeneral.getWarehouses', {
+      const result = await this.makeRequest<Record<string, unknown>[]>('AddressGeneral.getWarehouses', {
         CityName: cityName,
         Page: 1,
         Limit: 50,
       });
 
       return Array.isArray(result) ? result : [];
-    } catch (_error) {
+    } catch (error) {
       console.error('Error getting Nova Poshta pickup points:', error);
       throw error;
     }
   }
 
-  async getCities(search?: string): Promise<any[]> {
+  async getCities(search?: string): Promise<Record<string, unknown>[]> {
     try {
-      const result = await this.makeRequest('Address.getCities', {
+      const result = await this.makeRequest<Record<string, unknown>[]>('Address.getCities', {
         FindByString: search || '',
         Limit: 50,
       });
 
       return Array.isArray(result) ? result : [];
-    } catch (_error) {
+    } catch (error) {
       console.error('Error getting Nova Poshta cities:', error);
       throw error;
     }

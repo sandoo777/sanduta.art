@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAccount, Address } from "@/modules/account/useAccount";
 import {
   PlusIcon,
@@ -25,9 +26,19 @@ export default function AddressList() {
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
+  const loadAddresses = useCallback(() => {
+    void fetchAddresses();
+  }, [fetchAddresses]);
+
   useEffect(() => {
-    fetchAddresses();
-  }, []);
+    const timerId = setTimeout(() => {
+      loadAddresses();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadAddresses]);
 
   const handleSubmit = async (data: AddressFormData): Promise<boolean> => {
     let success = false;

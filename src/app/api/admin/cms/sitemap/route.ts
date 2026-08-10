@@ -17,7 +17,7 @@ export async function POST(_req: NextRequest) {
     // TODO: Generate actual sitemap XML from pages + blog posts
     // Save to public/sitemap.xml or return dynamically
 
-    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+    const _sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sanduta.art/</loc>

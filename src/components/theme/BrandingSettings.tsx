@@ -5,6 +5,7 @@
  * Configurare logo, favicon, brand name și social links
  */
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -79,9 +80,12 @@ export function BrandingSettings({ value, onChange }: BrandingSettingsProps) {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
               {config.logo.main ? (
                 <div className="space-y-2">
-                  <img
+                  <Image
                     src={config.logo.main}
                     alt="Main Logo"
+                    width={256}
+                    height={96}
+                    unoptimized
                     className="max-h-24 mx-auto"
                   />
                   <Button
@@ -135,9 +139,12 @@ export function BrandingSettings({ value, onChange }: BrandingSettingsProps) {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-gray-900">
               {config.logo.dark ? (
                 <div className="space-y-2">
-                  <img
+                  <Image
                     src={config.logo.dark}
                     alt="Dark Logo"
+                    width={256}
+                    height={96}
+                    unoptimized
                     className="max-h-24 mx-auto"
                   />
                   <Button
@@ -190,9 +197,12 @@ export function BrandingSettings({ value, onChange }: BrandingSettingsProps) {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
               {config.logo.favicon ? (
                 <div className="space-y-2">
-                  <img
+                  <Image
                     src={config.logo.favicon}
                     alt="Favicon"
+                    width={64}
+                    height={64}
+                    unoptimized
                     className="w-16 h-16 mx-auto"
                   />
                   <Button

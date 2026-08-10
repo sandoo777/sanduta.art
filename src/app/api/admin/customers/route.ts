@@ -25,7 +25,7 @@ const createCustomerSchema = z.object({
  */
 export const GET = withRole(
   [UserRole.ADMIN, UserRole.MANAGER],
-  async (request: NextRequest, { user }) => {
+  async (request: NextRequest, { user: _user }) => {
     try {
       // Rate limiting
       const rateLimitResult = await rateLimit(request, RATE_LIMITS.API_GENERAL);

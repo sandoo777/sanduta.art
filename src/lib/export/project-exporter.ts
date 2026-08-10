@@ -6,8 +6,15 @@ interface ProjectExportOptions {
   scale?: number; // pentru toate formatele
 }
 
+interface ProjectExportData {
+  width?: number;
+  height?: number;
+  elements?: unknown[];
+  background?: string;
+}
+
 export async function exportProject(
-  projectData: any,
+  projectData: ProjectExportData,
   options: ProjectExportOptions
 ): Promise<Buffer> {
   try {

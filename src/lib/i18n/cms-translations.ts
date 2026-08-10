@@ -21,8 +21,12 @@ export interface PageWithTranslations {
   title?: string;
   slug?: string;
   content?: string;
+  excerpt?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
   translations?: Record<string, PageTranslation>;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

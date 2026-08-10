@@ -62,6 +62,57 @@ export function useTheme(): UseThemeReturn {
   const [error, setError] = useState<string | null>(null);
 
   /**
+   * Aplică tema în DOM prin CSS Variables
+   */
+  const applyThemeToDOM = useCallback((themeConfig: ThemeConfig) => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+    
+    if (themeConfig.colors) {
+      Object.entries(themeConfig.colors).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          root.style.setProperty(`--color-${key}`, value);
+        }
+      });
+    }
+
+    if (themeConfig.typography) {
+      const { fontFamily, fontSize, fontWeight } = themeConfig.typography;
+      
+      if (fontFamily && typeof fontFamily === 'string') {
+        root.style.setProperty('--font-family', fontFamily);
+      }
+      if (fontSize) {
+        Object.entries(fontSize).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            root.style.setProperty(`--font-size-${key}`, value);
+          }
+        });
+      }
+      if (fontWeight) {
+        Object.entries(fontWeight).forEach(([key, value]) => {
+          root.style.setProperty(`--font-weight-${key}`, String(value));
+        });
+      }
+    }
+
+    if (themeConfig.layout?.spacing) {
+      Object.entries(themeConfig.layout.spacing).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          root.style.setProperty(`--spacing-${key}`, value);
+        }
+      });
+    }
+
+    if (themeConfig.components?.button?.borderRadius) {
+      root.style.setProperty('--radius-button', themeConfig.components.button.borderRadius);
+    }
+
+    console.log('Theme applied to DOM:', themeConfig.id);
+  }, []);
+
+  /**
    * Încarcă tema publicată de pe server
    */
   const loadTheme = useCallback(async () => {
@@ -95,62 +146,7 @@ export function useTheme(): UseThemeReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  /**
-   * Aplică tema în DOM prin CSS Variables
-   */
-  const applyThemeToDOM = useCallback((themeConfig: ThemeConfig) => {
-    if (typeof window === 'undefined') return;
-
-    const root = document.documentElement;
-    
-    // Aplică culorile
-    if (themeConfig.colors) {
-      Object.entries(themeConfig.colors).forEach(([key, value]) => {
-        if (typeof value === 'string') {
-          root.style.setProperty(`--color-${key}`, value);
-        }
-      });
-    }
-
-    // Aplică tipografia
-    if (themeConfig.typography) {
-      const { fontFamily, fontSize, fontWeight } = themeConfig.typography;
-      
-      if (fontFamily && typeof fontFamily === 'string') {
-        root.style.setProperty('--font-family', fontFamily);
-      }
-      if (fontSize) {
-        Object.entries(fontSize).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            root.style.setProperty(`--font-size-${key}`, value);
-          }
-        });
-      }
-      if (fontWeight) {
-        Object.entries(fontWeight).forEach(([key, value]) => {
-          root.style.setProperty(`--font-weight-${key}`, String(value));
-        });
-      }
-    }
-
-    // Layout spacing (fallback pentru backward compatibility)
-    if (themeConfig.layout?.spacing) {
-      Object.entries(themeConfig.layout.spacing).forEach(([key, value]) => {
-        if (typeof value === 'string') {
-          root.style.setProperty(`--spacing-${key}`, value);
-        }
-      });
-    }
-
-    // Components border radius (fallback pentru backward compatibility)
-    if (themeConfig.components?.button?.borderRadius) {
-      root.style.setProperty('--radius-button', themeConfig.components.button.borderRadius);
-    }
-
-    console.log('Theme applied to DOM:', themeConfig.id);
-  }, []);
+  }, [applyThemeToDOM]);
 
   /**
    * Reîncarcă tema de pe server

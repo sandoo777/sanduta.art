@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Factory, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { useAnalytics, ProductionStats as AnalyticsProductionStats } from "@/modules/admin/useAnalytics";
+import { useAnalytics } from "@/modules/admin/useAnalytics";
 
 interface ProductionStats {
   activeJobs: number;
@@ -17,16 +17,9 @@ export default function ProductionOverview() {
   const { fetchProductionStats, loading } = useAnalytics();
   const [stats, setStats] = useState<ProductionStats | null>(null);
 
-  useEffect(() => {
-    loadStats();
-    const interval = setInterval(loadStats, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     const data = await fetchProductionStats();
     if (data) {
-      // Transform AnalyticsProductionStats to ProductionStats
       const transformed: ProductionStats = {
         activeJobs: data.active,
         delayedJobs: data.delayed,
@@ -40,7 +33,20 @@ export default function ProductionOverview() {
       };
       setStats(transformed);
     }
-  };
+  }, [fetchProductionStats]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadStats();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadStats();
+    }, 60000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadStats]);
 
   if (loading && !stats) {
     return (

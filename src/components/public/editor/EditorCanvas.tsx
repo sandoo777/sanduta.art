@@ -21,7 +21,6 @@ export default function EditorCanvas() {
     selectElement, 
     updateElement, 
     moveElement,
-    resizeElement,
     rotateElement,
     zoom,
     canvasSize,

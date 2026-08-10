@@ -30,6 +30,7 @@ import {
   NotificationType,
   ActivityType,
   ProductType,
+  SaleUnit,
 } from '@prisma/client';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -70,6 +71,7 @@ export {
   NotificationType,
   ActivityType,
   ProductType,
+  SaleUnit,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -75,9 +75,9 @@ class PaynetClient {
         throw new Error(`Paynet API error: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as PaynetSessionResponse;
       return result;
-    } catch (_error) {
+    } catch (error) {
       console.error('Error creating Paynet session:', error);
       throw error;
     }
@@ -88,7 +88,7 @@ class PaynetClient {
     return calculatedSignature === signature;
   }
 
-  async getSessionStatus(sessionId: string): Promise<any> {
+  async getSessionStatus(sessionId: string): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(`${this.config.apiUrl}/sessions/${sessionId}`, {
         method: 'GET',
@@ -101,8 +101,8 @@ class PaynetClient {
         throw new Error(`Paynet API error: ${response.status}`);
       }
 
-      return await response.json();
-    } catch (_error) {
+      return (await response.json()) as Record<string, unknown>;
+    } catch (error) {
       console.error('Error getting Paynet session status:', error);
       throw error;
     }

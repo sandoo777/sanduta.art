@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
 import { Input, Button } from "@/components/ui";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -13,8 +13,8 @@ import { registerSchema, type RegisterFormData, getPasswordStrength } from "@/li
 export default function RegisterPage() {
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword] = useState(false);
+  const [showConfirmPassword] = useState(false);
   const [passwordValue, setPasswordValue] = useState("");
   
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      console.log(\`[Register] Creating account for: \${data.email}\`);
+      console.log(`[Register] Creating account for: ${data.email}`);
       
       const res = await fetch("/api/register", {
         method: "POST",
@@ -37,13 +37,13 @@ export default function RegisterPage() {
       });
 
       const responseData = await res.json();
-      console.log(\`[Register] API response:\`, { status: res.status, ok: res.ok });
+      console.log(`[Register] API response:`, { status: res.status, ok: res.ok });
 
       if (res.ok) {
-        console.log(\`[Register] Account created successfully, redirecting to login\`);
+        console.log(`[Register] Account created successfully, redirecting to login`);
         router.push("/login?registered=true");
       } else {
-        console.error(\`[Register] Registration failed:\`, responseData);
+        console.error(`[Register] Registration failed:`, responseData);
         
         if (res.status === 400) {
           if (responseData.message?.includes('already exists')) {
@@ -94,7 +94,7 @@ export default function RegisterPage() {
             </div>
           )}
           
-          <Form<RegisterFormData>
+          <Form
             schema={registerSchema}
             onSubmit={handleSubmit}
             defaultValues={{
@@ -106,7 +106,7 @@ export default function RegisterPage() {
             }}
             className="space-y-4"
           >
-            <FormField<RegisterFormData> name="name">
+            <FormField name="name">
               {({ value, onChange, onBlur, error }) => (
                 <div>
                   <FormLabel htmlFor="name" required>Nume complet</FormLabel>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
               )}
             </FormField>
 
-            <FormField<RegisterFormData> name="email">
+            <FormField name="email">
               {({ value, onChange, onBlur, error }) => (
                 <div>
                   <FormLabel htmlFor="email" required>Adresa de email</FormLabel>
@@ -126,7 +126,7 @@ export default function RegisterPage() {
               )}
             </FormField>
 
-            <FormField<RegisterFormData> name="password">
+            <FormField name="password">
               {({ value, onChange, onBlur, error }) => (
                 <div>
                   <FormLabel htmlFor="password" required>Parola</FormLabel>
@@ -144,7 +144,7 @@ export default function RegisterPage() {
                     <div className="mt-2">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div className={\`h-full transition-all \${passwordStrength.color}\`} style={{ width: \`\${(passwordStrength.strength / 4) * 100}%\` }} />
+                          <div className={`h-full transition-all ${passwordStrength.color}`} style={{ width: `${(passwordStrength.strength / 4) * 100}%` }} />
                         </div>
                         <span className="text-xs text-gray-600">{passwordStrength.label}</span>
                       </div>
@@ -154,7 +154,7 @@ export default function RegisterPage() {
               )}
             </FormField>
 
-            <FormField<RegisterFormData> name="confirmPassword">
+            <FormField name="confirmPassword">
               {({ value, onChange, onBlur, error }) => (
                 <div>
                   <FormLabel htmlFor="confirmPassword" required>Confirmă parola</FormLabel>
@@ -164,7 +164,7 @@ export default function RegisterPage() {
               )}
             </FormField>
 
-            <FormField<RegisterFormData> name="acceptTerms">
+            <FormField name="acceptTerms">
               {({ value, onChange, error }) => (
                 <div>
                   <label className="flex items-start gap-2">

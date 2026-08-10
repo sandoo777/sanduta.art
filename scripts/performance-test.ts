@@ -139,10 +139,8 @@ async function testAPIEndpoint(url: string, method: string = 'GET'): Promise<Per
     const start = performance.now();
     
     https.get(url, (res) => {
-      let data = '';
-      
-      res.on('data', (chunk) => {
-        data += chunk;
+      res.on('data', () => {
+        // Consume stream to allow end event timing without storing payload.
       });
       
       res.on('end', () => {
@@ -158,7 +156,7 @@ async function testAPIEndpoint(url: string, method: string = 'GET'): Promise<Per
           category: 'api',
         });
       });
-    }).on('error', (err) => {
+    }).on('error', () => {
       resolve({
         name: `API ${method} ${url.split('/').pop()}`,
         value: 9999,
@@ -266,7 +264,7 @@ async function testBundleSize(): Promise<PerformanceMetric[]> {
   return metrics;
 }
 
-async function testImageOptimization(baseUrl: string): Promise<PerformanceMetric[]> {
+async function _testImageOptimization(baseUrl: string): Promise<PerformanceMetric[]> {
   console.log('🖼️ Testare optimizare imagini...');
   
   const metrics: PerformanceMetric[] = [];

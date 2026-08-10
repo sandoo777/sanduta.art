@@ -18,7 +18,7 @@
  * @see src/lib/auth-helpers.ts - Helper funcții pentru autentificare
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import type { UserRole } from '@prisma/client';
 
@@ -125,14 +125,17 @@ export function useAuth(): UseAuthReturn {
   const isAuthenticated = status === 'authenticated' && !!session?.user;
 
   // Extrage utilizatorul din sesiune
-  const user: AuthUser | null = session?.user
-    ? {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name ?? undefined,
-        role: session.user.role,
-      }
-    : null;
+  const user: AuthUser | null = useMemo(
+    () => session?.user
+      ? {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name ?? undefined,
+          role: session.user.role,
+        }
+      : null,
+    [session?.user]
+  );
 
   /**
    * Verifică dacă utilizatorul are un anumit rol

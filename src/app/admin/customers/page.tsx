@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table } from "@/components/ui/Table";
 import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
-import type { Column } from "@/components/ui/Table.types";
 import { useCustomers, type Customer } from "@/modules/customers/useCustomers";
 import CustomerModal from "./_components/CustomerModal";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -319,7 +318,7 @@ export default function CustomersPage() {
             emptyMessage="Nu există clienți"
             striped={true}
             responsive={true}
-            rowClassName={(customer) => "hover:bg-gray-50 transition-colors"}
+            rowClassName={(_customer) => "hover:bg-gray-50 transition-colors"}
           />
         </Card>
       )}

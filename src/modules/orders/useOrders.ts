@@ -1,33 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Order, OrderItem, OrderFile } from '@/types/models';
-
-interface OrderDetails extends Order {
-  customer?: {
-    id: string;
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  assignedTo?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  orderItems: Array<OrderItem & {
-    product?: {
-      id: string;
-      name: string;
-      price: number;
-    };
-  }>;
-  files: OrderFile[];
-  _count?: {
-    orderItems: number;
-    files: number;
-  };
-}
+import type { OrderStatus, PaymentStatus } from '@prisma/client';
 
 export function useOrders() {
   const [loading, setLoading] = useState(false);
@@ -39,8 +13,8 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to fetch orders');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
@@ -53,14 +27,14 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to fetch order');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateStatus = useCallback(async (id: string, status: string) => {
+  const updateStatus = useCallback(async (id: string, status: OrderStatus) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/orders/${id}`, {
@@ -71,14 +45,14 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update status');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updatePaymentStatus = useCallback(async (id: string, paymentStatus: string) => {
+  const updatePaymentStatus = useCallback(async (id: string, paymentStatus: PaymentStatus) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/orders/${id}`, {
@@ -89,8 +63,8 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update payment status');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
@@ -107,14 +81,14 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to assign operator');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const addItem = useCallback(async (orderId: string, item: any) => {
+  const addItem = useCallback(async (orderId: string, item: unknown) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/items`, {
@@ -125,14 +99,14 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to add item');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateItem = useCallback(async (orderId: string, itemId: string, updates: any) => {
+  const updateItem = useCallback(async (orderId: string, itemId: string, updates: unknown) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/orders/${orderId}/items/${itemId}`, {
@@ -143,8 +117,8 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to update item');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
@@ -158,8 +132,8 @@ export function useOrders() {
       });
       if (!response.ok) throw new Error('Failed to delete item');
       return { success: true };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
@@ -176,8 +150,8 @@ export function useOrders() {
       if (!response.ok) throw new Error('Failed to add file');
       const data = await response.json();
       return { success: true, data };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }
@@ -191,8 +165,8 @@ export function useOrders() {
       });
       if (!response.ok) throw new Error('Failed to delete file');
       return { success: true };
-    } catch (_error: unknown) {
-      return { success: false, error: error.message };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     } finally {
       setLoading(false);
     }

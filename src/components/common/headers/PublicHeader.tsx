@@ -11,7 +11,7 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { MobileCategoriesMenu } from '@/components/public/navigation/MobileCategoriesMenu';
 import { UserMenu } from '@/components/public/UserMenu';
 import { PublicCategoriesDropdown } from '@/components/public/navigation/PublicCategoriesDropdown';
-import { buildCategoryTree, CategoryTreeNode } from '@/lib/categoryTree';
+import { buildCategoryTree } from '@/lib/categoryTree';
 import type { Category } from '@prisma/client';
 
 /**

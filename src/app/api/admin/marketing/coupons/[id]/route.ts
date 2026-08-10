@@ -8,8 +8,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
+interface MockCoupon {
+  id: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
 // Mock data (shared with route.ts în memorie - în production ar fi Prisma)
-const mockCoupons: any[] = [];
+const mockCoupons: MockCoupon[] = [];
 
 export async function PATCH(
   req: NextRequest,
@@ -52,7 +58,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

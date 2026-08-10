@@ -226,7 +226,7 @@ export class PasswordPolicy {
   /**
    * Check password history (prevent reuse)
    */
-  static async isPasswordInHistory(userId: string, newPasswordHash: string): Promise<boolean> {
+  static async isPasswordInHistory(userId: string, _newPasswordHash: string): Promise<boolean> {
     if (PASSWORD_POLICY.historyCount === 0) {
       return false; // No history tracking
     }

@@ -5,7 +5,7 @@ import { AuthLink } from '@/components/common/links/AuthLink';
 import { ArrowLeft, RefreshCw, Award, Clock, Target, TrendingUp } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent, LoadingState, Table } from "@/components/ui";
 import { KpiCard } from "@/components/KpiCard";
-import { BarChart, PieChart, LineChart } from "@/components/charts";
+import { BarChart, PieChart } from "@/components/charts";
 import { useReports } from "@/modules/reports/useReports";
 import type { OperatorsReport } from "@/modules/reports/types";
 

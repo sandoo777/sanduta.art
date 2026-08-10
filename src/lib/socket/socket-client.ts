@@ -16,6 +16,7 @@ type SocketClient = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 export function useSocket() {
   const socketRef = useRef<SocketClient | null>(null);
+  const [socket, setSocket] = useState<SocketClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export function useSocket() {
       path: '/api/socket',
       transports: ['websocket', 'polling']
     });
+    setSocket(socketRef.current);
 
     socketRef.current.on('connect', () => {
       setIsConnected(true);
@@ -37,11 +39,13 @@ export function useSocket() {
 
     return () => {
       socketRef.current?.disconnect();
+      socketRef.current = null;
+      setSocket(null);
     };
   }, []);
 
   return {
-    socket: socketRef.current,
+    socket,
     isConnected
   };
 }

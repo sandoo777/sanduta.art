@@ -41,9 +41,9 @@ export default function ProductsReportPage() {
     const category = products.productsByCategory.find(c => c.categoryId === categoryFilter);
     if (!category) return products.topSellingProducts;
     
-    return products.topSellingProducts.filter(p => 
-      products.productsByCategory.some(c => c.categoryId === categoryFilter)
-    );
+    return products.productsByCategory.some((c) => c.categoryId === categoryFilter)
+      ? products.topSellingProducts
+      : [];
   }, [products, categoryFilter]);
 
   if (loading && !products) {

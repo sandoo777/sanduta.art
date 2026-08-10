@@ -4,7 +4,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import { BackupEngine, BackupMetadata, BackupStatus } from './useBackupEngine';
+import { BackupEngine, BackupStatus } from './useBackupEngine';
 import { RestoreEngine } from './useRestore';
 
 /**

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Product Page",
+    "error": "Expected 200, got 404"
+  },
+  {
+    "name": "Configurator",
+    "error": "Expected 200, got 404"
+  },
+  {
+    "name": "Admin Login",
+    "error": "Expected 200, got 404"
+  }
+]

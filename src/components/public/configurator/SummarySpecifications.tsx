@@ -17,16 +17,6 @@ function formatMoney(value: number, currency = 'RON') {
   return new Intl.NumberFormat('ro-RO', { style: 'currency', currency }).format(value);
 }
 
-const labels = {
-  dimension: 'Dimensiune',
-  material: 'Material',
-  finishes: 'Finisaje',
-  quantity: 'Cantitate',
-  productionSpeed: 'Timp producție',
-  unitPrice: 'Preț / buc',
-  total: 'Preț total',
-};
-
 const icons: Record<string, ReactElement> = {
   dimension: (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

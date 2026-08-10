@@ -32,7 +32,7 @@ export interface Project {
   name: string;
   thumbnail?: string;
   updatedAt: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface UserProfile {

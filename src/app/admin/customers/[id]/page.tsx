@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, Edit } from "lucide-react";
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -28,16 +28,7 @@ export default function CustomerDetailsPage({ params }: PageProps) {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Load params and customer
-  useEffect(() => {
-    params.then((p) => {
-      const id = p.id;
-      setCustomerId(id);
-      loadCustomer(id);
-    });
-  }, []);
-
-  const loadCustomer = async (id: string) => {
+  const loadCustomer = useCallback(async (id: string) => {
     try {
       setError(null);
       const data = await getCustomer(id);
@@ -46,7 +37,22 @@ export default function CustomerDetailsPage({ params }: PageProps) {
       console.error("Error loading customer:", err);
       setError(err instanceof Error ? err.message : 'Eroare la încărcarea clientului');
     }
-  };
+  }, [getCustomer]);
+
+  // Load params and customer
+  useEffect(() => {
+    params.then((p) => {
+      const id = p.id;
+      setCustomerId(id);
+      const timerId = setTimeout(() => {
+        void loadCustomer(id);
+      }, 0);
+
+      return () => {
+        clearTimeout(timerId);
+      };
+    });
+  }, [loadCustomer, params]);
 
   // Format date
   const formatDate = (dateString: string | null) => {

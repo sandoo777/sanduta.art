@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, Package, AlertCircle } from "lucide-react";
 import { AuthLink } from '@/components/common/links/AuthLink';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import type { MaterialWithDetails } from "@/modules/materials/types";
@@ -27,16 +27,22 @@ export default function MaterialDetailsPage() {
 
   const { getMaterial, deleteMaterial, isLoading } = useMaterials();
 
-  useEffect(() => {
-    loadMaterial();
-  }, [materialId]);
-
-  const loadMaterial = async () => {
+  const loadMaterial = useCallback(async () => {
     const data = await getMaterial(materialId);
     if (data) {
       setMaterial(data);
     }
-  };
+  }, [getMaterial, materialId]);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      void loadMaterial();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadMaterial]);
 
   const handleDelete = async () => {
     const success = await deleteMaterial(materialId);
@@ -58,7 +64,15 @@ export default function MaterialDetailsPage() {
   }
 
   const totalConsumption = material.consumption.reduce((sum, c) => sum + c.quantity, 0);
-  const totalCost = material.stock * Number(material.costPerUnit);
+  const effectiveUnitCost =
+    typeof material.salePrice === 'number'
+      ? material.salePrice
+      : typeof material.purchasePrice === 'number'
+        ? material.purchasePrice
+        : typeof material.costPerUnit === 'number'
+          ? material.costPerUnit
+          : null;
+  const totalCost = effectiveUnitCost != null ? material.stock * effectiveUnitCost : null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -162,18 +176,32 @@ export default function MaterialDetailsPage() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-1">Cost/Unitate</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {Number(material.costPerUnit).toFixed(2)}
-                <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
-              </p>
+              {effectiveUnitCost != null ? (
+                <p className="text-2xl font-bold text-gray-900">
+                  {effectiveUnitCost.toFixed(2)}
+                  <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
+                </p>
+              ) : (
+                <p className="text-2xl font-bold text-gray-900">
+                  —
+                  <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
+                </p>
+              )}
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-1">Valoare stoc</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {totalCost.toFixed(2)}
-                <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
-              </p>
+              {totalCost != null ? (
+                <p className="text-2xl font-bold text-gray-900">
+                  {totalCost.toFixed(2)}
+                  <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
+                </p>
+              ) : (
+                <p className="text-2xl font-bold text-gray-900">
+                  —
+                  <span className="text-sm font-normal text-gray-600 ml-1">MDL</span>
+                </p>
+              )}
             </div>
           </div>
           </CardContent>
@@ -309,7 +337,7 @@ export default function MaterialDetailsPage() {
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Șterge material</h3>
             <p className="text-gray-600 mb-6">
-              Sigur dorești să ștergi materialul "{material.name}"?
+              Sigur dorești să ștergi materialul &quot;{material.name}&quot;?
               {material.consumption.length > 0 && (
                 <span className="block mt-2 text-red-600 font-medium">
                   Atenție: Acest material are {material.consumption.length} înregistrări de

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole, canManageSystemSettings } from "@/lib/auth-helpers";
-import { UserRole } from "@prisma/client";
 
 // GET /api/admin/settings/system - Get all system settings
 export async function GET(_request: NextRequest) {
-  const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
+  const { user: _user, error } = await requireRole(["ADMIN", "MANAGER"]);
   
   if (error) {
     return error;

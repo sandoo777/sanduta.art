@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { Save, RefreshCw } from "lucide-react";
+import { useCallback, useEffect } from "react";
+import { Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Button";
+import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { useSettings } from "@/modules/settings/useSettings";
 import { systemSettingsFormSchema, type SystemSettingsFormData } from "@/lib/validations/admin";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
@@ -41,11 +41,7 @@ export function SystemSettingsForm() {
 
   const { formState: { isSubmitting, isSubmitSuccessful }, reset } = form;
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const settings = await getSystemSettings();
       
@@ -57,17 +53,21 @@ export function SystemSettingsForm() {
         timezone: settings.timezone || "Europe/Chisinau",
         low_stock_threshold: settings.low_stock_threshold || "10",
       });
-    } catch (_error) {
-      console.error("Error loading settings:", error);
+    } catch (loadError) {
+      console.error("Error loading settings:", loadError);
     }
-  };
+  }, [getSystemSettings, reset]);
+
+  useEffect(() => {
+    void loadSettings();
+  }, [loadSettings]);
 
   const onSubmit = async (data: SystemSettingsFormData) => {
     await updateSystemSettings(data);
   };
 
   const handleReset = () => {
-    loadSettings();
+    void loadSettings();
   };
 
   if (loading && !form.getValues("company_name")) {

@@ -2,6 +2,7 @@
 
 import { useCurrentUser } from "@/modules/auth/useCurrentUser";
 import { AuthLink } from "@/components/common/links/AuthLink";
+import { LoadingState } from '@/components/ui/LoadingState';
 import { 
   ShoppingBag, 
   FolderOpen, 

@@ -19,7 +19,7 @@
  * @see src/app/api/admin/cms/blog/route.ts - API endpoint admin
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface BlogPost {
   id: string;

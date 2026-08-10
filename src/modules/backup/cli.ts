@@ -14,7 +14,7 @@
  * - npm run backup:cleanup - Run retention policy cleanup
  */
 
-import { BackupEngine, BackupCategory } from './useBackupEngine';
+import { BackupEngine } from './useBackupEngine';
 import { RestoreEngine, RestoreMode } from './useRestore';
 import { BackupMonitoring } from './useBackupMonitoring';
 import { BackupVersioning } from './useBackupVersioning';

@@ -1,0 +1,89 @@
+{
+  "environment": "local",
+  "baseUrl": "http://localhost:3102",
+  "timestamp": "2026-07-06T20:55:31.779Z",
+  "results": [
+    {
+      "name": "Homepage",
+      "status": "passed",
+      "duration": 2030,
+      "url": "http://localhost:3102/",
+      "httpStatus": 200
+    },
+    {
+      "name": "Product Page",
+      "status": "failed",
+      "duration": 3272,
+      "url": "http://localhost:3102/products/1",
+      "error": "Expected 200, got 404"
+    },
+    {
+      "name": "Products Listing",
+      "status": "passed",
+      "duration": 978,
+      "url": "http://localhost:3102/products",
+      "httpStatus": 200
+    },
+    {
+      "name": "Configurator",
+      "status": "failed",
+      "duration": 2640,
+      "url": "http://localhost:3102/configurator",
+      "error": "Expected 200, got 404"
+    },
+    {
+      "name": "Editor",
+      "status": "passed",
+      "duration": 694,
+      "url": "http://localhost:3102/editor",
+      "httpStatus": 200
+    },
+    {
+      "name": "Cart",
+      "status": "passed",
+      "duration": 1055,
+      "url": "http://localhost:3102/cart",
+      "httpStatus": 200
+    },
+    {
+      "name": "Checkout",
+      "status": "passed",
+      "duration": 1170,
+      "url": "http://localhost:3102/checkout",
+      "httpStatus": 200
+    },
+    {
+      "name": "Admin Login",
+      "status": "failed",
+      "duration": 1962,
+      "url": "http://localhost:3102/admin/login",
+      "error": "Expected 200, got 404"
+    },
+    {
+      "name": "API Health",
+      "status": "passed",
+      "duration": 931,
+      "url": "http://localhost:3102/api/health",
+      "httpStatus": 200
+    },
+    {
+      "name": "API Products",
+      "status": "passed",
+      "duration": 427,
+      "url": "http://localhost:3102/api/products",
+      "httpStatus": 200
+    },
+    {
+      "name": "API Categories",
+      "status": "passed",
+      "duration": 616,
+      "url": "http://localhost:3102/api/categories",
+      "httpStatus": 200
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "passed": 8,
+    "failed": 3
+  }
+}

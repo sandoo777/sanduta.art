@@ -14,7 +14,7 @@
  * - ISR regeneration time
  */
 
-import { useLogger, LogCategory } from './useLogger';
+import { getLogger, LogCategory } from './useLogger';
 
 // Metric types
 export enum MetricType {
@@ -37,7 +37,7 @@ export interface Metric {
   value: number;
   unit: 'ms' | 'score' | 'ratio' | 'count';
   timestamp: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   tags?: string[];
 }
 
@@ -59,7 +59,7 @@ let metricsStore: Metric[] = [];
 const MAX_METRICS_IN_MEMORY = 1000;
 
 class MetricsCollector {
-  private logger = useLogger();
+  private logger = getLogger();
   private timers = new Map<string, number>();
   private cacheStats = {
     hits: 0,
@@ -73,7 +73,7 @@ class MetricsCollector {
     type: MetricType,
     value: number,
     unit: 'ms' | 'score' | 'ratio' | 'count' = 'ms',
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     tags?: string[]
   ) {
     const metric: Metric = {
@@ -134,7 +134,7 @@ class MetricsCollector {
   async endTimer(
     label: string,
     type: MetricType,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     tags?: string[]
   ) {
     const startTime = this.timers.get(label);
@@ -154,35 +154,35 @@ class MetricsCollector {
   /**
    * Record TTFB (Time to First Byte)
    */
-  async recordTTFB(value: number, context?: Record<string, any>) {
+  async recordTTFB(value: number, context?: Record<string, unknown>) {
     await this.record(MetricType.TTFB, value, 'ms', context, ['web-vitals']);
   }
 
   /**
    * Record LCP (Largest Contentful Paint)
    */
-  async recordLCP(value: number, context?: Record<string, any>) {
+  async recordLCP(value: number, context?: Record<string, unknown>) {
     await this.record(MetricType.LCP, value, 'ms', context, ['web-vitals']);
   }
 
   /**
    * Record FID (First Input Delay)
    */
-  async recordFID(value: number, context?: Record<string, any>) {
+  async recordFID(value: number, context?: Record<string, unknown>) {
     await this.record(MetricType.FID, value, 'ms', context, ['web-vitals']);
   }
 
   /**
    * Record CLS (Cumulative Layout Shift)
    */
-  async recordCLS(value: number, context?: Record<string, any>) {
+  async recordCLS(value: number, context?: Record<string, unknown>) {
     await this.record(MetricType.CLS, value, 'score', context, ['web-vitals']);
   }
 
   /**
    * Record server response time
    */
-  async recordServerResponse(duration: number, endpoint: string, context?: Record<string, any>) {
+  async recordServerResponse(duration: number, endpoint: string, context?: Record<string, unknown>) {
     await this.record(
       MetricType.SERVER_RESPONSE,
       duration,
@@ -195,7 +195,7 @@ class MetricsCollector {
   /**
    * Record database query time
    */
-  async recordDbQuery(duration: number, query: string, context?: Record<string, any>) {
+  async recordDbQuery(duration: number, query: string, context?: Record<string, unknown>) {
     await this.record(
       MetricType.DB_QUERY,
       duration,
@@ -208,7 +208,7 @@ class MetricsCollector {
   /**
    * Record queue processing time
    */
-  async recordQueueProcessing(duration: number, jobType: string, context?: Record<string, any>) {
+  async recordQueueProcessing(duration: number, jobType: string, context?: Record<string, unknown>) {
     await this.record(
       MetricType.QUEUE_PROCESSING,
       duration,
@@ -221,7 +221,7 @@ class MetricsCollector {
   /**
    * Record cache hit
    */
-  async recordCacheHit(key: string, context?: Record<string, any>) {
+  async recordCacheHit(key: string, context?: Record<string, unknown>) {
     this.cacheStats.hits++;
     await this.record(
       MetricType.CACHE_HIT,
@@ -235,7 +235,7 @@ class MetricsCollector {
   /**
    * Record cache miss
    */
-  async recordCacheMiss(key: string, context?: Record<string, any>) {
+  async recordCacheMiss(key: string, context?: Record<string, unknown>) {
     this.cacheStats.misses++;
     await this.record(
       MetricType.CACHE_MISS,
@@ -258,7 +258,7 @@ class MetricsCollector {
   /**
    * Record ISR regeneration time
    */
-  async recordISRRegeneration(duration: number, path: string, context?: Record<string, any>) {
+  async recordISRRegeneration(duration: number, path: string, context?: Record<string, unknown>) {
     await this.record(
       MetricType.ISR_REGENERATION,
       duration,
@@ -271,7 +271,7 @@ class MetricsCollector {
   /**
    * Record API call duration
    */
-  async recordApiCall(duration: number, endpoint: string, method: string, statusCode: number, context?: Record<string, any>) {
+  async recordApiCall(duration: number, endpoint: string, method: string, statusCode: number, context?: Record<string, unknown>) {
     await this.record(
       MetricType.API_CALL,
       duration,
@@ -395,11 +395,15 @@ let metricsInstance: MetricsCollector | null = null;
 /**
  * Get metrics collector instance
  */
-export function useMetrics(): MetricsCollector {
+export function getMetrics(): MetricsCollector {
   if (!metricsInstance) {
     metricsInstance = new MetricsCollector();
   }
   return metricsInstance;
+}
+
+export function useMetrics(): MetricsCollector {
+  return getMetrics();
 }
 
 /**
@@ -409,7 +413,7 @@ export function useClientMetrics() {
   const sendMetric = async (
     type: MetricType,
     value: number,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ) => {
     try {
       await fetch('/api/metrics', {
@@ -430,13 +434,13 @@ export function useClientMetrics() {
   };
 
   return {
-    recordTTFB: (value: number, context?: Record<string, any>) => 
+    recordTTFB: (value: number, context?: Record<string, unknown>) => 
       sendMetric(MetricType.TTFB, value, context),
-    recordLCP: (value: number, context?: Record<string, any>) => 
+    recordLCP: (value: number, context?: Record<string, unknown>) => 
       sendMetric(MetricType.LCP, value, context),
-    recordFID: (value: number, context?: Record<string, any>) => 
+    recordFID: (value: number, context?: Record<string, unknown>) => 
       sendMetric(MetricType.FID, value, context),
-    recordCLS: (value: number, context?: Record<string, any>) => 
+    recordCLS: (value: number, context?: Record<string, unknown>) => 
       sendMetric(MetricType.CLS, value, context),
   };
 }

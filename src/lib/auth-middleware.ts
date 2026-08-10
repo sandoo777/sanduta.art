@@ -18,7 +18,7 @@ export interface AuthenticatedUser {
  * Verifică dacă utilizatorul este autentificat
  */
 export async function requireAuth(
-  request: NextRequest
+  _request: NextRequest
 ): Promise<{ user: AuthenticatedUser } | NextResponse> {
   console.log('🔐 requireAuth: Getting session...');
   

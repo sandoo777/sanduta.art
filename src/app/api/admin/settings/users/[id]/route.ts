@@ -13,7 +13,7 @@ export async function GET(
   request: NextRequest,
   context: RouteContext
 ) {
-  const { user, error } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
+  const { user: _user, error } = await requireRole(["ADMIN", "MANAGER", "OPERATOR"]);
   
   if (error) {
     return error;
@@ -90,7 +90,13 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: any = {};
+    const updateData: Partial<{
+      name: string;
+      email: string;
+      password: string;
+      role: UserRole;
+      active: boolean;
+    }> = {};
 
     if (name !== undefined) {
       if (!name.trim()) {

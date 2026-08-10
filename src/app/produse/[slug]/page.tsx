@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import CatalogClient from '@/app/(public)/produse/CatalogClient';
 import { Breadcrumbs, buildCategoryBreadcrumbs } from '@/components/public/Breadcrumbs';
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate static params for all categories
@@ -26,8 +26,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
   const category = await prisma.category.findUnique({
-    where: { slug: params.slug, active: true },
+    where: { slug, active: true },
     select: {
       name: true,
       description: true,
@@ -62,8 +64,10 @@ export async function generateMetadata({
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { slug } = await params;
+
   const category = await prisma.category.findUnique({
-    where: { slug: params.slug, active: true },
+    where: { slug, active: true },
     include: {
       parent: {
         select: { name: true, slug: true, icon: true },
@@ -80,11 +84,21 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   });
 
   if (!category) {
+    const product = await prisma.product.findFirst({
+      where: { slug, active: true },
+      select: { slug: true },
+    });
+
+    if (product) {
+      // Backward-compatible support for product slugs under /produse/:slug.
+      redirect(`/products/${product.slug}`);
+    }
+
     notFound();
   }
 
   // Get products from this category and all subcategories
-  const categoryIds = [
+  const _categoryIds = [
     category.id,
     ...category.children.map((child) => child.id),
   ];

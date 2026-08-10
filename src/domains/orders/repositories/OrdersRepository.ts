@@ -10,7 +10,6 @@ import {
   UpdateOrderDTO,
   CreateOrderItemDTO,
   UpdateOrderItemDTO,
-  OrderFileDTO,
 } from '../types';
 import { Prisma } from '@prisma/client';
 

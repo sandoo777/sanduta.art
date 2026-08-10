@@ -26,8 +26,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import type { HomepageBlock } from '@/types/theme';
+import type { BlockConfig } from '@/types/theme-homepage';
 
 interface HomepageBuilderProps {
   value: HomepageBlock[];
@@ -44,6 +44,19 @@ const BLOCK_TEMPLATES = [
   { type: 'newsletter', label: 'Newsletter Signup', icon: '✉️' },
   { type: 'custom-html', label: 'Custom HTML', icon: '🔧' },
 ];
+
+function createBlockId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `block-${crypto.randomUUID()}`;
+  }
+
+  return `block-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function getConfigValue<T>(config: BlockConfig, key: string, fallback: T): T {
+  const value = config[key];
+  return (value as T | undefined) ?? fallback;
+}
 
 export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
   const [blocks, setBlocks] = useState<HomepageBlock[]>(value);
@@ -70,7 +83,7 @@ export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
 
   const addBlock = (type: HomepageBlock['type']) => {
     const newBlock: HomepageBlock = {
-      id: `block-${Date.now()}`,
+      id: createBlockId(),
       type,
       enabled: true,
       order: blocks.length,
@@ -104,7 +117,7 @@ export function HomepageBuilder({ value, onChange }: HomepageBuilderProps) {
     if (block) {
       const newBlock = {
         ...block,
-        id: `block-${Date.now()}`,
+        id: createBlockId(),
         order: blocks.length,
       };
       const newBlocks = [...blocks, newBlock];
@@ -335,7 +348,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Title</label>
             <Input
-              value={(block.config as any).title || ''}
+              value={getConfigValue(block.config, 'title', '')}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Hero title"
             />
@@ -343,7 +356,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Subtitle</label>
             <Input
-              value={(block.config as any).subtitle || ''}
+              value={getConfigValue(block.config, 'subtitle', '')}
               onChange={(e) => updateConfig('subtitle', e.target.value)}
               placeholder="Hero subtitle"
             />
@@ -351,7 +364,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Background Image URL</label>
             <Input
-              value={(block.config as any).backgroundImage || ''}
+              value={getConfigValue(block.config, 'backgroundImage', '')}
               onChange={(e) => updateConfig('backgroundImage', e.target.value)}
               placeholder="https://..."
             />
@@ -359,7 +372,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">CTA Text</label>
             <Input
-              value={(block.config as any).ctaText || ''}
+              value={getConfigValue(block.config, 'ctaText', '')}
               onChange={(e) => updateConfig('ctaText', e.target.value)}
               placeholder="Shop Now"
             />
@@ -367,7 +380,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">CTA Link</label>
             <Input
-              value={(block.config as any).ctaLink || ''}
+              value={getConfigValue(block.config, 'ctaLink', '')}
               onChange={(e) => updateConfig('ctaLink', e.target.value)}
               placeholder="/products"
             />
@@ -381,7 +394,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Section Title</label>
             <Input
-              value={(block.config as any).title || ''}
+              value={getConfigValue(block.config, 'title', '')}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Featured Products"
             />
@@ -389,7 +402,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Product IDs (comma-separated)</label>
             <Input
-              value={(block.config as any).productIds || ''}
+              value={getConfigValue(block.config, 'productIds', '')}
               onChange={(e) => updateConfig('productIds', e.target.value)}
               placeholder="1,2,3,4"
             />
@@ -398,7 +411,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <label className="block text-sm font-medium mb-2">Limit</label>
             <Input
               type="number"
-              value={(block.config as any).limit || 8}
+              value={getConfigValue(block.config, 'limit', 8)}
               onChange={(e) => updateConfig('limit', parseInt(e.target.value))}
             />
           </div>
@@ -411,7 +424,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Title</label>
             <Input
-              value={(block.config as any).title || ''}
+              value={getConfigValue(block.config, 'title', '')}
               onChange={(e) => updateConfig('title', e.target.value)}
               placeholder="Subscribe to our newsletter"
             />
@@ -421,7 +434,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <textarea
               className="w-full px-3 py-2 border rounded-lg"
               rows={3}
-              value={(block.config as any).description || ''}
+              value={getConfigValue(block.config, 'description', '')}
               onChange={(e) => updateConfig('description', e.target.value)}
               placeholder="Get updates about new products..."
             />
@@ -429,7 +442,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
           <div>
             <label className="block text-sm font-medium mb-2">Button Text</label>
             <Input
-              value={(block.config as any).buttonText || ''}
+              value={getConfigValue(block.config, 'buttonText', '')}
               onChange={(e) => updateConfig('buttonText', e.target.value)}
               placeholder="Subscribe"
             />
@@ -445,7 +458,7 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
             <textarea
               className="w-full px-3 py-2 border rounded-lg font-mono text-sm"
               rows={10}
-              value={(block.config as any).html || ''}
+              value={getConfigValue(block.config, 'html', '')}
               onChange={(e) => updateConfig('html', e.target.value)}
               placeholder="<div>Custom HTML...</div>"
             />
@@ -463,8 +476,8 @@ function BlockEditor({ block, onUpdate }: BlockEditorProps) {
 }
 
 // Get default config for each block type
-function getDefaultConfig(type: HomepageBlock['type']): any {
-  const defaults: Record<string, any> = {
+function getDefaultConfig(type: HomepageBlock['type']): BlockConfig {
+  const defaults: Record<string, BlockConfig> = {
     hero: {
       title: 'Welcome to Our Store',
       subtitle: 'Discover amazing products',

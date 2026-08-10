@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 interface CartItemProjectPreviewProps {
@@ -21,7 +20,7 @@ export function CartItemProjectPreview({
   previewImage,
   productSlug,
   dimensions,
-  onEdit,
+  onEdit: _onEdit,
 }: CartItemProjectPreviewProps) {
   return (
     <div className="rounded-lg border-2 border-slate-200 bg-white p-4">

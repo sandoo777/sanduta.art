@@ -15,9 +15,9 @@ const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
 interface RootLayoutProps {
   children: ReactNode;
-  params: {
+  params: Promise<{
     lang: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {

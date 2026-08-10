@@ -1,6 +1,6 @@
 'use client';
 
-import { ShoppingCart, Package, DollarSign, TrendingUp, Factory, Clock } from 'lucide-react';
+import { ShoppingCart, Factory, Clock, TrendingUp } from 'lucide-react';
 import { KpiCard } from './_components/KpiCard';
 import { SalesChart } from './_components/SalesChart';
 import { TopProducts } from './_components/TopProducts';

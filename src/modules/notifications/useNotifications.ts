@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Notifications State Management Hook
  * Manages in-app notifications, reads, and real-time updates
  */
@@ -36,7 +36,7 @@ export function useNotifications(userId?: string) {
       setNotifications(data);
       setUnreadCount(data.filter((n: InAppNotification) => !n.read).length);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch notifications:', err);
       setError(err.message);
     } finally {
@@ -70,7 +70,7 @@ export function useNotifications(userId?: string) {
         )
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to mark as read:', err);
     }
   }, []);
@@ -91,7 +91,7 @@ export function useNotifications(userId?: string) {
         prev.map(n => ({ ...n, read: true, readAt: new Date() }))
       );
       setUnreadCount(0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to mark all as read:', err);
     }
   }, [userId]);
@@ -135,7 +135,7 @@ export function useNotifications(userId?: string) {
       }
       
       return { success: true, notification: newNotification };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to send notification:', err);
       return { success: false, error: err.message };
     }
@@ -158,7 +158,7 @@ export function useNotifications(userId?: string) {
         const notification = notifications.find(n => n.id === notificationId);
         return notification && !notification.read ? Math.max(0, prev - 1) : prev;
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete notification:', err);
     }
   }, [notifications]);
@@ -220,7 +220,7 @@ export function useNotificationTemplates() {
       const data = await res.json();
       setTemplates(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch templates:', err);
       setError(err.message);
     } finally {
@@ -234,7 +234,7 @@ export function useNotificationTemplates() {
       if (!res.ok) return null;
       
       const data = await res.json();
-      return data.find((t: any) => t.enabled) || null;
+      return data.find((t: unknown) => t.enabled) || null;
     } catch (err) {
       console.error('Failed to get template:', err);
       return null;
@@ -285,7 +285,7 @@ export function useNotificationHistory() {
       const data = await res.json();
       setHistory(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch history:', err);
       setError(err.message);
     } finally {

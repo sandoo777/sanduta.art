@@ -3,7 +3,6 @@ import { requireRole } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import ExcelJS from 'exceljs';
-import { generateInvoicePDF } from '@/lib/pdf/invoice-generator';
 
 export async function POST(request: NextRequest) {
   try {
@@ -163,7 +162,7 @@ interface OperatorReportRow {
   assignedOrders: number;
 }
 
-async function getSalesReport(dateRange?: { start: string; end: string }, filters?: ReportFilters): Promise<SalesReportData> {
+async function getSalesReport(dateRange?: { start: string; end: string }, _filters?: ReportFilters): Promise<SalesReportData> {
   const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {
     status: { in: ['IN_PRODUCTION', 'DELIVERED'] }
   };
@@ -415,7 +414,7 @@ async function generateExcel(reportType: string, data: SalesReportData | OrderRe
 
 async function generateReportPDF(reportType: string, data: SalesReportData | OrderReportRow[] | ProductReportRow[] | InventoryReportRow[] | OperatorReportRow[]): Promise<Buffer> {
   // Reuse invoice generator structure for reports
-  const PDFDocument = require('pdfkit');
+  const { default: PDFDocument } = await import('pdfkit');
   const doc = new PDFDocument({ margin: 50 });
 
   const buffers: Buffer[] = [];

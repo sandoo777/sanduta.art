@@ -28,9 +28,19 @@ export default function NotificationsList() {
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  const loadNotifications = useCallback(() => {
+    void fetchNotifications(true);
+  }, [fetchNotifications]);
+
   useEffect(() => {
-    fetchNotifications(true);
-  }, []);
+    const timerId = setTimeout(() => {
+      loadNotifications();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadNotifications]);
 
   // Infinite scroll
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {

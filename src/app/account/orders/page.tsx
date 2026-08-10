@@ -26,7 +26,7 @@ export default async function AccountOrdersPage() {
     console.log('[/account/orders] Fetching orders for user:', userId);
     
     // Query direct Prisma pentru comenzile utilizatorului cu safe wrapper
-    const orders = await fetchServerData(
+    const orders = await fetchServerData<Awaited<ReturnType<typeof prisma.order.findMany>>>(
       () => prisma.order.findMany({
         where: {
           customerId: userId,
@@ -69,32 +69,32 @@ export default async function AccountOrdersPage() {
       }
     );
 
-  console.log('[/account/orders] Found', orders.length, 'orders');
+    console.log('[/account/orders] Found', orders.length, 'orders');
 
-  // Transformare date pentru Client Component (serializare pentru React)
-  const ordersData = orders.map((order: any) => ({
-    id: order.id,
-    customerId: order.customerId,
-    status: order.status,
-    paymentStatus: order.paymentStatus,
-    totalPrice: order.totalPrice.toString(),
-    createdAt: order.createdAt.toISOString(),
-    updatedAt: order.updatedAt.toISOString(),
-    orderItems: order.orderItems.map((item: any) => ({
-      id: item.id,
-      quantity: item.quantity,
-      product: {
-        id: item.product.id,
-        name: item.product.name,
-        price: item.product.price.toString(),
-        images: item.product.images,
-      },
-    })),
-  }));
+    // Transformare date pentru Client Component (serializare pentru React)
+    const ordersData = orders.map((order) => ({
+      id: order.id,
+      customerId: order.customerId,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      totalPrice: order.totalPrice.toString(),
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+      orderItems: order.orderItems.map((item) => ({
+        id: item.id,
+        quantity: item.quantity,
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price.toString(),
+          images: item.product.images,
+        },
+      })),
+    }));
 
-  console.log('[/account/orders] Rendering OrdersClient component');
-  // Render Client Component cu datele prefetchate
-  return <OrdersClient orders={ordersData} />;
+    console.log('[/account/orders] Rendering OrdersClient component');
+    // Render Client Component cu datele prefetchate
+    return <OrdersClient orders={ordersData} />;
   } catch (error) {
     console.error('[/account/orders] Error:', error);
     // Return empty state on error

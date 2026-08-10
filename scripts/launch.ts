@@ -217,9 +217,9 @@ async function step5_BuildApplication(): Promise<void> {
   log('Building application...');
   
   try {
-    const { stdout } = await execAsync('npm run build');
+    await execAsync('npm run build');
     log('Application built successfully', 'success');
-  } catch (_error) {
+  } catch (error) {
     throw new Error(`Build failed: ${error}`);
   }
 }

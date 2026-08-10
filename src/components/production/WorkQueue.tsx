@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -18,11 +18,7 @@ export default function WorkQueue() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<WorkQueueFilters>({});
 
-  useEffect(() => {
-    fetchJobs();
-  }, [filters]);
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (filters.status) params.append('status', filters.status);
@@ -34,12 +30,16 @@ export default function WorkQueue() {
         const data = await response.json();
         setJobs(data);
       }
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('Failed to fetch jobs:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const handleStartJob = async (jobId: string) => {
     try {
@@ -51,7 +51,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('Failed to start job:', error);
     }
   };
@@ -66,7 +66,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('Failed to pause job:', error);
     }
   };
@@ -84,7 +84,7 @@ export default function WorkQueue() {
       if (response.ok) {
         fetchJobs();
       }
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('Failed to complete job:', error);
     }
   };

@@ -1,36 +1,28 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { parseEditorUrl } from '@/lib/editor/generateEditorUrl';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
 
+type ParsedEditorParams = ReturnType<typeof parseEditorUrl>;
+
 function EditorContent() {
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editorParams, setEditorParams] = useState<any>(null);
-
-  useEffect(() => {
+  const { editorParams, error } = useMemo(() => {
     try {
-      const params = parseEditorUrl(searchParams);
-      setEditorParams(params);
-      setIsLoading(false);
+      return {
+        editorParams: parseEditorUrl(searchParams) as ParsedEditorParams | null,
+        error: null,
+      };
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse editor parameters');
-      setIsLoading(false);
+      return {
+        editorParams: null,
+        error: err instanceof Error ? err.message : 'Failed to parse editor parameters',
+      };
     }
-     
   }, [searchParams]);
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingState text="Se încarcă editorul..." size="lg" />
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -95,7 +87,7 @@ function EditorContent() {
                 } else {
                   alert('Eroare la salvarea proiectului');
                 }
-              } catch (_error) {
+              } catch (error) {
                 console.error('Save error:', error);
                 alert('Eroare la salvarea proiectului');
               }

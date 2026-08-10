@@ -10,8 +10,8 @@
  * - Performance bottleneck detection
  */
 
-import { useLogger, LogCategory } from './useLogger';
-import { useMetrics, MetricType } from './useMetrics';
+import { getLogger, LogCategory } from './useLogger';
+import { getMetrics } from './useMetrics';
 
 // Profile entry
 interface ProfileEntry {
@@ -23,7 +23,7 @@ interface ProfileEntry {
   duration?: number;
   parentId?: string;
   children: string[];
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   memoryBefore?: number;
   memoryAfter?: number;
   memoryDelta?: number;
@@ -43,8 +43,8 @@ interface ProfileResult {
 }
 
 class Profiler {
-  private logger = useLogger();
-  private metrics = useMetrics();
+  private logger = getLogger();
+  private metrics = getMetrics();
   private profiles = new Map<string, ProfileEntry>();
   private results: ProfileEntry[] = [];
   private enabled: boolean = process.env.NODE_ENV === 'development';
@@ -63,7 +63,7 @@ class Profiler {
   start(
     name: string,
     type: 'function' | 'endpoint' | 'block' = 'function',
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     parentId?: string
   ): string {
     if (!this.enabled) return '';
@@ -149,7 +149,7 @@ class Profiler {
   async profileFunction<T>(
     name: string,
     fn: () => T | Promise<T>,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<T> {
     const id = this.start(name, 'function', context);
     
@@ -170,7 +170,7 @@ class Profiler {
     endpoint: string,
     method: string,
     fn: () => T | Promise<T>,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): Promise<T> {
     const id = this.start(`${method} ${endpoint}`, 'endpoint', context);
     
@@ -261,7 +261,7 @@ class Profiler {
     name: string;
     duration: number;
     timestamp: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
     memoryDelta?: number;
   }> {
     return this.results
@@ -306,9 +306,9 @@ class Profiler {
   generateFlamegraphData(): Array<{
     name: string;
     value: number;
-    children?: any[];
+    children?: unknown[];
   }> {
-    const buildFlamegraph = (parentId: string | undefined): any[] => {
+    const buildFlamegraph = (parentId: string | undefined): unknown[] => {
       const children = this.results.filter(e => e.parentId === parentId && e.duration);
       
       return children.map(entry => ({
@@ -369,9 +369,9 @@ class Profiler {
 let profilerInstance: Profiler | null = null;
 
 /**
- * Get profiler instance
+ * Get profiler instance (non-hook helper)
  */
-export function useProfiler(): Profiler {
+export function getProfiler(): Profiler {
   if (!profilerInstance) {
     profilerInstance = new Profiler();
   }
@@ -379,19 +379,26 @@ export function useProfiler(): Profiler {
 }
 
 /**
+ * Get profiler instance
+ */
+export function useProfiler(): Profiler {
+  return getProfiler();
+}
+
+/**
  * Decorator for profiling methods
  */
 export function Profile(name?: string) {
   return function (
-    target: any,
+    target: unknown,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
     const profileName = name || `${target.constructor.name}.${propertyKey}`;
 
-    descriptor.value = async function (...args: any[]) {
-      const profiler = useProfiler();
+    descriptor.value = async function (...args: unknown[]) {
+      const profiler = getProfiler();
       return profiler.profileFunction(profileName, () => originalMethod.apply(this, args));
     };
 

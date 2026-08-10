@@ -52,7 +52,7 @@ export async function PopularProducts() {
             </div>
           ) : (
             products.map((product) => {
-              const imageUrl = product.images[0]?.url || '/placeholder-product.jpg';
+              const imageUrl = product.images[0]?.url || '/placeholder-product.svg';
               const price = Number(product.price);
 
               return (

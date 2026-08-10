@@ -267,7 +267,7 @@ export function useAdminSettings() {
     }
   }, []);
 
-  const updatePlatformSettings = useCallback(async (section: string, settings: any) => {
+  const updatePlatformSettings = useCallback(async (section: string, settings: Record<string, unknown>) => {
     try {
       setLoading(true);
       setError(null);

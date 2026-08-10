@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
+import { ProductionPriority } from '@prisma/client';
+
+interface SchedulableItem {
+  productName: string;
+  quantity: number;
+  productionTime: number;
+}
+
+interface ScheduleEntry {
+  orderId: string;
+  customerName: string | null;
+  status: string;
+  priority: string;
+  itemCount: number;
+  totalProductionHours: number;
+  estimatedCompletion: Date;
+  createdAt: Date;
+  items: SchedulableItem[];
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,15 +40,25 @@ export async function GET(request: NextRequest) {
         }
       },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: {
               select: {
                 id: true,
-                name: true,
-                productionTime: true
+                name: true
               }
             }
+          }
+        },
+        productionJobs: {
+          where: {
+            status: {
+              in: ['PENDING', 'IN_PROGRESS', 'ON_HOLD']
+            }
+          },
+          select: {
+            estimatedMinutes: true,
+            priority: true,
           }
         },
         customer: {
@@ -46,11 +75,25 @@ export async function GET(request: NextRequest) {
 
     // Calculate production schedule
     const schedule = orders.map(order => {
-      // Calculate estimated production time (sum of all items)
-      const totalProductionHours = order.items.reduce((sum, item) => {
-        const hoursPerItem = (item.product as any).productionTime || 2; // default 2h
-        return sum + (hoursPerItem * item.quantity);
+      const estimatedHoursFromJobs = order.productionJobs.reduce((sum, job) => {
+        return sum + ((job.estimatedMinutes ?? 0) / 60);
       }, 0);
+
+      // Fallback when jobs have no estimate yet.
+      const totalProductionHours = estimatedHoursFromJobs > 0
+        ? estimatedHoursFromJobs
+        : order.orderItems.reduce((sum, item) => sum + (2 * item.quantity), 0);
+
+      const priorityRank: Record<ProductionPriority, number> = {
+        LOW: 1,
+        NORMAL: 2,
+        HIGH: 3,
+        URGENT: 4,
+      };
+
+      const derivedPriority = order.productionJobs.reduce<ProductionPriority>((current, job) => {
+        return priorityRank[job.priority] > priorityRank[current] ? job.priority : current;
+      }, ProductionPriority.NORMAL);
 
       // Calculate estimated completion date
       const estimatedCompletion = new Date(order.createdAt);
@@ -60,21 +103,21 @@ export async function GET(request: NextRequest) {
         orderId: order.id,
         customerName: order.customer?.name || order.customerName,
         status: order.status,
-        priority: order.priority || 'NORMAL',
-        itemCount: order.items.length,
+        priority: derivedPriority,
+        itemCount: order.orderItems.length,
         totalProductionHours,
         estimatedCompletion,
         createdAt: order.createdAt,
-        items: order.items.map(item => ({
+        items: order.orderItems.map(item => ({
           productName: item.product.name,
           quantity: item.quantity,
-          productionTime: (item.product as any).productionTime || 2
+          productionTime: 2
         }))
       };
     });
 
     // Group by day
-    const scheduleByDay: { [key: string]: any[] } = {};
+    const scheduleByDay: Record<string, ScheduleEntry[]> = {};
     schedule.forEach(item => {
       const dayKey = item.estimatedCompletion.toISOString().split('T')[0];
       if (!scheduleByDay[dayKey]) {

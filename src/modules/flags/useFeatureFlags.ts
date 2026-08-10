@@ -1,9 +1,8 @@
 // Feature Flags System
 // src/modules/flags/useFeatureFlags.ts
 
-import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
-import { IS_PRODUCTION, IS_STAGING, IS_DEV } from '@/lib/env';
+import { IS_PRODUCTION, IS_STAGING } from '@/lib/env';
 import React from 'react';
 
 export interface FeatureFlag {
@@ -16,7 +15,7 @@ export interface FeatureFlag {
   rolloutPercentage?: number; // 0-100
   environment?: ('development' | 'staging' | 'production')[];
   expiresAt?: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface FeatureFlagConfig {
@@ -27,7 +26,7 @@ export interface FeatureFlagConfig {
  * Feature Flags System
  * 
  * Permite:
- * - Activare/dezactivare funcționalități
+ * - Activare/dezactivare funcÈ›ionalitÄƒÈ›i
  * - Rollout gradual (percentage-based)
  * - Testare A/B
  * - Feature toggles per environment
@@ -151,7 +150,7 @@ export class FeatureFlagsSystem {
     // Check environment
     if (flag.environment && flag.environment.length > 0) {
       const currentEnv = this.getCurrentEnvironment();
-      if (!flag.environment.includes(currentEnv as any)) {
+      if (!flag.environment.includes(currentEnv as unknown)) {
         this.cacheResult(cacheKey, false);
         return false;
       }
@@ -417,7 +416,7 @@ export class FeatureFlagsSystem {
    * Import flags configuration
    */
   async importConfig(config: FeatureFlagConfig): Promise<void> {
-    for (const [key, flag] of Object.entries(config.flags)) {
+    for (const [_key, flag] of Object.entries(config.flags)) {
       await this.setFlag(flag);
     }
 
@@ -507,7 +506,7 @@ if (require.main === module) {
       featureFlags.getAllFlags().then((flags) => {
         console.log('Feature Flags:');
         flags.forEach((flag) => {
-          console.log(`- ${flag.key}: ${flag.enabled ? '✅' : '❌'} (${flag.name})`);
+          console.log(`- ${flag.key}: ${flag.enabled ? 'âœ…' : 'âŒ'} (${flag.name})`);
         });
       });
       break;
@@ -518,7 +517,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.enableFlag(flagKey).then(() => {
-        console.log(`✅ Flag "${flagKey}" enabled`);
+        console.log(`âœ… Flag "${flagKey}" enabled`);
       });
       break;
 
@@ -528,7 +527,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.disableFlag(flagKey).then(() => {
-        console.log(`❌ Flag "${flagKey}" disabled`);
+        console.log(`âŒ Flag "${flagKey}" disabled`);
       });
       break;
 
@@ -539,7 +538,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.setRolloutPercentage(flagKey, percentage).then(() => {
-        console.log(`📊 Flag "${flagKey}" rollout set to ${percentage}%`);
+        console.log(`ðŸ“Š Flag "${flagKey}" rollout set to ${percentage}%`);
       });
       break;
 

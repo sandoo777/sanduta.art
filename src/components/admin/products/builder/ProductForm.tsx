@@ -48,8 +48,17 @@ const DEFAULT_PRODUCT_DATA: CreateFullProductInput = {
   description: '',
   descriptionShort: '',
   type: 'STANDARD',
+  saleUnit: 'UNIT',
   categoryId: '',
   active: true,
+  printMethodId: '',
+  materialId: '',
+  isOutsourced: false,
+  pricePerM2: 0,
+  pricePerUnit: 0,
+  minOrderQty: 1,
+  supplierCost: 0,
+  markup: 0,
   options: [],
   dimensions: { unit: 'mm' },
   compatibleMaterials: [],
@@ -75,7 +84,7 @@ const DEFAULT_PRODUCT_DATA: CreateFullProductInput = {
 
 const TABS = [
   { id: 'general', label: 'General', description: 'Detalii de bază, imagini, status' },
-  { id: 'options', label: 'Opțiuni', description: 'Dimensiuni, materiale și configurator' },
+  { id: 'options', label: 'Configurații', description: 'Dimensiuni, materiale și configurator' },
   { id: 'pricing', label: 'Pricing', description: 'Prețuri, discount-uri și formule' },
   { id: 'production', label: 'Producție', description: 'Operațiuni, utilaje, timp estimat' },
   { id: 'seo', label: 'SEO', description: 'Meta title, descriere și OG' },
@@ -98,8 +107,17 @@ function mapProductToForm(product: FullProduct): CreateFullProductInput {
     description: product.description ?? '',
     descriptionShort: product.descriptionShort ?? '',
     type: product.type,
+    saleUnit: product.saleUnit ?? 'UNIT',
     categoryId: product.categoryId,
     active: product.active,
+    printMethodId: product.printMethodId ?? '',
+    materialId: product.materialId ?? '',
+    isOutsourced: product.isOutsourced ?? false,
+    pricePerM2: product.pricePerM2 ?? 0,
+    pricePerUnit: product.pricePerUnit ?? 0,
+    minOrderQty: product.minOrderQty ?? 1,
+    supplierCost: product.supplierCost ?? 0,
+    markup: product.markup ?? 0,
     options: product.options ?? [],
     dimensions: product.dimensions ?? { unit: 'mm' },
     compatibleMaterials: product.compatibleMaterials ?? [],
@@ -157,7 +175,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
         const [categoriesRes, materialsRes, printMethodsRes, finishingRes, machinesRes] = await Promise.all([
           fetch('/api/admin/categories', { credentials: 'include' }),
           fetch('/api/admin/materials', { credentials: 'include' }),
-          fetch('/api/admin/print-methods', { credentials: 'include' }),
+          fetch('/api/admin/print-methods?active=true', { credentials: 'include' }),
           fetch('/api/admin/finishing', { credentials: 'include' }),
           fetch('/api/admin/machines', { credentials: 'include' }),
         ]);
@@ -185,7 +203,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
         ]);
 
         setResources({ categories, materials, printMethods, finishing, machines });
-      } catch (_error) {
+      } catch (error) {
         console.error('Error loading builder resources:', error);
         toast.error('Nu am putut încărca resursele necesare pentru builder');
       } finally {
@@ -204,7 +222,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
           const product = await fetchFullProduct(productId);
           setFormData(mapProductToForm(product));
           setSlugLocked(true);
-        } catch (_error) {
+        } catch (error) {
           console.error('Error loading product:', error);
         } finally {
           setInitialLoading(false);
@@ -221,6 +239,37 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
       setActiveTab('general');
     }
   }, [activeTab, formData.type]);
+
+  useEffect(() => {
+    if (!formData.printMethodId) {
+      if (formData.isOutsourced) {
+        updateField('isOutsourced', false);
+      }
+      return;
+    }
+
+    const selectedMethod = resources.printMethods.find((method) => method.id === formData.printMethodId);
+    if (!selectedMethod) {
+      return;
+    }
+
+    const methodOutsourced = Boolean(selectedMethod.isOutsourced);
+    if (methodOutsourced !== formData.isOutsourced) {
+      updateField('isOutsourced', methodOutsourced);
+    }
+
+    if (methodOutsourced && formData.materialId) {
+      updateField('materialId', '');
+      return;
+    }
+
+    if (!methodOutsourced && formData.materialId) {
+      const compatibleMaterialIds = selectedMethod.materialIds ?? [];
+      if (compatibleMaterialIds.length > 0 && !compatibleMaterialIds.includes(formData.materialId)) {
+        updateField('materialId', '');
+      }
+    }
+  }, [formData.isOutsourced, formData.materialId, formData.printMethodId, resources.printMethods]);
 
   const visibleTabs = useMemo(() => {
     return TABS.filter((tab) => tab.id !== 'options' || formData.type === 'CONFIGURABLE');
@@ -282,10 +331,44 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
     try {
       setErrors([]);
       const normalizedSlug = generateSlug(formData.slug) || formData.slug;
+      const compatiblePrintMethods = formData.printMethodId
+        ? Array.from(new Set([...(formData.compatiblePrintMethods ?? []), formData.printMethodId]))
+        : (formData.compatiblePrintMethods ?? []);
+      const selectedMethod = resources.printMethods.find((method) => method.id === formData.printMethodId);
+      const isOutsourcedMethod = Boolean(selectedMethod?.isOutsourced);
+      const compatibleMaterials = formData.materialId
+        ? Array.from(new Set([...(formData.compatibleMaterials ?? []), formData.materialId]))
+        : (formData.compatibleMaterials ?? []);
+
+      const defaultSupplierCostPerUnit = Number(selectedMethod?.costFurnizorPerUnit ?? 0);
+      const defaultSupplierCostPerM2 = Number(selectedMethod?.costFurnizorPerM2 ?? 0);
+      const supplierCostBase = Number(
+        formData.supplierCost ??
+          (formData.saleUnit === 'M2' ? defaultSupplierCostPerM2 : defaultSupplierCostPerUnit)
+      );
+      const markupPercent = Number(formData.markup ?? selectedMethod?.markup ?? 0);
+      const outsourceFinalPrice = supplierCostBase + (supplierCostBase * markupPercent) / 100;
+
       const payload: CreateFullProductInput = {
         ...formData,
         slug: normalizedSlug,
         sku: formData.sku?.trim() || undefined,
+        isOutsourced: isOutsourcedMethod,
+        supplierCost: isOutsourcedMethod ? supplierCostBase : undefined,
+        markup: isOutsourcedMethod ? markupPercent : undefined,
+        materialId: isOutsourcedMethod ? undefined : formData.materialId,
+        pricePerM2: isOutsourcedMethod ? undefined : formData.pricePerM2,
+        pricePerUnit: isOutsourcedMethod ? undefined : formData.pricePerUnit,
+        pricing: {
+          ...formData.pricing,
+          basePrice: isOutsourcedMethod
+            ? outsourceFinalPrice
+            : (formData.saleUnit === 'M2'
+                ? Number(formData.pricePerM2 ?? formData.pricing.basePrice ?? 0)
+                : Number(formData.pricePerUnit ?? formData.pricing.basePrice ?? 0)),
+        },
+        compatiblePrintMethods,
+        compatibleMaterials,
         images: formData.images?.map((url) => url.trim()).filter((url) => url.length > 0) ?? [],
       };
 
@@ -295,7 +378,7 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
       } else if (productId) {
         await updateFullProduct(productId, payload);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error saving product:', error);
     }
   };
@@ -378,6 +461,9 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
             <GeneralTab
               data={formData}
               categories={resources.categories}
+              materials={resources.materials}
+              printMethods={resources.printMethods}
+              machines={resources.machines}
               onNameChange={handleNameChange}
               onFieldChange={updateField}
               onSlugChange={handleSlugChange}

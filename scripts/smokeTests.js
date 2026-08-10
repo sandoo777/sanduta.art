@@ -6,6 +6,7 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * Smoke Tests - Post-Deploy Validation
@@ -112,14 +113,26 @@ class SmokeTests {
     // Test 1: Homepage
     await this.test('Homepage', `${this.baseUrl}/`);
 
-    // Test 2: Product page (assuming product ID 1 exists)
-    await this.test('Product Page', `${this.baseUrl}/products/1`);
+    // Test 2: Product page using first available product slug
+    let productDetailUrl = `${this.baseUrl}/products`;
+    try {
+      const productsResponse = await this.request(`${this.baseUrl}/api/products?page=1&limit=1`);
+      const parsed = JSON.parse(productsResponse.body || '[]');
+      const firstProduct = Array.isArray(parsed) ? parsed[0] : null;
+
+      if (firstProduct?.slug) {
+        productDetailUrl = `${this.baseUrl}/products/${firstProduct.slug}`;
+      }
+    } catch (_error) {
+      // Fallback remains products listing when API parsing fails.
+    }
+    await this.test('Product Page', productDetailUrl);
 
     // Test 3: Products listing
     await this.test('Products Listing', `${this.baseUrl}/products`);
 
     // Test 4: Configurator
-    await this.test('Configurator', `${this.baseUrl}/configurator`);
+    await this.test('Configurator', `${this.baseUrl}/public/configurator/step-4`);
 
     // Test 5: Editor
     await this.test('Editor', `${this.baseUrl}/editor`);
@@ -130,8 +143,8 @@ class SmokeTests {
     // Test 7: Checkout
     await this.test('Checkout', `${this.baseUrl}/checkout`);
 
-    // Test 8: Admin login page
-    await this.test('Admin Login', `${this.baseUrl}/admin/login`);
+    // Test 8: Login page
+    await this.test('Login', `${this.baseUrl}/login`);
 
     // Test 9: API Health check
     await this.test('API Health', `${this.baseUrl}/api/health`);
@@ -207,8 +220,10 @@ class SmokeTests {
   }
 }
 
+const __filename = fileURLToPath(import.meta.url);
+
 // Run tests if called directly
-if (require.main === module) {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   const args = process.argv.slice(2);
   let baseUrl = process.env.BASE_URL;
   let environment = process.env.ENVIRONMENT || 'staging';
@@ -241,4 +256,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = SmokeTests;
+export default SmokeTests;

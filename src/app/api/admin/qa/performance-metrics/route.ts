@@ -4,6 +4,26 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import fs from 'fs/promises';
 import path from 'path';
 
+interface LighthouseManifestItem {
+  jsonPath: string;
+}
+
+interface LighthouseResult {
+  finalUrl: string;
+  categories: {
+    performance: { score: number };
+    accessibility: { score: number };
+    'best-practices': { score: number };
+    seo: { score: number };
+  };
+  audits: {
+    'first-contentful-paint': { numericValue: number };
+    'largest-contentful-paint': { numericValue: number };
+    'cumulative-layout-shift': { numericValue: number };
+    'total-blocking-time': { numericValue: number };
+  };
+}
+
 /**
  * GET /api/admin/qa/performance-metrics
  * Fetch Lighthouse performance metrics from recent runs
@@ -90,14 +110,14 @@ export async function GET(_req: NextRequest) {
     try {
       const lighthousePath = path.join(process.cwd(), '.lighthouseci', 'manifest.json');
       const manifestData = await fs.readFile(lighthousePath, 'utf-8');
-      const manifest = JSON.parse(manifestData);
+      const manifest = JSON.parse(manifestData) as LighthouseManifestItem[];
 
       // Parse Lighthouse results
       const actualMetrics = await Promise.all(
-        manifest.map(async (item: any) => {
+        manifest.map(async (item) => {
           const resultPath = path.join(process.cwd(), '.lighthouseci', item.jsonPath);
           const resultData = await fs.readFile(resultPath, 'utf-8');
-          const result = JSON.parse(resultData);
+          const result = JSON.parse(resultData) as LighthouseResult;
 
           return {
             url: new URL(result.finalUrl).pathname,
@@ -115,7 +135,7 @@ export async function GET(_req: NextRequest) {
 
       logger.info('API:QA', 'Returning actual Lighthouse results');
       return NextResponse.json(actualMetrics);
-    } catch (fileError) {
+    } catch (_fileError) {
       // Fall back to mock data
       logger.info('API:QA', 'Returning mock performance metrics');
       return NextResponse.json(mockMetrics);

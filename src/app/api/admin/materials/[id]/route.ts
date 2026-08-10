@@ -1,227 +1,87 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/modules/auth/nextauth";
-import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/auth-helpers";
+import { createErrorResponse, logApiError, logger } from "@/lib/logger";
+import { deleteMaterial, getMaterialById, MaterialApiValidationError, updateMaterial } from "@/modules/materials/server";
 
 /**
  * GET /api/admin/materials/[id]
  * Get a single material with consumption history
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
+    if (error) return error;
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
-      return NextResponse.json({ error: "Acces interzis" }, { status: 403 });
-    }
-
-    const material = await prisma.material.findUnique({
-      where: { id },
-      include: {
-        consumption: {
-          include: {
-            job: {
-              include: {
-                order: {
-                  select: {
-                    id: true,
-                    customerName: true,
-                    customerEmail: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-      },
-    });
+    logger.info('API:Admin:Materials', 'Fetching material detail', { userId: user.id, materialId: id });
+    const material = await getMaterialById(id);
 
     if (!material) {
-      return NextResponse.json(
-        { error: "Materialul nu a fost găsit" },
-        { status: 404 }
-      );
+      return createErrorResponse('Materialul nu a fost găsit', 404);
     }
 
     return NextResponse.json(material);
   } catch (error) {
-    console.error("Error fetching material:", error);
-    return NextResponse.json(
-      { error: "Eroare la preluarea materialului" },
-      { status: 500 }
-    );
+    logApiError('API:Admin:Materials', error);
+    return createErrorResponse('Eroare la preluarea materialului', 500);
   }
 }
 
 /**
- * PATCH /api/admin/materials/[id]
+ * PUT /api/admin/materials/[id]
  * Update a material
  */
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
-
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
-      return NextResponse.json({ error: "Acces interzis" }, { status: 403 });
-    }
+    const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
+    if (error) return error;
 
     const body = await request.json();
-    const { name, sku, unit, stock, minStock, costPerUnit, notes } = body;
-
-    // Check if material exists
-    const existingMaterial = await prisma.material.findUnique({
-      where: { id },
-    });
-
-    if (!existingMaterial) {
-      return NextResponse.json(
-        { error: "Materialul nu a fost găsit" },
-        { status: 404 }
-      );
-    }
-
-    // Validations
-    if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
-      return NextResponse.json(
-        { error: "Numele materialului este obligatoriu" },
-        { status: 400 }
-      );
-    }
-
-    if (unit !== undefined && (typeof unit !== "string" || unit.trim() === "")) {
-      return NextResponse.json(
-        { error: "Unitatea de măsură este obligatorie" },
-        { status: 400 }
-      );
-    }
-
-    if (stock !== undefined && (typeof stock !== "number" || stock < 0)) {
-      return NextResponse.json(
-        { error: "Stocul trebuie să fie un număr pozitiv" },
-        { status: 400 }
-      );
-    }
-
-    if (minStock !== undefined && (typeof minStock !== "number" || minStock < 0)) {
-      return NextResponse.json(
-        { error: "Stocul minim trebuie să fie un număr pozitiv" },
-        { status: 400 }
-      );
-    }
-
-    if (costPerUnit !== undefined && (typeof costPerUnit !== "number" || costPerUnit < 0)) {
-      return NextResponse.json(
-        { error: "Costul pe unitate trebuie să fie un număr pozitiv" },
-        { status: 400 }
-      );
-    }
-
-    // Check SKU uniqueness if it's being changed
-    if (sku && sku !== existingMaterial.sku) {
-      const duplicateSku = await prisma.material.findUnique({
-        where: { sku },
-      });
-
-      if (duplicateSku) {
-        return NextResponse.json(
-          { error: "SKU-ul specificat este deja utilizat" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Build update data
-    const updateData: any = {};
-    if (name !== undefined) updateData.name = name.trim();
-    if (sku !== undefined) updateData.sku = sku?.trim() || null;
-    if (unit !== undefined) updateData.unit = unit.trim();
-    if (stock !== undefined) updateData.stock = stock;
-    if (minStock !== undefined) updateData.minStock = minStock;
-    if (costPerUnit !== undefined) updateData.costPerUnit = costPerUnit;
-    if (notes !== undefined) updateData.notes = notes?.trim() || null;
-
-    const material = await prisma.material.update({
-      where: { id },
-      data: updateData,
-    });
+    logger.info('API:Admin:Materials', 'Updating material', { userId: user.id, materialId: id });
+    const material = await updateMaterial(id, body);
 
     return NextResponse.json(material);
   } catch (error) {
-    console.error("Error updating material:", error);
-    return NextResponse.json(
-      { error: "Eroare la actualizarea materialului" },
-      { status: 500 }
-    );
+    if (error instanceof MaterialApiValidationError) {
+      return createErrorResponse(error.message, error.status);
+    }
+
+    logApiError('API:Admin:Materials', error);
+    return createErrorResponse('Eroare la actualizarea materialului', 500);
   }
 }
+
+export const PATCH = PUT;
 
 /**
  * DELETE /api/admin/materials/[id]
  * Delete a material (only if no consumption exists)
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const session = await getServerSession(authOptions);
+    const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
+    if (error) return error;
 
-    if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
-      return NextResponse.json({ error: "Acces interzis" }, { status: 403 });
-    }
-
-    // Check if material exists
-    const material = await prisma.material.findUnique({
-      where: { id },
-    });
-
-    if (!material) {
-      return NextResponse.json(
-        { error: "Materialul nu a fost găsit" },
-        { status: 404 }
-      );
-    }
-
-    // Check if material has consumption
-    const consumptionCount = await prisma.materialUsage.count({
-      where: { materialId: id },
-    });
-
-    if (consumptionCount > 0) {
-      return NextResponse.json(
-        { 
-          error: "Nu se poate șterge materialul deoarece are consum asociat",
-          consumptionCount 
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.material.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ 
-      success: true, 
-      message: "Materialul a fost șters cu succes" 
-    });
+    logger.info('API:Admin:Materials', 'Deleting material', { userId: user.id, materialId: id });
+    const result = await deleteMaterial(id);
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Error deleting material:", error);
-    return NextResponse.json(
-      { error: "Eroare la ștergerea materialului" },
-      { status: 500 }
-    );
+    if (error instanceof MaterialApiValidationError) {
+      return createErrorResponse(error.message, error.status);
+    }
+
+    logApiError('API:Admin:Materials', error);
+    return createErrorResponse('Eroare la ștergerea materialului', 500);
   }
 }

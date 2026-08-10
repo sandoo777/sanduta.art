@@ -1,85 +1,95 @@
 "use client";
 
+import { Edit3, Trash2 } from "lucide-react";
 import { AuthLink } from '@/components/common/links/AuthLink';
-import { Package } from "lucide-react";
-import type { Material } from "@/modules/materials/types";
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import type { Material } from "@/modules/materials/types";
+import {
+  getMaterialCategoryLabel,
+  getMaterialCategoryIcon,
+  getCategoryIconBg,
+  getMaterialPriceDisplay,
+  getMaterialWasteDisplay,
+  normalizeMaterialForList,
+} from './materialListUtils';
 
 interface MaterialCardProps {
   material: Material;
+  onEdit: (material: Material) => void;
+  onDelete: (material: Material) => void;
 }
 
-export function MaterialCard({ material }: MaterialCardProps) {
+export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) {
+  const normalizedMaterial = normalizeMaterialForList(material);
+  const methods = normalizedMaterial.printMethods ?? [];
+
   return (
-    <AuthLink href={`/admin/materials/${material.id}`}>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{material.name}</h3>
-                {material.sku && (
-                  <p className="text-sm text-gray-500">SKU: {material.sku}</p>
-                )}
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="space-y-4 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className={`mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xl ${getCategoryIconBg(normalizedMaterial.category)}`}>
+              {getMaterialCategoryIcon(normalizedMaterial.category)}
+            </div>
+            <div className="min-w-0">
+              <AuthLink href={`/admin/materials/${normalizedMaterial.id}`} className="block truncate font-semibold text-gray-900 hover:text-blue-700">
+                {normalizedMaterial.name}
+              </AuthLink>
+              <div className="mt-1 flex items-center gap-2">
+                <Badge variant="default" size="sm">{getMaterialCategoryLabel(normalizedMaterial.category)}</Badge>
+                {normalizedMaterial.sku ? (
+                  <span className="truncate text-xs text-gray-500">SKU: {normalizedMaterial.sku}</span>
+                ) : null}
               </div>
             </div>
-            {material.stock === 0 ? (
-              <Badge variant="default" size="sm" className="bg-black text-white">
-                Stoc epuizat
-              </Badge>
-            ) : material.lowStock ? (
-              <Badge variant="danger" size="sm">
-                Stoc scăzut
-              </Badge>
-            ) : (
-              <Badge variant="success" size="sm">
-                OK
-              </Badge>
-            )}
           </div>
+          <Badge
+            variant={normalizedMaterial.active ? 'success' : 'default'}
+            size="sm"
+            className={normalizedMaterial.active ? '' : 'bg-gray-200 text-gray-700'}
+          >
+            {normalizedMaterial.active ? 'Activ' : 'Inactiv'}
+          </Badge>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-3">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-1">Stoc</p>
-            <div className="flex items-center gap-1">
-              <span
-                className={`text-lg font-bold ${
-                  material.stock === 0
-                    ? "text-black"
-                    : material.lowStock
-                    ? "text-red-600"
-                    : "text-green-600"
-                }`}
-              >
-                {material.stock}
-              </span>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-600">{material.minStock}</span>
-              <span className="text-sm text-gray-500 ml-1">{material.unit}</span>
-            </div>
+            <p className="mb-1 text-xs text-gray-500">Preț vânzare</p>
+            <p className="text-sm font-semibold text-gray-900">{getMaterialPriceDisplay(normalizedMaterial)}</p>
           </div>
-
           <div>
-            <p className="text-xs text-gray-500 mb-1">Cost/Unitate</p>
-            <p className="text-lg font-bold text-gray-900">
-              {Number(material.costPerUnit).toFixed(2)} MDL
-            </p>
+            <p className="mb-1 text-xs text-gray-500">Waste</p>
+            <p className="text-sm font-semibold text-gray-900">{getMaterialWasteDisplay(normalizedMaterial)}</p>
           </div>
         </div>
 
-        {material.totalConsumption !== undefined && material.totalConsumption > 0 && (
-          <div className="pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              Consum total: <span className="font-medium">{material.totalConsumption} {material.unit}</span>
-            </p>
+        <div className="space-y-3 border-t border-gray-100 pt-3">
+          <div>
+            <p className="mb-2 text-xs text-gray-500">Metode tipărire compatibile</p>
+            <div className="flex flex-wrap gap-2">
+              {methods.length > 0 ? methods.slice(0, 3).map((method) => (
+                <Badge key={method.id} variant="primary" size="sm" className="max-w-[140px] truncate">
+                  {method.name}
+                </Badge>
+              )) : (
+                <Badge variant="default" size="sm">Niciuna</Badge>
+              )}
+              {methods.length > 3 ? <Badge variant="default" size="sm">+{methods.length - 3}</Badge> : null}
+            </div>
           </div>
-        )}
-        </CardContent>
-      </Card>
-    </AuthLink>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
+          <Button type="button" size="sm" variant="secondary" onClick={() => onEdit(normalizedMaterial)}>
+            <Edit3 className="h-4 w-4" /> Edit
+          </Button>
+          <Button type="button" size="sm" variant="danger" onClick={() => onDelete(normalizedMaterial)}>
+            <Trash2 className="h-4 w-4" /> Delete
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

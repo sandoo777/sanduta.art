@@ -17,7 +17,7 @@ interface Step3UpsellProps {
   onUpsellChange?: (upsells: SidebarUpsell[]) => void;
 }
 
-export function Step3Upsell({ productName, productType, selection, onSelectionChange, onContinue, onUpsellChange }: Step3UpsellProps) {
+export function Step3Upsell({ productName: _productName, productType, selection, onSelectionChange, onContinue, onUpsellChange }: Step3UpsellProps) {
   const calculator = usePriceCalculator();
   const engine = useUpsellEngine();
 

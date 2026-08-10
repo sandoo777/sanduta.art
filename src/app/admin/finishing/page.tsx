@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -10,19 +10,16 @@ import { Select } from '@/components/ui/Select';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { FinishingCard } from './_components/FinishingCard';
 import { FinishingForm } from './_components/FinishingForm';
-import { useFinishing } from '@/modules/finishing/useFinishing';
+import { useFinishing, searchFinishingOperations, filterFinishingOperations } from '@/modules/finishing/useFinishing';
 import type { FinishingOperation } from '@/modules/finishing/types';
 import { FINISHING_OPERATION_TYPES } from '@/modules/finishing/types';
 
 export default function FinishingPage() {
   const {
-    loading,
     getFinishingOperations,
     createFinishingOperation,
     updateFinishingOperation,
     deleteFinishingOperation,
-    searchFinishingOperations,
-    filterFinishingOperations,
   } = useFinishing();
 
   const [operations, setOperations] = useState<FinishingOperation[]>([]);
@@ -33,20 +30,27 @@ export default function FinishingPage() {
   const [editingOperation, setEditingOperation] = useState<FinishingOperation | undefined>();
   const [loadingData, setLoadingData] = useState(true);
 
-  useEffect(() => {
-    loadOperations();
-  }, []);
+  // Use a ref to hold the latest getFinishingOperations — prevents the function
+  // from appearing as a changing dependency and causing an infinite render loop.
+  const getFnRef = useRef(getFinishingOperations);
+  getFnRef.current = getFinishingOperations;
 
-  const loadOperations = async () => {
-    try {
-      setLoadingData(true);
-      const data = await getFinishingOperations();
-      setOperations(data);
-    } catch (error) {
-      console.error('Error loading operations:', error);
-    } finally {
-      setLoadingData(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingData(true);
+    getFnRef.current()
+      .then((data) => { if (!cancelled) setOperations(data); })
+      .catch((err) => console.error('Error loading operations:', err))
+      .finally(() => { if (!cancelled) setLoadingData(false); });
+    return () => { cancelled = true; };
+  }, []); // ← empty deps: runs exactly once on mount
+
+  const loadOperations = () => {
+    setLoadingData(true);
+    getFnRef.current()
+      .then((data) => setOperations(data))
+      .catch((err) => console.error('Error loading operations:', err))
+      .finally(() => setLoadingData(false));
   };
 
   const filteredOperations = useMemo(() => {
@@ -59,30 +63,24 @@ export default function FinishingPage() {
     const active = operations.filter((op) => op.active).length;
     const inactive = operations.length - active;
     const types = new Set(operations.map((op) => op.type)).size;
-
-    return {
-      total: operations.length,
-      active,
-      inactive,
-      types,
-    };
+    return { total: operations.length, active, inactive, types };
   }, [operations]);
 
   const handleCreate = async (data: Partial<FinishingOperation>) => {
     await createFinishingOperation(data);
-    await loadOperations();
+    loadOperations();
   };
 
   const handleUpdate = async (data: Partial<FinishingOperation>) => {
     if (editingOperation) {
       await updateFinishingOperation(editingOperation.id, data);
-      await loadOperations();
+      loadOperations();
     }
   };
 
   const handleDelete = async (id: string) => {
     await deleteFinishingOperation(id);
-    await loadOperations();
+    loadOperations();
   };
 
   const handleEdit = (operation: FinishingOperation) => {

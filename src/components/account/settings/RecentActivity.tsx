@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSecurity, SecurityActivityItem } from '@/modules/account/useSecurity';
+import { useEffect, useCallback } from 'react';
+import { useSecurity } from '@/modules/account/useSecurity';
 import { formatDistanceToNow } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import {
@@ -18,9 +18,19 @@ import {
 export default function RecentActivity() {
   const { activity, loading, fetchActivity } = useSecurity();
 
+  const loadActivity = useCallback(() => {
+    void fetchActivity(30);
+  }, [fetchActivity]);
+
   useEffect(() => {
-    fetchActivity(30);
-  }, []);
+    const timerId = setTimeout(() => {
+      loadActivity();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [loadActivity]);
 
   const getActivityIcon = (type: string, success: boolean) => {
     if (!success) {

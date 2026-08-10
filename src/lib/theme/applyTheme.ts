@@ -257,11 +257,13 @@ export async function loadPublishedTheme(): Promise<ThemeConfig | null> {
  * Hook React pentru aplicare automată a temei
  */
 export function useTheme() {
-  if (typeof window === 'undefined') return;
-
   const [theme, setTheme] = useState<ThemeConfig | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     loadPublishedTheme().then((loadedTheme) => {
       if (loadedTheme) {
         setTheme(loadedTheme);

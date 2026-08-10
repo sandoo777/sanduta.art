@@ -7,6 +7,7 @@
  * @module server-safe
  */
 
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { logger } from './logger';
 
@@ -111,7 +112,7 @@ export async function serverSafe<T>(
 export async function requireAuthOrRedirect(
   redirectTo: string,
   context: string,
-  sessionGetter: () => Promise<any>
+  sessionGetter: () => Promise<unknown>
 ): Promise<void> {
   try {
     const session = await sessionGetter();
@@ -322,12 +323,12 @@ export function ServerErrorFallback({
               Încearcă din nou
             </button>
           )}
-          <a
+          <Link
             href="/"
             className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
           >
             Înapoi la pagina principală
-          </a>
+          </Link>
         </div>
       </div>
     </div>

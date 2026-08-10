@@ -6,13 +6,13 @@ import {
   OrdersQueryParams,
   OrdersListResponse,
   CreateOrderDTO,
-  UpdateOrderDTO,
   CreateOrderItemDTO,
   UpdateOrderItemDTO,
   OrderServiceResult,
   OrderWithRelations,
+  OrderStatus,
 } from '../types';
-import { OrderStatus, PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -128,7 +128,7 @@ export class OrdersService {
    */
   async updateOrderStatus(
     id: string,
-    status: string,
+    status: OrderStatus,
     updatedByUserId: string
   ): Promise<OrderServiceResult> {
     try {
@@ -150,7 +150,7 @@ export class OrdersService {
 
       const order = await ordersRepository.update(
         id,
-        { status: status as any },
+        { status },
         updatedByUserId
       );
 

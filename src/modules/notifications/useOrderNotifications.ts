@@ -1,5 +1,3 @@
-import { OrderStatus } from '@/lib/orders/orderStatus';
-
 export function useOrderNotifications() {
   const sendNotification = (type: 'placed' | 'in_production' | 'completed' | 'shipped' | 'cancelled', orderId: string, to: string) => {
     // TODO: implement actual notification logic (email, push, etc)

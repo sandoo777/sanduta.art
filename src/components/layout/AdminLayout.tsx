@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { PanelHeader, PanelSidebar, SidebarItem } from "@/components/common";
 
 interface AdminLayoutProps {
@@ -12,7 +11,6 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
-  const pathname = usePathname();
 
   // Show loading state
   if (status === 'loading') {

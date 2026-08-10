@@ -9,6 +9,51 @@ import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import { SUPPORTED_LOCALES, type Locale } from '@/i18n/config';
 import { loadTranslations } from '@/lib/i18n/translations';
+import type { TranslationDictionary } from '@/i18n/types';
+
+type TranslationEntries = Array<{ key: string; translations: Record<Locale, string> }>;
+
+function getTranslationValue(
+  dictionary: TranslationDictionary,
+  keyPath: string
+): string | undefined {
+  const keys = keyPath.split('.');
+  let value: string | TranslationDictionary | undefined = dictionary;
+
+  for (const key of keys) {
+    if (value && typeof value === 'object') {
+      value = value[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  return typeof value === 'string' ? value : undefined;
+}
+
+function flattenTranslations(
+  obj: TranslationDictionary,
+  allTranslations: Record<Locale, TranslationDictionary>,
+  entries: TranslationEntries,
+  prefix = ''
+) {
+  for (const key in obj) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    const value = obj[key];
+
+    if (typeof value === 'string') {
+      const translations = {} as Record<Locale, string>;
+
+      for (const locale of SUPPORTED_LOCALES) {
+        translations[locale] = getTranslationValue(allTranslations[locale], fullKey) || '';
+      }
+
+      entries.push({ key: fullKey, translations });
+    } else if (value && typeof value === 'object') {
+      flattenTranslations(value, allTranslations, entries, fullKey);
+    }
+  }
+}
 
 export async function GET(_req: NextRequest) {
   try {
@@ -18,50 +63,15 @@ export async function GET(_req: NextRequest) {
     logger.info('API:Translations', 'Fetching all translations', { userId: user.id });
 
     // Încarcă traducerile pentru toate limbile
-    const allTranslations: Record<Locale, any> = {} as any;
+    const allTranslations = {} as Record<Locale, TranslationDictionary>;
     
     for (const locale of SUPPORTED_LOCALES) {
       allTranslations[locale] = await loadTranslations(locale);
     }
 
     // Flatten traducerile într-o listă
-    const entries: Array<{ key: string; translations: Record<Locale, string> }> = [];
-    
-    function flattenTranslations(obj: any, prefix = '') {
-      for (const key in obj) {
-        const fullKey = prefix ? `${prefix}.${key}` : key;
-        const value = obj[key];
-        
-        if (typeof value === 'string') {
-          // Este o traducere finală
-          const translations: Record<Locale, string> = {} as any;
-          
-          for (const locale of SUPPORTED_LOCALES) {
-            const localeObj = allTranslations[locale];
-            const keys = fullKey.split('.');
-            let val: any = localeObj;
-            
-            for (const k of keys) {
-              if (val && typeof val === 'object') {
-                val = val[k];
-              } else {
-                val = undefined;
-                break;
-              }
-            }
-            
-            translations[locale] = typeof val === 'string' ? val : '';
-          }
-          
-          entries.push({ key: fullKey, translations });
-        } else if (typeof value === 'object') {
-          // Continuă recursiv
-          flattenTranslations(value, fullKey);
-        }
-      }
-    }
-
-    flattenTranslations(allTranslations.ro);
+    const entries: TranslationEntries = [];
+    flattenTranslations(allTranslations.ro, allTranslations, entries);
 
     return NextResponse.json(entries);
   } catch (err) {
@@ -70,12 +80,12 @@ export async function GET(_req: NextRequest) {
   }
 }
 
-export async function PUT(_req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN']);
     if (error) return error;
 
-    const { key, locale, value } = await req.json();
+    const { key, locale } = await req.json() as { key?: string; locale?: Locale; value?: string };
 
     if (!key || !locale || !SUPPORTED_LOCALES.includes(locale)) {
       return createErrorResponse('Invalid parameters', 400);

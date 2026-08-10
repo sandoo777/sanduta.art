@@ -9,7 +9,7 @@ interface JobNotesProps {
   onUpdate: (notes: string) => Promise<void>;
 }
 
-export default function JobNotes({ jobId, notes: initialNotes = "", onUpdate }: JobNotesProps) {
+export default function JobNotes({ jobId: _jobId, notes: initialNotes = "", onUpdate }: JobNotesProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [notes, setNotes] = useState(initialNotes);
   const [saving, setSaving] = useState(false);

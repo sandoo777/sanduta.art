@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Clock, Eye, ArrowRight } from "lucide-react";
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { useAnalytics } from "@/modules/admin/useAnalytics";
@@ -19,23 +19,29 @@ export default function RecentOrders() {
   const { fetchRecentOrders, loading } = useAnalytics();
   const [orders, setOrders] = useState<RecentOrder[]>([]);
 
-  useEffect(() => {
-    loadOrders();
-    const interval = setInterval(loadOrders, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     const data = await fetchRecentOrders(10);
     if (data) {
-      // Transform data: totalPrice → total
       const transformed = data.map(order => ({
         ...order,
-        total: Number(order.total), // Convert Decimal to number
+        total: Number(order.total),
       }));
       setOrders(transformed);
     }
-  };
+  }, [fetchRecentOrders]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadOrders();
+    }, 0);
+    const interval = setInterval(() => {
+      void loadOrders();
+    }, 30000);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
+  }, [loadOrders]);
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {

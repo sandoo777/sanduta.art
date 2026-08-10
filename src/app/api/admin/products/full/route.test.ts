@@ -46,7 +46,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 const getServerSessionMock = vi.mocked(getServerSession);
-const adminSession = { user: { role: 'ADMIN' } } as const;
+const adminSession = { user: { role: 'ADMIN' } } as Awaited<ReturnType<typeof getServerSession>>;
 
 const prismaFunctionMocks = [
   prismaMock.product.findUnique,
@@ -122,7 +122,7 @@ describe('Full product API flow', () => {
   });
 
   it('creates a product with all related entities', async () => {
-    getServerSessionMock.mockResolvedValue(adminSession as any);
+    getServerSessionMock.mockResolvedValue(adminSession);
 
     const payload: CreateFullProductInput = {
       name: ' Produs configurabil ',
@@ -217,7 +217,7 @@ describe('Full product API flow', () => {
   });
 
   it('updates a product and refreshes relations', async () => {
-    getServerSessionMock.mockResolvedValue(adminSession as any);
+    getServerSessionMock.mockResolvedValue(adminSession);
 
     const payload: Partial<CreateFullProductInput> = {
       name: 'Produs actualizat',

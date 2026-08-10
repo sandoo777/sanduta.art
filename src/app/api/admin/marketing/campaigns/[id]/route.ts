@@ -8,7 +8,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-const mockCampaigns: any[] = [];
+interface MockCampaign {
+  id: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+const mockCampaigns: MockCampaign[] = [];
 
 export async function PATCH(
   req: NextRequest,
@@ -50,7 +56,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

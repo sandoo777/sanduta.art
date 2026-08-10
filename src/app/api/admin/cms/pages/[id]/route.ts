@@ -6,9 +6,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-// Mock data (shared with route.ts in production would use DB)
-const mockPages: any[] = [];
-
 // PATCH /api/admin/cms/pages/[id]
 export async function PATCH(
   req: NextRequest,
@@ -40,7 +37,7 @@ export async function PATCH(
 
 // DELETE /api/admin/cms/pages/[id]
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

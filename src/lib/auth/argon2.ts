@@ -343,7 +343,7 @@ export async function benchmarkConfigs(): Promise<{
 // EXPORTS
 // ============================================
 
-export default {
+const argon2Helpers = {
   hash: hashPassword,
   verify: verifyPassword,
   needsMigration,
@@ -352,3 +352,5 @@ export default {
   validate: validatePasswordRequirements,
   benchmark: benchmarkHashing,
 };
+
+export default argon2Helpers;

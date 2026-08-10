@@ -51,10 +51,10 @@ const mockPages = [
 // GET /api/cms/pages/[slug]
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
+    const { slug } = await params;
 
     logger.info('API:CMS:Pages:Public', 'Fetching page by slug', { slug });
 

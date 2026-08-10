@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Activity, Filter, Download, Search, Calendar, User, CheckCircle, XCircle } from "lucide-react";
+import { Activity, Download, Search, User, CheckCircle, XCircle } from "lucide-react";
 import { ActivityType } from "@prisma/client";
-import { Table, LoadingState, Badge } from "@/components/ui";
+import { Table, Badge } from "@/components/ui";
 
 interface AuditLog {
   id: string;
@@ -61,8 +61,8 @@ export default function AuditLogsPage() {
       const data = await response.json();
       setLogs(data.logs || []);
       setTotalPages(data.pagination?.totalPages || 1);
-    } catch (_error) {
-      console.error("Failed to fetch audit logs:", error);
+    } catch (fetchError) {
+      console.error("Failed to fetch audit logs:", fetchError);
     } finally {
       setLoading(false);
     }

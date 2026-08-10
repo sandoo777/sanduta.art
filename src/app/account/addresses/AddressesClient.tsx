@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { MapPin, Plus, Edit2, Trash2, Star } from 'lucide-react';
 
 export interface Address {

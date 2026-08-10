@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { FileText, Download, Eye, Search, Loader2 } from 'lucide-react';
+import { FileText, Download, Search } from 'lucide-react';
 import { AuthLink } from '@/components/common/links/AuthLink';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 interface Invoice {
   id: string;
@@ -43,7 +44,7 @@ export default function InvoicesPage() {
         console.error('Invalid data format received:', data);
         setInvoices([]);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Error fetching invoices:', error);
       setInvoices([]); // Set empty array on error
     } finally {
@@ -66,7 +67,7 @@ export default function InvoicesPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (_error) {
+    } catch (error) {
       console.error('Error downloading invoice:', error);
       alert('Eroare la descărcarea facturii');
     }

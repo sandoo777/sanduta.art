@@ -5,10 +5,10 @@ import CatalogClient from '@/app/(public)/produse/CatalogClient';
 import { Breadcrumbs, buildCategoryBreadcrumbs } from '@/components/public/Breadcrumbs';
 
 interface SubcategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string;
     subcategory: string;
-  };
+  }>;
 }
 
 // Generate static params for all parent/child combinations
@@ -32,12 +32,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: SubcategoryPageProps): Promise<Metadata> {
+  const { slug, subcategory: subcategorySlug } = await params;
+
   const subcategory = await prisma.category.findFirst({
     where: {
-      slug: params.subcategory,
+      slug: subcategorySlug,
       active: true,
       parent: {
-        slug: params.slug,
+        slug,
       },
     },
     include: {
@@ -76,12 +78,14 @@ export async function generateMetadata({
 export default async function SubcategoryPage({
   params,
 }: SubcategoryPageProps) {
+  const { slug, subcategory: subcategorySlug } = await params;
+
   const subcategory = await prisma.category.findFirst({
     where: {
-      slug: params.subcategory,
+      slug: subcategorySlug,
       active: true,
       parent: {
-        slug: params.slug,
+        slug,
       },
     },
     include: {

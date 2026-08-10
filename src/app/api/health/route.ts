@@ -11,9 +11,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { useDbMonitoring } from '@/modules/monitoring/useDbMonitoring';
-import { useQueueMonitoring } from '@/modules/monitoring/useQueueMonitoring';
+import { getDbMonitoring } from '@/modules/monitoring/useDbMonitoring';
+import { getQueueMonitoring } from '@/modules/monitoring/useQueueMonitoring';
 import { prisma } from '@/lib/prisma';
+
+type HealthMetrics = Record<string, number>;
 
 export const dynamic = 'force-dynamic';
 
@@ -23,8 +25,8 @@ interface HealthCheck {
   uptime: number;
   checks: {
     api: { status: string; message?: string };
-    database: { status: string; message?: string; metrics?: any };
-    queue: { status: string; message?: string; metrics?: any };
+    database: { status: string; message?: string; metrics?: HealthMetrics };
+    queue: { status: string; message?: string; metrics?: HealthMetrics };
     storage: { status: string; message?: string };
     external: { status: string; services: Record<string, string> };
   };
@@ -37,7 +39,7 @@ const startTime = Date.now();
  */
 async function checkDatabase() {
   try {
-    const dbMonitor = useDbMonitoring();
+    const dbMonitor = getDbMonitoring();
     const health = await dbMonitor.checkHealth(prisma);
     
     return {
@@ -63,7 +65,7 @@ async function checkDatabase() {
  */
 async function checkQueue() {
   try {
-    const queueMonitor = useQueueMonitoring();
+    const queueMonitor = getQueueMonitoring();
     const health = await queueMonitor.getHealthStatus();
     
     return {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TrendingUp, Calendar } from "lucide-react";
 import { useAnalytics, DataPoint as AnalyticsDataPoint } from "@/modules/admin/useAnalytics";
 
@@ -20,14 +20,9 @@ export default function SalesChart() {
   const [compareEnabled, setCompareEnabled] = useState(false);
   const [data, setData] = useState<DataPoint[]>([]);
 
-  useEffect(() => {
-    loadSalesData();
-  }, [period, compareEnabled]);
-
-  const loadSalesData = async () => {
+  const loadSalesData = useCallback(async () => {
     const salesData = await fetchSalesData(period, compareEnabled);
     if (salesData) {
-      // Transform AnalyticsDataPoint[] to DataPoint[]
       const transformed = salesData.map((item: AnalyticsDataPoint) => ({
         label: item.date,
         value: item.value,
@@ -35,7 +30,15 @@ export default function SalesChart() {
       }));
       setData(transformed);
     }
-  };
+  }, [compareEnabled, fetchSalesData, period]);
+
+  useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      void loadSalesData();
+    }, 0);
+
+    return () => clearTimeout(initialTimer);
+  }, [loadSalesData]);
 
   const maxValue = Math.max(...data.map((d) => Math.max(d.value, d.comparison || 0)));
 

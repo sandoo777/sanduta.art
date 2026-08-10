@@ -12,6 +12,24 @@
 import { BackupEngine, BackupMetadata, BackupCategory } from './useBackupEngine';
 import { logger } from '@/lib/logger';
 
+interface DbVersionDiff {
+  tablesAdded: string[];
+  tablesRemoved: string[];
+  rowsChanged: Record<string, number>;
+}
+
+interface FilesVersionDiff {
+  filesAdded: string[];
+  filesRemoved: string[];
+  filesModified: string[];
+}
+
+interface ConfigVersionDiff {
+  settingsAdded: string[];
+  settingsRemoved: string[];
+  settingsModified: string[];
+}
+
 export enum VersionTag {
   STABLE = 'STABLE',
   BETA = 'BETA',
@@ -321,7 +339,7 @@ export class BackupVersioning {
     options?: { skipFiles?: boolean; skipConfig?: boolean }
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const RestoreEngine = await import('./useRestore').then(m => m.RestoreEngine);
+      const { RestoreEngine, RestoreMode } = await import('./useRestore');
 
       logger.info('BackupVersioning', 'Rolling back to version', { backupId, options });
 
@@ -332,7 +350,7 @@ export class BackupVersioning {
       }
 
       // Restore selected version
-      const result = await RestoreEngine.restore(backupId, 'FULL' as any);
+      const result = await RestoreEngine.restore(backupId, RestoreMode.FULL);
 
       if (result.success) {
         logger.info('BackupVersioning', 'Rollback successful', { backupId });
@@ -372,7 +390,7 @@ export class BackupVersioning {
   /**
    * Compare database between versions
    */
-  private static async compareDatabase(v1: BackupVersion, v2: BackupVersion) {
+  private static async compareDatabase(_v1: BackupVersion, _v2: BackupVersion) {
     // Simplified comparison (would need full DB diff in production)
     return {
       tablesAdded: [],
@@ -384,7 +402,7 @@ export class BackupVersioning {
   /**
    * Compare files between versions
    */
-  private static async compareFiles(v1: BackupVersion, v2: BackupVersion) {
+  private static async compareFiles(_v1: BackupVersion, _v2: BackupVersion) {
     // Simplified comparison
     return {
       filesAdded: [],
@@ -396,7 +414,7 @@ export class BackupVersioning {
   /**
    * Compare config between versions
    */
-  private static async compareConfig(v1: BackupVersion, v2: BackupVersion) {
+  private static async compareConfig(_v1: BackupVersion, _v2: BackupVersion) {
     // Simplified comparison
     return {
       settingsAdded: [],
@@ -408,7 +426,11 @@ export class BackupVersioning {
   /**
    * Calculate similarity percentage
    */
-  private static calculateSimilarity(dbDiff: any, filesDiff: any, configDiff: any): number {
+  private static calculateSimilarity(
+    dbDiff: DbVersionDiff,
+    filesDiff: FilesVersionDiff,
+    configDiff: ConfigVersionDiff
+  ): number {
     // Simplified calculation (would be more sophisticated in production)
     const totalChanges =
       (dbDiff?.tablesAdded?.length || 0) +

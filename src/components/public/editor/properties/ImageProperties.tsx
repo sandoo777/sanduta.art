@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { EditorElement } from '@/modules/editor/editorStore';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import { useRef } from 'react';
@@ -39,10 +40,13 @@ export default function ImageProperties({ element, onUpdate }: ImagePropertiesPr
         </label>
         <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
           {element.src ? (
-            <img
+            <Image
               src={element.src}
               alt="Preview"
+              width={1200}
+              height={800}
               className="w-full h-full object-contain"
+              unoptimized
               style={{
                 filter: `
                   brightness(${element.brightness || 100}%)

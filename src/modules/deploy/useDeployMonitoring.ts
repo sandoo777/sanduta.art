@@ -1,7 +1,6 @@
 // Deploy Monitoring System
 // src/modules/deploy/useDeployMonitoring.ts
 
-import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import React from 'react';
 
@@ -31,7 +30,7 @@ export interface DeploymentLog {
   level: 'info' | 'warn' | 'error' | 'debug';
   message: string;
   timestamp: Date;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface DeploymentAlert {
@@ -39,16 +38,16 @@ export interface DeploymentAlert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
  * Deploy Monitoring System
  * 
- * Monitorizează și raportează:
+ * MonitorizeazÄƒ È™i raporteazÄƒ:
  * - Timp build
  * - Timp deploy
- * - Erori și warning-uri
+ * - Erori È™i warning-uri
  * - Logs
  * - Alerte automate
  */
@@ -180,7 +179,7 @@ export class DeployMonitoring {
   log(
     level: 'info' | 'warn' | 'error' | 'debug',
     message: string,
-    context?: Record<string, any>
+    context?: Record<string, unknown>
   ): void {
     const logEntry: DeploymentLog = {
       level,
@@ -255,10 +254,10 @@ export class DeployMonitoring {
       if (process.env.SLACK_WEBHOOK) {
         const emoji =
           alert.severity === 'critical'
-            ? '🚨'
+            ? 'ðŸš¨'
             : alert.severity === 'high'
-            ? '⚠️'
-            : '📢';
+            ? 'âš ï¸'
+            : 'ðŸ“¢';
 
         await fetch(process.env.SLACK_WEBHOOK, {
           method: 'POST',
@@ -307,7 +306,7 @@ export class DeployMonitoring {
     if (!this.metrics) return;
 
     try {
-      const emoji = this.metrics.status === 'success' ? '✅' : '❌';
+      const emoji = this.metrics.status === 'success' ? 'âœ…' : 'âŒ';
       const statusText = this.metrics.status === 'success' ? 'succeeded' : 'failed';
 
       const message = `
@@ -318,13 +317,13 @@ Version: ${this.metrics.version}
 Commit: ${this.metrics.commit.substring(0, 7)}
 Deployed by: ${this.metrics.deployedBy}
 
-⏱️ Timing:
+â±ï¸ Timing:
 - Build: ${Math.round(this.metrics.buildTime / 1000)}s
 - Deploy: ${Math.round(this.metrics.deployTime / 1000)}s
 - Total: ${Math.round(this.metrics.totalTime / 1000)}s
 
-${this.metrics.errors.length > 0 ? `❌ Errors: ${this.metrics.errors.length}` : ''}
-${this.metrics.warnings.length > 0 ? `⚠️ Warnings: ${this.metrics.warnings.length}` : ''}
+${this.metrics.errors.length > 0 ? `âŒ Errors: ${this.metrics.errors.length}` : ''}
+${this.metrics.warnings.length > 0 ? `âš ï¸ Warnings: ${this.metrics.warnings.length}` : ''}
       `.trim();
 
       // Send to Slack
@@ -520,7 +519,7 @@ export function useDeployMonitoring() {
       deployMonitoring.endDeploy();
       updateState();
     },
-    addError: (error: any) => {
+    addError: (error: unknown) => {
       deployMonitoring.addError(error);
       updateState();
     },

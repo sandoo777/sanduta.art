@@ -5,14 +5,6 @@ import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { fetchCategories } from '@/lib/api';
 
-interface CategoryNav {
-  id: number;
-  name: string;
-  slug: string;
-  icon?: string;
-  parentId?: number | null;
-}
-
 interface MobileCategoriesMenuProps {
   onLinkClick: () => void;
 }

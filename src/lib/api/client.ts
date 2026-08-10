@@ -16,12 +16,18 @@
 /**
  * API Response standard
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
 }
+
+type ApiErrorResponse = {
+  success: boolean;
+  error?: string;
+  message?: string;
+};
 
 /**
  * API Error custom
@@ -30,7 +36,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number,
-    public response?: any
+    public response?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -101,11 +107,14 @@ class APIClient {
 
       clearTimeout(timeoutId);
 
-      const data = await response.json();
+      const data: unknown = await response.json();
+      const errorResponse = typeof data === 'object' && data !== null
+        ? (data as ApiErrorResponse)
+        : undefined;
 
       if (!response.ok) {
         throw new ApiError(
-          data.error || data.message || 'Request failed',
+          errorResponse?.error || errorResponse?.message || 'Request failed',
           response.status,
           data
         );
@@ -159,7 +168,7 @@ class APIClient {
    */
   async post<T>(
     path: string,
-    body?: any,
+    body?: unknown,
     options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
     return this.request<T>(path, {
@@ -174,7 +183,7 @@ class APIClient {
    */
   async put<T>(
     path: string,
-    body?: any,
+    body?: unknown,
     options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
     return this.request<T>(path, {
@@ -189,7 +198,7 @@ class APIClient {
    */
   async patch<T>(
     path: string,
-    body?: any,
+    body?: unknown,
     options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
     return this.request<T>(path, {

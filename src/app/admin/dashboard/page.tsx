@@ -20,34 +20,38 @@ export default function DashboardPage() {
         <KpiCard
           title="Total Orders"
           value={128}
-          icon={<ShoppingCart className="w-6 h-6" />}
+          icon={ShoppingCart}
           trend="+12% this month"
           trendUp={true}
-          color="purple"
+          bgColor="bg-purple-50"
+          iconColor="text-purple-600"
         />
         <KpiCard
           title="Orders In Production"
           value={37}
-          icon={<Package className="w-6 h-6" />}
+          icon={Package}
           trend="5 pending review"
           trendUp={false}
-          color="blue"
+          bgColor="bg-blue-50"
+          iconColor="text-blue-600"
         />
         <KpiCard
           title="Total Revenue"
           value="52,430 MDL"
-          icon={<DollarSign className="w-6 h-6" />}
+          icon={DollarSign}
           trend="+18% this month"
           trendUp={true}
-          color="green"
+          bgColor="bg-green-50"
+          iconColor="text-green-600"
         />
         <KpiCard
           title="New Customers"
           value={14}
-          icon={<Users className="w-6 h-6" />}
+          icon={Users}
           trend="+3 this week"
           trendUp={true}
-          color="orange"
+          bgColor="bg-orange-50"
+          iconColor="text-orange-600"
         />
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useRouter } from "next/navigation";
 import { Card, Input, Button } from "@/components/ui";
@@ -15,11 +15,7 @@ export default function SetupPage() {
   const [needsSetup, setNeedsSetup] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    checkSetupStatus();
-  }, []);
-
-  const checkSetupStatus = async () => {
+  const checkSetupStatus = useCallback(async () => {
     try {
       const response = await fetch('/api/setup');
       const data = await response.json();
@@ -36,7 +32,17 @@ export default function SetupPage() {
     } finally {
       setChecking(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      void checkSetupStatus();
+    }, 0);
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [checkSetupStatus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

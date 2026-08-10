@@ -18,7 +18,6 @@ interface RuleContext {
 }
 
 const OPERATORS = ['includes', '>=', '<=', '!=', '>', '<', '='] as const;
-type Operator = (typeof OPERATORS)[number];
 
 function parseFragment(fragment: string) {
   const trimmed = fragment.trim();

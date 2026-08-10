@@ -21,10 +21,10 @@ export function ColorSettings({ value, onChange }: ColorSettingsProps) {
   const updateColor = (path: string, color: string) => {
     const keys = path.split('.');
     const newColors = { ...colors };
-    let current: any = newColors;
+    let current: Record<string, unknown> = newColors as unknown as Record<string, unknown>;
     
     for (let i = 0; i < keys.length - 1; i++) {
-      current = current[keys[i]];
+      current = current[keys[i]] as Record<string, unknown>;
     }
     
     current[keys[keys.length - 1]] = color;

@@ -133,7 +133,7 @@ export const serverCache = new ServerCache();
 /**
  * Cache decorator for functions
  */
-export function cached<T>(ttl?: number) {
+export function cached(ttl?: number) {
   return function (
     target: unknown,
     propertyKey: string,

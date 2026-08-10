@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Form, FormField, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/Input';
 
 // Schema Zod cu validări reale

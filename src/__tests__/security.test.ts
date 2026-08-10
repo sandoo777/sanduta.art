@@ -8,7 +8,7 @@ import { PasswordSecurity, BruteForceProtection } from '@/modules/auth/security'
 import { sanitizeHtml, sanitizePlainText, sanitizeUrl, detectXssPattern } from '@/lib/security/sanitize';
 import { FileUploadValidator, ALLOWED_MIME_TYPES } from '@/modules/files/validateFile';
 import { PasswordPolicy } from '@/lib/security/passwordPolicy';
-import { validateCsrfToken, generateCsrfToken } from '@/lib/security/csrf';
+import { generateCsrfToken } from '@/lib/security/csrf';
 
 describe('Security Testing Suite', () => {
   describe('Password Security', () => {

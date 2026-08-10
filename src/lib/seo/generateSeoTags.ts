@@ -71,7 +71,7 @@ export function generateAlternateUrls(
   baseUrl: string = process.env.NEXT_PUBLIC_BASE_URL || 'https://sanduta.art'
 ): Record<Locale, string> {
   const cleanPathname = pathname.replace(/^\/(ro|en|ru)/, '');
-  const urls: Record<Locale, string> = {} as any;
+  const urls = {} as Record<Locale, string>;
 
   for (const locale of SUPPORTED_LOCALES) {
     urls[locale] = `${baseUrl}/${locale}${cleanPathname}`;

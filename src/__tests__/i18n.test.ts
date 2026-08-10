@@ -9,7 +9,6 @@ import {
   detectLocale,
   getFallbackChain,
   SUPPORTED_LOCALES,
-  DEFAULT_LOCALE,
 } from '@/i18n/config';
 import {
   loadTranslations,

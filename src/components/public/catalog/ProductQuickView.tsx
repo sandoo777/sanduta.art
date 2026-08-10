@@ -83,7 +83,7 @@ export function ProductQuickView({
             onMouseLeave={() => setImageHovered(false)}
           >
             <Image
-              src={product.imageUrl || '/images/placeholder-product.jpg'}
+              src={product.imageUrl || '/placeholder-product.svg'}
               alt={product.name}
               fill
               className={`object-cover transition-transform duration-500 ${
@@ -98,7 +98,7 @@ export function ProductQuickView({
           <div className="flex gap-2 mt-4">
             <button className="w-16 h-16 bg-gray-100 rounded-lg border-2 border-blue-600">
               <Image
-                src={product.imageUrl || '/images/placeholder-product.jpg'}
+                src={product.imageUrl || '/placeholder-product.svg'}
                 alt={`${product.name} - thumb`}
                 width={64}
                 height={64}

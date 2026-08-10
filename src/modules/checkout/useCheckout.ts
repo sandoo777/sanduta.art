@@ -42,7 +42,7 @@ export interface CheckoutData {
   address: AddressData;
   deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
-  items: any[];
+  items: CheckoutItem[];
   totals: {
     subtotal: number;
     discount: number;
@@ -51,6 +51,20 @@ export interface CheckoutData {
     total: number;
   };
   createdAt: Date;
+}
+
+interface CheckoutItem {
+  id: string;
+  name: string;
+  totalPrice: number;
+  specifications?: {
+    quantity?: number;
+    dimensions?: unknown;
+    material?: unknown;
+  };
+  priceBreakdown?: {
+    basePrice?: number;
+  };
 }
 
 export function useCheckout() {
@@ -208,7 +222,7 @@ export function useCheckout() {
               country: checkoutData.address.country,
               postalCode: checkoutData.address.postalCode,
             },
-            items: checkoutData.items.map((item: any) => ({
+            items: checkoutData.items.map((item: CheckoutItem) => ({
               id: item.id,
               name: item.name,
               quantity: item.specifications?.quantity || 1,
@@ -249,7 +263,7 @@ export function useCheckout() {
               country: checkoutData.address.country,
               postalCode: checkoutData.address.postalCode,
             },
-            items: checkoutData.items.map((item: any) => ({
+            items: checkoutData.items.map((item: CheckoutItem) => ({
               id: item.id,
               name: item.name,
               quantity: item.specifications?.quantity || 1,

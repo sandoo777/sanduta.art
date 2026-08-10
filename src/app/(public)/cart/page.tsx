@@ -4,7 +4,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import CartList from '@/components/public/cart/CartList';
 import { CartSummary } from '@/components/public/cart/CartSummary';
 import { useCartStore } from '@/modules/cart/cartStore';

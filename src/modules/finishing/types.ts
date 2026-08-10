@@ -1,4 +1,4 @@
-import { Scissors, Sparkles, FoldVertical, Paperclip, Circle, CornerDownRight, Layers, MoreHorizontal } from 'lucide-react';
+import { Scissors, FoldVertical, Paperclip, Circle, CornerDownRight, Layers, MoreHorizontal } from 'lucide-react';
 
 export interface FinishingOperation {
   id: string;

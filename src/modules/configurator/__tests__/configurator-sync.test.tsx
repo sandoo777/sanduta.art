@@ -1,10 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { mapProductToConfigurator } from '@/lib/products/mapProductToConfigurator';
 import { filterMaterialsByProduct } from '@/lib/configurator/filterMaterialsByProduct';
 import { filterPrintMethodsByProduct } from '@/lib/configurator/filterPrintMethodsByProduct';
-import { filterFinishingByProduct } from '@/lib/configurator/filterFinishingByProduct';
 import { calculateProductPrice } from '@/lib/pricing/calculateProductPrice';
 import { applyOptionRules } from '@/lib/configurator/applyOptionRules';
 import { ConfiguratorPreview } from '@/components/configurator/ConfiguratorPreview';
@@ -13,6 +12,7 @@ import type { ConfiguratorProduct, ConfiguratorSelections } from '@/modules/conf
 vi.mock('next/image', () => ({
   __esModule: true,
   default: ({ src, alt }: { src: string; alt: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} data-testid="next-image" />
   ),
 }));
@@ -128,7 +128,7 @@ const basePrismaProduct = {
       createdAt: new Date(),
       finishing: {
         id: 'fin-1',
-        name: 'Laminare lucioasă',
+        name: 'Laminare lucioasÄƒ',
         type: 'Laminare',
         costFix: 15,
         costPerUnit: 1,
@@ -146,7 +146,7 @@ const basePrismaProduct = {
 } as const;
 
 function buildConfiguratorProduct(overrides: Partial<ConfiguratorProduct> = {}): ConfiguratorProduct {
-  const mapped = mapProductToConfigurator(basePrismaProduct as any);
+  const mapped = mapProductToConfigurator(basePrismaProduct as unknown);
   return {
     ...mapped,
     ...overrides,
@@ -169,29 +169,29 @@ describe('Configurator sync pipeline', () => {
     };
   });
 
-  it('Produs standard → mapare completă pentru configurator', () => {
-    const mapped = mapProductToConfigurator(basePrismaProduct as any);
+  it('Produs standard â†’ mapare completÄƒ pentru configurator', () => {
+    const mapped = mapProductToConfigurator(basePrismaProduct as unknown);
     expect(mapped.name).toBe('Poster Standard');
     expect(mapped.options).toHaveLength(1);
     expect(mapped.materials[0]?.name).toBe('PVC premium');
     expect(mapped.defaults.optionValues).toHaveProperty('color');
   });
 
-  it('Produs configurabil → dimensiunile limitează materialele disponibile', () => {
+  it('Produs configurabil â†’ dimensiunile limiteazÄƒ materialele disponibile', () => {
     const constrainedSelections = { ...selections, dimension: { width: 400, height: 300, unit: 'cm' } };
     const result = filterMaterialsByProduct(product, constrainedSelections);
     expect(result.materials).toHaveLength(0);
     expect(result.issues[0]).toMatch(/nu este compatibil/);
   });
 
-  it('Price breaks → totalul scade corespunzător cantității', () => {
+  it('Price breaks â†’ totalul scade corespunzÄƒtor cantitÄƒÈ›ii', () => {
     const highQuantity = { ...selections, quantity: 150 };
     const summary = calculateProductPrice(product, highQuantity);
     expect(summary.appliedPriceBreak?.minQuantity).toBe(100);
     expect(summary.base).toBeLessThan(120 * 150);
   });
 
-  it('Formulă custom → calculează corect în funcție de variabile', () => {
+  it('FormulÄƒ custom â†’ calculeazÄƒ corect Ã®n funcÈ›ie de variabile', () => {
     const formulaProduct = buildConfiguratorProduct({
       pricing: {
         ...product.pricing,
@@ -208,7 +208,7 @@ describe('Configurator sync pipeline', () => {
     expect(summary.base).toBeCloseTo(expectedBase, 2);
   });
 
-  it('Finisaje → adaugă cost suplimentar în total', () => {
+  it('Finisaje â†’ adaugÄƒ cost suplimentar Ã®n total', () => {
     const withoutFinishing = calculateProductPrice(product, { ...selections, finishingIds: [] });
     const withFinishing = calculateProductPrice(product, selections, {
       finishing: product.finishing,
@@ -216,18 +216,18 @@ describe('Configurator sync pipeline', () => {
     expect(withFinishing.finishingCost).toBeGreaterThan(withoutFinishing.finishingCost);
   });
 
-  it('Metode tipărire → filtrează după material și dimensiuni', () => {
+  it('Metode tipÄƒrire â†’ filtreazÄƒ dupÄƒ material È™i dimensiuni', () => {
     const filtered = filterPrintMethodsByProduct(product, { ...selections, materialId: 'alt-material' });
     expect(filtered.printMethods).toHaveLength(0);
   });
 
-  it('Opțiuni custom → regulile aplică ascundere și preț suplimentar', () => {
+  it('OpÈ›iuni custom â†’ regulile aplicÄƒ ascundere È™i preÈ› suplimentar', () => {
     const rules = applyOptionRules(product, { ...selections, options: { color: 'negru' } });
     expect(rules.priceAdjustment).toBeGreaterThan(0);
     expect(rules.visibleOptions[0]?.values.find((value) => value.value === 'negru')).toBeDefined();
   });
 
-  it('Preview → afișează selecțiile și prețul final', () => {
+  it('Preview â†’ afiÈ™eazÄƒ selecÈ›iile È™i preÈ›ul final', () => {
     const summary = calculateProductPrice(product, selections);
     render(
       <ConfiguratorPreview
@@ -240,6 +240,6 @@ describe('Configurator sync pipeline', () => {
 
     expect(screen.getAllByText('Poster Standard').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Total/).length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /Adaugă în coș/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /AdaugÄƒ Ã®n coÈ™/i })).toBeEnabled();
   });
 });

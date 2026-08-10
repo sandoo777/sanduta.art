@@ -17,7 +17,7 @@ export type PageStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 export interface PageBlock {
   id: string;
   type: 'text' | 'image' | 'gallery' | 'video' | 'quote' | 'list' | 'heading';
-  content: any; // Specific to block type
+  content: unknown; // Specific to block type
   order: number;
 }
 
