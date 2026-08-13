@@ -59,10 +59,7 @@
                     "smoke-tests:full":  "tsx scripts/smoke-tests.ts",
                     "monitor:post-launch":  "tsx scripts/post-launch-monitor.ts",
                     "hotfix":  "tsx scripts/hotfix.ts",
-                    "rollback":  "tsx scripts/hotfix.ts rollback",
-                    "ci:jest":  "npm run jest-only --silent",
-                    "ci:vitest":  "vitest run --reporter dot",
-                    "ci:playwright":  "playwright test --reporter=list"
+                    "rollback":  "tsx scripts/hotfix.ts rollback"
                 },
     "prisma":  {
                    "seed":  "tsx prisma/seed.ts"
