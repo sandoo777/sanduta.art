@@ -5,6 +5,7 @@
   ml = 'ml',
   unit = 'unit',
   pcs = 'pcs',
+  sheet = 'sheet',
   gram = 'gram',
   liter = 'liter'
 }
@@ -16,23 +17,29 @@ export function convertMaterialQuantity(
   opts?: { rollWidthMeters?: number }
 ): number {
   if (from === to) return value;
+
   if (from === MaterialUnit.gram && to === MaterialUnit.kg) return value / 1000;
   if (from === MaterialUnit.kg && to === MaterialUnit.gram) return value * 1000;
+
   if (from === MaterialUnit.ml && to === MaterialUnit.liter) return value / 1000;
   if (from === MaterialUnit.liter && to === MaterialUnit.ml) return value * 1000;
+
   if (from === MaterialUnit.m2 && to === MaterialUnit.meter) {
     const w = opts?.rollWidthMeters;
     if (!w || w <= 0) throw new Error('rollWidthMeters is required for m2 -> meter');
     return value / w;
   }
+
   if (from === MaterialUnit.meter && to === MaterialUnit.m2) {
     const w = opts?.rollWidthMeters;
     if (!w || w <= 0) throw new Error('rollWidthMeters is required for meter -> m2');
     return value * w;
   }
+
   const countUnits = new Set([MaterialUnit.unit, MaterialUnit.pcs]);
   if (countUnits.has(from) && countUnits.has(to)) return value;
-  throw new Error(Incompatible conversion from  to );
+
+  throw new Error(`Incompatible conversion from ${from} to ${to}`);
 }
 
 export function getAllowedUnitsForMaterialType(materialType: string): MaterialUnit[] {

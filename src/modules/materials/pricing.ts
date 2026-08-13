@@ -1,4 +1,4 @@
-import { MaterialUnit } from '@prisma/client';
+import { MaterialUnit } from './materialUnits';
 
 export type MaterialConsumptionType = 'AREA_BASED' | 'DIRECT';
 
@@ -270,7 +270,7 @@ export function calculateConsumptionCost(
   const costLabor = calculateLaborCost(input.laborRatePerHour, laborJobTimeHours);
   const marginPercent = input.marginPercent;
 
-  const costMaterialR = round(costMaterial, 2);
+  const costMaterialR = Math.ceil(costMaterial * 100) / 100;
   const costConsumablesR = round(costConsumables, 2);
   const costEquipmentR = round(costEquipment ?? 0, 2);
   const costLaborR = round(costLabor ?? 0, 2);
@@ -306,4 +306,3 @@ export function calculateConsumptionCost(
     snapshot,
   };
 }
-export { MaterialUnit, convertMaterialQuantity, getAllowedUnitsForMaterialType } from './materialUnits';
