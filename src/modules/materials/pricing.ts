@@ -13,13 +13,51 @@ export interface ConsumptionPricingInput {
   purchasePrice: number | null;
   salePrice: number | null;
   wastePercent: number;
+  jobTimeHours?: number | null;
+  laborJobTimeHours?: number | null;
+  laborRatePerHour?: number | null;
+  costConsumables?: number | null;
+  marginPercent?: number | null;
+  equipment?: {
+    costPerHour?: number | null;
+  } | null;
 }
 
 export interface ConsumptionPricingResult {
   unitPrice: number;
   effectiveWastePercent: number;
   totalUsed: number;
+  costMaterial: number;
+  costConsumables: number;
+  costEquipment: number;
+  costLabor: number;
+  baseCost: number;
+  margin: number;
+  priceFinal: number;
   totalCost: number;
+  snapshot: {
+    costMaterial: number;
+    costConsumables: number;
+    costEquipment: number;
+    costLabor: number;
+    baseCost: number;
+    margin: number;
+    priceFinal: number;
+  };
+}
+
+interface PricingValidationParams {
+  jobTimeHours: number;
+  equipment: {
+    costPerHour: number;
+  };
+  labor: {
+    ratePerHour: number;
+  };
+  laborRatePerHour?: number;
+  marginPercent: number;
+  costMaterial: number;
+  costConsumables: number;
 }
 
 const DIRECT_DEFAULT_UNITS = [
@@ -65,8 +103,53 @@ const BASE_FACTOR: Record<MaterialUnit, number> = {
   [MaterialUnit.sheet]: 1,
 };
 
-function roundCurrency(value: number): number {
-  return Number(value.toFixed(2));
+function round(value: number, decimals: number): number {
+  return Number(value.toFixed(decimals));
+}
+
+export function calculateEquipmentCost(
+  equipment: { costPerHour?: number | null } | null | undefined,
+  jobTimeHours: number
+): number {
+  const costPerHour = equipment?.costPerHour ?? 0;
+  return costPerHour * jobTimeHours;
+}
+
+export function calculateLaborCost(laborRatePerHour: number | null | undefined, jobTimeHours: number): number {
+  const rate = laborRatePerHour ?? 0;
+  return rate * jobTimeHours;
+}
+
+export function calculateMargin(basePrice: number, marginPercent: number | null | undefined): number {
+  const percent = marginPercent ?? 0;
+  return basePrice * (percent / 100);
+}
+
+function validatePricing(_input: ConsumptionPricingInput, pricingParams: PricingValidationParams): void {
+  const jobTimeHoursSafe = _input.jobTimeHours ?? 0;
+  const equipmentCostPerHourSafe = pricingParams?.equipment?.costPerHour ?? 0;
+  const laborRateSafe = pricingParams?.laborRatePerHour ?? pricingParams?.labor?.ratePerHour ?? 0;
+  const marginPercentSafe = pricingParams?.marginPercent ?? 0;
+
+  if (jobTimeHoursSafe < 0) {
+    throw 'jobTimeHours trebuie să fie >= 0';
+  }
+
+  if (equipmentCostPerHourSafe < 0) {
+    throw 'equipment.costPerHour trebuie să fie >= 0';
+  }
+
+  if (laborRateSafe < 0) {
+    throw 'labor.ratePerHour trebuie să fie >= 0';
+  }
+
+  if (marginPercentSafe < 0 || marginPercentSafe > 100) {
+    throw 'marginPercent trebuie să fie între 0 și 100';
+  }
+
+  if (pricingParams.costMaterial < 0 || pricingParams.costConsumables < 0) {
+    throw 'costMaterial și costConsumables trebuie să fie >= 0';
+  }
 }
 
 export function resolveAllowedUnitsByCategory(
@@ -162,11 +245,65 @@ export function calculateConsumptionCost(
 
   const totalUsed = consumedQuantity * (1 + effectiveWastePercent / 100);
   const totalCost = totalUsed * unitPrice;
+  const jobTimeHours = input.jobTimeHours ?? 0;
+  const laborJobTimeHours = input.laborJobTimeHours ?? jobTimeHours;
+  const rawCostMaterial = totalCost;
+  const rawCostConsumables = input.costConsumables ?? 0;
+
+  validatePricing(input, {
+    jobTimeHours,
+    equipment: {
+      costPerHour: input.equipment?.costPerHour ?? 0,
+    },
+    labor: {
+      ratePerHour: input.laborRatePerHour ?? 0,
+    },
+    laborRatePerHour: input.laborRatePerHour ?? 0,
+    marginPercent: input.marginPercent ?? 0,
+    costMaterial: rawCostMaterial,
+    costConsumables: rawCostConsumables,
+  });
+
+  const costMaterial = totalCost;
+  const costConsumables = input.costConsumables ?? 0;
+  const costEquipment = calculateEquipmentCost(input.equipment, jobTimeHours);
+  const costLabor = calculateLaborCost(input.laborRatePerHour, laborJobTimeHours);
+  const marginPercent = input.marginPercent;
+
+  const costMaterialR = round(costMaterial, 2);
+  const costConsumablesR = round(costConsumables, 2);
+  const costEquipmentR = round(costEquipment ?? 0, 2);
+  const costLaborR = round(costLabor ?? 0, 2);
+  const baseCostR = round(costMaterialR + costConsumablesR + costEquipmentR + costLaborR, 2);
+  const marginR = round(calculateMargin(baseCostR, marginPercent ?? 0), 2);
+  const priceFinalR = round(baseCostR + marginR, 2);
+  const snapshot = {
+    costMaterial: costMaterialR,
+    costConsumables: costConsumablesR,
+    costEquipment: costEquipmentR,
+    costLabor: costLaborR,
+    baseCost: baseCostR,
+    margin: marginR,
+    priceFinal: priceFinalR,
+  };
+
+  snapshot.baseCost = baseCostR;
+  snapshot.margin = marginR;
+  snapshot.priceFinal = priceFinalR;
 
   return {
     unitPrice,
     effectiveWastePercent,
     totalUsed,
-    totalCost: roundCurrency(totalCost),
+    costMaterial: costMaterialR,
+    costConsumables: costConsumablesR,
+    costEquipment: costEquipmentR,
+    costLabor: costLaborR,
+    baseCost: baseCostR,
+    margin: marginR,
+    priceFinal: priceFinalR,
+    totalCost: costMaterialR,
+    snapshot,
   };
 }
+export { MaterialUnit, convertMaterialQuantity, getAllowedUnitsForMaterialType } from './materialUnits';
