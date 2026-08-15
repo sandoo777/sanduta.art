@@ -9,7 +9,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/?(*.)+(test|spec).[jt]s?(x)'],
     exclude: ['**/tests-e2e/**', '**/tests/**/e2e/**', '**/tests-playwright/**', '**/playwright/**'],
-    setupFiles: ['./src/__tests__/setup.ts', './src/test/msw-setup.ts', './src/test/vitest-setup-mocks.ts'],
+    setupFiles: ['./src/__tests__/setup.ts', './src/test/msw-setup.ts', './src/test/vitest-setup-mocks.ts', './src/test/fetch-mock.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
