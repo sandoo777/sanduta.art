@@ -1,0 +1,82 @@
+name: Staging Main Deploy
+
+on:
+  workflow_run:
+    workflows: ['Tests']
+    types:
+      - completed
+    branches:
+      - main
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  predeploy-vitest:
+    name: staging-predeploy-vitest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Start test server
+        run: npm run start-test-server & sleep 1
+
+      - name: Run vitest
+        run: npm run ci:vitest
+
+  deploy-staging:
+    name: deploy-staging-main
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: predeploy-vitest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Deploy to Vercel (Staging)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod=false --env ENABLE_ADD_PRODUCT_API=true --env DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }} --env NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET_STAGING }}'
+
+  smoke-tests-staging:
+    name: smoke-tests-staging
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run staging smoke tests
+        run: node scripts/smokeTests.js --environment=staging
+        env:
+          BASE_URL: https://staging.sanduta.art

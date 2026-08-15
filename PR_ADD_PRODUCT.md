@@ -12,3 +12,9 @@ How to test locally:
 
 Notes:
 - This is the first feature to validate dev flow. Expand handlers and MSW as needed.
+
+Rollback runbook:
+1. Disable the feature by setting `ENABLE_ADD_PRODUCT_API=false`.
+2. Redeploy staging or restart the local dev server.
+3. Verify `GET /api/health` reports `productsApiEnabled: false`.
+4. Re-run smoke checks before re-enabling the flag.
