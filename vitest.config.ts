@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    include: ['src/**/?(*.)+(test|spec).[jt]s?(x)'],
+    exclude: ['**/tests-e2e/**', '**/tests/**/e2e/**', '**/tests-playwright/**', '**/playwright/**'],
     setupFiles: ['./src/__tests__/setup.ts', './src/test/msw-setup.ts'],
     coverage: {
       provider: 'v8',
