@@ -1,4 +1,5 @@
-import { rest } from 'msw';
+const msw = require('msw');
+const rest = msw.rest || msw.http;
 
 export const handlers = [
   rest.get('/api/health', (req, res, ctx) => res(ctx.json({ ok: true }))),
