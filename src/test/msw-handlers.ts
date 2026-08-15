@@ -1,14 +1,13 @@
-import { rest } from 'msw';
+import { HttpResponse, http } from 'msw';
 
 export const handlers = [
-  rest.get('/api/health', (req, res, ctx) => res(ctx.json({ ok: true }))),
-  rest.get('/api/items', (req, res, ctx) => res(ctx.json([]))),
-  rest.post('/api/auth', (req, res, ctx) => res(ctx.json({ token: 'test-token' }))),
-  rest.get('/api/users', (req, res, ctx) => res(ctx.json([]))),
-  rest.post('/api/orders', (req, res, ctx) => res(ctx.json({ id: 'order-test' }))),
-  rest.get('/api/products/:productId/attributes', (req, res, ctx) =>
-    res(
-      ctx.json([
+  http.get('/api/health', () => HttpResponse.json({ ok: true })),
+  http.get('/api/items', () => HttpResponse.json([])),
+  http.post('/api/auth', () => HttpResponse.json({ token: 'test-token' })),
+  http.get('/api/users', () => HttpResponse.json([])),
+  http.post('/api/orders', () => HttpResponse.json({ id: 'order-test' })),
+  http.get('/api/products/:productId/attributes', () =>
+    HttpResponse.json([
         {
           id: 'attr-finish',
           name: 'finish',
@@ -29,6 +28,5 @@ export const handlers = [
           ],
         },
       ])
-    )
   ),
 ];
