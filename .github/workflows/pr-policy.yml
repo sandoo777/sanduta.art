@@ -1,0 +1,72 @@
+name: PR Policy
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches-ignore:
+      - main
+      - develop
+
+jobs:
+  branch-name:
+    name: branch-name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH_NAME="${{ github.head_ref }}"
+          else
+            BRANCH_NAME="${GITHUB_REF_NAME}"
+          fi
+
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|fix)/[A-Za-z0-9._-]+-[A-Za-z0-9._-]+$ ]]; then
+            echo "Invalid branch name: $BRANCH_NAME"
+            echo "Expected feature/<ticket>-short-desc or fix/<ticket>-short-desc"
+            exit 1
+          fi
+
+  conventional-commits:
+    name: conventional-commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        shell: bash
+        run: |
+          RANGE="origin/${{ github.base_ref }}..HEAD"
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          INVALID=$(git log --format=%s "$RANGE" | grep -Ev '^(feat|fix|chore|docs|refactor|test|perf|build|ci|revert)(\([A-Za-z0-9._/-]+\))?: .+' || true)
+
+          if [ -n "$INVALID" ]; then
+            echo "Found non-conventional commit messages:"
+            echo "$INVALID"
+            exit 1
+          fi
+
+  pr-body:
+    name: pr-body
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Validate PR body structure
+        shell: bash
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "$PR_TITLE" | grep -q '.' || { echo 'PR title is required'; exit 1; }
+          echo "$PR_BODY" | grep -qi 'Testing steps' || { echo 'PR body must include a Testing steps section'; exit 1; }
+          echo "$PR_BODY" | grep -qi 'Test results' || { echo 'PR body must include a Test results section'; exit 1; }
+
+          SUMMARY_COUNT=$(echo "$PR_BODY" | grep -Ec '^- ' || true)
+          if [ "$SUMMARY_COUNT" -lt 3 ]; then
+            echo 'PR body must include at least 3 summary bullets'
+            exit 1
+          fi
