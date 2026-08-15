@@ -10,6 +10,7 @@
         "start:next": "next start",
         "lint": "eslint",
         "typecheck": "tsc --noEmit",
+        "jest-only": "jest --runInBand",
         "test": "npm run jest-only",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage",
@@ -60,7 +61,10 @@
         "monitor:post-launch": "tsx scripts/post-launch-monitor.ts",
         "hotfix": "tsx scripts/hotfix.ts",
         "rollback": "tsx scripts/hotfix.ts rollback",
-        "start-test-server": "node scripts/start-test-server.js"
+        "start-test-server": "node scripts/start-test-server.js",
+        "ci:jest": "jest --runInBand --silent",
+        "ci:vitest": "vitest run",
+        "ci:playwright": "playwright test"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"
