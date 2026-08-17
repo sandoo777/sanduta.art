@@ -8,3 +8,9 @@ vi.mock('next/navigation', async (importOriginal) => {
     useRouter: () => ({ push: vi.fn(), replace: vi.fn(), pathname: '/' }),
   };
 });
+
+vi.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: Record<string, unknown>) =>
+    require('react').createElement('img', { ...props, 'data-testid': 'next-image' }),
+}));
