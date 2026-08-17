@@ -14,3 +14,32 @@ vi.mock('next/image', () => ({
   default: (props: Record<string, unknown>) =>
     require('react').createElement('img', { ...props, 'data-testid': 'next-image' }),
 }));
+
+// Global DOM mocks
+if (typeof globalThis.window !== 'undefined') {
+  if (!globalThis.window.matchMedia) {
+    globalThis.window.matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} });
+  }
+  if (!globalThis.window.scrollTo) {
+    globalThis.window.scrollTo = () => {};
+  }
+}
+
+// i18n mocks (safe fallbacks)
+try {
+  vi.mock('@/utils/i18n', async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+      ...actual,
+      t: (k: unknown) => String(k),
+      generateLocalizedSlug: (text: unknown) =>
+        String(text)
+          .normalize('NFKD')
+          .replace(/[^\w\s-]/g, '')
+          .toLowerCase()
+          .replace(/\s+/g, '-'),
+    };
+  });
+} catch (_e) {
+  // ignore if module not present
+}
