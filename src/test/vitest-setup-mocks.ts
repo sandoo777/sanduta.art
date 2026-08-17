@@ -21,7 +21,16 @@ vi.mock('next/image', () => ({
 // Global DOM mocks
 if (typeof globalThis.window !== 'undefined') {
   if (!globalThis.window.matchMedia) {
-    globalThis.window.matchMedia = () => ({ matches: false, addListener: () => {}, removeListener: () => {} });
+    globalThis.window.matchMedia = () => ({
+      matches: false,
+      media: '',
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    });
   }
   if (!globalThis.window.scrollTo) {
     globalThis.window.scrollTo = () => {};
