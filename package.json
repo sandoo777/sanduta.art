@@ -62,7 +62,7 @@
         "hotfix": "tsx scripts/hotfix.ts",
         "rollback": "tsx scripts/hotfix.ts rollback",
         "start-test-server": "node scripts/start-test-server.js",
-        "ci:jest": "jest --runInBand --silent",
+        "ci:jest": "npm run jest-only",
         "ci:vitest": "vitest run",
         "ci:playwright": "playwright test"
     },
