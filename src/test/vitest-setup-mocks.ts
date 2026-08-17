@@ -1,8 +1,7 @@
 import { vi } from 'vitest';
 
-vi.mock(import('next/navigation'), async (importOriginal) => {
+vi.mock('next/navigation', async (importOriginal) => {
   const actual = await importOriginal();
-
   return {
     ...actual,
     useRouter: () => ({ push: vi.fn(), replace: vi.fn(), pathname: '/', prefetch: vi.fn(), back: vi.fn() }),
