@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'happy-dom',
+    environment: 'jsdom',
     globals: true,
     include: ['src/**/?(*.)+(test|spec).[jt]s?(x)'],
     exclude: ['**/playwright/**', '**/tests-e2e/**', '**/tests-playwright/**'],
