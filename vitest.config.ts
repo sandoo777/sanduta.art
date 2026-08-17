@@ -8,7 +8,7 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     include: ['src/**/?(*.)+(test|spec).[jt]s?(x)'],
-    exclude: ['**/tests-e2e/**', '**/tests/**/e2e/**', '**/tests-playwright/**', '**/playwright/**', '**/__tests__/**/empty-*.test.*', '**/*-integration.test.ts'],
+    exclude: ['**/playwright/**', '**/tests-e2e/**', '**/tests-playwright/**'],
     setupFiles: ['./src/__tests__/setup.ts', './src/test/msw-setup.ts', './src/test/vitest-setup-mocks.ts', './src/test/fetch-mock.ts', './src/test/next-router-mock.ts', './src/test/i18n-mock.ts', './src/test/next-router-full-mock.ts'],
     coverage: {
       provider: 'v8',
