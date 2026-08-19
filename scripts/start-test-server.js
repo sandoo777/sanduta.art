@@ -171,3 +171,8 @@ const server = app.listen(port, () => {
 
 process.on('SIGTERM', () => server.close(() => process.exit(0)));
 process.on('SIGINT', () => server.close(() => process.exit(0)));
+
+// mounted materials API for tests
+const materialsRouter = require('../src/server/api/materials');
+app.use(materialsRouter);
+
