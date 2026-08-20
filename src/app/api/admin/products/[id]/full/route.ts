@@ -144,13 +144,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  const body = sanitizeProductPayload((await req.json()) as Partial<CreateFullProductInput>);
-  console.log('---ADMIN PRODUCTS REQUEST START---');
-  console.log('URL:', req.url ?? '/api/admin/products/[id]/full');
-  console.log('METHOD:', req.method ?? 'PATCH');
-  console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
-  console.log('BODY:', JSON.stringify(body, null, 2));
-  console.log('---ADMIN PRODUCTS REQUEST END---');
+    const body = sanitizeProductPayload((await req.json()) as Partial<CreateFullProductInput>);
+    if (!body.pricing) {
+      body.pricing = { basePrice: Number(body.price) || 0, priceBreaks: [] } as CreateFullProductInput['pricing'];
+    }
+    body.pricing.basePrice = Number(body.pricing.basePrice) || Number(body.price) || 0;
+    body.price = Number(body.price) || body.pricing.basePrice;
+
+    console.log('---ADMIN PRODUCTS REQUEST START---');
+    console.log('URL:', req.url ?? '/api/admin/products/[id]/full');
+    console.log('METHOD:', req.method ?? 'PATCH');
+    console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
+    console.log('BODY:', JSON.stringify(body, null, 2));
+    console.log('---ADMIN PRODUCTS REQUEST END---');
     const rawBody = body as Record<string, unknown>;
     const product = await prisma.product.findUnique({
       where: { id },

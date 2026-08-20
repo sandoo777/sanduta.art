@@ -149,13 +149,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  const body = sanitizeProductPayload((await req.json()) as CreateFullProductInput);
-  console.log('---ADMIN PRODUCTS REQUEST START---');
-  console.log('URL:', req.url ?? '/api/admin/products/full');
-  console.log('METHOD:', req.method ?? 'POST');
-  console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
-  console.log('BODY:', JSON.stringify(body, null, 2));
-  console.log('---ADMIN PRODUCTS REQUEST END---');
+    const body = sanitizeProductPayload((await req.json()) as CreateFullProductInput);
+
+    if (!body.printMethodId) {
+      body.printMethodId = body.compatiblePrintMethods?.[0] || 'default-print';
+    }
+    if (!body.saleUnit) {
+      body.saleUnit = 'UNIT';
+    }
+    if (!body.minOrderQty || Number(body.minOrderQty) < 1) {
+      body.minOrderQty = 1;
+    }
+    if (body.pricing && (body.price == null || Number(body.price) === 0)) {
+      body.price = Number(body.pricing.basePrice) || body.price || 0;
+    }
+    if (body.saleUnit === 'UNIT' && body.pricePerUnit === undefined) {
+      body.pricePerUnit = body.price;
+    }
+
+    console.log('---ADMIN PRODUCTS REQUEST START---');
+    console.log('URL:', req.url ?? '/api/admin/products/full');
+    console.log('METHOD:', req.method ?? 'POST');
+    console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
+    console.log('BODY:', JSON.stringify(body, null, 2));
+    console.log('---ADMIN PRODUCTS REQUEST END---');
     const rawBody = body as unknown as Record<string, unknown>;
     const validationErrors = validatePayload(body);
 
@@ -189,7 +206,7 @@ export async function POST(req: NextRequest) {
       costFurnizorPerUnit: number | null;
       markup: number | null;
     } | null = null;
-    if (body.printMethodId) {
+    if (body.printMethodId && prisma.printMethod?.findUnique) {
       const method = await prisma.printMethod.findUnique({
         where: { id: body.printMethodId },
         select: {
