@@ -374,6 +374,10 @@ export async function POST(req: NextRequest) {
       materialId: isOutsourced ? null : (body.materialId || null),
     };
 
+    console.log('---PRISMA CREATE ARGS---');
+    console.log(JSON.stringify({ data: prismaData }, null, 2));
+    console.log('---PRISMA CREATE ARGS END---');
+
     const product = await prisma.product.create({
       data: prismaData as Prisma.ProductUncheckedCreateInput,
     });

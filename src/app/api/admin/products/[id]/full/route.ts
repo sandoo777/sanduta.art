@@ -424,6 +424,10 @@ export async function PATCH(
     console.log('UPDATE_DATA:', JSON.stringify(updateData, null, 2));
     console.log('---ADMIN PRODUCTS UPDATE DATA END---');
 
+    console.log('---PRISMA UPDATE ARGS---');
+    console.log(JSON.stringify({ where: { id }, data: updateData }, null, 2));
+    console.log('---PRISMA UPDATE ARGS END---');
+
     await prisma.product.update({
       where: { id },
       data: updateData as Prisma.ProductUncheckedUpdateInput,
