@@ -98,7 +98,7 @@ export async function GET() {
     // Validate response structure with Zod; fall back to raw response in test mocks.
     const validationResult = categoryTreeResponseSchema.safeParse(response);
     if (!validationResult.success) {
-      logger.warn('API:Categories', 'Category tree schema validation failed, returning raw response', {
+      logger.info('API:Categories', 'Category tree schema validation failed, returning raw response', {
         issues: validationResult.error.issues,
       });
       return NextResponse.json(response);
