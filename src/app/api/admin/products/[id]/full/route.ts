@@ -314,6 +314,12 @@ export async function PATCH(
     const existingMarkup = typeof existingPricing?.markup === 'number'
       ? Number(existingPricing.markup)
       : null;
+    const incomingBasePrice = body.pricing && Number(body.pricing.basePrice)
+      ? Number(body.pricing.basePrice)
+      : undefined;
+    const incomingPrice = Number(body.price)
+      ? Number(body.price)
+      : incomingBasePrice;
 
     let nextFinalPrice: number | undefined;
     let nextSupplierCost: number | null = existingSupplierCost;
@@ -343,7 +349,7 @@ export async function PATCH(
 
       nextFinalPrice = nextSupplierCost + (nextSupplierCost * nextMarkup) / 100;
     } else {
-      nextFinalPrice = effectiveSaleUnit === 'M2' ? Number(nextPricePerM2) : Number(nextPricePerUnit);
+      nextFinalPrice = incomingPrice ?? (effectiveSaleUnit === 'M2' ? Number(nextPricePerM2) : Number(nextPricePerUnit));
       nextSupplierCost = null;
       nextMarkup = null;
     }
@@ -379,7 +385,7 @@ export async function PATCH(
     }
     if (nextIsOutsourced !== undefined) updateData.isOutsourced = nextIsOutsourced;
     if (body.pricing !== undefined) {
-      updateData.price = nextFinalPrice ?? body.pricing?.basePrice ?? 0;
+      updateData.price = incomingPrice ?? nextFinalPrice ?? body.pricing?.basePrice ?? 0;
     } else if (nextFinalPrice !== undefined) {
       updateData.price = nextFinalPrice;
     }
@@ -387,7 +393,7 @@ export async function PATCH(
     if (body.pricing !== undefined) {
       updateData.pricing = toInputJsonValue({
         ...body.pricing,
-        basePrice: nextFinalPrice ?? body.pricing?.basePrice ?? 0,
+        basePrice: incomingBasePrice ?? incomingPrice ?? nextFinalPrice ?? body.pricing?.basePrice ?? 0,
         supplierCost: nextSupplierCost,
         markup: nextMarkup,
       });
