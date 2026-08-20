@@ -93,6 +93,12 @@ export async function PATCH(
     }
 
     const body = (await req.json()) as Partial<CreateFullProductInput>;
+  console.log('---ADMIN PRODUCTS REQUEST START---');
+  console.log('URL:', req.url ?? '/api/admin/products/[id]/full');
+  console.log('METHOD:', req.method ?? 'PATCH');
+  console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
+  console.log('BODY:', JSON.stringify(body, null, 2));
+  console.log('---ADMIN PRODUCTS REQUEST END---');
     const rawBody = body as Record<string, unknown>;
     const product = await prisma.product.findUnique({
       where: { id },
@@ -349,6 +355,10 @@ export async function PATCH(
       updateData.metaDescription = body.seo?.metaDescription?.trim() || null;
       updateData.ogImage = body.seo?.ogImage?.trim() || null;
     }
+
+    console.log('---ADMIN PRODUCTS UPDATE DATA START---');
+    console.log('UPDATE_DATA:', JSON.stringify(updateData, null, 2));
+    console.log('---ADMIN PRODUCTS UPDATE DATA END---');
 
     await prisma.product.update({
       where: { id },

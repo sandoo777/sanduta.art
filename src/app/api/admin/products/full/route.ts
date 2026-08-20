@@ -90,6 +90,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = (await req.json()) as CreateFullProductInput;
+  console.log('---ADMIN PRODUCTS REQUEST START---');
+  console.log('URL:', req.url ?? '/api/admin/products/full');
+  console.log('METHOD:', req.method ?? 'POST');
+  console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
+  console.log('BODY:', JSON.stringify(body, null, 2));
+  console.log('---ADMIN PRODUCTS REQUEST END---');
     const rawBody = body as unknown as Record<string, unknown>;
     const validationErrors = validatePayload(body);
 
