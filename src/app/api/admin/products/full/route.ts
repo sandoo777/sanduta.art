@@ -90,6 +90,55 @@ function sanitizeProductPayload<T>(body: T): T & { price: number } {
   return sanitized as T & { price: number };
 }
 
+function removeUndefined(obj: unknown): unknown {
+  if (obj == null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefined).filter((value) => value !== undefined);
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      continue;
+    }
+
+    const cleaned = removeUndefined(value);
+    if (cleaned === undefined) {
+      continue;
+    }
+    if (typeof cleaned === 'object' && cleaned !== null && !Array.isArray(cleaned) && Object.keys(cleaned).length === 0) {
+      continue;
+    }
+    if (Array.isArray(cleaned) && cleaned.length === 0) {
+      continue;
+    }
+
+    out[key] = cleaned;
+  }
+
+  return out;
+}
+
+function normalizePricing(pricing: unknown, topLevelPrice: unknown) {
+  if (!pricing || typeof pricing !== 'object') {
+    if (topLevelPrice != null) {
+      return { basePrice: Number(topLevelPrice) || 0, type: 'fixed', priceBreaks: [] };
+    }
+
+    return undefined;
+  }
+
+  const pricingRecord = pricing as Record<string, unknown>;
+  return {
+    basePrice: Number(pricingRecord.basePrice ?? topLevelPrice ?? 0) || 0,
+    type: pricingRecord.type || 'fixed',
+    priceBreaks: Array.isArray(pricingRecord.priceBreaks) ? pricingRecord.priceBreaks : [],
+  };
+}
+
 function validatePayload(data: Partial<CreateFullProductInput>) {
   const errors: string[] = [];
 
@@ -374,8 +423,11 @@ export async function POST(req: NextRequest) {
       materialId: body.materialId ?? null,
     };
 
+    prismaData.pricing = normalizePricing(prismaData.pricing, prismaData.price);
+    const cleanedPrismaData = removeUndefined(prismaData) as Prisma.ProductUncheckedCreateInput;
+
     const product = await prisma.product.create({
-      data: prismaData as Prisma.ProductUncheckedCreateInput,
+      data: cleanedPrismaData,
     });
 
     const images = normalizeImages(body.images);
