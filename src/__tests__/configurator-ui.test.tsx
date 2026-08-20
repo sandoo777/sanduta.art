@@ -96,6 +96,14 @@ vi.mock('@/modules/configurator/useConfigurator', () => ({
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    pathname: '/',
+    query: {},
+  }),
   useSearchParams: () => null,
 }));
 
