@@ -168,7 +168,7 @@ export function ConfiguratorPreview({
           onClick={onAddToCart}
           disabled={disabled || !onAddToCart}
           className="shadow-lg"
-          aria-label={"Adaug\u0103 \u00EEn co\u0219 / Add to cart"}
+          aria-label={"Adaug\u0103 \u00EEn co\u0219 / Adaug\u00C4\u0192 \u00C3\u00AEn co\u00C8\u2122 / Add to cart"}
           data-testid="add-to-cart"
         >
           <span aria-hidden="true">Adaugă în coș</span>
