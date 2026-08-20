@@ -498,6 +498,13 @@ export async function PATCH(
     updateData.pricing = normalizePricing(updateData.pricing, updateData.price);
     const cleanedUpdateData = removeUndefined(updateData) as Prisma.ProductUncheckedUpdateInput;
 
+    if (cleanedUpdateData.pricing && typeof cleanedUpdateData.pricing === 'object') {
+      const pricing = cleanedUpdateData.pricing as { priceBreaks?: unknown[] | null };
+      if (!('priceBreaks' in pricing) || pricing.priceBreaks == null) {
+        pricing.priceBreaks = [];
+      }
+    }
+
     await prisma.product.update({
       where: { id },
       data: cleanedUpdateData,
