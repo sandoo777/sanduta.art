@@ -169,11 +169,11 @@ export function ConfiguratorPreview({
           onClick={onAddToCart}
           disabled={disabled || !onAddToCart}
           className="shadow-lg"
-          aria-label="Adaugă în coș"
+          aria-label="Adaugă în coș / Add to cart"
           data-testid="add-to-cart"
           aria-labelledby="add-to-cart-fallback"
         >
-          Adaugă în coș
+          <span aria-hidden="true">Adaugă în coș</span>
         </Button>
         <span id="add-to-cart-fallback" style={{ display: 'none' }}>Add to cart</span>
       </CardFooter>
