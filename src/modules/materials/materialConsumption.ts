@@ -23,11 +23,14 @@ export interface MaterialForConsumption {
 export interface JobForConsumption {
   id: string;
   quantity: number | null;
+  colorMode?: "MONO" | "CMYK" | "CMYK_WHITE" | "CMYK_WHITE_VARNISH" | "SPOT";
+  colorChannels?: number | null;
 }
 
 export interface MaterialConsumptionResult {
   usageUnit: MaterialUnit;
   quantity: number;
+  colorModeFactor: number;
   wastePercent: number;
   totalUsed: number;
   unitPrice: number;
@@ -111,6 +114,33 @@ function resolveUnitPrice(material: MaterialForConsumption, usageUnit: MaterialU
   return material.pricePerUnit;
 }
 
+function resolveColorModeFactor(job: JobForConsumption, material: MaterialForConsumption): number {
+  if (material.consumptionType !== "DIRECT") {
+    return 1;
+  }
+
+  const materialName = material.name.toLowerCase();
+  const isInkLike = /(ink|cerneal|toner|vopsea)/.test(materialName);
+  if (!isInkLike) {
+    return 1;
+  }
+
+  switch (job.colorMode) {
+    case "MONO":
+      return 0.5;
+    case "CMYK_WHITE":
+      return 1.3;
+    case "CMYK_WHITE_VARNISH":
+      return 1.5;
+    case "SPOT": {
+      const channels = Number(job.colorChannels ?? 1);
+      return channels > 0 ? channels : 1;
+    }
+    default:
+      return 1;
+  }
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -141,14 +171,16 @@ export function calculateMaterialUsage(
 
   const usageUnit = resolveUsageUnit(material);
   const unitPrice = resolveUnitPrice(material, usageUnit);
+  const colorModeFactor = resolveColorModeFactor(job, material);
 
   const wastePercent = material.wastePercent ?? 0;
-  const totalUsed = baseQuantity * (1 + wastePercent / 100);
+  const totalUsed = baseQuantity * colorModeFactor * (1 + wastePercent / 100);
   const totalCost = totalUsed * unitPrice;
 
   return {
     usageUnit,
     quantity: baseQuantity,
+    colorModeFactor,
     wastePercent,
     totalUsed,
     unitPrice,
