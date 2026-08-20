@@ -133,14 +133,6 @@ function validatePayload(data: Partial<CreateFullProductInput>) {
   return errors;
 }
 
-function debugBadRequest(body: unknown) {
-  console.log('---ADMIN PRODUCTS RESPONSE DEBUG---');
-  console.log('STATUS', 400);
-  console.log('BODY', JSON.stringify(body, null, 2));
-  console.log('---ADMIN PRODUCTS RESPONSE DEBUG END---');
-  return NextResponse.json(body, { status: 400 });
-}
-
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -166,18 +158,11 @@ export async function POST(req: NextRequest) {
     if (body.saleUnit === 'UNIT' && body.pricePerUnit === undefined) {
       body.pricePerUnit = body.price;
     }
-
-    console.log('---ADMIN PRODUCTS REQUEST START---');
-    console.log('URL:', req.url ?? '/api/admin/products/full');
-    console.log('METHOD:', req.method ?? 'POST');
-    console.log('HEADERS:', JSON.stringify(req.headers ?? {}, null, 2));
-    console.log('BODY:', JSON.stringify(body, null, 2));
-    console.log('---ADMIN PRODUCTS REQUEST END---');
     const rawBody = body as unknown as Record<string, unknown>;
     const validationErrors = validatePayload(body);
 
     if (validationErrors.length > 0) {
-      return debugBadRequest({ error: 'Invalid payload', details: validationErrors });
+      return NextResponse.json({ error: 'Invalid payload', details: validationErrors }, { status: 400 });
     }
 
     const existingSlug = await prisma.product.findUnique({
@@ -186,7 +171,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingSlug) {
-      return debugBadRequest({ error: 'Slug-ul există deja pentru un alt produs' });
+      return NextResponse.json({ error: 'Slug-ul există deja pentru un alt produs' }, { status: 400 });
     }
 
     const category = await prisma.category.findUnique({
@@ -195,7 +180,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!category) {
-      return debugBadRequest({ error: 'Categoria selectată nu există' });
+      return NextResponse.json({ error: 'Categoria selectată nu există' }, { status: 400 });
     }
 
     let selectedPrintMethod: {
@@ -221,7 +206,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!method || !method.active) {
-        return debugBadRequest({ error: 'Metoda de print selectată nu există sau este inactivă' });
+        return NextResponse.json({ error: 'Metoda de print selectată nu există sau este inactivă' }, { status: 400 });
       }
 
       selectedPrintMethod = {
@@ -235,7 +220,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (selectedPrintMethod && !selectedPrintMethod.isOutsourced && !body.materialId) {
-      return debugBadRequest({ error: 'Pentru metode interne, materialul implicit este obligatoriu' });
+      return NextResponse.json({ error: 'Pentru metode interne, materialul implicit este obligatoriu' }, { status: 400 });
     }
 
     const pricePerM2 = parseNonNegative(body.pricePerM2);
@@ -244,15 +229,15 @@ export async function POST(req: NextRequest) {
 
     if (!isOutsourced) {
       if (body.saleUnit === 'M2' && pricePerM2 === null) {
-        return debugBadRequest({ error: 'Pentru produse la m², pricePerM2 este obligatoriu' });
+        return NextResponse.json({ error: 'Pentru produse la m², pricePerM2 este obligatoriu' }, { status: 400 });
       }
 
       if (body.saleUnit === 'UNIT' && pricePerUnit === null) {
-        return debugBadRequest({ error: 'Pentru produse la bucată, pricePerUnit este obligatoriu' });
+        return NextResponse.json({ error: 'Pentru produse la bucată, pricePerUnit este obligatoriu' }, { status: 400 });
       }
 
       if (hasOwnField(rawBody, 'supplierCost') || hasOwnField(rawBody, 'markup')) {
-        return debugBadRequest({ error: 'Campurile supplierCost/markup sunt permise doar pentru outsource' });
+        return NextResponse.json({ error: 'Campurile supplierCost/markup sunt permise doar pentru outsource' }, { status: 400 });
       }
     }
 
@@ -388,10 +373,6 @@ export async function POST(req: NextRequest) {
       printMethodId: body.printMethodId ?? body.defaultPrintMethod ?? undefined,
       materialId: body.materialId ?? null,
     };
-
-    console.log('---PRISMA CREATE ARGS---');
-    console.log(JSON.stringify({ data: prismaData }, null, 2));
-    console.log('---PRISMA CREATE ARGS END---');
 
     const product = await prisma.product.create({
       data: prismaData as Prisma.ProductUncheckedCreateInput,
