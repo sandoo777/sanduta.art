@@ -1,7 +1,9 @@
 const express = require('express');
+const adminProductsRouter = require('../src/server/api/admin/products');
 
 const app = express();
 app.use(express.json());
+app.use(adminProductsRouter);
 
 const products = [
   {
@@ -42,18 +44,6 @@ app.get('/api/products/:slug', (req, res) => {
   }
 
   return res.json(product);
-});
-
-app.post('/api/admin/products', (req, res) => {
-  if (!isAuthorized(req)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  if (!isAdminToken(req)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  return res.status(201).json({ id: 'new-product-id' });
 });
 
 app.put('/api/admin/products/:id', (req, res) => {
