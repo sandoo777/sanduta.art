@@ -360,65 +360,87 @@ export async function PATCH(
       nextMarkup = null;
     }
 
-    const updateData: Record<string, unknown> = {};
-
-    if (body.name !== undefined) updateData.name = body.name.trim();
-    if (body.slug !== undefined) updateData.slug = body.slug.trim();
-    if (body.sku !== undefined) updateData.sku = body.sku?.trim() || null;
-    if (body.description !== undefined)
-      updateData.description = body.description?.trim() || null;
-    if (body.descriptionShort !== undefined)
-      updateData.descriptionShort = body.descriptionShort?.trim() || null;
-    if (body.type !== undefined) updateData.type = body.type;
-    if (nextSaleUnit !== undefined) updateData.saleUnit = nextSaleUnit;
-    if (body.categoryId !== undefined) updateData.categoryId = body.categoryId;
-    if (body.active !== undefined) updateData.active = body.active;
-    if (nextIsOutsourced) {
-      updateData.pricePerM2 = null;
-      updateData.pricePerUnit = null;
-      updateData.materialId = null;
-    } else {
-      if (body.pricePerM2 !== undefined) updateData.pricePerM2 = body.pricePerM2;
-      if (body.pricePerUnit !== undefined) updateData.pricePerUnit = body.pricePerUnit;
-    }
-    if (body.minOrderQty !== undefined) updateData.minOrderQty = body.minOrderQty;
-    if (body.printMethodId !== undefined) updateData.printMethodId = nextPrintMethodId;
-    if (body.materialId !== undefined) {
-      updateData.materialId = nextIsOutsourced ? null : nextMaterialId;
-    }
-    if (body.printMethodId !== undefined && nextIsOutsourced) {
-      updateData.materialId = null;
-    }
-    if (nextIsOutsourced !== undefined) updateData.isOutsourced = nextIsOutsourced;
-    if (body.pricing !== undefined) {
-      updateData.price = incomingPrice ?? nextFinalPrice ?? body.pricing?.basePrice ?? 0;
-    } else if (nextFinalPrice !== undefined) {
-      updateData.price = nextFinalPrice;
-    }
-
-    if (body.pricing !== undefined) {
-      updateData.pricing = toInputJsonValue({
-        ...body.pricing,
-        basePrice: incomingBasePrice ?? incomingPrice ?? nextFinalPrice ?? body.pricing?.basePrice ?? 0,
-        supplierCost: nextSupplierCost,
-        markup: nextMarkup,
-      });
-    } else if (nextFinalPrice !== undefined || hasOwnField(rawBody, 'supplierCost') || hasOwnField(rawBody, 'markup')) {
-      updateData.pricing = toInputJsonValue({
-        ...(existingPricing ?? {}),
-        basePrice: nextFinalPrice ?? Number(existingPricing?.basePrice ?? product.pricePerUnit ?? product.pricePerM2 ?? 0),
-        supplierCost: nextSupplierCost,
-        markup: nextMarkup,
-      });
-    }
-    if (body.options !== undefined) updateData.options = toInputJsonValue(body.options ?? []);
-    if (body.dimensions !== undefined) updateData.dimensions = body.dimensions ? toInputJsonValue(body.dimensions) : Prisma.JsonNull;
-    if (body.production !== undefined) updateData.production = body.production ? toInputJsonValue(body.production) : Prisma.JsonNull;
-    if (body.seo !== undefined) {
-      updateData.metaTitle = body.seo?.metaTitle?.trim() || null;
-      updateData.metaDescription = body.seo?.metaDescription?.trim() || null;
-      updateData.ogImage = body.seo?.ogImage?.trim() || null;
-    }
+    const updateData: Record<string, unknown> = {
+      name: body.name,
+      slug: body.slug,
+      sku: body.sku || undefined,
+      description: body.description || undefined,
+      descriptionShort: body.descriptionShort || undefined,
+      active: body.active,
+      categoryId: body.categoryId || undefined,
+      type: body.type || undefined,
+      dimensions: body.dimensions
+        ? {
+            widthMin: Number(body.dimensions.widthMin) || null,
+            widthMax: Number(body.dimensions.widthMax) || null,
+            heightMin: Number(body.dimensions.heightMin) || null,
+            heightMax: Number(body.dimensions.heightMax) || null,
+            unit: body.dimensions.unit || null,
+          }
+        : undefined,
+      pricing: body.pricing
+        ? {
+            basePrice: incomingBasePrice ?? incomingPrice ?? nextFinalPrice ?? 0,
+            type: body.pricing.type || 'fixed',
+            priceBreaks: body.pricing.priceBreaks || [],
+            supplierCost: nextSupplierCost,
+            markup: nextMarkup,
+          }
+        : undefined,
+      price: incomingPrice ?? nextFinalPrice,
+      saleUnit: nextSaleUnit || undefined,
+      minOrderQty: Number(body.minOrderQty || (body as Partial<CreateFullProductInput> & { minQuantity?: number }).minQuantity) || undefined,
+      pricePerUnit: body.pricePerUnit !== undefined ? Number(body.pricePerUnit) || null : undefined,
+      pricePerM2: body.pricePerM2 !== undefined ? body.pricePerM2 : undefined,
+      metaTitle: body.seo?.metaTitle ?? undefined,
+      metaDescription: body.seo?.metaDescription ?? undefined,
+      ogImage: body.seo?.ogImage ?? undefined,
+      production: body.production
+        ? {
+            estimatedTime: Number(body.production.estimatedTime) || null,
+            operations: body.production.operations?.map((operation) => ({
+              name: operation.name,
+              order: Number(operation.order) || 0,
+              timeMinutes: Number(operation.timeMinutes) || 0,
+            })) || [],
+          }
+        : undefined,
+      options: Array.isArray(body.options)
+        ? {
+            create: body.options.map((option) => ({
+              name: option.name,
+              type: option.type,
+              required: Boolean(option.required),
+              values: {
+                create: (option.values || []).map((value) => ({
+                  label: value.label?.trim?.() ?? value.label,
+                  value: value.value?.trim?.() ?? value.value,
+                  priceModifier: value.priceModifier ?? null,
+                })),
+              },
+            })),
+          }
+        : undefined,
+      compatibleMaterials: Array.isArray(body.compatibleMaterials)
+        ? {
+            connect: body.compatibleMaterials.map((relationId) => ({ id: relationId })),
+          }
+        : undefined,
+      compatiblePrintMethods: Array.isArray(body.compatiblePrintMethods)
+        ? {
+            connect: body.compatiblePrintMethods.map((relationId) => ({ id: relationId })),
+          }
+        : undefined,
+      compatibleFinishing: Array.isArray(body.compatibleFinishing)
+        ? {
+            connect: body.compatibleFinishing.map((relationId) => ({ id: relationId })),
+          }
+        : undefined,
+      images: Array.isArray(body.images) ? body.images.filter(Boolean) : undefined,
+      printMethodId: body.printMethodId !== undefined ? nextPrintMethodId : undefined,
+      materialId: body.materialId !== undefined ? (nextIsOutsourced ? null : nextMaterialId) : undefined,
+      isOutsourced: nextIsOutsourced,
+    };
 
     console.log('---ADMIN PRODUCTS UPDATE DATA START---');
     console.log('UPDATE_DATA:', JSON.stringify(updateData, null, 2));

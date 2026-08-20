@@ -316,62 +316,77 @@ export async function POST(req: NextRequest) {
       descriptionShort: body.descriptionShort || null,
       active: Boolean(body.active),
       categoryId: body.categoryId || null,
-      type: body.type,
+      type: body.type || null,
       dimensions: body.dimensions
-        ? toInputJsonValue({
+        ? {
             widthMin: Number(body.dimensions.widthMin) || null,
             widthMax: Number(body.dimensions.widthMax) || null,
             heightMin: Number(body.dimensions.heightMin) || null,
             heightMax: Number(body.dimensions.heightMax) || null,
             unit: body.dimensions.unit || null,
-          })
-        : Prisma.JsonNull,
-      pricing: toInputJsonValue({
-        basePrice: Number(body.pricing?.basePrice) || Number(body.price) || finalPrice || 0,
-        type: body.pricing?.type || 'fixed',
-        priceBreaks: Array.isArray(body.pricing?.priceBreaks) ? body.pricing.priceBreaks : [],
-        supplierCost: body.pricing?.supplierCost ?? supplierCost ?? null,
-        markup: body.pricing?.markup ?? markupPercent ?? null,
-      }),
-      price: Number(body.price) || Number(body.pricing?.basePrice) || finalPrice || 0,
-      saleUnit: body.saleUnit || 'UNIT',
-      minOrderQty: Number(body.minOrderQty) || 1,
-      pricePerUnit: Number(body.pricePerUnit) || Number(body.price) || 0,
+          }
+        : undefined,
+      pricing: body.pricing
+        ? {
+            basePrice: Number(body.pricing.basePrice) || Number(body.price) || 0,
+            type: body.pricing.type || 'fixed',
+            priceBreaks: body.pricing.priceBreaks || [],
+            supplierCost: body.pricing.supplierCost ?? null,
+            markup: body.pricing.markup ?? null,
+          }
+        : undefined,
+      price: Number(body.price) || (body.pricing ? Number(body.pricing.basePrice) || 0 : 0),
+      saleUnit: body.saleUnit || (body as CreateFullProductInput & { salesUnit?: string }).salesUnit || 'UNIT',
+      minOrderQty: Number(body.minOrderQty || (body as CreateFullProductInput & { minQuantity?: number }).minQuantity) || 1,
+      pricePerUnit: Number(body.pricePerUnit) || Number(body.price) || null,
       pricePerM2: body.pricePerM2 ?? null,
-      options: toInputJsonValue(
-        Array.isArray(body.options)
-          ? body.options.map((option) => ({
-              name: option.name,
-              type: option.type,
-              required: Boolean(option.required),
-              values: Array.isArray(option.values)
-                ? option.values.map((value) => ({
-                    label: value.label?.trim?.() ?? value.label,
-                    value: value.value?.trim?.() ?? value.value,
-                    priceModifier: value.priceModifier ?? null,
-                  }))
-                : [],
-            }))
-          : []
-      ),
       metaTitle: body.seo?.metaTitle ?? body.metaTitle ?? null,
       metaDescription: body.seo?.metaDescription ?? body.metaDescription ?? null,
       ogImage: body.seo?.ogImage ?? body.ogImage ?? null,
       production: body.production
-        ? toInputJsonValue({
+        ? {
             estimatedTime: Number(body.production.estimatedTime) || null,
-            operations: Array.isArray(body.production.operations)
-              ? body.production.operations.map((operation) => ({
-                  name: operation.name,
-                  order: Number(operation.order) || 0,
-                  timeMinutes: Number(operation.timeMinutes) || 0,
-                }))
-              : [],
-          })
-        : Prisma.JsonNull,
-      isOutsourced,
-      printMethodId: body.printMethodId || null,
-      materialId: isOutsourced ? null : (body.materialId || null),
+            operations: body.production.operations?.map((operation) => ({
+              name: operation.name,
+              order: Number(operation.order) || 0,
+              timeMinutes: Number(operation.timeMinutes) || 0,
+            })) || [],
+          }
+        : undefined,
+      options: Array.isArray(body.options) && body.options.length > 0
+        ? {
+            create: body.options.map((option) => ({
+              name: option.name,
+              type: option.type,
+              required: Boolean(option.required),
+              values: {
+                create: (option.values || []).map((value) => ({
+                  label: value.label?.trim?.() ?? value.label,
+                  value: value.value?.trim?.() ?? value.value,
+                  priceModifier: value.priceModifier ?? null,
+                })),
+              },
+            })),
+          }
+        : undefined,
+      compatibleMaterials: Array.isArray(body.compatibleMaterials) && body.compatibleMaterials.length > 0
+        ? {
+            connect: body.compatibleMaterials.map((id) => ({ id })),
+          }
+        : undefined,
+      compatiblePrintMethods: Array.isArray(body.compatiblePrintMethods) && body.compatiblePrintMethods.length > 0
+        ? {
+            connect: body.compatiblePrintMethods.map((id) => ({ id })),
+          }
+        : undefined,
+      compatibleFinishing: Array.isArray(body.compatibleFinishing) && body.compatibleFinishing.length > 0
+        ? {
+            connect: body.compatibleFinishing.map((id) => ({ id })),
+          }
+        : undefined,
+      images: Array.isArray(body.images) ? body.images.filter(Boolean) : undefined,
+      printMethodId: body.printMethodId ?? body.defaultPrintMethod ?? undefined,
+      materialId: body.materialId ?? null,
     };
 
     console.log('---PRISMA CREATE ARGS---');
