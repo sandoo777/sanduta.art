@@ -133,6 +133,14 @@ function validatePayload(data: Partial<CreateFullProductInput>) {
   return errors;
 }
 
+function debugBadRequest(body: unknown) {
+  console.log('---ADMIN PRODUCTS RESPONSE DEBUG---');
+  console.log('STATUS', 400);
+  console.log('BODY', JSON.stringify(body, null, 2));
+  console.log('---ADMIN PRODUCTS RESPONSE DEBUG END---');
+  return NextResponse.json(body, { status: 400 });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -152,10 +160,7 @@ export async function POST(req: NextRequest) {
     const validationErrors = validatePayload(body);
 
     if (validationErrors.length > 0) {
-      return NextResponse.json(
-        { error: 'Invalid payload', details: validationErrors },
-        { status: 400 }
-      );
+      return debugBadRequest({ error: 'Invalid payload', details: validationErrors });
     }
 
     const existingSlug = await prisma.product.findUnique({
@@ -164,10 +169,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingSlug) {
-      return NextResponse.json(
-        { error: 'Slug-ul există deja pentru un alt produs' },
-        { status: 400 }
-      );
+      return debugBadRequest({ error: 'Slug-ul există deja pentru un alt produs' });
     }
 
     const category = await prisma.category.findUnique({
@@ -176,10 +178,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!category) {
-      return NextResponse.json(
-        { error: 'Categoria selectată nu există' },
-        { status: 400 }
-      );
+      return debugBadRequest({ error: 'Categoria selectată nu există' });
     }
 
     let selectedPrintMethod: {
@@ -205,10 +204,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!method || !method.active) {
-        return NextResponse.json(
-          { error: 'Metoda de print selectată nu există sau este inactivă' },
-          { status: 400 }
-        );
+        return debugBadRequest({ error: 'Metoda de print selectată nu există sau este inactivă' });
       }
 
       selectedPrintMethod = {
@@ -222,10 +218,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (selectedPrintMethod && !selectedPrintMethod.isOutsourced && !body.materialId) {
-      return NextResponse.json(
-        { error: 'Pentru metode interne, materialul implicit este obligatoriu' },
-        { status: 400 }
-      );
+      return debugBadRequest({ error: 'Pentru metode interne, materialul implicit este obligatoriu' });
     }
 
     const pricePerM2 = parseNonNegative(body.pricePerM2);
@@ -234,24 +227,15 @@ export async function POST(req: NextRequest) {
 
     if (!isOutsourced) {
       if (body.saleUnit === 'M2' && pricePerM2 === null) {
-        return NextResponse.json(
-          { error: 'Pentru produse la m², pricePerM2 este obligatoriu' },
-          { status: 400 }
-        );
+        return debugBadRequest({ error: 'Pentru produse la m², pricePerM2 este obligatoriu' });
       }
 
       if (body.saleUnit === 'UNIT' && pricePerUnit === null) {
-        return NextResponse.json(
-          { error: 'Pentru produse la bucată, pricePerUnit este obligatoriu' },
-          { status: 400 }
-        );
+        return debugBadRequest({ error: 'Pentru produse la bucată, pricePerUnit este obligatoriu' });
       }
 
       if (hasOwnField(rawBody, 'supplierCost') || hasOwnField(rawBody, 'markup')) {
-        return NextResponse.json(
-          { error: 'Campurile supplierCost/markup sunt permise doar pentru outsource' },
-          { status: 400 }
-        );
+        return debugBadRequest({ error: 'Campurile supplierCost/markup sunt permise doar pentru outsource' });
       }
     }
 
