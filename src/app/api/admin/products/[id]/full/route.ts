@@ -485,6 +485,16 @@ export async function PATCH(
       isOutsourced: nextIsOutsourced,
     };
 
+    updateData.pricing = updateData.pricing && typeof updateData.pricing === 'object'
+      ? {
+          basePrice: Number((updateData.pricing as { basePrice?: unknown }).basePrice ?? updateData.price ?? 0) || 0,
+          type: (updateData.pricing as { type?: string }).type || 'fixed',
+          priceBreaks: Array.isArray((updateData.pricing as { priceBreaks?: unknown[] }).priceBreaks)
+            ? (updateData.pricing as { priceBreaks: unknown[] }).priceBreaks
+            : [],
+        }
+      : (updateData.price != null ? { basePrice: Number(updateData.price) || 0, type: 'fixed', priceBreaks: [] } : undefined);
+
     updateData.pricing = normalizePricing(updateData.pricing, updateData.price);
     const cleanedUpdateData = removeUndefined(updateData) as Prisma.ProductUncheckedUpdateInput;
 
