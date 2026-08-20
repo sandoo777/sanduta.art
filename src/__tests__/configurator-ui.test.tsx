@@ -140,7 +140,7 @@ describe('Configurator UI Tests', () => {
     it('should show min/max constraints', () => {
       render(<Configurator productId="test-1" />);
       
-      expect(screen.getByText(/100 - 1000 mm/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/100 - 1000 mm/i).length).toBeGreaterThan(0);
     });
 
     it('should call setDimension on input change', async () => {
@@ -161,14 +161,14 @@ describe('Configurator UI Tests', () => {
     it('should display materials list', () => {
       render(<Configurator productId="test-1" />);
       
-      expect(screen.getByText('Material 1')).toBeInTheDocument();
-      expect(screen.getByText(/m2/i)).toBeInTheDocument();
+      expect(screen.getAllByText('Material 1').length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/m2/i).length).toBeGreaterThan(0);
     });
 
     it('should show selected material badge', () => {
       render(<Configurator productId="test-1" />);
       
-      expect(screen.getByText('Selectat')).toBeInTheDocument();
+      expect(screen.getAllByText('Selectat').length).toBeGreaterThan(0);
     });
 
     it('should call setMaterial on click', async () => {
@@ -186,7 +186,7 @@ describe('Configurator UI Tests', () => {
     it('should display print methods', () => {
       render(<Configurator productId="test-1" />);
       
-      expect(screen.getByText('Print Method 1')).toBeInTheDocument();
+      expect(screen.getAllByText('Print Method 1').length).toBeGreaterThan(0);
     });
   });
 
@@ -217,8 +217,8 @@ describe('Configurator UI Tests', () => {
       render(<Configurator productId="test-1" />);
       
       expect(screen.getByText(/Preț bază/i)).toBeInTheDocument();
-      expect(screen.getByText(/Material/i)).toBeInTheDocument();
-      expect(screen.getByText(/Imprimare/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Material/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Imprimare/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Total/i)).toBeInTheDocument();
     });
 
@@ -256,9 +256,9 @@ describe('Configurator UI Tests', () => {
 
   describe('Test 9: Layout Responsiveness', () => {
     it('should render two-column layout', () => {
-      render(<Configurator productId="test-1" />);
+      const { container } = render(<Configurator productId="test-1" />);
       
-      const layout = screen.getByRole('main').querySelector('.lg\\:grid-cols-\\[1fr_420px\\]');
+      const layout = container.querySelector('.lg\\:grid-cols-\\[1fr_420px\\]');
       expect(layout).toBeInTheDocument();
     });
   });

@@ -13,8 +13,10 @@ vi.mock('next/navigation', async (importOriginal) => {
 
 vi.mock('next/image', () => ({
   __esModule: true,
-  default: (props: Record<string, unknown>) =>
-    require('react').createElement('img', { ...props, 'data-testid': 'next-image' }),
+  default: (props: Record<string, unknown>) => {
+    const { fill: _fill, priority: _priority, ...rest } = props;
+    return require('react').createElement('img', { ...rest, 'data-testid': 'next-image' });
+  },
 }));
 
 // Global DOM mocks
