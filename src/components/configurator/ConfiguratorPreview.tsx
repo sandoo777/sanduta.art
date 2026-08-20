@@ -164,14 +164,12 @@ export function ConfiguratorPreview({
           </p>
         </div>
         <Button
-                    aria-label={"Adaug\u0103 \u00EEn co\u0219 / Add to cart"}
           size="lg"
           onClick={onAddToCart}
           disabled={disabled || !onAddToCart}
           className="shadow-lg"
-          aria-label="Adaugă în coș / Add to cart"
+          aria-label={"Adaug\u0103 \u00EEn co\u0219 / Add to cart"}
           data-testid="add-to-cart"
-          aria-labelledby="add-to-cart-fallback"
         >
           <span aria-hidden="true">Adaugă în coș</span>
         </Button>
