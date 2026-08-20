@@ -41,6 +41,58 @@ function toInputJsonValue(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
+function sanitizeProductPayload<T>(body: T): T & { price: number } {
+  const trimString = (value: unknown) => (typeof value === 'string' ? value.trim() : value);
+  const sanitized = JSON.parse(JSON.stringify(body ?? {})) as Record<string, unknown>;
+
+  ['name', 'slug', 'sku', 'description', 'descriptionShort'].forEach((key) => {
+    if (sanitized[key]) {
+      sanitized[key] = trimString(sanitized[key]);
+    }
+  });
+
+  if (Array.isArray(sanitized.images)) {
+    sanitized.images = sanitized.images
+      .map((item) => (typeof item === 'string' ? item.trim() : item))
+      .filter(Boolean);
+  }
+
+  if (Array.isArray(sanitized.options)) {
+    sanitized.options = sanitized.options.map((option) => {
+      if (Array.isArray((option as { values?: unknown[] }).values)) {
+        return {
+          ...option,
+          values: (option as { values: Array<{ label?: unknown; value?: unknown }> }).values.map((value) => ({
+            ...value,
+            label: trimString(value.label),
+            value: trimString(value.value),
+          })),
+        };
+      }
+
+      return option;
+    });
+  }
+
+  if (sanitized.pricing && typeof sanitized.pricing === 'object') {
+    const pricing = sanitized.pricing as Record<string, unknown>;
+    if (pricing.basePrice == null) {
+      pricing.basePrice = 0;
+    }
+    pricing.basePrice = Number(pricing.basePrice) || 0;
+
+    if (pricing.type === 'fixed' || pricing.type === 'per_unit') {
+      sanitized.price = pricing.basePrice;
+    } else {
+      sanitized.price = Number(sanitized.price) || 0;
+    }
+  } else {
+    sanitized.price = Number(sanitized.price) || 0;
+  }
+
+  return sanitized as T & { price: number };
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -92,7 +144,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = (await req.json()) as Partial<CreateFullProductInput>;
+  const body = sanitizeProductPayload((await req.json()) as Partial<CreateFullProductInput>);
   console.log('---ADMIN PRODUCTS REQUEST START---');
   console.log('URL:', req.url ?? '/api/admin/products/[id]/full');
   console.log('METHOD:', req.method ?? 'PATCH');
