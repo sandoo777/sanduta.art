@@ -308,46 +308,74 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const createData: Record<string, unknown> = {
-        name: body.name.trim(),
-        slug: body.slug.trim(),
-        sku: body.sku?.trim() || null,
-        description: body.description?.trim() || null,
-        descriptionShort: body.descriptionShort?.trim() || null,
-        type: body.type,
-        saleUnit: body.saleUnit,
-        price: finalPrice,
-        pricePerM2: isOutsourced ? null : (pricePerM2 ?? null),
-        pricePerUnit: isOutsourced ? null : (pricePerUnit ?? null),
-        minOrderQty: body.minOrderQty,
-        isOutsourced,
-        categoryId: body.categoryId,
-        printMethodId: body.printMethodId || null,
-        materialId: isOutsourced ? null : (body.materialId || null),
-        active: body.active,
-        options: toInputJsonValue(body.options && body.options.length > 0 ? body.options : []),
-        dimensions: body.dimensions ? toInputJsonValue(body.dimensions) : Prisma.JsonNull,
-        pricing: toInputJsonValue({
-          ...body.pricing,
-          basePrice: finalPrice,
-          ...(isOutsourced
-            ? {
-                supplierCost,
-                markup: markupPercent,
-              }
-            : {
-                supplierCost: null,
-                markup: null,
-              }),
-        }),
-        production: body.production ? toInputJsonValue(body.production) : Prisma.JsonNull,
-        metaTitle: body.seo?.metaTitle?.trim() || null,
-        metaDescription: body.seo?.metaDescription?.trim() || null,
-        ogImage: body.seo?.ogImage?.trim() || null,
-      };
+    const prismaData: Record<string, unknown> = {
+      name: body.name,
+      slug: body.slug,
+      sku: body.sku || null,
+      description: body.description || null,
+      descriptionShort: body.descriptionShort || null,
+      active: Boolean(body.active),
+      categoryId: body.categoryId || null,
+      type: body.type,
+      dimensions: body.dimensions
+        ? toInputJsonValue({
+            widthMin: Number(body.dimensions.widthMin) || null,
+            widthMax: Number(body.dimensions.widthMax) || null,
+            heightMin: Number(body.dimensions.heightMin) || null,
+            heightMax: Number(body.dimensions.heightMax) || null,
+            unit: body.dimensions.unit || null,
+          })
+        : Prisma.JsonNull,
+      pricing: toInputJsonValue({
+        basePrice: Number(body.pricing?.basePrice) || Number(body.price) || finalPrice || 0,
+        type: body.pricing?.type || 'fixed',
+        priceBreaks: Array.isArray(body.pricing?.priceBreaks) ? body.pricing.priceBreaks : [],
+        supplierCost: body.pricing?.supplierCost ?? supplierCost ?? null,
+        markup: body.pricing?.markup ?? markupPercent ?? null,
+      }),
+      price: Number(body.price) || Number(body.pricing?.basePrice) || finalPrice || 0,
+      saleUnit: body.saleUnit || 'UNIT',
+      minOrderQty: Number(body.minOrderQty) || 1,
+      pricePerUnit: Number(body.pricePerUnit) || Number(body.price) || 0,
+      pricePerM2: body.pricePerM2 ?? null,
+      options: toInputJsonValue(
+        Array.isArray(body.options)
+          ? body.options.map((option) => ({
+              name: option.name,
+              type: option.type,
+              required: Boolean(option.required),
+              values: Array.isArray(option.values)
+                ? option.values.map((value) => ({
+                    label: value.label?.trim?.() ?? value.label,
+                    value: value.value?.trim?.() ?? value.value,
+                    priceModifier: value.priceModifier ?? null,
+                  }))
+                : [],
+            }))
+          : []
+      ),
+      metaTitle: body.seo?.metaTitle ?? body.metaTitle ?? null,
+      metaDescription: body.seo?.metaDescription ?? body.metaDescription ?? null,
+      ogImage: body.seo?.ogImage ?? body.ogImage ?? null,
+      production: body.production
+        ? toInputJsonValue({
+            estimatedTime: Number(body.production.estimatedTime) || null,
+            operations: Array.isArray(body.production.operations)
+              ? body.production.operations.map((operation) => ({
+                  name: operation.name,
+                  order: Number(operation.order) || 0,
+                  timeMinutes: Number(operation.timeMinutes) || 0,
+                }))
+              : [],
+          })
+        : Prisma.JsonNull,
+      isOutsourced,
+      printMethodId: body.printMethodId || null,
+      materialId: isOutsourced ? null : (body.materialId || null),
+    };
 
     const product = await prisma.product.create({
-      data: createData as Prisma.ProductUncheckedCreateInput,
+      data: prismaData as Prisma.ProductUncheckedCreateInput,
     });
 
     const images = normalizeImages(body.images);
