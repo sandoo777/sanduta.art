@@ -145,7 +145,7 @@ export class FileUploadValidator {
         sanitizedFilename,
         detectedMimeType: file.type,
       };
-    } catch (_error) {
+    } catch (error) {
       logger.error('FileValidator', 'File validation error', { error });
       return {
         isValid: false,
