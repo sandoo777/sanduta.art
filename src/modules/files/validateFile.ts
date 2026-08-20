@@ -185,7 +185,7 @@ export class FileUploadValidator {
 
       // If no magic number defined, allow (not all types have magic numbers)
       return true;
-    } catch (_error) {
+    } catch (error) {
       logger.error('FileValidator', 'MIME type verification error', { error });
       return false;
     }
