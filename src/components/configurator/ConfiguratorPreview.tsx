@@ -164,7 +164,7 @@ export function ConfiguratorPreview({
           </p>
         </div>
         <Button
-          variant="primary"
+                    aria-label={"Adaug\u0103 \u00EEn co\u0219 / Add to cart"}
           size="lg"
           onClick={onAddToCart}
           disabled={disabled || !onAddToCart}
