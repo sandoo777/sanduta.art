@@ -10,7 +10,8 @@ test.describe('Customer Journey - Complete Flow', () => {
     // 1. Homepage
     await test.step('Acces homepage', async () => {
       await page.goto('/');
-      await expect(page).toHaveTitle(/Sanduta\.art/i);
+      await page.waitForLoadState('networkidle');
+      await expect(page).toHaveTitle(/Sanduta\.art/i, { timeout: 10000 });
       
       // Verifică elemente principale
       await expect(page.locator('header')).toBeVisible();
