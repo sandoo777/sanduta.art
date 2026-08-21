@@ -11,6 +11,9 @@ test.describe('Customer Journey - Complete Flow', () => {
     await test.step('Acces homepage', async () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
+      // debug: log title and capture screenshot to help diagnose flakiness
+      console.log('PAGE TITLE:', await page.title());
+      await page.screenshot({ path: 'playwright-debug-homepage.png', fullPage: true });
       await expect(page).toHaveTitle(/Sanduta\.art/i, { timeout: 10000 });
       
       // Verifică elemente principale
