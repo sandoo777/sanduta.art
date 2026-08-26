@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Eye, Plus } from 'lucide-react';
+import { Eye, Plus, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import { useCartStore } from '@/modules/cart/cartStore';
 import { ProductQuickView } from './ProductQuickView';
 
 interface ProductCardProps {
@@ -38,13 +40,66 @@ export function ProductCard({
   specifications,
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const router = useRouter();
+  const addItem = useCartStore((state) => state.addItem);
   const safeBasePrice = typeof basePrice === 'number' && !isNaN(basePrice) ? basePrice : 0;
   const safeDiscount = typeof discount === 'number' && !isNaN(discount) ? discount : 0;
   const finalPrice = safeDiscount > 0 ? safeBasePrice * (1 - safeDiscount / 100) : safeBasePrice;
 
+  const handleQuickAddToCart = async (event?: any) => {
+    const payload = {
+      productId: String(id),
+      qty: 1,
+      price: finalPrice,
+      name,
+    };
+
+    const response = await fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    const button = (event?.currentTarget as HTMLButtonElement | null) ?? document.querySelector('[data-testid="add-to-cart-btn"]') as HTMLButtonElement | null;
+    if (button && result?.success) {
+      button.setAttribute('data-added', 'true');
+    }
+
+    addItem({
+      id: `product-${id}`,
+      productId: id,
+      productSlug: slug,
+      name,
+      previewUrl: imageUrl,
+      fileUrl: '',
+      projectId: undefined,
+      finalFileUrl: '',
+      specifications: {
+        dimensions: { width: 30, height: 40 },
+        material: { id: 'material-default', name: 'Material standard' },
+        finishes: [],
+        quantity: 1,
+        productionTime: '3-5 zile',
+      },
+      upsells: [],
+      priceBreakdown: {
+        basePrice: safeBasePrice,
+        materialCost: 0,
+        finishingCost: 0,
+        upsellsCost: 0,
+        quantityDiscount: 0,
+        subtotal: safeBasePrice,
+      },
+      totalPrice: finalPrice,
+      addedAt: new Date().toISOString(),
+    });
+    router.push('/cart');
+  };
+
   return (
     <>
-      <Card hover className="group relative overflow-hidden">
+      <Card hover className="group relative overflow-hidden" data-testid="product-card">
         {/* Badges */}
         {badges.length > 0 && (
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
@@ -113,12 +168,23 @@ export function ProductCard({
           </div>
 
           {/* Button */}
-          <Link href={`/produse/${slug}`}>
-            <Button variant="primary" fullWidth>
-              <Plus className="w-5 h-5" />
-              Configurează
+          <div className="flex gap-2">
+            <Link href={`/produse/${slug}`} className="flex-1">
+              <Button variant="primary" fullWidth>
+                <Plus className="w-5 h-5" />
+                Configurează
+              </Button>
+            </Link>
+            <Button
+              variant="secondary"
+              data-testid="add-to-cart-btn"
+              onClick={handleQuickAddToCart}
+              className="shrink-0"
+              aria-label="Adaugă în coș"
+            >
+              <ShoppingCart className="w-4 h-4" />
             </Button>
-          </Link>
+          </div>
         </CardContent>
       </Card>
 

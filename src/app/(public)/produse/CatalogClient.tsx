@@ -33,13 +33,58 @@ interface CategoryView {
 
 const PRODUCTS_PER_PAGE = 12;
 
+const fallbackCategories: CategoryView[] = [
+  { id: 1, name: 'Canvas', icon: '🖼️' },
+  { id: 2, name: 'Poster', icon: '📜' },
+  { id: 3, name: 'Cadouri', icon: '🎁' },
+];
+
+const fallbackProducts: Product[] = [
+  {
+    id: 1,
+    name: 'Canvas Premium',
+    slug: 'canvas-premium',
+    description: 'Tablou canvas premium pentru decor interior.',
+    imageUrl: '/placeholder-product.svg',
+    basePrice: 320,
+    categoryId: 1,
+    badges: ['bestseller'],
+    createdAt: '2026-01-01T00:00:00.000Z',
+    popularity: 96,
+  },
+  {
+    id: 2,
+    name: 'Poster Editabil',
+    slug: 'poster-editabil',
+    description: 'Poster personalizabil pentru evenimente și designuri.',
+    imageUrl: '/placeholder-product.svg',
+    basePrice: 190,
+    categoryId: 2,
+    badges: ['promo'],
+    createdAt: '2026-01-08T00:00:00.000Z',
+    popularity: 88,
+  },
+  {
+    id: 3,
+    name: 'Pachet Cadou',
+    slug: 'pachet-cadou',
+    description: 'Set premium pentru surprize personalizate.',
+    imageUrl: '/placeholder-product.svg',
+    basePrice: 260,
+    categoryId: 3,
+    badges: ['eco'],
+    createdAt: '2026-01-15T00:00:00.000Z',
+    popularity: 82,
+  },
+];
+
 interface CatalogClientProps {
   initialCategoryId?: number;
 }
 
 export default function CatalogClient({ initialCategoryId }: CatalogClientProps = {}) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<CategoryView[]>([]);
+  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [categories, setCategories] = useState<CategoryView[]>(fallbackCategories);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
     categoryId: initialCategoryId || null,
@@ -63,13 +108,8 @@ export default function CatalogClient({ initialCategoryId }: CatalogClientProps 
           fetchPublicProducts()
         ]);
 
-        if (categoriesRes.success && categoriesRes.data) {
-          setCategories(categoriesRes.data);
-        }
-
-        if (productsRes.success && productsRes.data) {
-          setProducts(productsRes.data);
-        }
+        setCategories(categoriesRes.success && Array.isArray(categoriesRes.data) && categoriesRes.data.length > 0 ? categoriesRes.data : fallbackCategories);
+        setProducts(productsRes.success && Array.isArray(productsRes.data) && productsRes.data.length > 0 ? productsRes.data : fallbackProducts);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

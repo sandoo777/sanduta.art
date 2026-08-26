@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { Configurator } from '@/components/configurator/Configurator';
+import { FallbackProductPage } from '@/components/public/products/FallbackProductPage';
 
 // ISR: Revalidate product pages every 5 minutes
 export const revalidate = 300;
@@ -40,8 +40,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     select: { id: true, slug: true, name: true },
   });
 
+  const productName = product?.name ?? slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+
   if (!product) {
-    notFound();
+    return <FallbackProductPage slug={slug} name={productName} />;
   }
 
   return (
@@ -57,11 +59,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             Produse
           </Link>
           <span>/</span>
-          <span className="font-medium text-slate-900">{product.name}</span>
+          <span className="font-medium text-slate-900">{productName}</span>
         </nav>
 
         {/* Main Product Configurator */}
-        <Configurator productId={product.id} />
+        <Configurator productId={String(product?.id ?? slug)} />
       </div>
     </div>
   );

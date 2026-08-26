@@ -11,7 +11,7 @@ import { Package, ShoppingBag, Search } from 'lucide-react';
 
 interface OrderWithItems {
   id: string;
-  customerId: string;
+  userId: string | null;
   status: string;
   paymentStatus: string;
   totalPrice: string;
