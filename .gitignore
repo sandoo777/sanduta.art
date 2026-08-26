@@ -51,6 +51,10 @@ next-env.d.ts
 jest_*.txt
 vitest_*.txt
 test-server.log
+test-server.stdout.log
+test-server.stderr.log
+test-flaky-output.txt
+test-full-output.txt
 # scratch/debug files
 __*.txt
 *.bak
