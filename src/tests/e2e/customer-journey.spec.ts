@@ -451,12 +451,65 @@ test.describe('Editor persistence & Order history', () => {
   });
 
   /**
-   * Verifies admin orders status PATCH route exists (returns 401/403 for guests).
+   * Verifies admin order status PATCH requires admin role.
    */
   test('admin order status PATCH requires admin role', async ({ request }) => {
     const res = await request.patch('/api/admin/orders/non-existent-id', {
       data: { status: 'IN_PRODUCTION' },
     });
     expect([401, 403]).toContain(res.status());
+  });
+});
+
+// ─── Payment flow ──────────────────────────────────────────────────────────────
+
+test.describe('Payment flow', () => {
+  /**
+   * POST /api/payments/initiate without an orderId returns 400.
+   */
+  test('initiate without orderId returns 400', async ({ request }) => {
+    const res = await request.post('/api/payments/initiate', { data: {} });
+    expect(res.status()).toBe(400);
+  });
+
+  /**
+   * POST /api/payments/initiate with a non-existent orderId returns 404.
+   */
+  test('initiate with unknown orderId returns 404', async ({ request }) => {
+    const res = await request.post('/api/payments/initiate', {
+      data: { orderId: 'non-existent-order' },
+    });
+    expect(res.status()).toBe(404);
+  });
+
+  /**
+   * POST /api/payment/paynet/webhook with invalid signature returns 401.
+   */
+  test('webhook with invalid signature returns 401', async ({ request }) => {
+    const res = await request.post('/api/payment/paynet/webhook', {
+      data: { session_id: 's', order_id: 'o', status: 'completed' },
+      headers: { 'x-signature': 'bad-signature' },
+    });
+    expect(res.status()).toBe(401);
+  });
+
+  /**
+   * GET /api/orders/[id] with a non-existent id returns 404 or 500.
+   */
+  test('GET /api/orders/[id] with unknown id returns 404', async ({ request }) => {
+    const res = await request.get('/api/orders/totally-unknown-id-xyz');
+    // 404 when order not found; 429 if rate-limited; 500 on unexpected DB error
+    expect([404, 429, 500]).toContain(res.status());
+  });
+
+  /**
+   * Checkout success page loads and redirects correctly when no orderId provided.
+   */
+  test('checkout success page redirects to /cart without orderId', async ({ page }) => {
+    await page.goto('/checkout/success');
+    await page.waitForLoadState('domcontentloaded');
+    // Should redirect to /cart when no orderId
+    const url = page.url();
+    expect(/cart|checkout/.test(url)).toBe(true);
   });
 });

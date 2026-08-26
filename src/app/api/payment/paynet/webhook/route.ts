@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { paynetClient } from '@/lib/paynet';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const signature = request.headers.get('x-signature') || '';
@@ -20,15 +22,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Update order payment status
-    const paymentStatus = status === 'completed' ? 'paid' : status === 'failed' ? 'failed' : 'pending';
+    const paymentStatus =
+      status === 'completed' ? 'PAID' :
+      status === 'failed'    ? 'FAILED' :
+                               'PENDING';
+
+    const orderStatus =
+      paymentStatus === 'PAID' ? 'IN_PREPRODUCTION' : 'PENDING';
+
+    const order = await prisma.order.findUnique({
+      where: { id: order_id },
+      select: { id: true, paymentStatus: true },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
 
     await prisma.order.update({
       where: { id: order_id },
+      data: { paymentStatus, status: orderStatus },
+    });
+
+    // Log to OrderTimeline
+    await prisma.orderTimeline.create({
       data: {
-        paymentStatus: paymentStatus === 'paid' ? 'PAID' : paymentStatus === 'failed' ? 'FAILED' : 'PENDING',
-        // Move the order into the first production stage once the payment clears
-        status: paymentStatus === 'paid' ? 'IN_PREPRODUCTION' : 'PENDING',
+        orderId: order_id,
+        eventType: 'payment_update',
+        description: `Plată ${paymentStatus === 'PAID' ? 'confirmată' : paymentStatus === 'FAILED' ? 'eșuată' : 'în așteptare'} via Paynet`,
+        eventData: {
+          sessionId: session_id,
+          previousPaymentStatus: order.paymentStatus,
+          newPaymentStatus: paymentStatus,
+          rawStatus: status,
+        },
       },
     });
 

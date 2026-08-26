@@ -104,7 +104,7 @@ export const POST = withAuth(
         customerPhone: customer_phone,
         userId,
         status: "PENDING",
-        paymentStatus: payment_method === 'card' ? 'PAID' : 'PENDING',
+        paymentStatus: 'PENDING',
         deliveryStatus: "pending",
         paymentMethod: payment_method,
         deliveryMethod: delivery_method,

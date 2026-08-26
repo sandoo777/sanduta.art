@@ -116,10 +116,29 @@ export default function CheckoutPage() {
       }
 
       const responseData = await response.json();
-      
-      // Golește coșul și redirecționează la success
+      const orderId = responseData.order.id;
+
+      // Golește coșul
       clear();
-      router.push(`/checkout/success?orderId=${responseData.order.id}`);
+
+      // For card payment, initiate Paynet session and redirect to payment URL
+      if (data.paymentMethod === 'card') {
+        const payRes = await fetch('/api/payments/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        });
+        const payData = await payRes.json();
+
+        if (payData.paymentUrl) {
+          // External Paynet gateway or success page
+          window.location.href = payData.paymentUrl;
+          return;
+        }
+        // Paynet unavailable — fall through to COD success page
+      }
+
+      router.push(`/checkout/success?orderId=${orderId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'A apărut o eroare neașteptată';
       setError(message);
