@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, AlertCircle } from "lucide-react";
 import { usePrintMethods } from "@/modules/print-methods/usePrintMethods";
 import { useMaterials } from "@/modules/materials/useMaterials";
@@ -43,7 +43,11 @@ export function ConsumablesManager({ printMethodId }: ConsumablesManagerProps) {
     active: true,
   });
 
-  const loadData = useCallback(async () => {
+  useEffect(() => {
+    loadData();
+  }, [printMethodId]);
+
+  const loadData = async () => {
     setLoading(true);
     try {
       const [consumablesData, materialsData] = await Promise.all([
@@ -58,11 +62,7 @@ export function ConsumablesManager({ printMethodId }: ConsumablesManagerProps) {
     } finally {
       setLoading(false);
     }
-  }, [getConsumables, getMaterials, printMethodId]);
-
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
+  };
 
   const resetForm = () => {
     setFormData({

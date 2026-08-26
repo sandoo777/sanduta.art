@@ -63,6 +63,7 @@ export function Header() {
               {/* Cart link */}
               <Link
                 href="/cart"
+                data-testid="cart-icon"
                 className="relative p-2 text-gray-700 transition-colors hover:text-primary hover:bg-gray-100 rounded-lg"
                 aria-label={`Coș de cumpărături (${cartItemCount} produse)`}
               >

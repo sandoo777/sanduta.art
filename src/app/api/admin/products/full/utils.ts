@@ -4,7 +4,6 @@ import type {
   ProductMaterial,
   ProductPrintMethod,
   ProductFinishing,
-  Prisma,
 } from '@prisma/client';
 import type {
   ProductOption,
@@ -19,10 +18,10 @@ interface PrismaFullProduct extends Product {
   materials?: Array<ProductMaterial & { material?: unknown }>;
   printMethods?: Array<ProductPrintMethod & { printMethod?: unknown }>;
   finishing?: Array<ProductFinishing & { finishing?: unknown }>;
-  options?: Prisma.JsonValue | null;
-  pricing?: Prisma.JsonValue | null;
-  dimensions?: Prisma.JsonValue | null;
-  production?: Prisma.JsonValue | null;
+  options?: ProductOption[] | null;
+  pricing?: ProductPricing | null;
+  dimensions?: ProductDimensions | null;
+  production?: ProductProduction | null;
 }
 
 export function serializeFullProduct(product: PrismaFullProduct | null) {
@@ -37,7 +36,7 @@ export function serializeFullProduct(product: PrismaFullProduct | null) {
     ...rest
   } = product;
 
-  const pricing = (product.pricing as ProductPricing | null) ?? {
+  const pricing: ProductPricing = product.pricing ?? {
     type: 'fixed',
     basePrice: Number(product.price ?? 0),
     priceBreaks: [],
@@ -50,15 +49,9 @@ export function serializeFullProduct(product: PrismaFullProduct | null) {
     ? Number(pricingObj.markup)
     : null;
 
-  const options = Array.isArray(product.options)
-    ? (product.options as ProductOption[])
-    : [];
-  const dimensions = product.dimensions && typeof product.dimensions === 'object'
-    ? (product.dimensions as ProductDimensions)
-    : undefined;
-  const production = product.production && typeof product.production === 'object'
-    ? (product.production as ProductProduction)
-    : undefined;
+  const options: ProductOption[] = product.options ?? [];
+  const dimensions: ProductDimensions | undefined = product.dimensions ?? undefined;
+  const production: ProductProduction | undefined = product.production ?? undefined;
 
   const seo: ProductSEO | undefined =
     product.metaTitle || product.metaDescription || product.ogImage

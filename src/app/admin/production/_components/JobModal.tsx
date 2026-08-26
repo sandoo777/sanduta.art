@@ -4,10 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/Modal';
 import { useForm, useWatch } from "react-hook-form";
-import type { UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -98,8 +97,8 @@ export default function JobModal({
   const [loadingMaterials,    setLoadingMaterials]    = useState(false);
   const [materialsMessage,    setMaterialsMessage]    = useState<string | undefined>();
 
-  const form = useForm({
-    resolver: zodResolver(jobFormSchema) as never,
+  const form = useForm<JobFormData>({
+    resolver: zodResolver(jobFormSchema),
     defaultValues: {
       name:       "",
       orderId:    "",
@@ -115,7 +114,7 @@ export default function JobModal({
       deadline:   "",
       notes:      "",
     },
-  }) as unknown as UseFormReturn<JobFormData>;
+  });
 
   const { formState: { isSubmitting }, reset } = form;
 
@@ -521,8 +520,6 @@ export default function JobModal({
     handleClose();
   };
 
-  const submitForm = form.handleSubmit(handleFormSubmit);
-
   const handleClose = () => {
     reset({ name: "", orderId: "", productId: "", status: "PENDING", priority: "NORMAL", assignedTo: "", printMethodId: "", materialId: "", machineId: "", quantity: undefined, bwPages: undefined, deadline: "", notes: "" });
     setSuggestedMachines([]);
@@ -542,7 +539,7 @@ export default function JobModal({
           </h2>
         </div>
 
-        <Form<JobFormData> form={form} onSubmit={handleFormSubmit} className="p-6 space-y-4">
+        <Form form={form} onSubmit={handleFormSubmit} className="p-6 space-y-4">
           {loadingData ? (
             <LoadingState size="sm" text="Se incarca datele..." />
           ) : (
@@ -924,7 +921,7 @@ export default function JobModal({
             type="submit"
             variant="primary"
             loading={isSubmitting || loadingData}
-            onClick={submitForm}
+            onClick={() => form.handleSubmit(handleFormSubmit)()}
           >
             {mode === "create" ? "Creeaza job" : "Actualizeaza job"}
           </Button>

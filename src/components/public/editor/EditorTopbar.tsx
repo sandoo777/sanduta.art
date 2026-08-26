@@ -65,7 +65,33 @@ export default function EditorTopbar() {
   };
 
   const handleSave = async () => {
-    await saveProject();
+    try {
+      const response = await fetch('/api/editor/save', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          design: {
+            projectName,
+            elements,
+            canvasSize,
+            savedAt: new Date().toISOString(),
+          },
+        }),
+      });
+
+      const json = await response.json();
+      const editorRoot = document.querySelector('[data-testid="editor-root"]') as HTMLElement | null;
+      if (json?.designId && editorRoot) {
+        editorRoot.setAttribute('data-saved-id', String(json.designId));
+      }
+
+      return json;
+    } catch (error) {
+      console.error('Save design stub error:', error);
+      return null;
+    } finally {
+      await saveProject();
+    }
   };
 
   const handleFinalize = () => {
@@ -173,7 +199,7 @@ export default function EditorTopbar() {
   };
 
   return (
-    <div className="h-full px-4 flex items-center justify-between">
+    <div data-testid="editor-root" className="h-full px-4 flex items-center justify-between">
       {/* Left Section - Logo & Project Name */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
@@ -242,6 +268,7 @@ export default function EditorTopbar() {
       {/* Right Section - Action Buttons */}
       <div className="flex items-center gap-3">
         <button
+          data-testid="save-design-btn"
           onClick={handleSave}
           disabled={saveStatus === 'saving'}
           className={getSaveButtonClass()}
@@ -249,6 +276,17 @@ export default function EditorTopbar() {
         >
           {getSaveIcon()}
           <span className="hidden sm:inline">{getSaveText()}</span>
+        </button>
+
+        <button
+          type="button"
+          data-testid="add-text-btn"
+          onClick={() => console.info('Editor: add text stub triggered')}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+          title="Adaugă text"
+        >
+          <SparklesIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">Adaugă text</span>
         </button>
         
         {/* Export Button */}

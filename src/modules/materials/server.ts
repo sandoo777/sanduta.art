@@ -1,6 +1,5 @@
-import { MaterialConsumptionType, MaterialUnit, Prisma } from '@prisma/client';
+import { MaterialUnit, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { resolveAllowedUnitsByCategory } from './pricing';
 
 export const MATERIAL_API_TAG = 'API:Materials';
 
@@ -12,7 +11,6 @@ export interface MaterialMutationInput {
   name?: unknown;
   category?: unknown;
   categoryId?: unknown;
-  consumptionType?: unknown;
   thickness?: unknown;
   density?: unknown;
   purchasePrice?: unknown;
@@ -29,11 +27,6 @@ export interface MaterialMutationInput {
   stock?: unknown;
   minStock?: unknown;
   notes?: unknown;
-  finishType?: unknown;
-  properties?: unknown;
-  packagingLabel?: unknown;
-  packagingQty?: unknown;
-  packagingPrice?: unknown;
   printMethodIds?: unknown;
   compatibleMethods?: unknown;
 }
@@ -49,33 +42,28 @@ export class MaterialApiValidationError extends Error {
 }
 
 const materialListInclude = {
-  compatibleMethods: {
+  print_methods: {
     select: {
       id: true,
       name: true,
       type: true,
       active: true,
     },
-  },
-  category: true,
-  consumption: {
     orderBy: {
-      createdAt: 'desc' as const,
+      name: 'asc' as const,
     },
   },
+  material_categories: true,
+  consumption: true,
 } satisfies Prisma.MaterialInclude;
 
 const materialDetailInclude = {
-  compatibleMethods: materialListInclude.compatibleMethods,
-  category: true,
+  print_methods: materialListInclude.print_methods,
+  material_categories: true,
   consumption: {
     include: {
       job: {
-        select: {
-          id: true,
-          name: true,
-          status: true,
-          orderId: true,
+        include: {
           order: {
             select: {
               id: true,
@@ -133,6 +121,10 @@ function normalizeIdArray(value: unknown, fieldName: string): string[] {
   return [...new Set(ids)];
 }
 
+function isMaterialCategory(value: unknown): value is MaterialCategoryValue {
+  return typeof value === 'string' && MATERIAL_CATEGORIES.includes(value as MaterialCategoryValue);
+}
+
 function normalizeNonNegativeNumber(
   value: unknown,
   label: string,
@@ -178,70 +170,53 @@ function normalizeUnit(value: unknown, fallback: MaterialUnit): MaterialUnit {
 
 export function normalizeMaterialResponse(material: MaterialListRecord | MaterialDetailRecord) {
   const totalConsumption = material.consumption.reduce((sum, usage) => sum + usage.quantity, 0);
-  
-  // Try to derive category type from category name or default to 'other'
-  let categoryType: MaterialCategoryValue = 'other';
-  if (material.category?.name) {
-    const nameLower = material.category.name.toLowerCase();
-    // Try to match known categories
-    if (MATERIAL_CATEGORIES.includes(nameLower as MaterialCategoryValue)) {
-      categoryType = nameLower as MaterialCategoryValue;
-    }
-  }
+  const categoryType = (material.material_categories?.type ?? 'other') as MaterialCategoryValue;
 
   return {
     id: material.id,
     name: material.name,
     categoryId: material.categoryId,
     category: categoryType,
-    categoryInfo: material.category
+    categoryInfo: material.material_categories
       ? {
-          id: material.category.id,
-          name: material.category.name,
-          description: material.category.description,
-          requiresThickness: material.category.requiresThickness,
-          requiresDensity: material.category.requiresDensity,
-          requiresPricePerSqm: material.category.requiresPricePerSqm,
-          requiresPricePerMeter: material.category.requiresPricePerMeter,
-          requiresPricePerUnit: material.category.requiresPricePerUnit,
-          requiresWastePercent: material.category.requiresWastePercent,
-          active: material.category.active,
+          id: material.material_categories.id,
+          name: material.material_categories.name,
+          description: material.material_categories.description,
+          requiresThickness: material.material_categories.requiresThickness,
+          requiresDensity: material.material_categories.requiresDensity,
+          requiresPricePerSqm: material.material_categories.requiresPricePerSqm,
+          requiresPricePerMeter: material.material_categories.requiresPricePerMeter,
+          requiresPricePerUnit: material.material_categories.requiresPricePerUnit,
+          requiresWastePercent: material.material_categories.requiresWastePercent,
+          active: material.material_categories.active,
         }
       : null,
-    consumptionType: material.consumptionType,
     thickness: material.thickness,
     density: material.density,
     purchasePrice: material.purchasePrice ? Number(material.purchasePrice) : null,
     salePrice: material.salePrice ? Number(material.salePrice) : null,
     salePriceMode: material.salePriceMode === 'percent' ? 'percent' : 'amount',
     salePricePercent: material.salePricePercent,
-    // Legacy aliases kept for old list/detail consumers.
-    pricePerSqm: material.unit === MaterialUnit.m2 ? (material.salePrice ? Number(material.salePrice) : null) : null,
-    pricePerMeter: material.unit === MaterialUnit.meter ? (material.salePrice ? Number(material.salePrice) : null) : null,
-    pricePerUnit: [MaterialUnit.unit, MaterialUnit.pcs, MaterialUnit.ml, MaterialUnit.liter, MaterialUnit.gram, MaterialUnit.kg]
-      .includes(material.unit)
-      ? (material.salePrice ? Number(material.salePrice) : null)
-      : null,
+    // Legacy aliases kept for backward compatibility with old forms/components.
+    pricePerSqm: material.salePrice ? Number(material.salePrice) : null,
+    pricePerMeter: material.salePrice ? Number(material.salePrice) : null,
+    pricePerUnit: material.salePrice ? Number(material.salePrice) : null,
+    costPerUnit: material.salePrice ? Number(material.salePrice) : 0,
     wastePercent: material.wastePercent,
     active: material.active,
-    printMethods: material.compatibleMethods.map((method) => ({
+    printMethods: material.print_methods.map((method) => ({
       id: method.id,
       name: method.name,
       type: method.type,
       active: method.active,
     })),
-    printMethodIds: material.compatibleMethods.map((method) => method.id),
-    compatibleMethods: material.compatibleMethods.map((method) => method.id),
+    printMethodIds: material.print_methods.map((method) => method.id),
+    compatibleMethods: material.print_methods.map((method) => method.id),
     sku: material.sku,
     unit: material.unit,
     stock: material.stock,
     minStock: material.minStock,
     notes: material.notes,
-    finishType: (material.finishType as 'mat' | 'lucios' | 'satin' | 'soft-touch' | null) ?? null,
-    packagingLabel: material.packagingLabel ?? null,
-    packagingQty: material.packagingQty ?? null,
-    packagingPrice: material.packagingPrice ? Number(material.packagingPrice) : null,
-    properties: (material.properties as Record<string, string | number | boolean> | null) ?? null,
     createdAt: material.createdAt,
     updatedAt: material.updatedAt,
     lowStock: material.stock < material.minStock,
@@ -271,7 +246,7 @@ export async function getCompatibleMaterials(filters: {
     active: true,
     ...(printMethodId
       ? {
-          compatibleMethods: { some: { id: printMethodId } },
+          print_methods: { some: { id: printMethodId } },
         }
       : {}),
   };
@@ -294,47 +269,6 @@ export async function getMaterialById(id: string) {
   });
 
   return material ? normalizeMaterialResponse(material) : null;
-}
-
-export async function getNextMaterialSku(categoryId: string) {
-  const normalizedCategoryId = categoryId.trim();
-  if (!normalizedCategoryId) {
-    throw new MaterialApiValidationError('Categoria materialului este obligatorie');
-  }
-
-  const category = await prisma.materialCategory.findUnique({
-    where: { id: normalizedCategoryId },
-    select: { name: true },
-  });
-
-  if (!category) {
-    throw new MaterialApiValidationError('Categoria selectată nu există', 404);
-  }
-
-  const cleaned = category.name.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-  const prefix = (cleaned.slice(0, 3) || 'MAT').padEnd(3, 'X');
-
-  const lastMaterial = await prisma.material.findFirst({
-    where: {
-      categoryId: normalizedCategoryId,
-      sku: {
-        startsWith: `${prefix}-`,
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    select: { sku: true },
-  });
-
-  const lastNumber = lastMaterial?.sku
-    ? Number.parseInt(lastMaterial.sku.split('-').at(-1) ?? '0', 10)
-    : 0;
-  const nextNumber = Number.isFinite(lastNumber) ? lastNumber + 1 : 1;
-
-  return {
-    sku: `${prefix}-${String(nextNumber).padStart(4, '0')}`,
-  };
 }
 
 async function validatePrintMethods(printMethodIds: string[]) {
@@ -371,13 +305,28 @@ async function resolveCategoryId(payload: MaterialMutationInput, existingCategor
     return explicitCategoryId;
   }
 
+  if (isMaterialCategory(payload.category)) {
+    const byType = await prisma.material_categories.findFirst({
+      where: {
+        type: payload.category,
+        active: true,
+      },
+      select: { id: true },
+      orderBy: { name: 'asc' },
+    });
+
+    if (byType) {
+      return byType.id;
+    }
+  }
+
   if (existingCategoryId) {
     return existingCategoryId;
   }
 
-  const fallback = await prisma.materialCategory.findFirst({
+  const fallback = await prisma.material_categories.findFirst({
     where: {
-      active: true,
+      OR: [{ type: 'other' }, { active: true }],
     },
     select: { id: true },
     orderBy: { name: 'asc' },
@@ -408,11 +357,10 @@ async function buildMaterialMutationData(
         wastePercent: true;
         active: true;
         unit: true;
-        consumptionType: true;
         stock: true;
         minStock: true;
         notes: true;
-        compatibleMethods: { select: { id: true } };
+        print_methods: { select: { id: true } };
       };
     }>;
     replaceRelations?: boolean;
@@ -426,37 +374,12 @@ async function buildMaterialMutationData(
   }
 
   const categoryIdValue = await resolveCategoryId(payload, existing?.categoryId);
-  const category = await prisma.materialCategory.findUnique({
-    where: { id: categoryIdValue },
-    select: {
-      id: true,
-      requiresPricePerSqm: true,
-      requiresPricePerMeter: true,
-      requiresPricePerUnit: true,
-    },
-  });
-  if (!category) {
+  const categoryExists = await prisma.material_categories.findUnique({ where: { id: categoryIdValue }, select: { id: true } });
+  if (!categoryExists) {
     throw new MaterialApiValidationError('Categoria selectată nu există');
   }
 
-  const consumptionTypeValue = payload.consumptionType ?? existing?.consumptionType ?? MaterialConsumptionType.AREA_BASED;
-  if (consumptionTypeValue !== MaterialConsumptionType.AREA_BASED && consumptionTypeValue !== MaterialConsumptionType.DIRECT) {
-    throw new MaterialApiValidationError('Tipul de consum este invalid');
-  }
-
   const unitValue = normalizeUnit(payload.unit, existing?.unit ?? MaterialUnit.pcs);
-  const allowedUnits = resolveAllowedUnitsByCategory(
-    {
-      requiresPricePerSqm: category.requiresPricePerSqm,
-      requiresPricePerMeter: category.requiresPricePerMeter,
-      requiresPricePerUnit: category.requiresPricePerUnit,
-    },
-    consumptionTypeValue
-  );
-
-  if (!allowedUnits.includes(unitValue)) {
-    throw new MaterialApiValidationError(`Unitatea ${unitValue} nu este permisă pentru categoria selectată`);
-  }
 
   const stockValue = normalizeNonNegativeNumber(payload.stock, 'Stock', {
     defaultValue: existing?.stock ?? 0,
@@ -524,7 +447,7 @@ async function buildMaterialMutationData(
 
   const incomingMethodIds = payload.printMethodIds ?? payload.compatibleMethods;
   const printMethodIds = incomingMethodIds === undefined
-    ? existing?.compatibleMethods.map((method) => method.id) ?? []
+    ? existing?.print_methods.map((method) => method.id) ?? []
     : normalizeIdArray(incomingMethodIds, 'printMethodIds');
 
   await validatePrintMethods(printMethodIds);
@@ -543,53 +466,24 @@ async function buildMaterialMutationData(
       : existing?.notes ?? null;
   const active = toBoolean(payload.active, existing?.active ?? true);
 
-  // Packaging fields
-  const packagingLabel = typeof payload.packagingLabel === 'string'
-    ? payload.packagingLabel.trim() || null
-    : existing?.packagingLabel ?? null;
-  const finishType = typeof payload.finishType === 'string'
-    ? payload.finishType.trim() || null
-    : payload.finishType === null
-      ? null
-      : (existing?.finishType ?? null);
-
-  // properties JSON — merge with existing if partial update
-  let properties: Record<string, string | number | boolean> | null = null;
-  if (payload.properties !== undefined) {
-    if (payload.properties === null) {
-      properties = null;
-    } else if (typeof payload.properties === 'object' && !Array.isArray(payload.properties)) {
-      const existingProps = (existing?.properties as Record<string, string | number | boolean> | null) ?? {};
-      properties = { ...existingProps, ...(payload.properties as Record<string, string | number | boolean>) };
-    }
-  } else {
-    properties = (existing?.properties as Record<string, string | number | boolean> | null) ?? null;
-  }
-  const packagingQty = toOptionalNumber(payload.packagingQty) ?? (existing?.packagingQty ?? null);
-  const rawPackagingPrice = payload.packagingPrice !== undefined
-    ? toOptionalNumber(payload.packagingPrice)
-    : existing?.packagingPrice ? Number(existing.packagingPrice) : null;
-  const packagingPrice = (rawPackagingPrice !== undefined ? rawPackagingPrice : null) as number | null;
-
   const relationEnvelope = options.replaceRelations
     ? {
-        compatibleMethods: {
+        print_methods: {
           set: [],
           connect: printMethodIds.map((id) => ({ id })),
         },
       }
     : {
-        compatibleMethods: {
+        print_methods: {
           connect: printMethodIds.map((id) => ({ id })),
         },
       };
 
   return {
     name: nameValue.trim(),
-    category: {
+    material_categories: {
       connect: { id: categoryIdValue },
     },
-    consumptionType: consumptionTypeValue,
     thickness: thicknessValue,
     density: densityValue,
     purchasePrice: purchasePriceValue !== null ? new Prisma.Decimal(purchasePriceValue) : null,
@@ -603,11 +497,6 @@ async function buildMaterialMutationData(
     stock: stockValue,
     minStock: minStockValue,
     notes,
-    finishType,
-    packagingLabel,
-    packagingQty: packagingQty !== null && packagingQty !== undefined ? packagingQty : null,
-    packagingPrice: packagingPrice !== null ? new Prisma.Decimal(packagingPrice) : null,
-    properties: properties ?? undefined,
     ...relationEnvelope,
   };
 }
@@ -640,11 +529,10 @@ export async function updateMaterial(id: string, payload: MaterialMutationInput)
       wastePercent: true,
       active: true,
       unit: true,
-      consumptionType: true,
       stock: true,
       minStock: true,
       notes: true,
-      compatibleMethods: {
+      print_methods: {
         select: {
           id: true,
         },

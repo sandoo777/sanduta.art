@@ -5,62 +5,6 @@ import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 
-type PrintMethodConsumableDto = {
-  id: string;
-  costPerSqm: Prisma.Decimal | null;
-  costPerJob: Prisma.Decimal | null;
-  createdAt: Date;
-  updatedAt: Date;
-  material: {
-    id: string;
-    name: string;
-    unit: string;
-    stock: number;
-    pricePerUnit: Prisma.Decimal | null;
-  };
-};
-
-type PrintMethodLoadedRelations = {
-  compatibleMaterials: Array<{
-    id: string;
-    name: string;
-    unit: string;
-    active: boolean;
-  }>;
-  compatibleEquipment: Array<{
-    id: string;
-    name: string;
-    type: string;
-    active: boolean;
-  }>;
-  consumables: PrintMethodConsumableDto[];
-  _count: {
-    compatibleMaterials: number;
-    compatibleEquipment: number;
-    consumables: number;
-    productionJobs: number;
-    productPrintMethods?: number;
-  };
-};
-
-function castLoadedRelations<T>(printMethod: T): T & PrintMethodLoadedRelations {
-  return printMethod as T & PrintMethodLoadedRelations;
-}
-
-function serializeConsumables(consumables: PrintMethodConsumableDto[]) {
-  return consumables.map((consumable) => ({
-    ...consumable,
-    costPerSqm: consumable.costPerSqm ? Number(consumable.costPerSqm) : null,
-    costPerJob: consumable.costPerJob ? Number(consumable.costPerJob) : null,
-    createdAt: consumable.createdAt.toISOString(),
-    updatedAt: consumable.updatedAt.toISOString(),
-    material: {
-      ...consumable.material,
-      pricePerUnit: consumable.material.pricePerUnit ? Number(consumable.material.pricePerUnit) : null,
-    },
-  }));
-}
-
 // Validation schema for updating print method
 const updatePrintMethodSchema = z.object({
   name: z.string().min(1).trim().optional(),
@@ -141,7 +85,7 @@ export async function GET(
             productPrintMethods: true,
           },
         },
-      } as never,
+      },
     });
 
     if (!printMethod) {
@@ -151,20 +95,28 @@ export async function GET(
       );
     }
 
-    const loadedPrintMethod = castLoadedRelations(printMethod);
-
     // Format response
     const formatted = {
-      ...loadedPrintMethod,
-      baseCost: loadedPrintMethod.baseCost ? Number(loadedPrintMethod.baseCost) : null,
-      costPerM2: loadedPrintMethod.costPerM2 ? Number(loadedPrintMethod.costPerM2) : null,
-      costPerSheet: loadedPrintMethod.costPerSheet ? Number(loadedPrintMethod.costPerSheet) : null,
-      costFurnizorPerM2: loadedPrintMethod.costFurnizorPerM2 ? Number(loadedPrintMethod.costFurnizorPerM2) : null,
-      costFurnizorPerUnit: loadedPrintMethod.costFurnizorPerUnit ? Number(loadedPrintMethod.costFurnizorPerUnit) : null,
-      markup: loadedPrintMethod.markup ? Number(loadedPrintMethod.markup) : null,
-      createdAt: loadedPrintMethod.createdAt.toISOString(),
-      updatedAt: loadedPrintMethod.updatedAt.toISOString(),
-      consumables: serializeConsumables(loadedPrintMethod.consumables ?? []),
+      ...printMethod,
+      baseCost: printMethod.baseCost ? Number(printMethod.baseCost) : null,
+      costPerM2: printMethod.costPerM2 ? Number(printMethod.costPerM2) : null,
+      costPerSheet: printMethod.costPerSheet ? Number(printMethod.costPerSheet) : null,
+      costFurnizorPerM2: printMethod.costFurnizorPerM2 ? Number(printMethod.costFurnizorPerM2) : null,
+      costFurnizorPerUnit: printMethod.costFurnizorPerUnit ? Number(printMethod.costFurnizorPerUnit) : null,
+      markup: printMethod.markup ? Number(printMethod.markup) : null,
+      createdAt: printMethod.createdAt.toISOString(),
+      updatedAt: printMethod.updatedAt.toISOString(),
+      consumables: printMethod.consumables.map((c) => ({
+        ...c,
+        costPerSqm: c.costPerSqm ? Number(c.costPerSqm) : null,
+        costPerJob: c.costPerJob ? Number(c.costPerJob) : null,
+        createdAt: c.createdAt.toISOString(),
+        updatedAt: c.updatedAt.toISOString(),
+        material: {
+          ...c.material,
+          pricePerUnit: c.material.pricePerUnit ? Number(c.material.pricePerUnit) : null,
+        },
+      })),
     };
 
     return NextResponse.json(formatted);
@@ -190,7 +142,7 @@ export async function PUT(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.issues },
+        { error: 'Validation failed', details: validationResult.error.errors },
         { status: 400 }
       );
     }
@@ -262,7 +214,7 @@ export async function PUT(
     }
 
     // Build update data
-    const updateData: Record<string, unknown> = {};
+    const updateData: Prisma.PrintMethodUpdateInput = {};
     
     if (data.name !== undefined) updateData.name = data.name;
     if (data.type !== undefined) updateData.type = data.type;
@@ -283,11 +235,11 @@ export async function PUT(
 
     // Atomic update of many-to-many relations
     if (data.compatibleMaterialIds !== undefined) {
-      updateData.materialIds = data.compatibleMaterialIds;
       updateData.compatibleMaterials = {
         set: [], // Clear existing
         connect: data.compatibleMaterialIds.map((id) => ({ id })), // Set new
       };
+      updateData.materialIds = data.compatibleMaterialIds; // Update legacy field
     }
 
     if (data.compatibleEquipmentIds !== undefined) {
@@ -298,13 +250,9 @@ export async function PUT(
     }
 
     // Update in transaction
-    await prisma.printMethod.update({
+    const printMethod = await prisma.printMethod.update({
       where: { id },
-      data: updateData as Prisma.PrintMethodUpdateInput,
-    });
-
-    const printMethod = await prisma.printMethod.findUnique({
-      where: { id },
+      data: updateData,
       include: {
         compatibleMaterials: {
           select: {
@@ -336,35 +284,36 @@ export async function PUT(
             },
           },
         },
-      } as never,
+      },
     });
-
-    if (!printMethod) {
-      return NextResponse.json(
-        { error: 'Print method not found after update' },
-        { status: 404 }
-      );
-    }
 
     logger.info('API:PrintMethods', 'Print method updated', {
       id: printMethod.id,
       name: printMethod.name,
     });
 
-    const loadedPrintMethod = castLoadedRelations(printMethod);
-
     // Format response
     const formatted = {
-      ...loadedPrintMethod,
-      baseCost: loadedPrintMethod.baseCost ? Number(loadedPrintMethod.baseCost) : null,
-      costPerM2: loadedPrintMethod.costPerM2 ? Number(loadedPrintMethod.costPerM2) : null,
-      costPerSheet: loadedPrintMethod.costPerSheet ? Number(loadedPrintMethod.costPerSheet) : null,
-      costFurnizorPerM2: loadedPrintMethod.costFurnizorPerM2 ? Number(loadedPrintMethod.costFurnizorPerM2) : null,
-      costFurnizorPerUnit: loadedPrintMethod.costFurnizorPerUnit ? Number(loadedPrintMethod.costFurnizorPerUnit) : null,
-      markup: loadedPrintMethod.markup ? Number(loadedPrintMethod.markup) : null,
-      createdAt: loadedPrintMethod.createdAt.toISOString(),
-      updatedAt: loadedPrintMethod.updatedAt.toISOString(),
-      consumables: serializeConsumables(loadedPrintMethod.consumables ?? []),
+      ...printMethod,
+      baseCost: printMethod.baseCost ? Number(printMethod.baseCost) : null,
+      costPerM2: printMethod.costPerM2 ? Number(printMethod.costPerM2) : null,
+      costPerSheet: printMethod.costPerSheet ? Number(printMethod.costPerSheet) : null,
+      costFurnizorPerM2: printMethod.costFurnizorPerM2 ? Number(printMethod.costFurnizorPerM2) : null,
+      costFurnizorPerUnit: printMethod.costFurnizorPerUnit ? Number(printMethod.costFurnizorPerUnit) : null,
+      markup: printMethod.markup ? Number(printMethod.markup) : null,
+      createdAt: printMethod.createdAt.toISOString(),
+      updatedAt: printMethod.updatedAt.toISOString(),
+      consumables: printMethod.consumables.map((c) => ({
+        ...c,
+        costPerSqm: c.costPerSqm ? Number(c.costPerSqm) : null,
+        costPerJob: c.costPerJob ? Number(c.costPerJob) : null,
+        createdAt: c.createdAt.toISOString(),
+        updatedAt: c.updatedAt.toISOString(),
+        material: {
+          ...c.material,
+          pricePerUnit: c.material.pricePerUnit ? Number(c.material.pricePerUnit) : null,
+        },
+      })),
     };
 
     return NextResponse.json(formatted);

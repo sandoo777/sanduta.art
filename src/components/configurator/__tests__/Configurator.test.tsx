@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { Configurator } from '../Configurator';
 import * as useConfiguratorModule from '@/modules/configurator/useConfigurator';
@@ -12,6 +13,18 @@ import * as useConfiguratorModule from '@/modules/configurator/useConfigurator';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
   useSearchParams: () => null,
+}));
+
+vi.mock('@/context/CartContext', () => ({
+  useCart: () => ({
+    cart: [],
+    total: 0,
+    addToCart: vi.fn().mockResolvedValue({ success: true }),
+    removeFromCart: vi.fn().mockResolvedValue(undefined),
+    clearCart: vi.fn().mockResolvedValue(undefined),
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }),
+  CartProvider: ({ children }: any) => children,
 }));
 
 // Mock useConfigurator hook
@@ -197,7 +210,7 @@ describe('Configurator Integration Tests', () => {
     expect(screen.getAllByText(/Cantitate/i).length).toBeGreaterThan(0);
   });
 
-  it('TC4: should handle material selection', () => {
+  it('TC4: should handle material selection', async () => {
     const setMaterial = vi.fn();
     mockUseConfigurator.mockReturnValue({
       loading: false,
@@ -222,7 +235,8 @@ describe('Configurator Integration Tests', () => {
     render(<Configurator productId="test-product-1" />);
 
     const materialCard = screen.getByText('Test Material').closest('button');
-    fireEvent.click(materialCard!);
+    const user = userEvent.setup();
+    await user.click(materialCard!);
 
     expect(setMaterial).toHaveBeenCalledWith('material-1');
   });

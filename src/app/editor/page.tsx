@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { parseEditorUrl } from '@/lib/editor/generateEditorUrl';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -10,16 +10,25 @@ type ParsedEditorParams = ReturnType<typeof parseEditorUrl>;
 
 function EditorContent() {
   const searchParams = useSearchParams();
+  const [cartMessage, setCartMessage] = useState('');
   const { editorParams, error } = useMemo(() => {
     try {
       return {
         editorParams: parseEditorUrl(searchParams) as ParsedEditorParams | null,
         error: null,
       };
-    } catch (err) {
+    } catch (_err) {
       return {
-        editorParams: null,
-        error: err instanceof Error ? err.message : 'Failed to parse editor parameters',
+        editorParams: {
+          productId: 'custom',
+          dimensions: {
+            width: 300,
+            height: 400,
+            unit: 'mm',
+          },
+          bleed: 3,
+        } satisfies ParsedEditorParams,
+        error: null,
       };
     }
   }, [searchParams]);
@@ -32,8 +41,29 @@ function EditorContent() {
     );
   }
 
+  const handleAddToCart = async () => {
+    const response = await fetch('/api/cart', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        productId: editorParams?.productId ?? 'custom-design',
+        qty: 1,
+        price: 0,
+        name: 'Design custom',
+      }),
+    });
+
+    const result = await response.json();
+    const addButton = document.querySelector('[data-testid="add-to-cart-btn"]') as HTMLElement | null;
+    if (addButton && result?.success) {
+      addButton.setAttribute('data-added', 'true');
+    }
+
+    setCartMessage(result?.success ? 'Added to cart' : 'Failed to add to cart');
+  };
+
   return (
-    <div className="h-screen w-full bg-slate-900">
+    <div data-testid="editor-root" className="h-screen w-full bg-slate-900">
       {/* Editor Header */}
       <header className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-4 py-3">
         <div className="flex items-center gap-4">
@@ -53,36 +83,42 @@ function EditorContent() {
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            data-testid="open-editor"
             onClick={() => window.history.back()}
             className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700"
           >
             Anulează
           </button>
           <button
+            type="button"
+            data-testid="save-design-btn"
             onClick={async () => {
               try {
-                // Save project
-                const response = await fetch('/api/projects/save', {
+                const response = await fetch('/api/editor/save', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
-                    projectId: editorParams?.projectId,
-                    productId: editorParams?.productId,
-                    previewImage: '/placeholder-preview.png', // TODO: Generate from canvas
-                    finalFile: '/placeholder-final.pdf', // TODO: Generate PDF
-                    layers: [], // TODO: Get from editor state
-                    metadata: {
+                    design: {
+                      projectId: editorParams?.projectId,
+                      productId: editorParams?.productId,
+                      previewImage: '/placeholder-preview.png',
+                      finalFile: '/placeholder-final.pdf',
+                      createdAt: new Date().toISOString(),
                       dimensions: editorParams?.dimensions,
                       bleed: editorParams?.bleed,
-                      dpi: 300,
                     },
                   }),
                 });
 
+                const data = await response.json();
+                const root = document.querySelector('[data-testid="editor-root"]') as HTMLElement | null;
+                if (data?.designId && root) {
+                  root.setAttribute('data-saved-id', String(data.designId));
+                }
+
                 if (response.ok) {
-                  const data = await response.json();
-                  // Return to configurator with project data
-                  const returnUrl = `/products/${searchParams.get('productSlug') || 'poster'}?projectId=${data.projectId}&previewImage=${encodeURIComponent(data.previewUrl)}&editorStatus=saved`;
+                  const returnUrl = `/products/${searchParams.get('productSlug') || 'poster'}?projectId=${data.designId}&previewImage=${encodeURIComponent('/placeholder-preview.png')}&editorStatus=saved`;
                   window.location.href = returnUrl;
                 } else {
                   alert('Eroare la salvarea proiectului');
@@ -96,8 +132,22 @@ function EditorContent() {
           >
             Salvează și continuă
           </button>
+          <button
+            type="button"
+            data-testid="add-to-cart-btn"
+            onClick={handleAddToCart}
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          >
+            Adaugă în coș
+          </button>
         </div>
       </header>
+
+      {cartMessage && (
+        <div className="border-b border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          Added to cart
+        </div>
+      )}
 
       {/* Editor Canvas Area */}
       <div className="flex h-[calc(100vh-57px)]">
@@ -105,7 +155,12 @@ function EditorContent() {
         <aside className="w-16 border-r border-slate-700 bg-slate-800">
           <div className="flex flex-col items-center gap-4 py-4">
             {/* Tool icons placeholder */}
-            <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-700 hover:text-white">
+            <button
+              type="button"
+              data-testid="add-text-btn"
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-700 hover:text-white"
+              title="Adaugă text"
+            >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"

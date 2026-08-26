@@ -29,11 +29,11 @@ export default async function AccountOrdersPage() {
     const orders = await fetchServerData<Awaited<ReturnType<typeof prisma.order.findMany>>>(
       () => prisma.order.findMany({
         where: {
-          customerId: userId,
+          userId,
         },
         select: {
           id: true,
-          customerId: true,
+          userId: true,
           status: true,
           paymentStatus: true,
           totalPrice: true,
@@ -74,7 +74,7 @@ export default async function AccountOrdersPage() {
     // Transformare date pentru Client Component (serializare pentru React)
     const ordersData = orders.map((order) => ({
       id: order.id,
-      customerId: order.customerId,
+      userId: order.userId,
       status: order.status,
       paymentStatus: order.paymentStatus,
       totalPrice: order.totalPrice.toString(),

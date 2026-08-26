@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
-import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 // Validation schema for updating consumable
@@ -58,7 +57,7 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: Prisma.PrintMethodConsumableUpdateInput = {};
+    const updateData: any = {};
     
     if (data.costPerSqm !== undefined) updateData.costPerSqm = data.costPerSqm;
     if (data.costPerJob !== undefined) updateData.costPerJob = data.costPerJob;

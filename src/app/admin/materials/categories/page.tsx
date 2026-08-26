@@ -246,7 +246,7 @@ export default function MaterialCategoriesPage() {
             {/* Content */}
             <div className="p-6 space-y-4">
               <p className="text-gray-700">
-                Sigur doriți să ștergeți categoria <span className="font-semibold">&quot;{deleteConfirmation.categoryName}&quot;</span>?
+                Sigur doriți să ștergeți categoria <span className="font-semibold">"{deleteConfirmation.categoryName}"</span>?
               </p>
 
               {/* Warning badges */}

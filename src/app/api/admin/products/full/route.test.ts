@@ -22,6 +22,12 @@ const prismaMock = vi.hoisted(() => ({
   category: {
     findUnique: vi.fn(),
   },
+  printMethod: {
+    findUnique: vi.fn(),
+  },
+  material: {
+    findUnique: vi.fn(),
+  },
   productImage: {
     createMany: vi.fn(),
     deleteMany: vi.fn(),
@@ -53,6 +59,8 @@ const prismaFunctionMocks = [
   prismaMock.product.create,
   prismaMock.product.update,
   prismaMock.category.findUnique,
+  prismaMock.printMethod.findUnique,
+  prismaMock.material.findUnique,
   prismaMock.productImage.createMany,
   prismaMock.productImage.deleteMany,
   prismaMock.productMaterial.createMany,
@@ -133,6 +141,12 @@ describe('Full product API flow', () => {
       type: 'CONFIGURABLE',
       categoryId: 'cat-1',
       active: true,
+      saleUnit: 'UNIT',
+      minOrderQty: 1,
+      isOutsourced: false,
+      printMethodId: 'print-1',
+      materialId: 'mat-1',
+      pricePerUnit: 35,
       options: [
         {
           name: 'Culoare',
@@ -182,6 +196,16 @@ describe('Full product API flow', () => {
       );
 
     prismaMock.category.findUnique.mockResolvedValueOnce({ id: payload.categoryId });
+    prismaMock.printMethod.findUnique.mockResolvedValueOnce({
+      id: 'print-1',
+      isOutsourced: false,
+      materialIds: ['mat-1'],
+      active: true,
+      costFurnizorPerM2: null,
+      costFurnizorPerUnit: null,
+      markup: null,
+    });
+    prismaMock.material.findUnique.mockResolvedValueOnce({ id: 'mat-1', active: true });
     prismaMock.product.create.mockResolvedValueOnce({ id: 'prod-1' });
 
     const response = await createFullProduct(mockJsonRequest(payload));
@@ -203,7 +227,7 @@ describe('Full product API flow', () => {
           name: payload.name.trim(),
           slug: payload.slug,
           price: payload.pricing.basePrice,
-          pricing: payload.pricing,
+          pricing: expect.objectContaining(payload.pricing),
         }),
       })
     );
@@ -231,7 +255,7 @@ describe('Full product API flow', () => {
     };
 
     prismaMock.product.findUnique
-      .mockResolvedValueOnce({ id: 'prod-1', slug: 'current-slug' })
+      .mockResolvedValueOnce({ id: 'prod-1', slug: 'current-slug', saleUnit: 'UNIT', pricePerUnit: 99, pricePerM2: null, isOutsourced: false, materialId: 'mat-1', printMethodId: null, pricing: null })
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(
         buildPersistedProduct({
@@ -254,6 +278,7 @@ describe('Full product API flow', () => {
       );
 
     prismaMock.category.findUnique.mockResolvedValueOnce({ id: 'cat-2' });
+    prismaMock.material.findUnique.mockResolvedValueOnce({ id: 'mat-1', active: true });
     prismaMock.product.update.mockResolvedValueOnce({ id: 'prod-1' });
 
     const response = await updateFullProduct(
@@ -275,7 +300,7 @@ describe('Full product API flow', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           slug: payload.slug,
-          pricing: payload.pricing,
+          pricing: expect.objectContaining({ basePrice: payload.pricing?.basePrice }),
           price: payload.pricing?.basePrice,
         }),
       })

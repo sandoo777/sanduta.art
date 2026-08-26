@@ -3,137 +3,124 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/editor/projects/[id] - Load project
+export const dynamic = 'force-dynamic';
+
+/**
+ * GET /api/editor/projects/[id]
+ * Returns full project data for the authenticated owner.
+ */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const project = await prisma.editorProject.findUnique({
-      where: {
-        id: id,
-        userId: session.user.id,
-      },
+
+    const { id } = await params;
+
+    const project = await prisma.editorProject.findFirst({
+      where: { id, userId: session.user.id },
     });
-    
+
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
-    
-    // Parse JSON data field
-    const parsedProject = {
+
+    return NextResponse.json({
       ...project,
-      data: project.data ? JSON.parse(project.data as string) : { elements: [], canvas: { width: 800, height: 600 }, versions: [] },
-    };
-    
-    return NextResponse.json(parsedProject);
+      data: (() => {
+        try { return JSON.parse(project.data as string); } catch { return project.data; }
+      })(),
+    });
   } catch (error) {
-    console.error('Error loading project:', error);
-    return NextResponse.json(
-      { error: 'Failed to load project' },
-      { status: 500 }
-    );
+    console.error('GET editor project error:', error);
+    return NextResponse.json({ error: 'Failed to fetch project' }, { status: 500 });
   }
 }
 
-// PUT /api/editor/projects/[id] - Save project
+/**
+ * PUT /api/editor/projects/[id]
+ * Update project name, data, thumbnail, status.
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const body = await request.json();
-    const { name, data, thumbnail } = body;
-    
-    // Verify project ownership
-    const existingProject = await prisma.editorProject.findUnique({
-      where: {
-        id: id,
-        userId: session.user.id,
-      },
+
+    const { id } = await params;
+
+    const existing = await prisma.editorProject.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
     });
-    
-    if (!existingProject) {
+
+    if (!existing) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
-    
-    // Update project
-    const updatedProject = await prisma.editorProject.update({
-      where: { id: id },
+
+    const body = await request.json();
+    const { name, data, thumbnail, status } = body ?? {};
+
+    const updated = await prisma.editorProject.update({
+      where: { id },
       data: {
-        name,
-        data: JSON.stringify(data),
-        thumbnail,
-        updatedAt: new Date(),
+        ...(name !== undefined ? { name } : {}),
+        ...(data !== undefined ? { data: typeof data === 'string' ? data : JSON.stringify(data) } : {}),
+        ...(thumbnail !== undefined ? { thumbnail } : {}),
+        ...(status !== undefined ? { status } : {}),
       },
     });
-    
-    // Parse JSON data field for response
-    const parsedProject = {
-      ...updatedProject,
-      data: JSON.parse(updatedProject.data as string),
-    };
-    
-    return NextResponse.json(parsedProject);
+
+    return NextResponse.json({
+      ...updated,
+      data: (() => {
+        try { return JSON.parse(updated.data as string); } catch { return updated.data; }
+      })(),
+    });
   } catch (error) {
-    console.error('Error saving project:', error);
-    return NextResponse.json(
-      { error: 'Failed to save project' },
-      { status: 500 }
-    );
+    console.error('PUT editor project error:', error);
+    return NextResponse.json({ error: 'Failed to update project' }, { status: 500 });
   }
 }
 
-// DELETE /api/editor/projects/[id] - Delete project
+/**
+ * DELETE /api/editor/projects/[id]
+ * Hard-deletes a project owned by the user.
+ */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    // Verify project ownership
-    const existingProject = await prisma.editorProject.findUnique({
-      where: {
-        id: id,
-        userId: session.user.id,
-      },
+
+    const { id } = await params;
+
+    const existing = await prisma.editorProject.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
     });
-    
-    if (!existingProject) {
+
+    if (!existing) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
-    
-    // Delete project
-    await prisma.editorProject.delete({
-      where: { id: id },
-    });
-    
+
+    await prisma.editorProject.delete({ where: { id } });
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting project:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete project' },
-      { status: 500 }
-    );
+    console.error('DELETE editor project error:', error);
+    return NextResponse.json({ error: 'Failed to delete project' }, { status: 500 });
   }
 }

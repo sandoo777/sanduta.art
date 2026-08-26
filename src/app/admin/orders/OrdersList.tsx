@@ -1,74 +1,49 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Table } from '@/components/ui/Table';
 import type { Column } from '@/components/ui/Table.types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useOrders } from '@/modules/orders/useOrders';
-import { toast } from 'sonner';
-import type { OrderStatus } from '@prisma/client';
-import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const PAGE_SIZE = 20;
-
-const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'PENDING', label: 'În așteptare' },
-  { value: 'IN_PREPRODUCTION', label: 'În preproducție' },
-  { value: 'IN_DESIGN', label: 'În design' },
-  { value: 'IN_PRODUCTION', label: 'În producție' },
-  { value: 'IN_PRINTING', label: 'În tipar' },
-  { value: 'QUALITY_CHECK', label: 'Control calitate' },
-  { value: 'READY_FOR_DELIVERY', label: 'Gata de livrare' },
-  { value: 'DELIVERED', label: 'Livrat' },
-  { value: 'CANCELLED', label: 'Anulat' },
-];
-
-interface OrderStats {
-  total: number;
-  byStatus: Record<string, number>;
-  byPayment: Record<string, number>;
-}
-
-interface Pagination {
-  page: number;
-  limit: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
+import { Search, RefreshCw } from 'lucide-react';
 
 // Helper functions pentru status mapping
-const getStatusVariant = (status: string): 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
+const getStatusVariant = (status: string) => {
   const variants: Record<string, 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
     PENDING: 'warning',
-    IN_PREPRODUCTION: 'info',
-    IN_DESIGN: 'info',
-    IN_PRODUCTION: 'primary',
-    IN_PRINTING: 'primary',
-    QUALITY_CHECK: 'info',
-    READY_FOR_DELIVERY: 'success',
+    CONFIRMED: 'info',
+    IN_PROGRESS: 'primary',
+    READY: 'success',
+    SHIPPED: 'primary',
     DELIVERED: 'success',
     CANCELLED: 'danger',
   };
-  return variants[status] ?? 'default';
+  return variants[status] || 'default';
 };
 
 const getStatusLabel = (status: string) => {
-  return STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
+  const labels: Record<string, string> = {
+    PENDING: 'În așteptare',
+    CONFIRMED: 'Confirmat',
+    IN_PROGRESS: 'În progres',
+    READY: 'Gata',
+    SHIPPED: 'Livrat',
+    DELIVERED: 'Finalizat',
+    CANCELLED: 'Anulat',
+  };
+  return labels[status] || status;
 };
 
-const getPaymentVariant = (status: string): 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' => {
+const getPaymentVariant = (status: string) => {
   const variants: Record<string, 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
     PENDING: 'warning',
     PAID: 'success',
     FAILED: 'danger',
     REFUNDED: 'info',
   };
-  return variants[status] ?? 'default';
+  return variants[status] || 'default';
 };
 
 const getPaymentLabel = (status: string) => {
@@ -78,7 +53,7 @@ const getPaymentLabel = (status: string) => {
     FAILED: 'Eșuat',
     REFUNDED: 'Rambursat',
   };
-  return labels[status] ?? status;
+  return labels[status] || status;
 };
 
 /** Computes per-unit material cost from a MaterialUsage row */
@@ -180,114 +155,89 @@ function aggregateOutsource(jobs: OrderListItem['productionJobs']) {
 
 export default function OrdersList() {
   const router = useRouter();
-  const { updateStatus } = useOrders();
-
   const [orders, setOrders] = useState<OrderListItem[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    limit: PAGE_SIZE,
-    totalCount: 0,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
-  const [stats, setStats] = useState<OrderStats | null>(null);
+  const [filteredOrders, setFilteredOrders] = useState<OrderListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [loading, setLoading] = useState(false);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
-  // Debounce search
-  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filterOrders = useCallback(() => {
+    let filtered = [...orders];
 
-  const fetchOrders = useCallback(async (page = 1, search = searchTerm, status = statusFilter) => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
-      if (search) params.set('search', search);
-      if (status !== 'all') params.set('status', status);
-
-      const res = await fetch(`/api/admin/orders?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const data = await res.json();
-
-      const transformed: OrderListItem[] = (data.orders ?? []).map((order: RawApiOrder) => ({
-        id: order.id,
-        orderNumber: order.orderNumber,
-        total: order.totalPrice ?? order.total ?? 0,
-        currency: order.currency ?? 'MDL',
-        customerName: order.customer?.name ?? order.user?.name ?? 'Necunoscut',
-        customerEmail: order.customer?.email ?? order.user?.email ?? '-',
-        status: order.status,
-        paymentStatus: order.paymentStatus ?? 'PENDING',
-        createdAt: order.createdAt,
-        user: order.user,
-        orderItems: order.orderItems ?? [],
-        productionJobs: order.productionJobs ?? [],
-      }));
-
-      setOrders(transformed);
-      if (data.pagination) setPagination(data.pagination);
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-      toast.error('Eroare la încărcarea comenzilor');
-    } finally {
-      setLoading(false);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toLowerCase().includes(term) ||
+          order.orderNumber?.toLowerCase().includes(term) ||
+          order.customerName.toLowerCase().includes(term) ||
+          order.customerEmail.toLowerCase().includes(term)
+      );
     }
-  }, [searchTerm, statusFilter]);
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/orders/stats');
-      if (res.ok) setStats(await res.json());
-    } catch {
-      // stats are non-critical
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((order) => order.status === statusFilter);
     }
+
+    if (paymentFilter !== 'all') {
+      filtered = filtered.filter((order) => order.paymentStatus === paymentFilter);
+    }
+
+    setFilteredOrders(filtered);
+  }, [orders, searchTerm, statusFilter, paymentFilter]);
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
   useEffect(() => {
-    fetchOrders(1);
-    fetchStats();
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+    filterOrders();
+  }, [filterOrders]);
 
-  // Re-fetch when status filter changes
-  const handleStatusFilter = (value: string) => {
-    setStatusFilter(value);
-    fetchOrders(1, searchTerm, value);
-  };
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/admin/orders', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-  // Debounced search
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    if (searchRef.current) clearTimeout(searchRef.current);
-    searchRef.current = setTimeout(() => fetchOrders(1, value, statusFilter), 400);
-  };
+      if (!response.ok) {
+        throw new Error(`Failed to fetch orders: ${response.status}`);
+      }
 
-  const handlePageChange = (newPage: number) => {
-    fetchOrders(newPage);
-  };
+      const data = await response.json();
+      
+      // Transform data to match OrderListItem interface
+      const transformedOrders: OrderListItem[] = data.orders.map((order: RawApiOrder) => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        total: order.totalPrice || order.total || 0,
+        currency: order.currency || 'MDL',
+        customerName: order.customer?.name || 'Unknown',
+        customerEmail: order.customer?.email || 'Unknown',
+        status: order.status,
+        paymentStatus: order.paymentStatus || 'PENDING',
+        createdAt: order.createdAt,
+        user: order.user,
+        orderItems: order.orderItems || [],
+        productionJobs: order.productionJobs || [],
+      }));
 
-  const handleQuickStatusChange = async (orderId: string, newStatus: string) => {
-    setUpdatingId(orderId);
-    const result = await updateStatus(orderId, newStatus as OrderStatus);
-    if (result.success) {
-      toast.success('Status actualizat');
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-      );
-      fetchStats();
-    } else {
-      toast.error('Eroare: ' + result.error);
+      setOrders(transformedOrders);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+    } finally {
+      setLoading(false);
     }
-    setUpdatingId(null);
   };
-
-  // Client-side payment filter (lightweight, no extra API call)
-  const displayedOrders = paymentFilter === 'all'
-    ? orders
-    : orders.filter((o) => o.paymentStatus === paymentFilter);
 
   const columns: Column<OrderListItem>[] = [
     {
@@ -329,25 +279,9 @@ export default function OrdersList() {
       label: 'Status',
       sortable: true,
       render: (order) => (
-        <div className="flex flex-col gap-1">
-          <Badge variant={getStatusVariant(order.status)}>
-            {getStatusLabel(order.status)}
-          </Badge>
-          <select
-            value={order.status}
-            disabled={updatingId === order.id}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              e.stopPropagation();
-              handleQuickStatusChange(order.id, e.target.value);
-            }}
-            className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
+        <Badge variant={getStatusVariant(order.status)}>
+          {getStatusLabel(order.status)}
+        </Badge>
       ),
     },
     {
@@ -478,7 +412,7 @@ export default function OrdersList() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={(e) => { e.stopPropagation(); router.push(`/admin/orders/${order.id}`); }}
+          onClick={() => router.push(`/admin/orders/${order.id}`)}
         >
           Detalii
         </Button>
@@ -499,37 +433,13 @@ export default function OrdersList() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => { fetchOrders(pagination.page); fetchStats(); }}
+          onClick={fetchOrders}
           disabled={loading}
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Reîncarcă
         </Button>
       </div>
-
-      {/* Stats Bar */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Total comenzi</div>
-          </div>
-          <div className="bg-amber-50 rounded-lg border border-amber-200 p-3 text-center">
-            <div className="text-2xl font-bold text-amber-700">{stats.byStatus['PENDING'] ?? 0}</div>
-            <div className="text-xs text-amber-600 mt-0.5">În așteptare</div>
-          </div>
-          <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 text-center">
-            <div className="text-2xl font-bold text-blue-700">
-              {(stats.byStatus['IN_PRODUCTION'] ?? 0) + (stats.byStatus['IN_PRINTING'] ?? 0)}
-            </div>
-            <div className="text-xs text-blue-600 mt-0.5">În producție</div>
-          </div>
-          <div className="bg-green-50 rounded-lg border border-green-200 p-3 text-center">
-            <div className="text-2xl font-bold text-green-700">{stats.byStatus['DELIVERED'] ?? 0}</div>
-            <div className="text-xs text-green-600 mt-0.5">Livrate</div>
-          </div>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -541,7 +451,7 @@ export default function OrdersList() {
               type="text"
               placeholder="Caută după ID, număr, nume, email..."
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -549,13 +459,17 @@ export default function OrdersList() {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => handleStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
             <option value="all">Toate statusurile</option>
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
+            <option value="PENDING">În așteptare</option>
+            <option value="CONFIRMED">Confirmat</option>
+            <option value="IN_PROGRESS">În progres</option>
+            <option value="READY">Gata</option>
+            <option value="SHIPPED">Livrat</option>
+            <option value="DELIVERED">Finalizat</option>
+            <option value="CANCELLED">Anulat</option>
           </select>
 
           {/* Payment Filter */}
@@ -574,9 +488,7 @@ export default function OrdersList() {
 
         {/* Results count */}
         <div className="mt-3 text-sm text-gray-600">
-          Pagina {pagination.page} din {pagination.totalPages} &nbsp;·&nbsp;
-          {pagination.totalCount} comenzi total
-          {paymentFilter !== 'all' && ` · ${displayedOrders.length} afișate (filtru plată activ)`}
+          Afișate {filteredOrders.length} din {orders.length} comenzi
         </div>
       </div>
 
@@ -584,7 +496,7 @@ export default function OrdersList() {
       <div className="bg-white rounded-lg border border-gray-200">
         <Table
           columns={columns}
-          data={displayedOrders}
+          data={filteredOrders}
           rowKey="id"
           loading={loading}
           loadingMessage="Se încarcă comenzile..."
@@ -595,38 +507,6 @@ export default function OrdersList() {
           onRowClick={(order) => router.push(`/admin/orders/${order.id}`)}
         />
       </div>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3">
-          <span className="text-sm text-gray-600">
-            Comenzile {(pagination.page - 1) * PAGE_SIZE + 1}–{Math.min(pagination.page * PAGE_SIZE, pagination.totalCount)} din {pagination.totalCount}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={!pagination.hasPreviousPage || loading}
-              onClick={() => handlePageChange(pagination.page - 1)}
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
-            </Button>
-            <span className="text-sm font-medium text-gray-700 px-2">
-              {pagination.page} / {pagination.totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={!pagination.hasNextPage || loading}
-              onClick={() => handlePageChange(pagination.page + 1)}
-            >
-              Următor
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

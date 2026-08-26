@@ -547,7 +547,7 @@ describe('Production API compatibility guards', () => {
             create: vi.fn().mockResolvedValue(createdJob),
           },
           machine: {
-            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+            update: vi.fn().mockResolvedValue({ id: 'machine-1', status: 'BUSY' }),
             findUnique: vi.fn().mockResolvedValue(null),
           },
         })

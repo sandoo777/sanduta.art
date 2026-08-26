@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { paynetClient } from '@/lib/paynet';
 import { logger, logApiError, createErrorResponse } from '@/lib/logger';
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     logger.info('API:Paynet', 'Creating payment session');
-    
+
     const body = await request.json();
     const { orderId } = body;
 

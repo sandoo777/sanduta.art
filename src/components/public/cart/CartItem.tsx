@@ -27,7 +27,7 @@ export function CartItem({ item, onRemove, onDuplicate, onQuantityChange }: Cart
   };
 
   return (
-    <Card>
+    <Card data-testid="cart-item">
       <CardContent className="p-4 md:p-6">
         <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {/* Preview Image */}

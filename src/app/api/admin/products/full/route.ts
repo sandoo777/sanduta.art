@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { Prisma } from '@prisma/client';
 import { authOptions } from '@/modules/auth/nextauth';
 import { prisma } from '@/lib/prisma';
 import { serializeFullProduct } from './utils';
@@ -32,10 +31,6 @@ function normalizeImages(images?: string[] | null) {
   return images
     .map((url) => url?.trim())
     .filter((url): url is string => Boolean(url && url.length > 0));
-}
-
-function toInputJsonValue(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
 function validatePayload(data: Partial<CreateFullProductInput>) {
@@ -156,7 +151,7 @@ export async function POST(req: NextRequest) {
       selectedPrintMethod = {
         id: method.id,
         isOutsourced: method.isOutsourced,
-        materialIds: ((method as { materialIds?: string[] | null }).materialIds ?? []) as string[],
+        materialIds: method.materialIds,
         costFurnizorPerM2: method.costFurnizorPerM2 ? Number(method.costFurnizorPerM2) : null,
         costFurnizorPerUnit: method.costFurnizorPerUnit ? Number(method.costFurnizorPerUnit) : null,
         markup: method.markup ? Number(method.markup) : null,
@@ -249,7 +244,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const createData: Record<string, unknown> = {
+    const product = await prisma.product.create({
+      data: {
         name: body.name.trim(),
         slug: body.slug.trim(),
         sku: body.sku?.trim() || null,
@@ -266,9 +262,9 @@ export async function POST(req: NextRequest) {
         printMethodId: body.printMethodId || null,
         materialId: isOutsourced ? null : (body.materialId || null),
         active: body.active,
-        options: toInputJsonValue(body.options && body.options.length > 0 ? body.options : []),
-        dimensions: body.dimensions ? toInputJsonValue(body.dimensions) : Prisma.JsonNull,
-        pricing: toInputJsonValue({
+        options: body.options && body.options.length > 0 ? body.options : [],
+        dimensions: body.dimensions ?? null,
+        pricing: {
           ...body.pricing,
           basePrice: finalPrice,
           ...(isOutsourced
@@ -280,53 +276,63 @@ export async function POST(req: NextRequest) {
                 supplierCost: null,
                 markup: null,
               }),
-        }),
-        production: body.production ? toInputJsonValue(body.production) : Prisma.JsonNull,
+        },
+        production: body.production ?? null,
         metaTitle: body.seo?.metaTitle?.trim() || null,
         metaDescription: body.seo?.metaDescription?.trim() || null,
         ogImage: body.seo?.ogImage?.trim() || null,
-      };
-
-    const product = await prisma.product.create({
-      data: createData as Prisma.ProductUncheckedCreateInput,
+      },
     });
 
     const images = normalizeImages(body.images);
+    const relationOperations: Promise<unknown>[] = [];
 
     if (images.length > 0) {
-      await prisma.productImage.createMany({
-        data: images.map((url) => ({ productId: product.id, url })),
-      });
+      relationOperations.push(
+        prisma.productImage.createMany({
+          data: images.map((url) => ({ productId: product.id, url })),
+        })
+      );
     }
 
     if (body.compatibleMaterials?.length) {
-      await prisma.productMaterial.createMany({
-        data: body.compatibleMaterials.map((materialId) => ({
-          productId: product.id,
-          materialId,
-        })),
-        skipDuplicates: true,
-      });
+      relationOperations.push(
+        prisma.productMaterial.createMany({
+          data: body.compatibleMaterials.map((materialId) => ({
+            productId: product.id,
+            materialId,
+          })),
+          skipDuplicates: true,
+        })
+      );
     }
 
     if (body.compatiblePrintMethods?.length) {
-      await prisma.productPrintMethod.createMany({
-        data: body.compatiblePrintMethods.map((printMethodId) => ({
-          productId: product.id,
-          printMethodId,
-        })),
-        skipDuplicates: true,
-      });
+      relationOperations.push(
+        prisma.productPrintMethod.createMany({
+          data: body.compatiblePrintMethods.map((printMethodId) => ({
+            productId: product.id,
+            printMethodId,
+          })),
+          skipDuplicates: true,
+        })
+      );
     }
 
     if (body.compatibleFinishing?.length) {
-      await prisma.productFinishing.createMany({
-        data: body.compatibleFinishing.map((finishingId) => ({
-          productId: product.id,
-          finishingId,
-        })),
-        skipDuplicates: true,
-      });
+      relationOperations.push(
+        prisma.productFinishing.createMany({
+          data: body.compatibleFinishing.map((finishingId) => ({
+            productId: product.id,
+            finishingId,
+          })),
+          skipDuplicates: true,
+        })
+      );
+    }
+
+    if (relationOperations.length > 0) {
+      await prisma.$transaction(relationOperations);
     }
 
     const fullProduct = await prisma.product.findUnique({

@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
+/test-consumables*
 
 # next.js
 /.next/
@@ -45,3 +48,22 @@ next-env.d.ts
 
 /src/generated/prisma
 .log
+jest_*.txt
+vitest_*.txt
+test-server.log
+test-server.stdout.log
+test-server.stderr.log
+test-flaky-output.txt
+test-full-output.txt
+# scratch/debug files
+__*.txt
+*.bak
+playwright-debug-*.png
+product_test_output.txt
+single_*.txt
+untracked_before_cleanup.txt
+pkg_parse*.txt
+git_status.txt
+branch.txt
+npm_ci_output.txt
+playwright_list.txt

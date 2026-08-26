@@ -1,4 +1,4 @@
-import { Printer, PrinterCheck, Scissors, Layers, MoreHorizontal, Cpu, Zap } from 'lucide-react';
+import { Printer, PrinterCheck, Scissors, Layers, Gauge, MoreHorizontal, Cpu, Zap } from 'lucide-react';
 
 export type MachineStatus = 'AVAILABLE' | 'BUSY' | 'MAINTENANCE';
 export type EquipmentType = 'LARGE_FORMAT' | 'DIGITAL' | 'HOURLY';
@@ -135,9 +135,9 @@ export function calcEstimatedCost(m: Machine, quantity: number): number {
   return machineCost + operatorCost + energyCost;
 }
 
-export type CreateMachineInput = Omit<Machine, 'id' | 'createdAt' | 'updatedAt'>;
+export interface CreateMachineInput extends Omit<Machine, 'id' | 'createdAt' | 'updatedAt'> {}
 
-export type UpdateMachineInput = Partial<Omit<Machine, 'id' | 'createdAt' | 'updatedAt'>>;
+export interface UpdateMachineInput extends Partial<Omit<Machine, 'id' | 'createdAt' | 'updatedAt'>> {}
 
 export const MACHINE_STATUS_CONFIG: Record<MachineStatus, { label: string; color: string; bg: string; dot: string }> = {
   AVAILABLE:   { label: 'Liber',          color: 'text-green-700',  bg: 'bg-green-100',  dot: 'bg-green-500' },

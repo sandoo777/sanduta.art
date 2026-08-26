@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withRole } from "@/lib/auth-middleware";
-import { UserRole, Prisma, MaterialUnit, type ProductionStatus } from "@prisma/client";
+import { UserRole, Prisma } from "@prisma/client";
 import { rateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInput } from "@/lib/validation";
 import { logAuditAction, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { getCompatibleMaterials } from "@/modules/materials/server";
-import {
-  calculateOutsourceFinancials,
-  canTransitionProductionStatus,
-  MachineReservationError,
-  reserveMachineAtomically,
-} from "@/lib/production/job-rules";
 import {
   calculateMaterialUsage,
   MaterialConsumptionError,
@@ -185,19 +179,6 @@ export const PATCH = withRole(
         return NextResponse.json({ error: "Production job not found" }, { status: 404 });
       }
 
-      if (
-        status !== undefined &&
-        status !== existingJob.status &&
-        !canTransitionProductionStatus(existingJob.status as ProductionStatus, status)
-      ) {
-        return NextResponse.json(
-          {
-            error: `Invalid status transition: ${existingJob.status} -> ${status}`,
-          },
-          { status: 400 }
-        );
-      }
-
     // If assignedToId is being changed, validate user
     if (assignedToId !== undefined) {
       if (assignedToId) {
@@ -220,6 +201,26 @@ export const PATCH = withRole(
 
     // Build update data
     const updateData: Record<string, unknown> = {};
+
+    // Validate status transition before any further processing
+    const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+      PENDING:     ['IN_PROGRESS', 'ON_HOLD', 'CANCELED'],
+      IN_PROGRESS: ['COMPLETED', 'ON_HOLD', 'CANCELED'],
+      ON_HOLD:     ['PENDING', 'IN_PROGRESS', 'CANCELED'],
+      COMPLETED:   [],
+      CANCELED:    [],
+    };
+
+    if (status && status !== existingJob.status) {
+      const allowed = VALID_STATUS_TRANSITIONS[existingJob.status] ?? [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json(
+          { error: `Invalid status transition: ${existingJob.status} → ${status}` },
+          { status: 400 }
+        );
+      }
+    }
+
     const { machineId: newMachineId } = validation.data;
     const effectiveMachineId = newMachineId !== undefined ? (newMachineId || null) : existingJob.machineId;
     const effectivePrintMethodId = printMethodId !== undefined ? (printMethodId || null) : existingJob.printMethodId;
@@ -321,15 +322,17 @@ export const PATCH = withRole(
 
       const qty = existingJob.quantity ? Number(existingJob.quantity) : 0;
       if (qty > 0) {
-        const outsourceValues = calculateOutsourceFinancials({
-          quantity: qty,
-          supplierCostPerM2: effectiveOutsourceCostPerM2,
-          supplierCostPerUnit: effectiveOutsourceCostPerUnit,
-          markupPercent: effectiveOutsourceMarkup,
+        const supplierCost = (effectiveOutsourceCostPerM2 * qty) + (effectiveOutsourceCostPerUnit * qty);
+        const markupValue = supplierCost * (effectiveOutsourceMarkup / 100);
+
+        const orderData = await prisma.order.findUnique({
+          where: { id: existingJob.orderId },
+          select: { totalPrice: true },
         });
-        updateData.estimatedCost = outsourceValues.estimatedCost;
-        updateData.outsourcedCost = outsourceValues.outsourcedCost;
-        updateData.outsourcedProfit = outsourceValues.outsourcedProfit;
+
+        updateData.estimatedCost = supplierCost + markupValue;
+        updateData.outsourcedCost = supplierCost;
+        updateData.outsourcedProfit = (orderData ? Number(orderData.totalPrice) : 0) - supplierCost;
       }
     }
 
@@ -353,10 +356,20 @@ export const PATCH = withRole(
           { status: 409 }
         );
       }
+      if (newMachine.status === "BUSY") {
+        return NextResponse.json(
+          { error: `Echipamentul "${newMachine.name}" este deja ocupat de alt job` },
+          { status: 409 }
+        );
+      }
+      if (newMachine.status === "MAINTENANCE") {
+        return NextResponse.json(
+          { error: `Echipamentul "${newMachine.name}" este în mentenanță` },
+          { status: 409 }
+        );
+      }
 
-      const newMachineCompatibleMethodIds = (newMachine.compatiblePrintMethodIds ?? []) as string[];
-
-      if (effectivePrintMethodId && !newMachineCompatibleMethodIds.includes(effectivePrintMethodId)) {
+      if (effectivePrintMethodId && !newMachine.compatiblePrintMethodIds.includes(effectivePrintMethodId)) {
         return NextResponse.json(
           { error: `Echipamentul "${newMachine.name}" nu suportă metoda de tipărire selectată` },
           { status: 400 }
@@ -377,9 +390,7 @@ export const PATCH = withRole(
         return NextResponse.json({ error: "Machine not found" }, { status: 404 });
       }
 
-      const currentMachineCompatibleMethodIds = (currentMachine.compatiblePrintMethodIds ?? []) as string[];
-
-      if (effectivePrintMethodId && !currentMachineCompatibleMethodIds.includes(effectivePrintMethodId)) {
+      if (effectivePrintMethodId && !currentMachine.compatiblePrintMethodIds.includes(effectivePrintMethodId)) {
         return NextResponse.json(
           { error: `Echipamentul "${currentMachine.name}" nu suportă metoda de tipărire selectată` },
           { status: 400 }
@@ -463,7 +474,10 @@ export const PATCH = withRole(
 
         // Set new machine to BUSY (only if not becoming terminal)
         if (isMachineBeingSet && !isBecomingTerminal && !effectivePrintMethodIsOutsourced) {
-          await reserveMachineAtomically(tx, newMachineId as string);
+          await tx.machine.update({
+            where: { id: newMachineId as string },
+            data: { status: "BUSY" },
+          });
         }
 
         const updatedJobData = await tx.productionJob.update({
@@ -568,21 +582,10 @@ export const PATCH = withRole(
             },
           });
 
-          const machineConsumables = (machine?.consumables ?? []) as Array<{
-            materialId: string;
-            consumptionPerSqm: Prisma.Decimal | null;
-            consumptionPerUnit: Prisma.Decimal | null;
-            consumptionPerJob: Prisma.Decimal | null;
-            unit: string;
-            material: {
-              pricePerUnit: Prisma.Decimal | null;
-            };
-          }>;
-
-          if (machine && machineConsumables.length > 0) {
+          if (machine && machine.consumables.length > 0) {
             const jobQuantity = Number(existingJob.quantity);
 
-            for (const consumable of machineConsumables) {
+            for (const consumable of machine.consumables) {
               let consumedAmount = 0;
 
               // Calculate consumption based on equipment type and consumable config
@@ -614,7 +617,7 @@ export const PATCH = withRole(
                   materialId: consumable.materialId,
                   jobId: id,
                   quantity: consumedAmount,
-                  unit: consumable.unit as MaterialUnit,
+                  unit: consumable.unit,
                   wastePercent: 0, // Consumables typically don't have waste
                   totalUsed: consumedAmount,
                   cost: new Prisma.Decimal(totalCost),
@@ -633,33 +636,7 @@ export const PATCH = withRole(
         // ── Print Method Indirect Consumables ──────────────────────────────────
         // When job completes, consume indirect consumables from the print method
         if (isBecomingCompleted && effectivePrintMethodId && existingJob.quantity && !effectivePrintMethodIsOutsourced) {
-          const printMethodConsumableDelegate = (tx as typeof tx & {
-            printMethodConsumable: {
-              findMany: (args: {
-                where: { printMethodId: string; active: true };
-                include: {
-                  material: {
-                    select: {
-                      id: true;
-                      name: true;
-                      unit: true;
-                      stock: true;
-                      pricePerUnit: true;
-                    };
-                  };
-                };
-              }) => Promise<Array<{
-                materialId: string;
-                costPerSqm: Prisma.Decimal | null;
-                costPerJob: Prisma.Decimal | null;
-                material: {
-                  unit: string;
-                };
-              }>>;
-            };
-          }).printMethodConsumable;
-
-          const methodConsumables = await printMethodConsumableDelegate.findMany({
+          const methodConsumables = await tx.printMethodConsumable.findMany({
             where: {
               printMethodId: effectivePrintMethodId,
               active: true,
@@ -702,7 +679,7 @@ export const PATCH = withRole(
                   materialId: consumable.materialId,
                   jobId: id,
                   quantity: 1, // Nominal quantity (cost-based, not physical)
-                  unit: consumable.material.unit as MaterialUnit,
+                  unit: consumable.material.unit,
                   wastePercent: 0,
                   totalUsed: 1,
                   cost: new Prisma.Decimal(totalCost),
@@ -735,9 +712,6 @@ export const PATCH = withRole(
 
       return NextResponse.json(updatedJob);
     } catch (error) {
-      if (error instanceof MachineReservationError) {
-        return NextResponse.json({ error: error.message }, { status: error.statusCode });
-      }
       console.error("Error updating production job:", error);
       return NextResponse.json(
         { error: "Failed to update production job" },

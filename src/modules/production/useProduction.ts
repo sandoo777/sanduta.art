@@ -120,71 +120,6 @@ export interface JobFilters {
   search?: string;
 }
 
-const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function normalizeApiError(status: number, apiMessage: string, fallback: string): string {
-  if (status === 401 || status === 403) {
-    return "Nu ai permisiunea necesara pentru aceasta actiune.";
-  }
-
-  if (status >= 400 && status < 500) {
-    return apiMessage || fallback;
-  }
-
-  if (status >= 500) {
-    return "A aparut o eroare temporara de sistem. Reincearca in cateva secunde.";
-  }
-
-  return apiMessage || fallback;
-}
-
-async function parseApiMessage(response: Response, fallback: string): Promise<string> {
-  try {
-    const errorData = await response.json();
-    return errorData.error || fallback;
-  } catch {
-    return response.statusText || fallback;
-  }
-}
-
-async function fetchWithBackoff(url: string, maxAttempts = 3): Promise<Response> {
-  let lastError: Error | null = null;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    try {
-      const response = await fetch(url);
-
-      if (response.ok) {
-        return response;
-      }
-
-      const apiMessage = await parseApiMessage(response, "Request failed");
-      const isRetryable = RETRYABLE_STATUS_CODES.has(response.status);
-
-      if (isRetryable && attempt < maxAttempts) {
-        await wait(200 * 2 ** (attempt - 1));
-        continue;
-      }
-
-      throw new Error(normalizeApiError(response.status, apiMessage, "Request failed"));
-    } catch (error) {
-      const normalizedError = error instanceof Error ? error : new Error("Network error");
-      lastError = normalizedError;
-
-      if (attempt < maxAttempts) {
-        await wait(200 * 2 ** (attempt - 1));
-        continue;
-      }
-    }
-  }
-
-  throw lastError ?? new Error("Request failed");
-}
-
 export function useProduction() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -202,11 +137,18 @@ export function useProduction() {
       if (filters?.printMethodId) params.append("printMethodId", filters.printMethodId);
       if (filters?.materialId) params.append("materialId", filters.materialId);
 
-      const response = await fetchWithBackoff(`/api/admin/production?${params.toString()}`);
+      const response = await fetch(`/api/admin/production?${params.toString()}`);
       
       if (!response.ok) {
-        const apiMessage = await parseApiMessage(response, "Failed to fetch jobs");
-        throw new Error(normalizeApiError(response.status, apiMessage, "Failed to fetch jobs"));
+        let errorMessage = "Failed to fetch jobs";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Response doesn't contain JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -226,7 +168,7 @@ export function useProduction() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch jobs";
       setError(message);
-      throw new Error(message);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -240,8 +182,14 @@ export function useProduction() {
       const response = await fetch(`/api/admin/production/${id}`);
       
       if (!response.ok) {
-        const apiMessage = await parseApiMessage(response, "Failed to fetch job");
-        throw new Error(normalizeApiError(response.status, apiMessage, "Failed to fetch job"));
+        let errorMessage = "Failed to fetch job";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const job = await response.json();
@@ -249,7 +197,7 @@ export function useProduction() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch job";
       setError(message);
-      throw new Error(message);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -269,8 +217,14 @@ export function useProduction() {
       });
 
       if (!response.ok) {
-        const apiMessage = await parseApiMessage(response, "Failed to create job");
-        throw new Error(normalizeApiError(response.status, apiMessage, "Failed to create job"));
+        let errorMessage = "Failed to create job";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const job = await response.json();
@@ -278,7 +232,7 @@ export function useProduction() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create job";
       setError(message);
-      throw new Error(message);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -298,8 +252,14 @@ export function useProduction() {
       });
 
       if (!response.ok) {
-        const apiMessage = await parseApiMessage(response, "Failed to update job");
-        throw new Error(normalizeApiError(response.status, apiMessage, "Failed to update job"));
+        let errorMessage = "Failed to update job";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const job = await response.json();
@@ -307,7 +267,7 @@ export function useProduction() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update job";
       setError(message);
-      throw new Error(message);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -323,13 +283,19 @@ export function useProduction() {
       });
 
       if (!response.ok) {
-        const apiMessage = await parseApiMessage(response, "Failed to delete job");
-        throw new Error(normalizeApiError(response.status, apiMessage, "Failed to delete job"));
+        let errorMessage = "Failed to delete job";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to delete job";
       setError(message);
-      throw new Error(message);
+      throw err;
     } finally {
       setLoading(false);
     }

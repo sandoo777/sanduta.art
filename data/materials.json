@@ -1,0 +1,126 @@
+[
+  {
+    "id": "MAT-001",
+    "sku": "PAP-0001",
+    "name": "80gr office A4",
+    "category": "paper",
+    "purchasePrice": 0.15,
+    "sellPrice": 0.22,
+    "unit": "pcs",
+    "wastePercent": 1.5,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-002",
+    "sku": "PEL-0001",
+    "name": "Folii laminare A6",
+    "category": "lamination",
+    "purchasePrice": 1.79,
+    "sellPrice": 2.69,
+    "unit": "pcs",
+    "wastePercent": 3,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-003",
+    "sku": "PVC-001",
+    "name": "PVC premium 2mm",
+    "category": "plastic",
+    "purchasePrice": 5,
+    "sellPrice": 7.5,
+    "unit": "m2",
+    "wastePercent": 2.5,
+    "compatiblePrintMethods": [
+      "PRINT-UV"
+    ],
+    "active": true
+  },
+  {
+    "id": "MAT-004",
+    "sku": "CRT-001",
+    "name": "Carton duplex 300g",
+    "category": "cardboard",
+    "purchasePrice": 0.5,
+    "sellPrice": 0.9,
+    "unit": "pcs",
+    "wastePercent": 2,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-005",
+    "sku": "OFF-120",
+    "name": "Offset 120gr",
+    "category": "paper",
+    "purchasePrice": 0.2,
+    "sellPrice": 0.35,
+    "unit": "m2",
+    "wastePercent": 1.8,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-006",
+    "sku": "ADH-001",
+    "name": "Adeziv spray",
+    "category": "adhesives",
+    "purchasePrice": 3,
+    "sellPrice": 4.5,
+    "unit": "kg",
+    "wastePercent": 5,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-007",
+    "sku": "MAT-001",
+    "name": "Folie mata A4",
+    "category": "lamination",
+    "purchasePrice": 1.2,
+    "sellPrice": 1.9,
+    "unit": "pcs",
+    "wastePercent": 3,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-008",
+    "sku": "SPF-001",
+    "name": "Spuma 5mm",
+    "category": "foam",
+    "purchasePrice": 2.5,
+    "sellPrice": 4,
+    "unit": "m2",
+    "wastePercent": 4,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-009",
+    "sku": "BND-001",
+    "name": "Banda adeziva 50mm",
+    "category": "tape",
+    "purchasePrice": 0.1,
+    "sellPrice": 0.2,
+    "unit": "m",
+    "wastePercent": 1,
+    "compatiblePrintMethods": [],
+    "active": true
+  },
+  {
+    "id": "MAT-010",
+    "sku": "PVC-TH",
+    "name": "PVC transparent 0.5mm",
+    "category": "plastic",
+    "purchasePrice": 3.5,
+    "sellPrice": 5,
+    "unit": "m2",
+    "wastePercent": 2.5,
+    "compatiblePrintMethods": [
+      "PRINT-UV"
+    ],
+    "active": true
+  }
+]
