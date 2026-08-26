@@ -15,6 +15,18 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => null,
 }));
 
+vi.mock('@/context/CartContext', () => ({
+  useCart: () => ({
+    cart: [],
+    total: 0,
+    addToCart: vi.fn().mockResolvedValue({ success: true }),
+    removeFromCart: vi.fn().mockResolvedValue(undefined),
+    clearCart: vi.fn().mockResolvedValue(undefined),
+    refresh: vi.fn().mockResolvedValue(undefined),
+  }),
+  CartProvider: ({ children }: any) => children,
+}));
+
 // Mock useConfigurator hook
 const mockUseConfigurator = vi.fn();
 vi.spyOn(useConfiguratorModule, 'useConfigurator').mockImplementation(mockUseConfigurator);
