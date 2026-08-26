@@ -55,16 +55,11 @@ export interface Material {
   compatibleEquipment?: MaterialCompatibleEquipment[];
   compatibleEquipmentIds?: string[];
   sku: string | null;
-  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs' | 'sheet';
+  unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
   stock: number;
   minStock: number;
   costPerUnit?: number;
   notes: string | null;
-  finishType: 'mat' | 'lucios' | 'satin' | 'soft-touch' | null;
-  packagingLabel: string | null;
-  packagingQty: number | null;
-  packagingPrice: number | null;
-  properties: Record<string, string | number | boolean> | null;
   createdAt: string;
   updatedAt: string;
   lowStock?: boolean;
@@ -155,8 +150,6 @@ export interface UpdateMaterialInput {
 export interface ConsumeMaterialInput {
   jobId: string;
   quantity: number;
-  unit?: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs';
-  rollWidthMeters?: number;
 }
 
 export interface MaterialFilters {

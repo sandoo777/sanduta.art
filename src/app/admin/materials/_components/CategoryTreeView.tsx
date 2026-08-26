@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, Plus, Edit, Trash2, Lock } from 'lucide-react';
 import type { MaterialCategoryTree } from '@/modules/material-categories/types';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -48,7 +48,14 @@ export function EquipmentConsumables({ machineId, initialConsumables = [] }: Equ
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMaterials = useCallback(async () => {
+  useEffect(() => {
+    fetchMaterials();
+    if (machineId) {
+      fetchConsumables();
+    }
+  }, [machineId]);
+
+  const fetchMaterials = async () => {
     try {
       const response = await fetch('/api/admin/materials?active=true');
       if (response.ok) {
@@ -60,9 +67,9 @@ export function EquipmentConsumables({ machineId, initialConsumables = [] }: Equ
     } catch (err) {
       console.error('Error fetching materials:', err);
     }
-  }, []);
+  };
 
-  const fetchConsumables = useCallback(async () => {
+  const fetchConsumables = async () => {
     if (!machineId) return;
     
     try {
@@ -74,20 +81,7 @@ export function EquipmentConsumables({ machineId, initialConsumables = [] }: Equ
     } catch (err) {
       console.error('Error fetching consumables:', err);
     }
-  }, [machineId]);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      void fetchMaterials();
-      if (machineId) {
-        void fetchConsumables();
-      }
-    }, 0);
-
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [fetchConsumables, fetchMaterials, machineId]);
+  };
 
   const handleAddNew = () => {
     setIsAddingNew(true);
@@ -199,7 +193,7 @@ export function EquipmentConsumables({ machineId, initialConsumables = [] }: Equ
         await fetchConsumables();
         handleCancel();
       }
-    } catch (_err) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Eroare la salvare');
     } finally {
       setIsLoading(false);
@@ -221,7 +215,7 @@ export function EquipmentConsumables({ machineId, initialConsumables = [] }: Equ
       }
 
       await fetchConsumables();
-    } catch (_err) {
+    } catch (err) {
       setError('Eroare la ștergere');
     } finally {
       setIsLoading(false);

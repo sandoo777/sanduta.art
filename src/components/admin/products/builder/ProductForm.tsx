@@ -27,7 +27,6 @@ import { PricingTab } from './tabs/PricingTab';
 import { ProductionTab } from './tabs/ProductionTab';
 import { SeoTab } from './tabs/SeoTab';
 import { PreviewTab } from './tabs/PreviewTab';
-import { ProductAttributesPanel } from '@/modules/product-attributes/ProductAttributesPanel';
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -89,7 +88,6 @@ const TABS = [
   { id: 'pricing', label: 'Pricing', description: 'Prețuri, discount-uri și formule' },
   { id: 'production', label: 'Producție', description: 'Operațiuni, utilaje, timp estimat' },
   { id: 'seo', label: 'SEO', description: 'Meta title, descriere și OG' },
-  { id: 'attributes', label: 'Atribute', description: 'Opțiuni configurabile pentru client' },
   { id: 'preview', label: 'Preview', description: 'Rezumat și simulare de preț' },
 ] as const;
 
@@ -516,15 +514,6 @@ export function ProductForm({ mode, productId }: ProductFormProps) {
 
           {activeTab === 'preview' && (
             <PreviewTab data={formData} calculatePreviewPrice={calculatePreviewPrice} />
-          )}
-
-          {activeTab === 'attributes' && mode === 'edit' && productId && (
-            <ProductAttributesPanel productId={productId} />
-          )}
-          {activeTab === 'attributes' && mode === 'create' && (
-            <p className="text-sm text-gray-400">
-              Salvează produsul mai întâi pentru a adăuga atribute configurabile.
-            </p>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronRight, Folder, FolderOpen, Check } from 'lucide-react';
 import type { MaterialCategoryTree } from '@/modules/material-categories/types';
 
@@ -22,26 +22,16 @@ export default function CategoryTreeSelector({ value, onChange, error }: Categor
     fetchCategories();
   }, []);
 
-  const findCategoryById = useCallback((cats: MaterialCategoryTree[], id: string): MaterialCategoryTree | null => {
-    for (const cat of cats) {
-      if (cat.id === id) return cat;
-      if (cat.children) {
-        const found = findCategoryById(cat.children, id);
-        if (found) return found;
-      }
-    }
-    return null;
-  }, []);
-
   useEffect(() => {
     if (value && categories.length > 0) {
       const found = findCategoryById(categories, value);
       setSelectedCategory(found);
+      // Notify parent component when category is found on load - only once
       if (found && found.id === value) {
         onChange(found.id, found);
       }
     }
-  }, [value, categories, onChange, findCategoryById]);
+  }, [value, categories]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -62,13 +52,23 @@ export default function CategoryTreeSelector({ value, onChange, error }: Categor
       setLoading(true);
       const response = await fetch('/api/admin/material-categories/tree');
       const data = await response.json();
-      setCategories(Array.isArray(data) ? data : []);
+      setCategories(data);
     } catch (error) {
       console.error('Failed to fetch categories', error);
-      setCategories([]);
     } finally {
       setLoading(false);
     }
+  }
+
+  function findCategoryById(cats: MaterialCategoryTree[], id: string): MaterialCategoryTree | null {
+    for (const cat of cats) {
+      if (cat.id === id) return cat;
+      if (cat.children) {
+        const found = findCategoryById(cat.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
   }
 
   function handleSelect(category: MaterialCategoryTree) {
@@ -162,8 +162,7 @@ function TreeOptions({ categories, onSelect, selectedId, level }: TreeOptionsPro
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     // Auto-expand all categories by default for better UX
     const allIds = new Set<string>();
-    function collectIds(cats: MaterialCategoryTree[] | null | undefined) {
-      if (!cats || !Array.isArray(cats)) return;
+    function collectIds(cats: MaterialCategoryTree[]) {
       cats.forEach(cat => {
         if (cat.children && cat.children.length > 0) {
           allIds.add(cat.id);
@@ -190,7 +189,7 @@ function TreeOptions({ categories, onSelect, selectedId, level }: TreeOptionsPro
 
   return (
     <div className="py-1">
-      {(Array.isArray(categories) ? categories : []).map((category) => {
+      {categories.map((category) => {
         const hasChildren = category.children && category.children.length > 0;
         const isExpanded = expandedIds.has(category.id);
         const isSelected = category.id === selectedId;
@@ -211,22 +210,20 @@ function TreeOptions({ categories, onSelect, selectedId, level }: TreeOptionsPro
               `}
               style={{ paddingLeft: `${level * 1.5 + 0.75}rem` }}
             >
-              {/* Expand/Collapse Toggle */}
+              {/* Expand/Collapse Button */}
               {hasChildren ? (
-                <div
-                  role="button"
-                  tabIndex={-1}
+                <button
                   onClick={(e) => toggleExpand(category.id, e)}
-                  className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700 flex-shrink-0"
+                  className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700"
                 >
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4" />
                   ) : (
                     <ChevronRight className="w-4 h-4" />
                   )}
-                </div>
+                </button>
               ) : (
-                <div className="w-4 flex-shrink-0" />
+                <div className="w-4" />
               )}
 
               {/* Folder Icon */}

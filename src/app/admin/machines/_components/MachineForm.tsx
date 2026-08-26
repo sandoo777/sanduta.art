@@ -2,7 +2,6 @@
 
 import { Info, X } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
-import type { UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MaterialCompatibilitySelector } from '../../finishing/_components/MaterialCompatibilitySelector';
 import { PrintMethodCompatibilitySelector } from '../../finishing/_components/PrintMethodCompatibilitySelector';
@@ -10,7 +9,7 @@ import { EquipmentConsumables } from './EquipmentConsumables';
 import type { Machine } from '@/modules/machines/types';
 import { MACHINE_TYPES, MACHINE_STATUS_CONFIG, EQUIPMENT_TYPE_CONFIG } from '@/modules/machines/types';
 import { machineFormSchema, type MachineFormData } from '@/lib/validations/admin';
-import { Form } from '@/components/ui/form';
+import { Form } from '@/components/ui/Form';
 import { FormField } from '@/components/ui/FormField';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { FormMessage } from '@/components/ui/FormMessage';
@@ -75,8 +74,8 @@ function SectionHeading({ title, description }: { title: string; description: st
 }
 
 export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
-  const form = useForm({
-    resolver: zodResolver(machineFormSchema) as never,
+  const form = useForm<MachineFormData>({
+    resolver: zodResolver(machineFormSchema),
     defaultValues: {
       name:          machine?.name          ?? '',
       type:          machine?.type          ?? 'Digital Printer',
@@ -109,7 +108,7 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
         : '',
       active: machine?.active ?? true,
     },
-  }) as unknown as UseFormReturn<MachineFormData>;
+  });
 
   const { formState: { isSubmitting } } = form;
   const equipmentType = useWatch({ control: form.control, name: 'equipmentType' });
@@ -145,7 +144,7 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
           </button>
         </div>
 
-        <Form<MachineFormData> form={form} onSubmit={handleFormSubmit} className="p-6 space-y-6">
+        <Form form={form} onSubmit={handleFormSubmit} className="p-6 space-y-6">
           <section className="space-y-5 rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
             <SectionHeading
               title="General"

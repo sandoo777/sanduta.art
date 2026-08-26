@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import type { UseFormReturn } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { PrintMethodWithRelations, CreatePrintMethodInput } from "@/modules/print-methods/types";
@@ -11,7 +10,7 @@ import { useMaterials } from "@/modules/materials/useMaterials";
 import { useMachines } from "@/modules/machines/useMachines";
 import type { Material } from "@/modules/materials/types";
 import type { Machine } from "@/modules/machines/types";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -44,7 +43,7 @@ const printMethodFormSchema = z.object({
   compatibleEquipmentIds: z.array(z.string()).default([]),
 });
 
-type PrintMethodFormData = z.output<typeof printMethodFormSchema>;
+type PrintMethodFormData = z.infer<typeof printMethodFormSchema>;
 
 interface PrintMethodFormProps {
   printMethod?: PrintMethodWithRelations | null;
@@ -54,47 +53,6 @@ interface PrintMethodFormProps {
 
 type TabType = 'general' | 'compatibilities' | 'consumables';
 
-function PrintMethodTab({
-  id,
-  label,
-  icon: Icon,
-  count,
-  activeTab,
-  onSelect,
-}: {
-  id: TabType;
-  label: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  count?: number;
-  activeTab: TabType;
-  onSelect: (tab: TabType) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(id)}
-      className={`
-        flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-colors
-        ${activeTab === id
-          ? 'border-blue-600 text-blue-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-        }
-      `}
-    >
-      {Icon && <Icon className="w-4 h-4" />}
-      <span>{label}</span>
-      {count !== undefined && count > 0 && (
-        <span className={`
-          px-1.5 py-0.5 text-xs rounded-full
-          ${activeTab === id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}
-        `}>
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
-
 export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFormProps) {
   const { getMaterials } = useMaterials();
   const { getMachines } = useMachines();
@@ -102,7 +60,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
   const [machines, setMachines] = useState<Machine[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('general');
 
-  const form = useForm({
+  const form = useForm<PrintMethodFormData>({
     resolver: zodResolver(printMethodFormSchema),
     defaultValues: {
       name: printMethod?.name || "",
@@ -124,87 +82,65 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
       compatibleMaterialIds: printMethod?.compatibleMaterials?.map(m => m.id) || [],
       compatibleEquipmentIds: printMethod?.compatibleEquipment?.map(e => e.id) || [],
     },
-  }) as UseFormReturn<PrintMethodFormData>;
+  });
 
   const { formState: { isSubmitting } } = form;
-  const isOutsourced = useWatch({ control: form.control, name: "isOutsourced" });
-  const compatibleMaterialIds = useWatch({ control: form.control, name: "compatibleMaterialIds" });
-  const compatibleEquipmentIds = useWatch({ control: form.control, name: "compatibleEquipmentIds" });
-
-  const loadMaterials = useCallback(async () => {
-    const data = await getMaterials();
-    setMaterials(data.filter((material) => material.active));
-  }, [getMaterials]);
-
-  const loadMachines = useCallback(async () => {
-    const data = await getMachines();
-    setMachines(data.filter((machine) => machine.active));
-  }, [getMachines]);
+  const isOutsourced = form.watch("isOutsourced");
 
   useEffect(() => {
-    const timerId = setTimeout(() => {
-      void loadMaterials();
-      void loadMachines();
-    }, 0);
-
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [loadMachines, loadMaterials]);
+    loadMaterials();
+    loadMachines();
+  }, []);
 
   // Reset form when printMethod changes (for switching between create/edit or between different methods)
   useEffect(() => {
-    const timerId = setTimeout(() => {
-      form.reset({
-        name: printMethod?.name || "",
-        type: printMethod?.type || "Digital",
-        isOutsourced: printMethod?.isOutsourced ?? false,
-        baseCost: printMethod?.baseCost ?? null,
-        costPerM2: printMethod?.costPerM2 ?? null,
-        costPerSheet: printMethod?.costPerSheet ?? null,
-        costFurnizorPerM2: printMethod?.costFurnizorPerM2 ?? null,
-        costFurnizorPerUnit: printMethod?.costFurnizorPerUnit ?? null,
-        termenFurnizor: printMethod?.termenFurnizor ?? "",
-        markup: printMethod?.markup ?? null,
-        speed: printMethod?.speed || "",
-        colorMode: printMethod?.colorMode || "",
-        maxWidth: printMethod?.maxWidth ?? null,
-        maxHeight: printMethod?.maxHeight ?? null,
-        description: printMethod?.description || "",
-        active: printMethod?.active ?? true,
-        compatibleMaterialIds: printMethod?.compatibleMaterials?.map((material) => material.id) || [],
-        compatibleEquipmentIds: printMethod?.compatibleEquipment?.map((equipment) => equipment.id) || [],
-      });
-    }, 0);
-
-    return () => {
-      clearTimeout(timerId);
-    };
+    form.reset({
+      name: printMethod?.name || "",
+      type: printMethod?.type || "Digital",
+      isOutsourced: printMethod?.isOutsourced ?? false,
+      baseCost: printMethod?.baseCost ?? null,
+      costPerM2: printMethod?.costPerM2 ?? null,
+      costPerSheet: printMethod?.costPerSheet ?? null,
+      costFurnizorPerM2: printMethod?.costFurnizorPerM2 ?? null,
+      costFurnizorPerUnit: printMethod?.costFurnizorPerUnit ?? null,
+      termenFurnizor: printMethod?.termenFurnizor ?? "",
+      markup: printMethod?.markup ?? null,
+      speed: printMethod?.speed || "",
+      colorMode: printMethod?.colorMode || "",
+      maxWidth: printMethod?.maxWidth ?? null,
+      maxHeight: printMethod?.maxHeight ?? null,
+      description: printMethod?.description || "",
+      active: printMethod?.active ?? true,
+      compatibleMaterialIds: printMethod?.compatibleMaterials?.map(m => m.id) || [],
+      compatibleEquipmentIds: printMethod?.compatibleEquipment?.map(e => e.id) || [],
+    });
   }, [printMethod, form]);
 
   useEffect(() => {
     if (isOutsourced) {
-      const timerId = setTimeout(() => {
-        form.setValue("compatibleMaterialIds", []);
-        form.setValue("compatibleEquipmentIds", []);
+      form.setValue("compatibleMaterialIds", []);
+      form.setValue("compatibleEquipmentIds", []);
 
-        if (activeTab === 'compatibilities' || activeTab === 'consumables') {
-          setActiveTab('general');
-        }
-      }, 0);
-
-      return () => {
-        clearTimeout(timerId);
-      };
+      if (activeTab === 'compatibilities' || activeTab === 'consumables') {
+        setActiveTab('general');
+      }
     }
   }, [isOutsourced, activeTab, form]);
+
+  const loadMaterials = async () => {
+    const data = await getMaterials();
+    setMaterials(data.filter(m => m.active)); // Only active materials
+  };
+
+  const loadMachines = async () => {
+    const data = await getMachines();
+    setMachines(data.filter(m => m.active)); // Only active machines
+  };
 
   const handleFormSubmit = async (data: PrintMethodFormData) => {
     await onSave(data as CreatePrintMethodInput);
     onClose();
   };
-
-  const submitForm = form.handleSubmit(handleFormSubmit);
 
   const toggleMaterial = (materialId: string) => {
     const currentIds = form.getValues("compatibleMaterialIds") || [];
@@ -222,8 +158,33 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
     form.setValue("compatibleEquipmentIds", newIds);
   };
 
+  const Tab = ({ id, label, icon: Icon, count }: { id: TabType; label: string; icon?: React.ComponentType<{ className?: string }>; count?: number }) => (
+    <button
+      type="button"
+      onClick={() => setActiveTab(id)}
+      className={`
+        flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-colors
+        ${activeTab === id
+          ? 'border-blue-600 text-blue-600'
+          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        }
+      `}
+    >
+      {Icon && <Icon className="w-4 h-4" />}
+      <span>{label}</span>
+      {count !== undefined && count > 0 && (
+        <span className={`
+          px-1.5 py-0.5 text-xs rounded-full
+          ${activeTab === id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}
+        `}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+
   return (
-    <Modal isOpen={true} onClose={onClose} size="xl">
+    <Modal isOpen={true} onClose={onClose} size="2xl">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b">
         <h2 className="text-xl font-bold text-gray-900">
@@ -233,31 +194,27 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
 
       {/* Tabs */}
       <div className="flex items-center gap-1 px-6 bg-gray-50 border-b">
-        <PrintMethodTab id="general" label="General" icon={Info} activeTab={activeTab} onSelect={setActiveTab} />
+        <Tab id="general" label="General" icon={Info} />
         {!isOutsourced && (
-          <PrintMethodTab 
+          <Tab 
             id="compatibilities" 
             label="Compatibilități"
             icon={Package}
-            count={(compatibleMaterialIds?.length || 0) + (compatibleEquipmentIds?.length || 0)}
-            activeTab={activeTab}
-            onSelect={setActiveTab}
+            count={(form.watch("compatibleMaterialIds")?.length || 0) + (form.watch("compatibleEquipmentIds")?.length || 0)}
           />
         )}
         {printMethod && !isOutsourced && (
-          <PrintMethodTab 
+          <Tab 
             id="consumables" 
             label="Consumabile"
             icon={Cpu}
             count={printMethod._count?.consumables || 0}
-            activeTab={activeTab}
-            onSelect={setActiveTab}
           />
         )}
       </div>
 
       {/* Form */}
-      <Form<PrintMethodFormData> form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+      <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-180px)]">
         
         {/* TAB: General */}
         {activeTab === 'general' && (
@@ -604,7 +561,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               <div className="flex items-center justify-between mb-3">
                 <FormLabel className="text-base font-semibold">Materiale compatibile</FormLabel>
                 <Badge variant="default">
-                  {compatibleMaterialIds?.length || 0} selectate
+                  {form.watch("compatibleMaterialIds")?.length || 0} selectate
                 </Badge>
               </div>
               <FormField
@@ -629,7 +586,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
                             <div className="flex-1">
                               <div className="text-sm font-medium text-gray-900">{material.name}</div>
                               <div className="text-xs text-gray-500">
-                                {material.categoryInfo?.name || material.category || 'N/A'} • {material.unit}
+                                {material.category?.name || 'N/A'} • {material.unit}
                               </div>
                             </div>
                             {material.stock < material.minStock && (
@@ -653,7 +610,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               <div className="flex items-center justify-between mb-3">
                 <FormLabel className="text-base font-semibold">Echipamente compatibile</FormLabel>
                 <Badge variant="default">
-                  {compatibleEquipmentIds?.length || 0} selectate
+                  {form.watch("compatibleEquipmentIds")?.length || 0} selectate
                 </Badge>
               </div>
               <FormField
@@ -684,13 +641,13 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
                             <Badge 
                               variant={
                                 machine.status === 'AVAILABLE' ? 'success' :
-                                machine.status === 'BUSY' ? 'warning' :
+                                machine.status === 'IN_USE' ? 'warning' :
                                 'default'
                               }
                               size="sm"
                             >
                               {machine.status === 'AVAILABLE' ? 'Liber' :
-                               machine.status === 'BUSY' ? 'Ocupat' :
+                               machine.status === 'IN_USE' ? 'Ocupat' :
                                machine.status === 'MAINTENANCE' ? 'Mentenanță' :
                                machine.status}
                             </Badge>
@@ -732,7 +689,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
             type="submit"
             variant="primary"
             loading={isSubmitting}
-            onClick={submitForm}
+            onClick={() => form.handleSubmit(handleFormSubmit)()}
           >
             {printMethod ? 'Actualizează' : 'Creează'}
           </Button>

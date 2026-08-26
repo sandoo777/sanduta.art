@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import type { ConfiguratorSelections, ConfiguratorProduct } from '@/modules/configurator/types';
 import type { ExtendedPriceSummary } from '@/lib/pricing/calculateProductPrice';
 import { useCartStore } from '@/modules/cart/cartStore';
+import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 
 interface AddToCartButtonProps {
@@ -29,6 +30,7 @@ export function AddToCartButton({
   const [isLoading, setIsLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
+  const { addToCart: addCartApiItem } = useCart();
   const router = useRouter();
 
   const handleAddToCart = async () => {
@@ -94,6 +96,19 @@ export function AddToCartButton({
     };
 
     try {
+      const totalPrice = Number(priceSummary?.total ?? cartItem.totalPrice ?? 0);
+      const cartResponse = await addCartApiItem({
+        id: String(product.id),
+        productId: String(product.id),
+        name: product.name,
+        price: totalPrice,
+      }, selections.quantity ?? 1, totalPrice);
+
+      const addButton = document.querySelector('[data-testid="add-to-cart-btn"]') as HTMLElement | null;
+      if (addButton && cartResponse?.success) {
+        addButton.setAttribute('data-added', 'true');
+      }
+
       addItem(cartItem);
       setShowErrors(false);
       router.push('/cart');
@@ -131,6 +146,7 @@ export function AddToCartButton({
 
       {/* Add to cart button */}
       <Button
+        data-testid="add-to-cart-btn"
         onClick={handleAddToCart}
         disabled={isLoading || allErrors.length > 0}
         className="w-full"

@@ -78,7 +78,6 @@ export interface FullProduct extends Product {
   pricing: ProductPricing;
   production?: ProductProduction;
   seo?: ProductSEO;
-  images?: Array<{ id?: string; url: string }>;
 }
 
 export interface CreateFullProductInput {

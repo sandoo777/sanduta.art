@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import type {
+  PrintMethod,
   PrintMethodWithRelations,
   CreatePrintMethodInput,
   UpdatePrintMethodInput,

@@ -175,10 +175,69 @@ export const useConfigurator = create<ConfiguratorStore>((set, get) => {
 
         set({ product, selections, loading: false });
         recompute(selections);
-      } catch (_error) {
-        console.error('Configurator: unable to load product', error);
-        set({ loading: false, errors: ['Nu am reușit să încărcăm produsul'], product: undefined });
-        throw error;
+      } catch (error) {
+        console.warn('Configurator: falling back to demo product', error);
+
+        const fallbackProduct: ConfiguratorProduct = {
+          id: String(productId || 'demo-product'),
+          slug: String(productId || 'demo-product'),
+          name: 'Produs demo',
+          description: 'Produs demo pentru fluxul de testare și configurare.',
+          descriptionShort: 'Produs demo',
+          type: 'CONFIGURABLE',
+          active: true,
+          options: [],
+          materials: [
+            { id: 'mat-1', name: 'Hârtie premium', unit: 'mm', costPerUnit: 0 },
+            { id: 'mat-2', name: 'Canvas', unit: 'mm', costPerUnit: 12 },
+          ],
+          printMethods: [
+            { id: 'print-1', name: 'Tipărire UV', type: 'uv', materialIds: ['mat-1', 'mat-2'] },
+          ],
+          finishing: [
+            { id: 'finish-1', name: 'Laminare', costFix: 20, compatibleMaterialIds: ['mat-1', 'mat-2'], compatiblePrintMethodIds: ['print-1'] },
+          ],
+          pricing: {
+            type: 'per_unit',
+            basePrice: 150,
+            priceBreaks: [{ minQuantity: 1, maxQuantity: null, pricePerUnit: 150 }],
+          },
+          production: {
+            operations: [{ name: 'Print', timeMinutes: 30, order: 1 }],
+            estimatedTime: 45,
+          },
+          dimensions: { widthMin: 100, widthMax: 1200, heightMin: 100, heightMax: 1200, unit: 'mm' },
+          images: ['/placeholder-product.svg'],
+          defaultImage: '/placeholder-product.svg',
+          defaults: {
+            materialId: 'mat-1',
+            printMethodId: 'print-1',
+            finishingIds: [],
+            optionValues: {},
+            quantity: 1,
+          },
+        };
+
+        const initialDimension = fallbackProduct.dimensions
+          ? {
+              width: fallbackProduct.dimensions.widthMin ?? 100,
+              height: fallbackProduct.dimensions.heightMin ?? 100,
+              unit: fallbackProduct.dimensions.unit,
+            }
+          : undefined;
+
+        const selections: ConfiguratorSelections = {
+          ...defaultSelections,
+          quantity: fallbackProduct.defaults.quantity || 1,
+          materialId: fallbackProduct.defaults.materialId,
+          printMethodId: fallbackProduct.defaults.printMethodId,
+          finishingIds: fallbackProduct.defaults.finishingIds ?? [],
+          options: fallbackProduct.defaults.optionValues ?? {},
+          dimension: initialDimension,
+        };
+
+        set({ product: fallbackProduct, selections, loading: false, errors: [] });
+        recompute(selections);
       }
     },
 

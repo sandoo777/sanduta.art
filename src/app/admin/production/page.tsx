@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useProduction, ProductionJob, ProductionStatus, ProductionPriority, JobFilters } from "@/modules/production/useProduction";
 import JobCard from "./_components/JobCard";
 import JobModal from "./_components/JobModal";
 import { productionSearchFormSchema, type ProductionSearchFormData, type JobFormData } from "@/lib/validations/admin";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
 import { Input, Select, LoadingState } from "@/components/ui";
 
@@ -33,10 +33,9 @@ const statusColumns: Array<{
 ];
 
 export default function ProductionPage() {
-  const { loading, error, getJobs, createJob, updateJob } = useProduction();
+  const { loading, error, getJobs, createJob } = useProduction();
   const [jobs, setJobs] = useState<ProductionJob[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updatingJobId, setUpdatingJobId] = useState<string | null>(null);
   
   const form = useForm<ProductionSearchFormData>({
     resolver: zodResolver(productionSearchFormSchema),
@@ -46,10 +45,15 @@ export default function ProductionPage() {
     },
   });
   
-  const searchQuery = useWatch({ control: form.control, name: "search" });
-  const priorityFilter = useWatch({ control: form.control, name: "priority" });
+  const { watch } = form;
+  const searchQuery = watch("search");
+  const priorityFilter = watch("priority");
 
-  const loadJobs = useCallback(async () => {
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  const loadJobs = async () => {
     try {
       const values = form.getValues();
       const allFilters: JobFilters = {};
@@ -66,17 +70,7 @@ export default function ProductionPage() {
     } catch (err) {
       console.error("Error loading jobs:", err);
     }
-  }, [form, getJobs]);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      void loadJobs();
-    }, 300);
-
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [loadJobs, searchQuery, priorityFilter]);
+  };
 
   const handleCreateJob = async (data: JobFormData) => {
     try {
@@ -103,26 +97,6 @@ export default function ProductionPage() {
 
   const onSubmit = async () => {
     await loadJobs();
-  };
-
-  const stats = useMemo(() => ({
-    total: jobs.length,
-    pending: jobs.filter((j) => j.status === 'PENDING').length,
-    inProgress: jobs.filter((j) => j.status === 'IN_PROGRESS').length,
-    onHold: jobs.filter((j) => j.status === 'ON_HOLD').length,
-    completed: jobs.filter((j) => j.status === 'COMPLETED').length,
-  }), [jobs]);
-
-  const handleQuickStatusChange = async (jobId: string, status: ProductionStatus) => {
-    setUpdatingJobId(jobId);
-    try {
-      await updateJob(jobId, { status });
-      setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status } : j));
-    } catch (err) {
-      console.error('Failed to update status:', err);
-    } finally {
-      setUpdatingJobId(null);
-    }
   };
 
   const getJobsByStatus = (status: ProductionStatus): ProductionJob[] => {
@@ -162,7 +136,10 @@ export default function ProductionPage() {
                       type="text"
                       {...field}
                       placeholder="Search by job name, order ID, or customer..."
-                      onChange={field.onChange}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        loadJobs();
+                      }}
                     />
                     <svg
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
@@ -184,7 +161,10 @@ export default function ProductionPage() {
                 <Select
                   {...field}
                   options={PRIORITY_OPTIONS}
-                  onChange={field.onChange}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    loadJobs();
+                  }}
                   fullWidth={false}
                 />
               )}
@@ -196,6 +176,7 @@ export default function ProductionPage() {
                 type="button"
                 onClick={() => {
                   form.reset();
+                  loadJobs();
                 }}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
               >
@@ -206,30 +187,8 @@ export default function ProductionPage() {
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="max-w-[1600px] mx-auto px-6 pt-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Total joburi</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
-          </div>
-          <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-            <p className="text-xs text-yellow-700 uppercase tracking-wide">În așteptare</p>
-            <p className="text-2xl font-bold text-yellow-700 mt-1">{stats.pending}</p>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <p className="text-xs text-blue-700 uppercase tracking-wide">În lucru</p>
-            <p className="text-2xl font-bold text-blue-700 mt-1">{stats.inProgress}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-            <p className="text-xs text-green-700 uppercase tracking-wide">Finalizate</p>
-            <p className="text-2xl font-bold text-green-700 mt-1">{stats.completed}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Kanban Board */}
-      <div className="max-w-[1600px] mx-auto px-6 pb-6">
+      <div className="max-w-[1600px] mx-auto px-6 py-6">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
             {error}
@@ -260,12 +219,7 @@ export default function ProductionPage() {
                   <div className="space-y-3 min-h-[400px]">
                     {columnJobs.length > 0 ? (
                       columnJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          onStatusChange={handleQuickStatusChange}
-                          updating={updatingJobId === job.id}
-                        />
+                        <JobCard key={job.id} job={job} />
                       ))
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
