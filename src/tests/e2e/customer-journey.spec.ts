@@ -18,21 +18,18 @@ test.describe('Customer Journey - Complete Flow', () => {
     // 1. Homepage
     await test.step('Acces homepage', async () => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
-      // debug: log title and capture screenshot to help diagnose flakiness
-      console.log('PAGE TITLE:', await page.title());
-      await page.screenshot({ path: 'playwright-debug-homepage.png', fullPage: true });
+      await page.waitForLoadState('domcontentloaded');
+      // Wait for actual layout to render before any assertions (avoids empty-title race)
+      await expect(page.locator('header')).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('nav')).toBeVisible({ timeout: 10000 });
+      // Title is set by Next.js after hydration — assert only after header is visible
       await expect(page).toHaveTitle(/Sanduta\.art/i, { timeout: 10000 });
-      
-      // Verifică elemente principale
-      await expect(page.locator('header')).toBeVisible();
-      await expect(page.locator('nav')).toBeVisible();
     });
 
     // 2. Navigare la produse
     await test.step('Navigare la catalog produse', async () => {
       await page.click('text=Produse');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await page.waitForURL(productRoutePattern, { timeout: 10000 });
       await expect(page).toHaveURL(productRoutePattern);
 
@@ -173,7 +170,7 @@ test.describe('Customer Journey - Complete Flow', () => {
     // 1. Navigare la editor
     await test.step('Acces editor', async () => {
       await page.goto('/editor');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await page.waitForURL(editorRoutePattern, { timeout: 10000 });
       await expect(page).toHaveURL(editorRoutePattern);
       await expect(page.locator('body')).toBeVisible();
@@ -298,7 +295,7 @@ test.describe('Customer Journey - Complete Flow', () => {
     expect(loadTime).toBeLessThan(5000); // < 5s
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     if (consoleErrors.length) {
       console.error('Console errors during performance test:', consoleErrors);
@@ -325,7 +322,7 @@ test.describe('Customer Journey - Complete Flow', () => {
 
   test('verifică filtere și sortare produse', async ({ page }) => {
     await page.goto('/products');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForURL(productRoutePattern, { timeout: 10000 });
 
     // Așteaptă încărcarea produselor
@@ -335,14 +332,14 @@ test.describe('Customer Journey - Complete Flow', () => {
     const categoryFilter = page.locator('[data-testid="category-filter"], select:has-text("Categorie"), select:has-text("Category")').first();
     if (await categoryFilter.isVisible()) {
       await categoryFilter.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
     }
 
     // Sortare după preț
     const sortSelect = page.locator('[data-testid="sort-select"], select:has-text("Sortare"), select:has-text("Sort")');
     if (await sortSelect.isVisible()) {
       await sortSelect.selectOption('price-asc');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
 
       // Verifică că produsele sunt sortate
       const prices = await page.locator('[data-testid="product-price"], .product-price').allTextContents();
@@ -355,7 +352,7 @@ test.describe('Customer Journey - Complete Flow', () => {
 
   test('verifică navigare paginare', async ({ page }) => {
     await page.goto('/products');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForURL(productRoutePattern, { timeout: 10000 });
 
     await page.waitForSelector('main, section, article, a[href*="/produse"], .product-list, .product-card', { timeout: 10000 });
@@ -363,7 +360,7 @@ test.describe('Customer Journey - Complete Flow', () => {
     const paginationNext = await page.$('a[rel="next"], a[aria-label="Next"], a:has-text("Următor")');
     if (paginationNext) {
       await paginationNext.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(/(page=2|pagin[aă]=2|page=\d+|\/produse(\?page=2)?)/i, { timeout: 10000 });
     } else {
       console.warn('No pagination detected; skipping pagination assertions.');
