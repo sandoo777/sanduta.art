@@ -4,16 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth/nextauth";
 import { calculateProductionTime, calculateProductionCost, type EquipmentTypeForCalc } from "@/lib/production-time";
 import { getCompatibleMaterials } from "@/modules/materials/server";
-import type { Prisma as PrismaNamespace } from "@prisma/client";
-import { ProductionPriority, ProductionStatus } from "@prisma/client";
-import {
-  calculateOutsourceFinancials,
-  MachineReservationError,
-  reserveMachineAtomically,
-} from "@/lib/production/job-rules";
-
-const PRODUCTION_STATUSES = new Set<string>(Object.values(ProductionStatus));
-const PRODUCTION_PRIORITIES = new Set<string>(Object.values(ProductionPriority));
 
 // GET /api/admin/production - List production jobs with filters
 export async function GET(request: NextRequest) {
@@ -33,14 +23,10 @@ export async function GET(request: NextRequest) {
     const materialId = searchParams.get("materialId");
 
     // Build filter object
-    const where = {} as PrismaNamespace.ProductionJobWhereInput;
+    const where: Parameters<typeof prisma.productionJob.findMany>[0]['where'] = {};
     
-    if (status && PRODUCTION_STATUSES.has(status)) {
-      where.status = status as ProductionStatus;
-    }
-    if (priority && PRODUCTION_PRIORITIES.has(priority)) {
-      where.priority = priority as ProductionPriority;
-    }
+    if (status) where.status = status;
+    if (priority) where.priority = priority;
     if (assignedToId) where.assignedToId = assignedToId;
     if (orderId) where.orderId = orderId;
     if (printMethodId) where.printMethodId = printMethodId;
@@ -55,6 +41,18 @@ export async function GET(request: NextRequest) {
             customerName: true,
             totalPrice: true,
             status: true,
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            name: true,
+            printMethodId: true,
+            materialId: true,
+            isOutsourced: true,
+            saleUnit: true,
+            pricePerM2: true,
+            pricePerUnit: true,
           },
         },
         assignedTo: {
@@ -97,35 +95,7 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    const productIds = Array.from(
-      new Set(jobs.map((job) => job.productId).filter((id): id is string => Boolean(id)))
-    );
-
-    const products =
-      productIds.length > 0
-        ? await prisma.product.findMany({
-            where: { id: { in: productIds } },
-            select: {
-              id: true,
-              name: true,
-              printMethodId: true,
-              materialId: true,
-              isOutsourced: true,
-              saleUnit: true,
-              pricePerM2: true,
-              pricePerUnit: true,
-            },
-          })
-        : [];
-
-    const productById = new Map(products.map((product) => [product.id, product]));
-
-    const jobsWithProduct = jobs.map((job) => ({
-      ...job,
-      product: job.productId ? productById.get(job.productId) ?? null : null,
-    }));
-
-    return NextResponse.json({ jobs: jobsWithProduct });
+    return NextResponse.json({ jobs });
   } catch (error) {
     console.error("Error fetching production jobs:", error);
     return NextResponse.json(
@@ -209,7 +179,9 @@ export async function POST(request: NextRequest) {
       materialId: string | null;
       isOutsourced: boolean;
       saleUnit: 'M2' | 'UNIT';
-      pricing: PrismaNamespace.JsonValue;
+      pricePerM2: number | null;
+      pricePerUnit: number | null;
+      pricing: unknown;
       active: boolean;
     } | null = null;
 
@@ -231,6 +203,8 @@ export async function POST(request: NextRequest) {
           materialId: true,
           isOutsourced: true,
           saleUnit: true,
+          pricePerM2: true,
+          pricePerUnit: true,
           pricing: true,
           active: true,
         },
@@ -342,10 +316,20 @@ export async function POST(request: NextRequest) {
       if (!machine.active) {
         return NextResponse.json({ error: `Echipamentul "${machine.name}" este inactiv` }, { status: 409 });
       }
+      if (machine.status === "BUSY") {
+        return NextResponse.json(
+          { error: `Echipamentul "${machine.name}" este deja ocupat de alt job` },
+          { status: 409 }
+        );
+      }
+      if (machine.status === "MAINTENANCE") {
+        return NextResponse.json(
+          { error: `Echipamentul "${machine.name}" este în mentenanță` },
+          { status: 409 }
+        );
+      }
 
-      const compatiblePrintMethodIds = (machine.compatiblePrintMethodIds ?? []) as string[];
-
-      if (resolvedPrintMethodId && !compatiblePrintMethodIds.includes(resolvedPrintMethodId)) {
+      if (resolvedPrintMethodId && !machine.compatiblePrintMethodIds.includes(resolvedPrintMethodId)) {
         return NextResponse.json(
           { error: `Echipamentul "${machine.name}" nu suportă metoda de tipărire selectată` },
           { status: 400 }
@@ -400,20 +384,17 @@ export async function POST(request: NextRequest) {
 
     if (selectedPrintMethod?.isOutsourced && parsedQuantity !== null && parsedQuantity > 0) {
       const productPricing = (selectedProduct?.pricing ?? null) as Record<string, unknown> | null;
-      const supplierPerUnit = typeof productPricing?.supplierCost === "number"
+      const supplierPerUnit = typeof productPricing?.supplierCost === 'number'
         ? Number(productPricing.supplierCost)
         : 0;
       const markupPercent = typeof productPricing?.markup === 'number'
         ? Number(productPricing.markup)
         : Number(selectedPrintMethod.markup ?? 0);
-      const outsourceValues = calculateOutsourceFinancials({
-        quantity: parsedQuantity,
-        supplierCostPerUnit: supplierPerUnit,
-        markupPercent,
-      });
-      estimatedCost = outsourceValues.estimatedCost;
-      outsourcedCost = outsourceValues.outsourcedCost;
-      outsourcedProfit = outsourceValues.outsourcedProfit;
+      const supplierCost = supplierPerUnit * parsedQuantity;
+      const markupValue = supplierCost * (markupPercent / 100);
+      estimatedCost = supplierCost;
+      outsourcedCost = supplierCost;
+      outsourcedProfit = markupValue;
     } else if (machineCalcData && parsedQuantity !== null && parsedQuantity > 0) {
       try {
         const timeResult = calculateProductionTime(
@@ -437,19 +418,7 @@ export async function POST(request: NextRequest) {
 
         // Add indirect consumables cost from print method
         if (resolvedPrintMethodId) {
-          const printMethodConsumableDelegate = (prisma as typeof prisma & {
-            printMethodConsumable: {
-              findMany: (args: {
-                where: { printMethodId: string; active: true };
-                select: { costPerSqm: true; costPerJob: true };
-              }) => Promise<Array<{
-                costPerSqm: PrismaNamespace.Decimal | null;
-                costPerJob: PrismaNamespace.Decimal | null;
-              }>>;
-            };
-          }).printMethodConsumable;
-
-          const methodConsumables = await printMethodConsumableDelegate.findMany({
+          const methodConsumables = await prisma.printMethodConsumable.findMany({
             where: { 
               printMethodId: resolvedPrintMethodId,
               active: true,
@@ -486,10 +455,6 @@ export async function POST(request: NextRequest) {
     const job = await prisma.$transaction(async (tx) => {
       const resolvedMachineId = selectedPrintMethod?.isOutsourced ? null : (machineId || null);
       const finalMaterialId = selectedPrintMethod?.isOutsourced ? null : resolvedMaterialId;
-
-      if (resolvedMachineId) {
-        await reserveMachineAtomically(tx, resolvedMachineId);
-      }
 
       const newJob = await tx.productionJob.create({
         data: {
@@ -568,14 +533,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      if (resolvedMachineId) {
+        await tx.machine.update({
+          where: { id: resolvedMachineId },
+          data: { status: "BUSY" },
+        });
+      }
+
       return newJob;
     });
 
     return NextResponse.json(job, { status: 201 });
   } catch (error) {
-    if (error instanceof MachineReservationError) {
-      return NextResponse.json({ error: error.message }, { status: error.statusCode });
-    }
     console.error("Error creating production job:", error);
     return NextResponse.json(
       { error: "Failed to create production job" },

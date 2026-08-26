@@ -7,7 +7,7 @@ import { getMaterialCategoriesTree } from '@/modules/material-categories';
  * GET /api/admin/material-categories/tree
  * Get material categories as a nested tree structure
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { user, error } = await requireRole(['ADMIN', 'MANAGER']);
     if (error) return error;

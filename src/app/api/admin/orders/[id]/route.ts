@@ -7,24 +7,22 @@ import { validateInput } from "@/lib/validation";
 import { logAuditAction, AUDIT_ACTIONS } from "@/lib/audit-log";
 import { z } from "zod";
 
-function normalizeOutsourceJob<T>(job: T): T {
-  const candidate = job as T & {
-    printMethod?: { isOutsourced?: boolean | null; markup?: unknown } | null;
-    outsourcedCost?: number | string | null;
-    outsourcedProfit?: number | string | null;
-    estimatedCost?: number | string | null;
-  };
-
-  if (!candidate?.printMethod?.isOutsourced) {
+function normalizeOutsourceJob<T extends {
+  printMethod?: { isOutsourced?: boolean | null; markup?: number | null } | null;
+  outsourcedCost?: number | string | null;
+  outsourcedProfit?: number | string | null;
+  estimatedCost?: number | string | null;
+}>(job: T): T {
+  if (!job?.printMethod?.isOutsourced) {
     return {
       ...job,
-      estimatedCost: Number(candidate.estimatedCost ?? 0),
+      estimatedCost: Number(job.estimatedCost ?? 0),
     };
   }
 
-  const supplierCost = Number(candidate.outsourcedCost ?? 0);
-  const storedProfit = Number(candidate.outsourcedProfit ?? 0);
-  const markupPercent = Number(candidate.printMethod?.markup ?? 0);
+  const supplierCost = Number(job.outsourcedCost ?? 0);
+  const storedProfit = Number(job.outsourcedProfit ?? 0);
+  const markupPercent = Number(job.printMethod?.markup ?? 0);
   const normalizedProfit = storedProfit > 0 ? storedProfit : supplierCost * (markupPercent / 100);
 
   return {

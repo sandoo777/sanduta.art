@@ -37,111 +37,6 @@ function normalizeImages(images?: string[]) {
   return filtered;
 }
 
-function toInputJsonValue(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
-
-function sanitizeProductPayload<T>(body: T): T & { price: number } {
-  const trimString = (value: unknown) => (typeof value === 'string' ? value.trim() : value);
-  const sanitized = JSON.parse(JSON.stringify(body ?? {})) as Record<string, unknown>;
-
-  ['name', 'slug', 'sku', 'description', 'descriptionShort'].forEach((key) => {
-    if (sanitized[key]) {
-      sanitized[key] = trimString(sanitized[key]);
-    }
-  });
-
-  if (Array.isArray(sanitized.images)) {
-    sanitized.images = sanitized.images
-      .map((item) => (typeof item === 'string' ? item.trim() : item))
-      .filter(Boolean);
-  }
-
-  if (Array.isArray(sanitized.options)) {
-    sanitized.options = sanitized.options.map((option) => {
-      if (Array.isArray((option as { values?: unknown[] }).values)) {
-        return {
-          ...option,
-          values: (option as { values: Array<{ label?: unknown; value?: unknown }> }).values.map((value) => ({
-            ...value,
-            label: trimString(value.label),
-            value: trimString(value.value),
-          })),
-        };
-      }
-
-      return option;
-    });
-  }
-
-  if (sanitized.pricing && typeof sanitized.pricing === 'object') {
-    const pricing = sanitized.pricing as Record<string, unknown>;
-    if (pricing.basePrice == null) {
-      pricing.basePrice = 0;
-    }
-    pricing.basePrice = Number(pricing.basePrice) || 0;
-
-    if (pricing.type === 'fixed' || pricing.type === 'per_unit') {
-      sanitized.price = pricing.basePrice;
-    } else {
-      sanitized.price = Number(sanitized.price) || 0;
-    }
-  } else {
-    sanitized.price = Number(sanitized.price) || 0;
-  }
-
-  return sanitized as T & { price: number };
-}
-
-function removeUndefined(obj: unknown): unknown {
-  if (obj == null || typeof obj !== 'object') {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(removeUndefined).filter((value) => value !== undefined);
-  }
-
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined) {
-      continue;
-    }
-
-    const cleaned = removeUndefined(value);
-    if (cleaned === undefined) {
-      continue;
-    }
-    if (typeof cleaned === 'object' && cleaned !== null && !Array.isArray(cleaned) && Object.keys(cleaned).length === 0) {
-      continue;
-    }
-    if (Array.isArray(cleaned) && cleaned.length === 0) {
-      continue;
-    }
-
-    out[key] = cleaned;
-  }
-
-  return out;
-}
-
-function normalizePricing(pricing: unknown, topLevelPrice: unknown) {
-  if (!pricing || typeof pricing !== 'object') {
-    if (topLevelPrice != null) {
-      return { basePrice: Number(topLevelPrice) || 0, type: 'fixed', priceBreaks: [] };
-    }
-
-    return undefined;
-  }
-
-  const pricingRecord = pricing as Record<string, unknown>;
-  return {
-    basePrice: Number(pricingRecord.basePrice ?? topLevelPrice ?? 0) || 0,
-    type: pricingRecord.type || 'fixed',
-    priceBreaks: Array.isArray(pricingRecord.priceBreaks) ? pricingRecord.priceBreaks : [],
-  };
-}
-
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -169,9 +64,7 @@ export async function GET(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    return NextResponse.json(
-      serializeFullProduct(product as Parameters<typeof serializeFullProduct>[0])
-    );
+    return NextResponse.json(serializeFullProduct(product));
   } catch (error) {
     console.error('Error fetching full product:', error);
     return NextResponse.json(
@@ -193,13 +86,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = sanitizeProductPayload((await req.json()) as Partial<CreateFullProductInput>);
-    if (!body.pricing) {
-      body.pricing = { basePrice: Number(body.price) || 0, priceBreaks: [] } as CreateFullProductInput['pricing'];
-    }
-    body.pricing.basePrice = Number(body.pricing.basePrice) || Number(body.price) || 0;
-    body.price = Number(body.price) || body.pricing.basePrice;
-
+    const body = (await req.json()) as Partial<CreateFullProductInput>;
     const rawBody = body as Record<string, unknown>;
     const product = await prisma.product.findUnique({
       where: { id },
@@ -273,9 +160,7 @@ export async function PATCH(
 
       nextIsOutsourced = method.isOutsourced;
 
-      const compatibleMaterialIds = ((method as { materialIds?: string[] | null }).materialIds ?? []) as string[];
-
-      if (nextMaterialId && !method.isOutsourced && compatibleMaterialIds.length > 0 && !compatibleMaterialIds.includes(nextMaterialId)) {
+      if (nextMaterialId && !method.isOutsourced && method.materialIds.length > 0 && !method.materialIds.includes(nextMaterialId)) {
         return NextResponse.json(
           { error: 'Materialul implicit nu este compatibil cu metoda de print selectată' },
           { status: 400 }
@@ -363,12 +248,6 @@ export async function PATCH(
     const existingMarkup = typeof existingPricing?.markup === 'number'
       ? Number(existingPricing.markup)
       : null;
-    const incomingBasePrice = body.pricing && Number(body.pricing.basePrice)
-      ? Number(body.pricing.basePrice)
-      : undefined;
-    const incomingPrice = Number(body.price)
-      ? Number(body.price)
-      : incomingBasePrice;
 
     let nextFinalPrice: number | undefined;
     let nextSupplierCost: number | null = existingSupplierCost;
@@ -398,156 +277,128 @@ export async function PATCH(
 
       nextFinalPrice = nextSupplierCost + (nextSupplierCost * nextMarkup) / 100;
     } else {
-      nextFinalPrice = incomingPrice ?? (effectiveSaleUnit === 'M2' ? Number(nextPricePerM2) : Number(nextPricePerUnit));
+      nextFinalPrice = effectiveSaleUnit === 'M2' ? Number(nextPricePerM2) : Number(nextPricePerUnit);
       nextSupplierCost = null;
       nextMarkup = null;
     }
 
-    const updateData: Record<string, unknown> = {
-      name: body.name,
-      slug: body.slug,
-      sku: body.sku || undefined,
-      description: body.description || undefined,
-      descriptionShort: body.descriptionShort || undefined,
-      active: body.active,
-      categoryId: body.categoryId || undefined,
-      type: body.type || undefined,
-      dimensions: body.dimensions
-        ? {
-            widthMin: Number(body.dimensions.widthMin) || null,
-            widthMax: Number(body.dimensions.widthMax) || null,
-            heightMin: Number(body.dimensions.heightMin) || null,
-            heightMax: Number(body.dimensions.heightMax) || null,
-            unit: body.dimensions.unit || null,
-          }
-        : undefined,
-      pricing: body.pricing
-        ? {
-            basePrice: incomingBasePrice ?? incomingPrice ?? nextFinalPrice ?? 0,
-            type: body.pricing.type || 'fixed',
-            priceBreaks: body.pricing.priceBreaks || [],
-            supplierCost: nextSupplierCost,
-            markup: nextMarkup,
-          }
-        : undefined,
-      price: incomingPrice ?? nextFinalPrice,
-      saleUnit: nextSaleUnit || undefined,
-      minOrderQty: Number(body.minOrderQty || (body as Partial<CreateFullProductInput> & { minQuantity?: number }).minQuantity) || undefined,
-      pricePerUnit: body.pricePerUnit !== undefined ? Number(body.pricePerUnit) || null : undefined,
-      pricePerM2: body.pricePerM2 !== undefined ? body.pricePerM2 : undefined,
-      metaTitle: body.seo?.metaTitle ?? undefined,
-      metaDescription: body.seo?.metaDescription ?? undefined,
-      ogImage: body.seo?.ogImage ?? undefined,
-      production: body.production
-        ? {
-            estimatedTime: Number(body.production.estimatedTime) || null,
-            operations: body.production.operations?.map((operation) => ({
-              name: operation.name,
-              order: Number(operation.order) || 0,
-              timeMinutes: Number(operation.timeMinutes) || 0,
-            })) || [],
-          }
-        : undefined,
-      options: Array.isArray(body.options)
-        ? {
-            create: body.options.map((option) => ({
-              name: option.name,
-              type: option.type,
-              required: Boolean(option.required),
-              values: {
-                create: (option.values || []).map((value) => ({
-                  label: value.label?.trim?.() ?? value.label,
-                  value: value.value?.trim?.() ?? value.value,
-                  priceModifier: value.priceModifier ?? null,
-                })),
-              },
-            })),
-          }
-        : undefined,
-      compatibleMaterials: Array.isArray(body.compatibleMaterials)
-        ? {
-            connect: body.compatibleMaterials.map((relationId) => ({ id: relationId })),
-          }
-        : undefined,
-      compatiblePrintMethods: Array.isArray(body.compatiblePrintMethods)
-        ? {
-            connect: body.compatiblePrintMethods.map((relationId) => ({ id: relationId })),
-          }
-        : undefined,
-      compatibleFinishing: Array.isArray(body.compatibleFinishing)
-        ? {
-            connect: body.compatibleFinishing.map((relationId) => ({ id: relationId })),
-          }
-        : undefined,
-      images: Array.isArray(body.images) ? body.images.filter(Boolean) : undefined,
-      printMethodId: body.printMethodId !== undefined ? nextPrintMethodId : undefined,
-      materialId: body.materialId !== undefined ? (nextIsOutsourced ? null : nextMaterialId) : undefined,
-      isOutsourced: nextIsOutsourced,
-    };
+    const updateData: Prisma.ProductUpdateInput = {};
 
-    updateData.pricing = updateData.pricing && typeof updateData.pricing === 'object'
-      ? {
-          basePrice: Number((updateData.pricing as { basePrice?: unknown }).basePrice ?? updateData.price ?? 0) || 0,
-          type: (updateData.pricing as { type?: string }).type || 'fixed',
-          priceBreaks: Array.isArray((updateData.pricing as { priceBreaks?: unknown[] }).priceBreaks)
-            ? (updateData.pricing as { priceBreaks: unknown[] }).priceBreaks
-            : [],
-        }
-      : (updateData.price != null ? { basePrice: Number(updateData.price) || 0, type: 'fixed', priceBreaks: [] } : undefined);
+    if (body.name !== undefined) updateData.name = body.name.trim();
+    if (body.slug !== undefined) updateData.slug = body.slug.trim();
+    if (body.sku !== undefined) updateData.sku = body.sku?.trim() || null;
+    if (body.description !== undefined)
+      updateData.description = body.description?.trim() || null;
+    if (body.descriptionShort !== undefined)
+      updateData.descriptionShort = body.descriptionShort?.trim() || null;
+    if (body.type !== undefined) updateData.type = body.type;
+    if (nextSaleUnit !== undefined) updateData.saleUnit = nextSaleUnit;
+    if (body.categoryId !== undefined) updateData.categoryId = body.categoryId;
+    if (body.active !== undefined) updateData.active = body.active;
+    if (nextIsOutsourced) {
+      updateData.pricePerM2 = null;
+      updateData.pricePerUnit = null;
+      updateData.materialId = null;
+    } else {
+      if (body.pricePerM2 !== undefined) updateData.pricePerM2 = body.pricePerM2;
+      if (body.pricePerUnit !== undefined) updateData.pricePerUnit = body.pricePerUnit;
+    }
+    if (body.minOrderQty !== undefined) updateData.minOrderQty = body.minOrderQty;
+    if (body.printMethodId !== undefined) updateData.printMethodId = nextPrintMethodId;
+    if (body.materialId !== undefined) {
+      updateData.materialId = nextIsOutsourced ? null : nextMaterialId;
+    }
+    if (body.printMethodId !== undefined && nextIsOutsourced) {
+      updateData.materialId = null;
+    }
+    if (nextIsOutsourced !== undefined) updateData.isOutsourced = nextIsOutsourced;
+    if (body.pricing !== undefined) {
+      updateData.price = nextFinalPrice ?? body.pricing?.basePrice ?? 0;
+    } else if (nextFinalPrice !== undefined) {
+      updateData.price = nextFinalPrice;
+    }
 
-    updateData.pricing = normalizePricing(updateData.pricing, updateData.price);
-    const cleanedUpdateData = removeUndefined(updateData) as Prisma.ProductUncheckedUpdateInput;
-
-    if (cleanedUpdateData.pricing && typeof cleanedUpdateData.pricing === 'object') {
-      const pricing = cleanedUpdateData.pricing as { priceBreaks?: unknown[] | null };
-      if (!('priceBreaks' in pricing) || pricing.priceBreaks == null) {
-        pricing.priceBreaks = [];
-      }
+    if (body.pricing !== undefined) {
+      updateData.pricing = {
+        ...body.pricing,
+        basePrice: nextFinalPrice ?? body.pricing?.basePrice ?? 0,
+        supplierCost: nextSupplierCost,
+        markup: nextMarkup,
+      };
+    } else if (nextFinalPrice !== undefined || hasOwnField(rawBody, 'supplierCost') || hasOwnField(rawBody, 'markup')) {
+      updateData.pricing = {
+        ...(existingPricing ?? {}),
+        basePrice: nextFinalPrice ?? Number(existingPricing?.basePrice ?? product.pricePerUnit ?? product.pricePerM2 ?? 0),
+        supplierCost: nextSupplierCost,
+        markup: nextMarkup,
+      };
+    }
+    if (body.options !== undefined) updateData.options = body.options ?? [];
+    if (body.dimensions !== undefined) updateData.dimensions = body.dimensions ?? null;
+    if (body.production !== undefined) updateData.production = body.production ?? null;
+    if (body.seo !== undefined) {
+      updateData.metaTitle = body.seo?.metaTitle?.trim() || null;
+      updateData.metaDescription = body.seo?.metaDescription?.trim() || null;
+      updateData.ogImage = body.seo?.ogImage?.trim() || null;
     }
 
     await prisma.product.update({
       where: { id },
-      data: cleanedUpdateData,
+      data: updateData,
     });
 
+    const relationOperations: Promise<unknown>[] = [];
+
     if (body.compatibleMaterials) {
-      await prisma.productMaterial.deleteMany({ where: { productId: id } });
+      relationOperations.push(prisma.productMaterial.deleteMany({ where: { productId: id } }));
       if (body.compatibleMaterials.length > 0) {
-        await prisma.productMaterial.createMany({
-          data: body.compatibleMaterials.map((materialId) => ({ productId: id, materialId })),
-          skipDuplicates: true,
-        });
+        relationOperations.push(
+          prisma.productMaterial.createMany({
+            data: body.compatibleMaterials.map((materialId) => ({ productId: id, materialId })),
+            skipDuplicates: true,
+          })
+        );
       }
     }
 
     if (body.compatiblePrintMethods) {
-      await prisma.productPrintMethod.deleteMany({ where: { productId: id } });
+      relationOperations.push(prisma.productPrintMethod.deleteMany({ where: { productId: id } }));
       if (body.compatiblePrintMethods.length > 0) {
-        await prisma.productPrintMethod.createMany({
-          data: body.compatiblePrintMethods.map((printMethodId) => ({ productId: id, printMethodId })),
-          skipDuplicates: true,
-        });
+        relationOperations.push(
+          prisma.productPrintMethod.createMany({
+            data: body.compatiblePrintMethods.map((printMethodId) => ({ productId: id, printMethodId })),
+            skipDuplicates: true,
+          })
+        );
       }
     }
 
     if (body.compatibleFinishing) {
-      await prisma.productFinishing.deleteMany({ where: { productId: id } });
+      relationOperations.push(prisma.productFinishing.deleteMany({ where: { productId: id } }));
       if (body.compatibleFinishing.length > 0) {
-        await prisma.productFinishing.createMany({
-          data: body.compatibleFinishing.map((finishingId) => ({ productId: id, finishingId })),
-          skipDuplicates: true,
-        });
+        relationOperations.push(
+          prisma.productFinishing.createMany({
+            data: body.compatibleFinishing.map((finishingId) => ({ productId: id, finishingId })),
+            skipDuplicates: true,
+          })
+        );
       }
     }
 
     if (body.images) {
       const sanitizedImages = normalizeImages(body.images) ?? [];
-      await prisma.productImage.deleteMany({ where: { productId: id } });
+      relationOperations.push(prisma.productImage.deleteMany({ where: { productId: id } }));
       if (sanitizedImages.length > 0) {
-        await prisma.productImage.createMany({
-          data: sanitizedImages.map((url) => ({ productId: id, url })),
-        });
+        relationOperations.push(
+          prisma.productImage.createMany({
+            data: sanitizedImages.map((url) => ({ productId: id, url })),
+          })
+        );
       }
+    }
+
+    if (relationOperations.length > 0) {
+      await prisma.$transaction(relationOperations);
     }
 
     const updatedProduct = await prisma.product.findUnique({
@@ -561,9 +412,7 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(
-      serializeFullProduct(updatedProduct as Parameters<typeof serializeFullProduct>[0])
-    );
+    return NextResponse.json(serializeFullProduct(updatedProduct));
   } catch (error) {
     console.error('Error updating full product:', error);
     return NextResponse.json(

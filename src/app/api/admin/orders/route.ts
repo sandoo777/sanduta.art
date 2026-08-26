@@ -2,37 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth/nextauth";
 import { prisma } from "@/lib/prisma";
-import { Prisma, OrderStatus } from "@prisma/client";
 
-const ORDER_STATUSES = new Set<string>(Object.values(OrderStatus));
-
-function isMissingColumnError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    String((error as { code?: unknown }).code ?? "") === "P2022"
-  );
-}
-
-function normalizeOutsourceJob<T>(job: T): T {
-  const candidate = job as T & {
-    printMethod?: { isOutsourced?: boolean | null; markup?: unknown } | null;
-    outsourcedCost?: number | string | null;
-    outsourcedProfit?: number | string | null;
-    estimatedCost?: number | string | null;
-  };
-
-  if (!candidate?.printMethod?.isOutsourced) {
+function normalizeOutsourceJob<T extends {
+  printMethod?: { isOutsourced?: boolean | null; markup?: number | null } | null;
+  outsourcedCost?: number | string | null;
+  outsourcedProfit?: number | string | null;
+  estimatedCost?: number | string | null;
+}>(job: T): T {
+  if (!job?.printMethod?.isOutsourced) {
     return {
       ...job,
-      estimatedCost: Number(candidate.estimatedCost ?? 0),
+      estimatedCost: Number(job.estimatedCost ?? 0),
     };
   }
 
-  const supplierCost = Number(candidate.outsourcedCost ?? 0);
-  const storedProfit = Number(candidate.outsourcedProfit ?? 0);
-  const markupPercent = Number(candidate.printMethod?.markup ?? 0);
+  const supplierCost = Number(job.outsourcedCost ?? 0);
+  const storedProfit = Number(job.outsourcedProfit ?? 0);
+  const markupPercent = Number(job.printMethod?.markup ?? 0);
   const normalizedProfit = storedProfit > 0 ? storedProfit : supplierCost * (markupPercent / 100);
 
   return {
@@ -68,9 +54,9 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
 
     // Build where clause
-    const where: Prisma.OrderWhereInput = {};
-    if (status && ORDER_STATUSES.has(status)) {
-      where.status = status as OrderStatus;
+    const where: Parameters<typeof prisma.order.findMany>[0]['where'] = {};
+    if (status) {
+      where.status = status;
     }
     if (search) {
       where.OR = [
@@ -83,181 +69,105 @@ export async function GET(req: NextRequest) {
     // Get total count for pagination
     const totalCount = await prisma.order.count({ where });
 
-    let normalizedOrders: unknown[] = [];
-
-    try {
-      const orders = await prisma.order.findMany({
-        where,
-        include: {
-          customer: true,
-          assignedTo: {
-            select: { id: true, name: true, email: true },
-          },
-          orderItems: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  price: true,
-                  printMethodId: true,
-                  materialId: true,
-                  isOutsourced: true,
-                  saleUnit: true,
-                  pricePerM2: true,
-                  pricePerUnit: true,
-                  minOrderQty: true,
-                  pricing: true,
-                },
+    // Get orders with pagination
+    const orders = await prisma.order.findMany({
+      where,
+      include: {
+        customer: true,
+        assignedTo: {
+          select: { id: true, name: true, email: true },
+        },
+        orderItems: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                printMethodId: true,
+                materialId: true,
+                isOutsourced: true,
+                saleUnit: true,
+                pricePerM2: true,
+                pricePerUnit: true,
+                minOrderQty: true,
+                pricing: true,
               },
-            },
-          },
-          files: true,
-          productionJobs: {
-            select: {
-              id: true,
-              name: true,
-              status: true,
-              productId: true,
-              estimatedMinutes: true,
-              estimatedCost: true,
-              outsourcedCost: true,
-              outsourcedProfit: true,
-              printMethod: {
-                select: {
-                  id: true,
-                  name: true,
-                  isOutsourced: true,
-                  termenFurnizor: true,
-                  markup: true,
-                },
-              },
-              machine: {
-                select: { id: true, name: true, equipmentType: true, status: true },
-              },
-              materialUsages: {
-                select: {
-                  id: true,
-                  quantity: true,
-                  unit: true,
-                  wastePercent: true,
-                  totalUsed: true,
-                  cost: true,
-                  createdAt: true,
-                  material: {
-                    select: {
-                      id: true,
-                      name: true,
-                      category: { select: { id: true, name: true } },
-                      purchasePrice: true,
-                      salePrice: true,
-                    },
-                  },
-                },
-              },
-            },
-            orderBy: { createdAt: 'desc' },
-          },
-          _count: {
-            select: {
-              orderItems: true,
-              files: true,
-              productionJobs: true,
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
-        skip,
-        take: limit,
-      });
-
-      const jobProductIds = Array.from(
-        new Set(
-          orders
-            .flatMap((order) => order.productionJobs ?? [])
-            .map((job) => job.productId)
-            .filter((id): id is string => Boolean(id))
-        )
-      );
-
-      const products =
-        jobProductIds.length > 0
-          ? await prisma.product.findMany({
-              where: { id: { in: jobProductIds } },
+        files: true,
+        productionJobs: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            estimatedMinutes: true,
+            estimatedCost: true,
+            outsourcedCost: true,
+            outsourcedProfit: true,
+            product: {
               select: {
                 id: true,
                 name: true,
                 saleUnit: true,
               },
-            })
-          : [];
-
-      const productById = new Map(products.map((product) => [product.id, product]));
-
-      normalizedOrders = orders.map((order) => ({
-        ...order,
-        productionJobs: (order.productionJobs ?? []).map((job) => {
-          const normalizedJob = normalizeOutsourceJob(job) as typeof job & {
-            product?: { id: string; name: string; saleUnit: unknown } | null;
-          };
-
-          return {
-            ...normalizedJob,
-            product: job.productId ? productById.get(job.productId) ?? null : null,
-          };
-        }),
-      }));
-    } catch (error) {
-      if (!isMissingColumnError(error)) {
-        throw error;
-      }
-
-      console.warn('Order query failed with missing column; using fallback projection');
-
-      const fallbackOrders = await prisma.order.findMany({
-        where,
-        include: {
-          customer: true,
-          assignedTo: {
-            select: { id: true, name: true, email: true },
-          },
-          orderItems: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  price: true,
+            },
+            printMethod: {
+              select: {
+                id: true,
+                name: true,
+                isOutsourced: true,
+                termenFurnizor: true,
+                markup: true,
+              },
+            },
+            machine: {
+              select: { id: true, name: true, equipmentType: true, status: true },
+            },
+            materialUsages: {
+              select: {
+                id: true,
+                quantity: true,
+                unit: true,
+                wastePercent: true,
+                totalUsed: true,
+                cost: true,
+                createdAt: true,
+                material: {
+                  select: {
+                    id: true,
+                    name: true,
+                    category: { select: { id: true, name: true } },
+                    pricePerSqm: true,
+                    pricePerMeter: true,
+                    pricePerUnit: true,
+                  },
                 },
               },
             },
           },
-          files: true,
-          _count: {
-            select: {
-              orderItems: true,
-              files: true,
-            },
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            orderItems: true,
+            files: true,
+            productionJobs: true,
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
-        skip,
-        take: limit,
-      });
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    });
 
-      normalizedOrders = fallbackOrders.map((order) => ({
-        ...order,
-        productionJobs: [],
-        _count: {
-          ...order._count,
-          productionJobs: 0,
-        },
-      }));
-    }
+    const normalizedOrders = orders.map((order) => ({
+      ...order,
+      productionJobs: (order.productionJobs ?? []).map((job) => normalizeOutsourceJob(job)),
+    }));
 
     return NextResponse.json({
       orders: normalizedOrders,

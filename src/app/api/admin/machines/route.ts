@@ -1,34 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { EquipmentType, MachineStatus, Prisma } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
-const EQUIPMENT_TYPES: EquipmentType[] = ['LARGE_FORMAT', 'DIGITAL', 'HOURLY'];
-const MACHINE_STATUSES: MachineStatus[] = ['AVAILABLE', 'BUSY', 'MAINTENANCE'];
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
-type EquipmentConsumableRecord = {
-  machineId: string;
-  materialId: string;
-  consumptionPerSqm: Prisma.Decimal | null;
-  consumptionPerUnit: Prisma.Decimal | null;
-  consumptionPerJob: Prisma.Decimal | null;
-  material: {
-    id: string;
-    name: string;
-    unit: string;
-    stock: number;
-    purchasePrice: Prisma.Decimal | null;
-  };
-};
-
-type SerializedEquipmentConsumable = Omit<EquipmentConsumableRecord, 'consumptionPerSqm' | 'consumptionPerUnit' | 'consumptionPerJob' | 'material'> & {
-  consumptionPerSqm: number | null;
-  consumptionPerUnit: number | null;
-  consumptionPerJob: number | null;
-  material: EquipmentConsumableRecord['material'] & {
-    purchasePrice: number | null;
-  };
-};
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -113,7 +92,7 @@ async function validateMaterialIds(ids: string[]): Promise<string | null> {
 
 async function enrichWithConsumables<T extends { id: string }>(
   machines: T[]
-): Promise<(T & { consumables: SerializedEquipmentConsumable[] })[]> {
+): Promise<(T & { consumables: any[] })[]> {
   const machineIds = machines.map((m) => m.id);
   const consumables = machineIds.length > 0
     ? await prisma.equipmentConsumable.findMany({
@@ -125,15 +104,15 @@ async function enrichWithConsumables<T extends { id: string }>(
               name: true,
               unit: true,
               stock: true,
-              purchasePrice: true,
+              pricePerUnit: true,
             },
           },
         },
       })
     : [];
   
-  const byMachineId = new Map<string, SerializedEquipmentConsumable[]>();
-  consumables.forEach((c: EquipmentConsumableRecord) => {
+  const byMachineId = new Map<string, any[]>();
+  consumables.forEach((c) => {
     if (!byMachineId.has(c.machineId)) {
       byMachineId.set(c.machineId, []);
     }
@@ -144,7 +123,7 @@ async function enrichWithConsumables<T extends { id: string }>(
       consumptionPerJob: c.consumptionPerJob ? Number(c.consumptionPerJob) : null,
       material: {
         ...c.material,
-        purchasePrice: c.material.purchasePrice ? Number(c.material.purchasePrice) : null,
+        pricePerUnit: c.material.pricePerUnit ? Number(c.material.pricePerUnit) : null,
       },
     });
   });
@@ -208,7 +187,7 @@ export async function GET() {
       enrichedWithConsumables.map((m) => {
         const pm = (m as unknown as { compatiblePrintMethods: { id: string; name: string; type: string }[] }).compatiblePrintMethods;
         const mat = (m as unknown as { compatibleMaterials: { id: string; name: string; unit: string }[] }).compatibleMaterials;
-        const cons = (m as unknown as { consumables: SerializedEquipmentConsumable[] }).consumables;
+        const cons = (m as unknown as { consumables: any[] }).consumables;
         return { 
           ...serializeMachine(m as unknown as Record<string, unknown>, pm), 
           compatibleMaterials: mat,
@@ -267,19 +246,13 @@ export async function POST(request: NextRequest) {
 
     const n = (v: unknown) => (v != null ? Number(v) : null);
     const arr = (v: unknown) => (Array.isArray(v) ? (v as string[]) : []);
-    const resolvedEquipmentType: EquipmentType = EQUIPMENT_TYPES.includes(equipmentType as EquipmentType)
-      ? (equipmentType as EquipmentType)
-      : 'HOURLY';
-    const resolvedStatus: MachineStatus = MACHINE_STATUSES.includes(status as MachineStatus)
-      ? (status as MachineStatus)
-      : 'AVAILABLE';
 
     const machine = await prisma.machine.create({
       data: {
         name: name as string,
         type: type as string,
-        equipmentType: resolvedEquipmentType,
-        status: resolvedStatus,
+        equipmentType: (equipmentType as string) || 'HOURLY',
+        status:        (status as string) || 'AVAILABLE',
         costPerHour:         n(costPerHour),
         speed:               (speed as string) ?? null,
         maxWidth:            n(maxWidth),
