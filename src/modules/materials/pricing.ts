@@ -306,4 +306,4 @@ export function calculateConsumptionCost(
     snapshot,
   };
 }
-export { MaterialUnit, convertMaterialQuantity, getAllowedUnitsForMaterialType } from './materialUnits';
+export { MaterialUnit, getAllowedUnitsForMaterialType } from './materialUnits';

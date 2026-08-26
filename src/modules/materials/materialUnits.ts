@@ -32,7 +32,7 @@ export function convertMaterialQuantity(
   }
   const countUnits = new Set([MaterialUnit.unit, MaterialUnit.pcs]);
   if (countUnits.has(from) && countUnits.has(to)) return value;
-  throw new Error(Incompatible conversion from  to );
+  throw new Error(`Incompatible conversion from ${from} to ${to}`);
 }
 
 export function getAllowedUnitsForMaterialType(materialType: string): MaterialUnit[] {
