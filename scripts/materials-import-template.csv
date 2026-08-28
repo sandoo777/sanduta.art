@@ -1,0 +1,11 @@
+sku,name,category_id,unit,purchase_price,sale_price,waste_percent,stock,min_stock,consumption_type,finish_type,thickness_mm,notes
+BANNER-MESH-440,Banner mesh 440g,default_sheet,m2,35,45,8,200,20,AREA_BASED,,,"Mesh poliester 440g/m² pentru bannere exterioare"
+BANNER-FL-510,Banner frontlit 510g,default_sheet,m2,42,55,8,300,30,AREA_BASED,,,"PVC frontlit 510g/m² pentru bannere iluminate"
+VINYL-ADH-GRI,Vinil adeziv gri,default_roll,meter,9,12,5,500,50,AREA_BASED,,,"Vinil adeziv cu spate gri 1520mm"
+VINYL-PERF-5050,Vinil perforat 50/50,default_roll,meter,14,18,10,150,15,AREA_BASED,,,"Vinil perforat one-way vision"
+PVC-EXP-5MM,PVC expandat 5mm,default_rigid,m2,90,120,5,80,10,AREA_BASED,,5,"Placă PVC expandat 5mm"
+PAPER-PHOTO-200G,Hârtie foto lucioasă 200g,default_paper,m2,5,8,3,1000,100,AREA_BASED,lucios,,"Hârtie foto RC lucioasă 200g/m²"
+PAPER-MATTE-170G,Hârtie mată 170g,default_paper,m2,4,6,3,800,80,AREA_BASED,mat,,"Hârtie mată 170g/m²"
+VINYL-OWV-1520,Folie one-way vision,default_vinyl,meter,17,22,10,100,10,AREA_BASED,,,"Folie microperforată 1520mm"
+TEXTILE-BACKLIT-500,Pânză banner backlit,default_textile,meter,26,35,6,250,25,AREA_BASED,,,"Pânză poliester backlit 500g/m²"
+ROLLUP-SYS-85,Sistem banner roll-up,default_other,unit,65,95,0,30,5,DIRECT,,,"Mecanism roll-up 85×200cm"

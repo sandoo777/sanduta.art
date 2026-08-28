@@ -1,6 +1,13 @@
 import { prisma } from '../src/lib/prisma';
 import bcrypt from 'bcryptjs';
 
+// ── Dev-only guard ──────────────────────────────────────────────────────────
+// This seed is for development/staging only. Never run in production.
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ Seed script must not run in production. Set NODE_ENV != production.');
+  process.exit(1);
+}
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
@@ -256,140 +263,217 @@ async function main() {
   console.log(`✅ Created ${machineData.length} machines`);
 
   // ── Materials ──────────────────────────────────────────────────────────────
-  const materialData = [
-    // 2× sheet
+  // Fields aligned to actual Prisma schema:
+  //   categoryId (FK to MaterialCategory), purchasePrice, salePrice,
+  //   unit (MaterialUnit enum), notes, consumptionType, wastePercent, stock, minStock
+  const materialData: Array<{
+    id: string;
+    name: string;
+    sku: string;
+    categoryId: string;
+    unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs' | 'sheet';
+    consumptionType: 'AREA_BASED' | 'DIRECT';
+    purchasePrice: number;
+    salePrice: number;
+    wastePercent: number;
+    stock: number;
+    minStock: number;
+    active: boolean;
+    notes: string;
+    finishType?: string | null;
+    thickness?: number | null;
+  }> = [
     {
       id: 'seed-mat-001',
       name: 'Banner mesh 440g',
       sku: 'BANNER-MESH-440',
-      category: 'sheet' as const,
+      categoryId: 'default_sheet',
       unit: 'm2',
-      pricePerSqm: 45,
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 35,
+      salePrice: 45,
       wastePercent: 8,
       stock: 200,
+      minStock: 20,
       active: true,
-      description: 'Mesh poliester 440g/m² pentru bannere exterioare',
+      notes: 'Mesh poliester 440g/m² pentru bannere exterioare',
     },
     {
       id: 'seed-mat-002',
       name: 'Banner frontlit 510g',
       sku: 'BANNER-FL-510',
-      category: 'sheet' as const,
+      categoryId: 'default_sheet',
       unit: 'm2',
-      pricePerSqm: 55,
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 42,
+      salePrice: 55,
       wastePercent: 8,
       stock: 300,
+      minStock: 30,
       active: true,
-      description: 'PVC frontlit 510g/m² pentru bannere iluminate',
+      notes: 'PVC frontlit 510g/m² pentru bannere iluminate',
     },
-    // 2× roll
     {
       id: 'seed-mat-003',
       name: 'Vinil adeziv gri',
       sku: 'VINYL-ADH-GRI',
-      category: 'roll' as const,
-      unit: 'm',
-      pricePerMeter: 12,
+      categoryId: 'default_roll',
+      unit: 'meter',
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 9,
+      salePrice: 12,
       wastePercent: 5,
       stock: 500,
+      minStock: 50,
       active: true,
-      description: 'Vinil adeziv cu spate gri, 1520mm lățime',
+      notes: 'Vinil adeziv cu spate gri, 1520mm lățime',
     },
     {
       id: 'seed-mat-004',
       name: 'Vinil perforat 50/50',
       sku: 'VINYL-PERF-5050',
-      category: 'roll' as const,
-      unit: 'm',
-      pricePerMeter: 18,
+      categoryId: 'default_roll',
+      unit: 'meter',
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 14,
+      salePrice: 18,
       wastePercent: 10,
       stock: 150,
+      minStock: 15,
       active: true,
-      description: 'Vinil perforat one-way vision 50/50 pentru geamuri',
+      notes: 'Vinil perforat one-way vision 50/50 pentru geamuri',
     },
-    // 1× rigid
     {
       id: 'seed-mat-005',
       name: 'PVC expandat 5mm',
       sku: 'PVC-EXP-5MM',
-      category: 'rigid' as const,
+      categoryId: 'default_rigid',
       unit: 'm2',
-      pricePerSqm: 120,
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 90,
+      salePrice: 120,
       wastePercent: 5,
       stock: 80,
+      minStock: 10,
       active: true,
-      description: 'Placă PVC expandat 5mm pentru panouri rigide',
+      notes: 'Placă PVC expandat 5mm pentru panouri rigide',
+      thickness: 5,
     },
-    // 2× paper
     {
       id: 'seed-mat-006',
       name: 'Hârtie foto lucioasă 200g',
       sku: 'PAPER-PHOTO-200G',
-      category: 'paper' as const,
+      categoryId: 'default_paper',
       unit: 'm2',
-      pricePerSqm: 8,
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 5,
+      salePrice: 8,
       wastePercent: 3,
       stock: 1000,
+      minStock: 100,
       active: true,
-      description: 'Hârtie foto RC lucioasă 200g/m² pentru print de calitate',
+      notes: 'Hârtie foto RC lucioasă 200g/m² pentru print de calitate',
+      finishType: 'lucios',
     },
     {
       id: 'seed-mat-007',
       name: 'Hârtie mată 170g',
       sku: 'PAPER-MATTE-170G',
-      category: 'paper' as const,
+      categoryId: 'default_paper',
       unit: 'm2',
-      pricePerSqm: 6,
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 4,
+      salePrice: 6,
       wastePercent: 3,
       stock: 800,
+      minStock: 80,
       active: true,
-      description: 'Hârtie mată 170g/m² pentru afișe și materiale promoționale',
+      notes: 'Hârtie mată 170g/m² pentru afișe și materiale promoționale',
+      finishType: 'mat',
     },
-    // 1× vinyl (folie) → uses pricePerMeter (meter resolution)
     {
       id: 'seed-mat-008',
       name: 'Folie one-way vision',
       sku: 'VINYL-OWV-1520',
-      category: 'vinyl' as const,
-      unit: 'm',
-      pricePerMeter: 22,
+      categoryId: 'default_vinyl',
+      unit: 'meter',
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 17,
+      salePrice: 22,
       wastePercent: 10,
       stock: 100,
+      minStock: 10,
       active: true,
-      description: 'Folie microperforată one-way vision 1520mm lățime',
+      notes: 'Folie microperforată one-way vision 1520mm lățime',
     },
-    // 1× textile
     {
       id: 'seed-mat-009',
       name: 'Pânză banner backlit',
       sku: 'TEXTILE-BACKLIT-500',
-      category: 'textile' as const,
-      unit: 'm',
-      pricePerMeter: 35,
+      categoryId: 'default_textile',
+      unit: 'meter',
+      consumptionType: 'AREA_BASED',
+      purchasePrice: 26,
+      salePrice: 35,
       wastePercent: 6,
       stock: 250,
+      minStock: 25,
       active: true,
-      description: 'Pânză poliester backlit 500g/m² pentru casete luminoase',
+      notes: 'Pânză poliester backlit 500g/m² pentru casete luminoase',
     },
-    // 1× other
     {
       id: 'seed-mat-010',
       name: 'Sistem banner roll-up',
       sku: 'ROLLUP-SYS-85',
-      category: 'other' as const,
-      unit: 'buc',
-      pricePerUnit: 95,
+      categoryId: 'default_other',
+      unit: 'unit',
+      consumptionType: 'DIRECT',
+      purchasePrice: 65,
+      salePrice: 95,
+      wastePercent: 0,
       stock: 30,
+      minStock: 5,
       active: true,
-      description: 'Mecanism roll-up aluminium 85×200cm cu geantă transport',
+      notes: 'Mecanism roll-up aluminium 85×200cm cu geantă transport',
     },
   ];
 
   for (const mat of materialData) {
     await prisma.material.upsert({
       where: { id: mat.id },
-      update: mat,
-      create: mat,
+      update: {
+        name: mat.name,
+        sku: mat.sku,
+        categoryId: mat.categoryId,
+        unit: mat.unit,
+        consumptionType: mat.consumptionType,
+        purchasePrice: mat.purchasePrice,
+        salePrice: mat.salePrice,
+        wastePercent: mat.wastePercent,
+        stock: mat.stock,
+        minStock: mat.minStock,
+        active: mat.active,
+        notes: mat.notes,
+        ...(mat.finishType !== undefined ? { finishType: mat.finishType } : {}),
+        ...(mat.thickness !== undefined ? { thickness: mat.thickness } : {}),
+      },
+      create: {
+        id: mat.id,
+        name: mat.name,
+        sku: mat.sku,
+        categoryId: mat.categoryId,
+        unit: mat.unit,
+        consumptionType: mat.consumptionType,
+        purchasePrice: mat.purchasePrice,
+        salePrice: mat.salePrice,
+        wastePercent: mat.wastePercent,
+        stock: mat.stock,
+        minStock: mat.minStock,
+        active: mat.active,
+        notes: mat.notes,
+        ...(mat.finishType !== undefined ? { finishType: mat.finishType } : {}),
+        ...(mat.thickness !== undefined ? { thickness: mat.thickness } : {}),
+      },
     });
   }
   console.log(`✅ Created ${materialData.length} materials`);

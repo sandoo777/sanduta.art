@@ -90,6 +90,18 @@ export async function safeFetch<T>(
 
       // Check HTTP status
       if (requireOk && !response.ok) {
+        // Auth failures are expected in some UI states; return fallback without console.error noise.
+        if (response.status === 401 || response.status === 403) {
+          if (!silent) {
+            logger.warn(logTag, 'Unauthorized/forbidden API response', {
+              url,
+              status: response.status,
+              statusText: response.statusText,
+            });
+          }
+          return fallback;
+        }
+
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

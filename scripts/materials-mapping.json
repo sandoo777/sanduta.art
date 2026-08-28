@@ -1,0 +1,41 @@
+{
+  "_comment": "CSV column → Prisma Material field mapping for bulk import",
+  "version": "1.0.0",
+  "source_file": "materials-import-template.csv",
+  "delimiter": ",",
+  "encoding": "utf-8",
+  "skip_header_rows": 1,
+  "columns": {
+    "sku":              { "field": "sku",             "type": "string",  "required": true,  "unique": true },
+    "name":             { "field": "name",            "type": "string",  "required": true },
+    "category_id":      { "field": "categoryId",      "type": "string",  "required": true,  "fk": "material_categories.id" },
+    "unit":             { "field": "unit",            "type": "enum",    "required": true,  "enum": ["liter","ml","gram","kg","unit","m2","meter","pcs","sheet"] },
+    "purchase_price":   { "field": "purchasePrice",   "type": "decimal", "required": false, "min": 0 },
+    "sale_price":       { "field": "salePrice",       "type": "decimal", "required": false, "min": 0, "rule": "sale_price >= purchase_price" },
+    "waste_percent":    { "field": "wastePercent",    "type": "float",   "required": false, "default": 0, "min": 0, "max": 100 },
+    "stock":            { "field": "stock",           "type": "float",   "required": false, "default": 0, "min": 0 },
+    "min_stock":        { "field": "minStock",        "type": "float",   "required": false, "default": 0, "min": 0 },
+    "consumption_type": { "field": "consumptionType", "type": "enum",    "required": false, "default": "AREA_BASED", "enum": ["AREA_BASED","DIRECT"] },
+    "finish_type":      { "field": "finishType",      "type": "string",  "required": false, "nullable": true, "enum": ["mat","lucios","satin","soft-touch"] },
+    "thickness_mm":     { "field": "thickness",       "type": "float",   "required": false, "nullable": true, "min": 0 },
+    "notes":            { "field": "notes",           "type": "string",  "required": false, "nullable": true }
+  },
+  "upsert_key": "sku",
+  "on_duplicate": "update",
+  "validation_rules": [
+    "sku must be unique and non-empty",
+    "sale_price must be >= purchase_price when both present",
+    "unit must be one of the allowed MaterialUnit enum values",
+    "category_id must reference an existing material_categories.id",
+    "stock and min_stock must be >= 0"
+  ],
+  "known_category_ids": [
+    "default_sheet",
+    "default_roll",
+    "default_rigid",
+    "default_paper",
+    "default_vinyl",
+    "default_textile",
+    "default_other"
+  ]
+}
