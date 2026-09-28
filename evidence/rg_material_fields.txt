@@ -1,0 +1,442 @@
+src\app\admin\page.tsx:24: { title: 'Furnizori', description: 'Manage supplier directory', icon: '??', link: '/admin/suppliers' },
+src\app\admin\config\routes.ts:27: SUPPLIERS: '/admin/suppliers',
+src\app\admin\config\routes.ts:41: { name: 'Furnizori', href: ADMIN_ROUTES.SUPPLIERS, description: 'Supplier directory and automation', status: 'ready' },
+src\app\admin\config\routes.ts:119: ADMIN_ROUTES.SUPPLIERS,
+src\app\admin\dashboard\_components\QuickActions.tsx:21: href: '/admin/suppliers',
+src\app\admin\materials\page.tsx:390: key: 'wastePercent',
+src\app\admin\materials\_components\CategoryModal.tsx.backup:22: wastePercent: 'Câmpul Procent waste (%) va fi obligatoriu în formularul de material',
+src\app\admin\materials\_components\CategoryModal.tsx.backup:36: requiresWastePercent: category?.requiresWastePercent || false,
+src\app\admin\materials\_components\CategoryModal.tsx.backup:224: id="wastePercent"
+src\app\admin\materials\_components\CategoryModal.tsx.backup:226: checked={formData.requiresWastePercent}
+src\app\admin\materials\_components\CategoryModal.tsx.backup:227: onChange={(checked) => handleChange('requiresWastePercent', checked)}
+src\app\admin\materials\_components\CategoryModal.tsx.backup:228: tooltip={fieldTooltips.wastePercent}
+src\app\admin\materials\_components\CategoryModal.tsx.backup:438: requiresWastePercent: category?.requiresWastePercent || false,
+src\app\admin\materials\_components\CategoryModal.tsx.backup:591: checked={formData.requiresWastePercent}
+src\app\admin\materials\_components\CategoryModal.tsx.backup:592: onChange={(e) => handleChange('requiresWastePercent', e.target.checked)}
+src\app\admin\materials\_components\CategoryTreeView.tsx:78: if (category.requiresWastePercent) {
+src\app\admin\materials\_components\MaterialForm.tsx:51: const [suppliers, setSuppliers] = useState<SupplierOption[]>([]);
+src\app\admin\materials\_components\MaterialForm.tsx:52: const [primarySupplierId, setPrimarySupplierId] = useState<string | null>(material?.primarySupplierId ?? null);
+src\app\admin\materials\_components\MaterialForm.tsx:54: material?.suppliers && material.suppliers.length > 0
+src\app\admin\materials\_components\MaterialForm.tsx:55: ? material.suppliers.map((link) => ({
+src\app\admin\materials\_components\MaterialForm.tsx:65: material?.printMethodIds ?? material?.compatibleMethods ?? material?.printMethods?.map((method) => method.id) ?? []
+src\app\admin\materials\_components\MaterialForm.tsx:85: wastePercent: material?.wastePercent?.toString() ?? '3',
+src\app\admin\materials\_components\MaterialForm.tsx:86: formatId: material?.formatId ?? '',
+src\app\admin\materials\_components\MaterialForm.tsx:91: compatibleMethods: material?.printMethodIds ?? material?.compatibleMethods ?? material?.printMethods?.map((method) => method.id) ?? [],
+src\app\admin\materials\_components\MaterialForm.tsx:114: const formatId = useWatch({ control: form.control, name: 'formatId' });
+src\app\admin\materials\_components\MaterialForm.tsx:141: fetch('/api/admin/suppliers', { credentials: 'include' })
+src\app\admin\materials\_components\MaterialForm.tsx:144: throw new Error('Failed to load suppliers');
+src\app\admin\materials\_components\MaterialForm.tsx:148: setSuppliers(items as SupplierOption[]);
+src\app\admin\materials\_components\MaterialForm.tsx:150: .catch(() => setSuppliers([]));
+src\app\admin\materials\_components\MaterialForm.tsx:171: setPrimarySupplierId(material?.primarySupplierId ?? null);
+src\app\admin\materials\_components\MaterialForm.tsx:173: material?.suppliers && material.suppliers.length > 0
+src\app\admin\materials\_components\MaterialForm.tsx:174: ? material.suppliers.map((link) => ({
+src\app\admin\materials\_components\MaterialForm.tsx:182: setSelectedMethodIds(material?.printMethodIds ?? material?.compatibleMethods ?? material?.printMethods?.map((method) => method.id) ?? []);
+src\app\admin\materials\_components\MaterialForm.tsx:186: if (formatId && filteredFormats.length > 0 && !filteredFormats.some((format) => format.id === formatId)) {
+src\app\admin\materials\_components\MaterialForm.tsx:187: form.setValue('formatId', '');
+src\app\admin\materials\_components\MaterialForm.tsx:192: }, [formatId, filteredFormats, form]);
+src\app\admin\materials\_components\MaterialForm.tsx:195: const selected = formats.find((format) => format.id === formatId);
+src\app\admin\materials\_components\MaterialForm.tsx:208: }, [formats, formatId, form, formatName, formatNameDirty]);
+src\app\admin\materials\_components\MaterialForm.tsx:272: if (!category.requiresWastePercent) form.setValue('wastePercent', '');
+src\app\admin\materials\_components\MaterialForm.tsx:298: isPrimary: Boolean(existing?.isPrimary || supplierId === primarySupplierId),
+src\app\admin\materials\_components\MaterialForm.tsx:302: if (primarySupplierId && !dedupedSupplierLinks.has(primarySupplierId)) {
+src\app\admin\materials\_components\MaterialForm.tsx:303: dedupedSupplierLinks.set(primarySupplierId, {
+src\app\admin\materials\_components\MaterialForm.tsx:304: supplierId: primarySupplierId,
+src\app\admin\materials\_components\MaterialForm.tsx:312: const suppliersPayload = Array.from(dedupedSupplierLinks.values()).map((link) => ({
+src\app\admin\materials\_components\MaterialForm.tsx:333: formatId: data.formatId?.trim() || null,
+src\app\admin\materials\_components\MaterialForm.tsx:339: wastePercent: data.wastePercent ? Number(data.wastePercent) : 0,
+src\app\admin\materials\_components\MaterialForm.tsx:346: primarySupplierId: primarySupplierId || null,
+src\app\admin\materials\_components\MaterialForm.tsx:347: suppliers: suppliersPayload,
+src\app\admin\materials\_components\MaterialForm.tsx:349: compatibleMethods: selectedMethodIds,
+src\app\admin\materials\_components\MaterialForm.tsx:479: value={primarySupplierId ?? ''}
+src\app\admin\materials\_components\MaterialForm.tsx:480: onChange={(event) => setPrimarySupplierId(event.target.value || null)}
+src\app\admin\materials\_components\MaterialForm.tsx:484: {suppliers.map((supplier) => (
+src\app\admin\materials\_components\MaterialForm.tsx:522: <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Suppliers</p>
+src\app\admin\materials\_components\MaterialForm.tsx:545: {suppliers.map((supplier) => (
+src\app\admin\materials\_components\MaterialForm.tsx:622: {...form.register('formatId')}
+src\app\admin\materials\_components\MaterialForm.tsx:623: value={formatId ?? ''}
+src\app\admin\materials\_components\MaterialForm.tsx:626: form.setValue('formatId', nextId);
+src\app\admin\materials\_components\MaterialForm.tsx:899: <Input {...form.register('wastePercent')} type="number" step="0.1" min="0" max="100" />
+src\app\admin\materials\_components\MaterialForm.tsx:903: {form.formState.errors.wastePercent && (
+src\app\admin\materials\_components\MaterialForm.tsx:904: <p className="text-sm text-red-500 mt-1">{form.formState.errors.wastePercent.message}</p>
+src\app\admin\materials\_components\materialListUtils.tsx:91: const compatibleMethods = Array.isArray(material.compatibleMethods)
+src\app\admin\materials\_components\materialListUtils.tsx:92: ? material.compatibleMethods.filter((method): method is NonNullable<typeof method> => Boolean(method))
+src\app\admin\materials\_components\materialListUtils.tsx:110: wastePercent: typeof material.wastePercent === 'number' ? material.wastePercent : 0,
+src\app\admin\materials\_components\materialListUtils.tsx:112: compatibleMethods,
+src\app\admin\materials\_components\materialListUtils.tsx:221: return typeof material.wastePercent === 'number' ? `${material.wastePercent}%` : 'N/A';
+src\app\admin\orders\OrderDetails.tsx:28: wastePercent: number;
+src\app\admin\orders\OrderDetails.tsx:435: {usage.wastePercent > 0 && (
+src\app\admin\orders\OrderDetails.tsx:437: Pierderi: <strong>{usage.wastePercent}%</strong>
+src\app\admin\orders\OrdersList.tsx:109: wastePercent: number;
+src\app\admin\orders\OrdersList.tsx:171: return { suppliers: [] as string[], totalSupplierCost: 0, totalProfit: 0 };
+src\app\admin\orders\OrdersList.tsx:174: const suppliers = [...new Set(outsourcedJobs.map((job) => job.printMethod?.name || 'Outsource'))];
+src\app\admin\orders\OrdersList.tsx:178: return { suppliers, totalSupplierCost, totalProfit };
+src\app\admin\orders\OrdersList.tsx:436: const { suppliers, totalSupplierCost, totalProfit } = aggregateOutsource(order.productionJobs);
+src\app\admin\orders\OrdersList.tsx:437: if (suppliers.length === 0) return <span className="text-xs text-gray-400">-</span>;
+src\app\admin\orders\OrdersList.tsx:442: {suppliers[0]}
+src\app\admin\orders\OrdersList.tsx:444: {suppliers.length > 1 && (
+src\app\admin\orders\OrdersList.tsx:445: <span className="text-xs text-gray-400">+{suppliers.length - 1} furnizor(i)</span>
+src\app\admin\suppliers\page.tsx:2: import { SuppliersManager } from '@/components/purchasing/SuppliersManager';
+src\app\admin\suppliers\page.tsx:4: export default function AdminSuppliersPage() {
+src\app\admin\suppliers\page.tsx:11: <Link href="/admin/suppliers" className="hover:text-slate-700">Depozit</Link>
+src\app\admin\suppliers\page.tsx:17: <p className="text-sm font-medium uppercase tracking-wide text-indigo-600">Suppliers</p>
+src\app\admin\suppliers\page.tsx:20: <SuppliersManager />
+src\app\admin\_components\AdminSidebar.tsx:70: { name: 'Furnizori', href: '/admin/suppliers', icon: Truck },
+src\app\api\admin\materials\[id]\consume\route.ts:131: wastePercent: material.wastePercent,
+src\app\api\admin\materials\[id]\consume\route.ts:153: wastePercent: pricing.effectiveWastePercent,
+src\app\api\admin\orders\route.ts:143: wastePercent: true,
+src\app\api\admin\orders\[id]\route.ts:125: wastePercent: true,
+src\app\api\admin\production\[id]\route.ts:431: wastePercent: true,
+src\app\api\admin\production\[id]\route.ts:548: wastePercent: consumptionResult.wastePercent,
+src\app\api\admin\production\[id]\route.ts:621: wastePercent: 0, // Consumables typically don't have waste
+src\app\api\admin\production\[id]\route.ts:683: wastePercent: 0,
+src\app\api\admin\suppliers\route.ts:14: const suppliers = await prisma.supplier.findMany({
+src\app\api\admin\suppliers\route.ts:27: return NextResponse.json({ ok: true, items: suppliers, suppliers });
+src\app\api\admin\suppliers\route.ts:29: logger.error('API:Admin:Suppliers', 'Failed to fetch suppliers', { error });
+src\app\api\admin\suppliers\route.ts:30: logApiError('API:Admin:Suppliers', error);
+src\app\api\admin\suppliers\route.ts:61: logApiError('API:Admin:Suppliers', error);
+src\app\api\inventory\materials\[materialId]\history\route.ts:18: formatId: true,
+src\app\api\jobs\[jobId]\consume-material\route.ts:25: const formatId = body.formatId && typeof body.formatId === 'string' ? body.formatId : null;
+src\app\api\jobs\[jobId]\consume-material\route.ts:61: let effectiveFormatId = formatId ?? material.formatId ?? null;
+src\app\api\jobs\[jobId]\consume-material\route.ts:63: if (formatId) {
+src\app\api\jobs\[jobId]\consume-material\route.ts:64: const format = await tx.format.findUnique({ where: { id: formatId } });
+src\app\api\jobs\[jobId]\consume-material\route.ts:68: effectiveFormatId = format.id;
+src\app\api\jobs\[jobId]\consume-material\route.ts:127: formatId: effectiveFormatId,
+src\app\api\jobs\[jobId]\preview-consume\route.ts:25: const formatId = body.formatId && typeof body.formatId === 'string' ? body.formatId : null;
+src\app\api\jobs\[jobId]\preview-consume\route.ts:59: if (formatId) {
+src\app\api\jobs\[jobId]\preview-consume\route.ts:60: const format = await prisma.format.findUnique({ where: { id: formatId } });
+src\app\api\jobs\[jobId]\usage\route.ts:38: formatId: item.formatId,
+src\app\api\suppliers\route.ts:11: const suppliers = await prisma.supplier.findMany({
+src\app\api\suppliers\route.ts:15: return NextResponse.json({ ok: true, items: suppliers });
+src\app\api\suppliers\route.ts:17: logger.error('API:Suppliers', 'Failed to fetch suppliers', { error });
+src\app\api\suppliers\route.ts:18: logApiError('API:Suppliers', error);
+src\app\api\suppliers\route.ts:50: logApiError('API:Suppliers', error);
+src\app\api\suppliers\webhook\route.ts:31: logger.info('API:Suppliers:Webhook', 'Supplier webhook received', { poNumber, supplierId });
+src\app\api\suppliers\webhook\route.ts:34: logApiError('API:Suppliers:Webhook', error);
+src\app\api\suppliers\[id]\route.ts:20: logger.error('API:Suppliers:Detail', 'Failed to fetch supplier', { error });
+src\app\api\suppliers\[id]\route.ts:21: logApiError('API:Suppliers:Detail', error);
+src\app\api\suppliers\[id]\route.ts:51: logApiError('API:Suppliers:Detail', error);
+src\app\api\suppliers\[id]\test\route.ts:39: logger.info('API:Suppliers:Test', 'Supplier connection test passed', { id, message });
+src\app\api\suppliers\[id]\test\route.ts:42: logApiError('API:Suppliers:Test', error);
+src\app\suppliers\page.tsx:2: import { SuppliersManager } from '@/components/purchasing/SuppliersManager';
+src\app\suppliers\page.tsx:4: export default function SuppliersPage() {
+src\app\suppliers\page.tsx:11: <Link href="/suppliers" className="hover:text-slate-700">Depozit</Link>
+src\app\suppliers\page.tsx:17: <p className="text-sm font-medium uppercase tracking-wide text-indigo-600">Suppliers</p>
+src\app\suppliers\page.tsx:20: <SuppliersManager />
+src\components\MaterialCreateForm.tsx:23: formatId: string | null;
+src\components\MaterialCreateForm.tsx:79: formatId: null,
+src\components\MaterialCreateForm.tsx:165: const [suppliers, setSuppliers] = useState<SupplierOption[]>([]);
+src\components\MaterialCreateForm.tsx:166: const [primarySupplierId, setPrimarySupplierId] = useState<string | null>(null);
+src\components\MaterialCreateForm.tsx:177: fetch('/api/admin/suppliers', { credentials: 'include' })
+src\components\MaterialCreateForm.tsx:180: throw new Error('Failed to load suppliers');
+src\components\MaterialCreateForm.tsx:184: setSuppliers(items as SupplierOption[]);
+src\components\MaterialCreateForm.tsx:186: .catch(() => setSuppliers([]));
+src\components\MaterialCreateForm.tsx:203: () => formats.find((format) => format.id === form.formatId) ?? null,
+src\components\MaterialCreateForm.tsx:204: [formats, form.formatId]
+src\components\MaterialCreateForm.tsx:207: () => suppliers.find((supplier) => supplier.id === primarySupplierId) ?? null,
+src\components\MaterialCreateForm.tsx:208: [primarySupplierId, suppliers]
+src\components\MaterialCreateForm.tsx:221: if (form.formatId && !data.some((format) => format.id === form.formatId)) {
+src\components\MaterialCreateForm.tsx:223: setForm((current) => ({ ...current, formatId: null }));
+src\components\MaterialCreateForm.tsx:231: }, [formatQuery, form.formatId]);
+src\components\MaterialCreateForm.tsx:255: formatId: format.id,
+src\components\MaterialCreateForm.tsx:367: isPrimary: Boolean(existing?.isPrimary || supplierId === primarySupplierId),
+src\components\MaterialCreateForm.tsx:371: if (primarySupplierId && !dedupedSupplierLinks.has(primarySupplierId)) {
+src\components\MaterialCreateForm.tsx:372: dedupedSupplierLinks.set(primarySupplierId, {
+src\components\MaterialCreateForm.tsx:373: supplierId: primarySupplierId,
+src\components\MaterialCreateForm.tsx:381: const suppliersPayload = Array.from(dedupedSupplierLinks.values()).map((link) => ({
+src\components\MaterialCreateForm.tsx:396: primarySupplierId: primarySupplierId || null,
+src\components\MaterialCreateForm.tsx:397: suppliers: suppliersPayload,
+src\components\MaterialCreateForm.tsx:398: formatId: form.formatId ?? undefined,
+src\components\MaterialCreateForm.tsx:499: setForm((current) => ({ ...current, formatId: null }));
+src\components\MaterialCreateForm.tsx:677: value={primarySupplierId ?? ''}
+src\components\MaterialCreateForm.tsx:678: onChange={(event) => setPrimarySupplierId(event.target.value || null)}
+src\components\MaterialCreateForm.tsx:681: {suppliers.map((supplier) => (
+src\components\MaterialCreateForm.tsx:694: <span style={{ fontWeight: 600 }}>Suppliers</span>
+src\components\MaterialCreateForm.tsx:717: {suppliers.map((supplier) => (
+src\components\materials\MaterialsList.tsx:12: gramaj_g?: number | null;
+src\components\materials\MaterialsList.tsx:22: const explicit = material.gramaj_g ?? material.weight ?? material.thickness;
+src\components\materials\MaterialsList.tsx:103: <td>{m.wastePercent}%</td>
+src\components\materials\__tests__\MaterialsList.test.tsx:36: wastePercent: 1.5,
+src\components\purchasing\POFilters.tsx:11: suppliers: Array<{ id: string; name: string }>;
+src\components\purchasing\POFilters.tsx:16: export function POFilters({ filters, suppliers, onChange, onReset }: POFiltersProps) {
+src\components\purchasing\POFilters.tsx:57: {suppliers.map((supplier) => (
+src\components\purchasing\PurchaseOrdersList.tsx:32: const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+src\components\purchasing\PurchaseOrdersList.tsx:40: const fetchSuppliers = async () => {
+src\components\purchasing\PurchaseOrdersList.tsx:42: const response = await fetch('/api/suppliers');
+src\components\purchasing\PurchaseOrdersList.tsx:44: if (response.ok) setSuppliers(Array.isArray(data.items) ? data.items : []);
+src\components\purchasing\PurchaseOrdersList.tsx:46: setSuppliers([]);
+src\components\purchasing\PurchaseOrdersList.tsx:80: void fetchSuppliers();
+src\components\purchasing\PurchaseOrdersList.tsx:117: suppliers={suppliers}
+src\components\purchasing\SuppliersManager.tsx:18: export function SuppliersManager() {
+src\components\purchasing\SuppliersManager.tsx:19: const [suppliers, setSuppliers] = useState<SupplierRecord[]>([]);
+src\components\purchasing\SuppliersManager.tsx:28: const loadSuppliers = async () => {
+src\components\purchasing\SuppliersManager.tsx:30: const response = await fetch('/api/suppliers');
+src\components\purchasing\SuppliersManager.tsx:32: setSuppliers(Array.isArray(data.items) ? data.items : []);
+src\components\purchasing\SuppliersManager.tsx:34: toast.error(err instanceof Error ? err.message : 'Unable to load suppliers');
+src\components\purchasing\SuppliersManager.tsx:41: void loadSuppliers();
+src\components\purchasing\SuppliersManager.tsx:46: const response = await fetch('/api/suppliers', {
+src\components\purchasing\SuppliersManager.tsx:70: void loadSuppliers();
+src\components\purchasing\SuppliersManager.tsx:78: const response = await fetch(`/api/suppliers/${supplierId}/test`, { method: 'POST' });
+src\components\purchasing\SuppliersManager.tsx:85: void loadSuppliers();
+src\components\purchasing\SuppliersManager.tsx:109: <h2 className="text-xl font-semibold text-slate-900">Suppliers</h2>
+src\components\purchasing\SuppliersManager.tsx:110: {loading ? <div className="mt-4 text-sm text-slate-500">Loading suppliers...</div> : null}
+src\components\purchasing\SuppliersManager.tsx:111: {!loading && !suppliers.length ? <div className="mt-4 text-sm text-slate-500">No suppliers yet.</div> : null}
+src\components\purchasing\SuppliersManager.tsx:114: {suppliers.map((supplier) => (
+src\components\purchasing\SuppliersManager.tsx:122: <a href={`/suppliers/${supplier.id}`} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+src\i18n\translations\en.json:134: "depozitSuppliers": "Suppliers"
+src\i18n\translations\ro.json:134: "depozitSuppliers": "Furnizori"
+src\lib\validations\admin.ts:182: wastePercent: optionalMaterialNumber('Waste percent must be between 0 and 100'),
+src\lib\validations\admin.ts:183: formatId: z.string().optional().or(z.literal('')),
+src\lib\validations\admin.ts:189: compatibleMethods: z.array(z.string()).default([]),
+src\lib\validations\admin.ts:229: if (data.wastePercent !== undefined && data.wastePercent !== '') {
+src\lib\validations\admin.ts:230: const wastePercent = Number(data.wastePercent);
+src\lib\validations\admin.ts:232: if (wastePercent < 0 || wastePercent > 100) {
+src\lib\validations\admin.ts:236: path: ['wastePercent'],
+src\models\material.ts:11: wastePercent: number;
+src\modules\formats\server.ts:201: where: { formatId: id },
+src\modules\formats\server.ts:203: formatId: null,
+src\modules\i18n\languages\en.json:49: "depozitSuppliers": "Suppliers"
+src\modules\i18n\languages\ro.json:49: "depozitSuppliers": "Furnizori"
+src\modules\material-categories\server.ts:47: requiresWastePercent: category.requiresWastePercent,
+src\modules\material-categories\server.ts:202: requiresWastePercent: data.requiresWastePercent ?? false,
+src\modules\material-categories\server.ts:282: ...(data.requiresWastePercent !== undefined && { requiresWastePercent: data.requiresWastePercent }),
+src\modules\material-categories\types.ts:18: requiresWastePercent: boolean;
+src\modules\material-categories\types.ts:46: requiresWastePercent?: boolean;
+src\modules\material-categories\types.ts:59: requiresWastePercent?: boolean;
+src\modules\materials\materialConsumption.ts:16: wastePercent: number;
+src\modules\materials\materialConsumption.ts:34: wastePercent: number;
+src\modules\materials\materialConsumption.ts:161: export function calculateFormatConsumption(widthMm: number, heightMm: number, wastePercent: number): number {
+src\modules\materials\materialConsumption.ts:163: const effectiveWaste = Number.isFinite(wastePercent) ? Math.min(Math.max(wastePercent, 0), 100) : 0;
+src\modules\materials\materialConsumption.ts:190: const wastePercent = material.wastePercent ?? 0;
+src\modules\materials\materialConsumption.ts:191: const totalUsed = baseQuantity * colorModeFactor * (1 + wastePercent / 100);
+src\modules\materials\materialConsumption.ts:198: wastePercent,
+src\modules\materials\pricing.ts:15: wastePercent: number;
+src\modules\materials\pricing.ts:28: effectiveWastePercent: number;
+src\modules\materials\pricing.ts:242: const effectiveWastePercent = Number.isFinite(input.wastePercent)
+src\modules\materials\pricing.ts:243: ? Math.min(Math.max(input.wastePercent, 0), 100)
+src\modules\materials\pricing.ts:246: const totalUsed = consumedQuantity * (1 + effectiveWastePercent / 100);
+src\modules\materials\pricing.ts:296: effectiveWastePercent,
+src\modules\materials\server.ts:27: wastePercent?: unknown;
+src\modules\materials\server.ts:28: primarySupplierId?: unknown;
+src\modules\materials\server.ts:29: suppliers?: unknown;
+src\modules\materials\server.ts:30: formatId?: unknown;
+src\modules\materials\server.ts:52: compatibleMethods?: unknown;
+src\modules\materials\server.ts:75: compatibleMethods: {
+src\modules\materials\server.ts:91: materialSuppliers: {
+src\modules\materials\server.ts:113: compatibleMethods: materialListInclude.compatibleMethods,
+src\modules\materials\server.ts:116: materialSuppliers: materialListInclude.materialSuppliers,
+src\modules\materials\server.ts:450: const list = material.materialSuppliers ?? [];
+src\modules\materials\server.ts:490: requiresWastePercent: material.category.requiresWastePercent,
+src\modules\materials\server.ts:517: wastePercent: material.wastePercent,
+src\modules\materials\server.ts:518: formatId: (material as { formatId?: string | null }).formatId ?? null,
+src\modules\materials\server.ts:525: primarySupplierId: (material as { primarySupplierId?: string | null }).primarySupplierId ?? null,
+src\modules\materials\server.ts:533: suppliers: normalizeSupplierLinks(material),
+src\modules\materials\server.ts:535: printMethods: material.compatibleMethods.map((method) => ({
+src\modules\materials\server.ts:541: printMethodIds: material.compatibleMethods.map((method) => method.id),
+src\modules\materials\server.ts:542: compatibleMethods: material.compatibleMethods.map((method) => method.id),
+src\modules\materials\server.ts:582: compatibleMethods: { some: { id: printMethodId } },
+src\modules\materials\server.ts:716: wastePercent: true;
+src\modules\materials\server.ts:717: formatId: true;
+src\modules\materials\server.ts:735: compatibleMethods: { select: { id: true } };
+src\modules\materials\server.ts:833: const wastePercentValue = normalizeNonNegativeNumber(payload.wastePercent, 'Waste percent', {
+src\modules\materials\server.ts:834: defaultValue: existing?.wastePercent ?? 0,
+src\modules\materials\server.ts:837: const formatIdValue = typeof payload.formatId === 'string'
+src\modules\materials\server.ts:838: ? payload.formatId.trim() || null
+src\modules\materials\server.ts:839: : payload.formatId === null
+src\modules\materials\server.ts:841: : existing?.formatId ?? null;
+src\modules\materials\server.ts:869: if (formatIdValue) {
+src\modules\materials\server.ts:870: const format = await (prisma as any).format.findUnique({ where: { id: formatIdValue } });
+src\modules\materials\server.ts:880: if (wastePercentValue < 0 || wastePercentValue > 100) {
+src\modules\materials\server.ts:888: const incomingMethodIds = payload.printMethodIds ?? payload.compatibleMethods ?? payload.methods;
+src\modules\materials\server.ts:890: ? existing?.compatibleMethods.map((method) => method.id) ?? []
+src\modules\materials\server.ts:909: const rawSuppliers = Array.isArray(payload.suppliers) ? payload.suppliers : [];
+src\modules\materials\server.ts:910: const normalizedSuppliers = rawSuppliers
+src\modules\materials\server.ts:943: const primarySupplierIdValue = typeof payload.primarySupplierId === 'string'
+src\modules\materials\server.ts:944: ? payload.primarySupplierId.trim() || null
+src\modules\materials\server.ts:945: : payload.primarySupplierId === null
+src\modules\materials\server.ts:947: : existing?.primarySupplierId ?? null;
+src\modules\materials\server.ts:949: const supplierIds = Array.from(new Set(normalizedSuppliers.map((item) => item.supplierId).concat(primarySupplierIdValue ? [primarySupplierIdValue] : [])));
+src\modules\materials\server.ts:951: const foundSuppliers = await prisma.supplier.findMany({
+src\modules\materials\server.ts:955: const foundIds = new Set(foundSuppliers.map((supplier) => supplier.id));
+src\modules\materials\server.ts:964: for (const item of normalizedSuppliers) {
+src\modules\materials\server.ts:976: if (primarySupplierIdValue) {
+src\modules\materials\server.ts:977: const primary = map.get(primarySupplierIdValue);
+src\modules\materials\server.ts:981: map.set(primarySupplierIdValue, {
+src\modules\materials\server.ts:982: supplierId: primarySupplierIdValue,
+src\modules\materials\server.ts:1024: compatibleMethods: {
+src\modules\materials\server.ts:1030: compatibleMethods: {
+src\modules\materials\server.ts:1035: const formatRelation = formatIdValue
+src\modules\materials\server.ts:1036: ? { connect: { id: formatIdValue } }
+src\modules\materials\server.ts:1037: : existing?.formatId
+src\modules\materials\server.ts:1041: const primarySupplierRelation = primarySupplierIdValue
+src\modules\materials\server.ts:1042: ? { connect: { id: primarySupplierIdValue } }
+src\modules\materials\server.ts:1043: : existing?.primarySupplierId
+src\modules\materials\server.ts:1047: const materialSupplierRelation = dedupedSupplierLinks.length > 0
+src\modules\materials\server.ts:1049: materialSuppliers: options.replaceRelations
+src\modules\materials\server.ts:1066: ? { materialSuppliers: { deleteMany: {} } }
+src\modules\materials\server.ts:1081: wastePercent: wastePercentValue,
+src\modules\materials\server.ts:1083: formatId: undefined,
+src\modules\materials\server.ts:1102: ...materialSupplierRelation,
+src\modules\materials\server.ts:1132: wastePercent: true,
+src\modules\materials\server.ts:1133: formatId: true,
+src\modules\materials\server.ts:1151: compatibleMethods: {
+src\modules\materials\types.ts:13: requiresWastePercent: boolean;
+src\modules\materials\types.ts:33: export interface MaterialSupplierLink {
+src\modules\materials\types.ts:60: wastePercent: number;
+src\modules\materials\types.ts:64: compatibleMethods?: string[];
+src\modules\materials\types.ts:68: formatId?: string | null;
+src\modules\materials\types.ts:75: primarySupplierId?: string | null;
+src\modules\materials\types.ts:77: suppliers?: MaterialSupplierLink[];
+src\modules\materials\types.ts:103: wastePercent: number;
+src\modules\materials\types.ts:137: wastePercent?: number;
+src\modules\materials\types.ts:140: compatibleMethods?: string[];
+src\modules\materials\types.ts:142: primarySupplierId?: string | null;
+src\modules\materials\types.ts:143: suppliers?: MaterialSupplierLink[];
+src\modules\materials\types.ts:144: formatId?: string | null;
+src\modules\materials\types.ts:172: wastePercent?: number;
+src\modules\materials\types.ts:175: compatibleMethods?: string[];
+src\modules\materials\types.ts:177: primarySupplierId?: string | null;
+src\modules\materials\types.ts:178: suppliers?: MaterialSupplierLink[];
+src\modules\materials\types.ts:179: formatId?: string | null;
+src\modules\materials\utils.ts:1: export function calcConsumed(requiredQty: number, wastePercent: number): number {
+src\modules\materials\utils.ts:2: if (wastePercent >= 100) throw new Error('invalid waste percent');
+src\modules\materials\utils.ts:3: return requiredQty / (1 - wastePercent / 100);
+src\modules\materials\utils.ts:5: export function calcLinePrice(unitPrice: number, requiredQty: number, wastePercent: number): number {
+src\modules\materials\utils.ts:6: const consumed = calcConsumed(requiredQty, wastePercent);
+src\__tests__\AdminSidebar.test.tsx:16: expect(screen.getByRole('menuitem', { name: /Furnizori/i })).toHaveAttribute('href', '/admin/suppliers');
+src\__tests__\api.materials.create.test.ts:24: formatId: payload.formatId ?? null,
+src\__tests__\api.materials.create.test.ts:38: it('saves formatId and respects client overrides for dimensions', async () => {
+src\__tests__\api.materials.create.test.ts:44: formatId: 'format-uuid-123',
+src\__tests__\api.materials.create.test.ts:59: formatId: 'format-uuid-123',
+src\__tests__\api.materials.create.test.ts:76: formatId: 'nope',
+src\__tests__\materialConsumption.test.ts:21: wastePercent: 0,
+src\__tests__\materialConsumption.test.ts:75: const result = calculateMaterialUsage(makeJob({ quantity: 10 }), makeMaterial({ wastePercent: 10 }));
+src\__tests__\materialConsumption.test.ts:80: const result = calculateMaterialUsage(makeJob({ quantity: 5 }), makeMaterial({ pricePerSqm: 20, wastePercent: 0 }));
+src\__tests__\MaterialCreateForm.e2e.test.tsx:163: expect(body.formatId == null).toBe(true);
+src\__tests__\MaterialCreateForm.smoke.test.tsx:23: if (url.includes('/api/admin/suppliers')) {
+src\__tests__\MaterialCreateForm.smoke.test.tsx:56: primarySupplierId: 'sup-1',
+src\__tests__\MaterialCreateForm.smoke.test.tsx:57: suppliers: expect.arrayContaining([
+src\__tests__\MaterialCreateForm.smoke.test.tsx:63: // If your material form includes gramaj_g in the UI, keep the assertion below enabled:
+src\__tests__\MaterialCreateForm.smoke.test.tsx:64: // expect(body.gramaj_g).toBe(170);
+src\__tests__\MaterialCreateForm.test.tsx:23: if (url.includes('/api/admin/suppliers')) {
+src\__tests__\MaterialCreateForm.test.tsx:176: it('shows supplier selection and includes primarySupplierId in the create payload', async () => {
+src\__tests__\MaterialCreateForm.test.tsx:186: const supplierSelect = await screen.findByLabelText(/primary supplier/i);
+src\__tests__\MaterialCreateForm.test.tsx:187: await user.selectOptions(supplierSelect, 'sup-1');
+src\__tests__\MaterialCreateForm.test.tsx:207: expect(body.primarySupplierId).toBe('sup-1');
+src\__tests__\MaterialCreateForm.test.tsx:208: expect(Array.isArray(body.suppliers)).toBe(true);
+src\__tests__\MaterialForm.admin.test.tsx:49: wastePercent: 5,
+src\__tests__\MaterialForm.admin.test.tsx:53: compatibleMethods: ['pm-1'],
+src\__tests__\MaterialForm.admin.test.tsx:56: formatId: 'fmt-1',
+src\__tests__\MaterialForm.admin.test.tsx:63: primarySupplierId: 'sup-1',
+src\__tests__\MaterialForm.admin.test.tsx:65: suppliers: [{ supplierId: 'sup-1', leadTimeDays: 3, unitCost: 18, isPrimary: true }],
+src\__tests__\MaterialForm.admin.test.tsx:97: if (url.includes('/api/admin/suppliers')) {
+src\__tests__\MaterialForm.admin.test.tsx:125: it('submits edit payload with suppliers, methods, format and waste fields', async () => {
+src\__tests__\MaterialForm.admin.test.tsx:139: expect(payload.formatId).toBe('fmt-1');
+src\__tests__\MaterialForm.admin.test.tsx:141: expect(payload.wastePercent).toBe(5);
+src\__tests__\MaterialForm.admin.test.tsx:142: expect(payload.primarySupplierId).toBe('sup-1');
+src\__tests__\MaterialForm.admin.test.tsx:144: expect(payload.compatibleMethods).toEqual(expect.arrayContaining(['pm-1']));
+src\__tests__\MaterialForm.admin.test.tsx:145: expect(payload.suppliers).toEqual(
+src\__tests__\materials.smoke.test.ts:23: wastePercent: 8,
+src\__tests__\materials.smoke.test.ts:37: category: { id: 'default_sheet', name: 'Sheet Materials', requiresThickness: true, requiresDensity: false, requiresPricePerSqm: true, requiresPricePerMeter: false, requiresPricePerUnit: false, requiresWastePercent: true, active: true, description: null, parentId: null, createdAt: new Date(), updatedAt: new Date() },
+src\__tests__\materials.smoke.test.ts:38: compatibleMethods: [],
+src\__tests__\materials.smoke.test.ts:53: wastePercent: 5,
+src\__tests__\materials.smoke.test.ts:67: category: { id: 'default_roll', name: 'Roll Materials', requiresThickness: false, requiresDensity: false, requiresPricePerSqm: false, requiresPricePerMeter: false, requiresPricePerUnit: false, requiresWastePercent: true, active: true, description: null, parentId: null, createdAt: new Date(), updatedAt: new Date() },
+src\__tests__\materials.smoke.test.ts:68: compatibleMethods: [],
+src\__tests__\materialsPricing.test.ts:37: wastePercent: 10,
+src\__tests__\materialsPricing.test.ts:50: wastePercent: 0,
+src\__tests__\materialsPricing.test.ts:63: wastePercent: 0,
+src\__tests__\materialUsage.integration.test.ts:6: *  - MaterialUsage schema fields: unit, wastePercent, totalUsed
+src\__tests__\materialUsage.integration.test.ts:42: describeDB("MaterialUsage — schema fields (unit / wastePercent / totalUsed)", () => {
+src\__tests__\materialUsage.integration.test.ts:66: wastePercent: 10,
+src\__tests__\materialUsage.integration.test.ts:78: wastePercent: 5,
+src\__tests__\materialUsage.integration.test.ts:96: it("creates MaterialUsage with unit=sqm, wastePercent, totalUsed", async () => {
+src\__tests__\materialUsage.integration.test.ts:103: wastePercent: 10,
+src\__tests__\materialUsage.integration.test.ts:109: expect(usage.wastePercent).toBe(10);
+src\__tests__\materialUsage.integration.test.ts:122: wastePercent: 5,
+src\__tests__\materialUsage.integration.test.ts:136: wastePercent: 5,
+src\__tests__\materialUsage.integration.test.ts:157: expect(first.wastePercent).toBe(10);
+src\__tests__\materialUsage.integration.test.ts:183: wastePercent: 8,
+src\__tests__\materialUsage.integration.test.ts:214: wastePercent: flowMaterial.wastePercent,
+src\__tests__\materialUsage.integration.test.ts:224: expect(result.wastePercent).toBe(8);
+src\__tests__\materialUsage.integration.test.ts:240: wastePercent: flowMaterial.wastePercent,
+src\__tests__\materialUsage.integration.test.ts:256: wastePercent: result.wastePercent,
+src\__tests__\materialUsage.integration.test.ts:267: expect(usage.wastePercent).toBe(8);
+src\__tests__\materialUsage.integration.test.ts:294: wastePercent: 8,
+src\__tests__\materialUsage.integration.test.ts:323: wastePercent: 7,
+src\__tests__\materialUsage.integration.test.ts:354: wastePercent: 7,
+src\__tests__\materialUsage.integration.test.ts:401: expect(usage.wastePercent).toBe(7);
+src\__tests__\materialUsage.integration.test.ts:480: wastePercent: inactiveMaterial.wastePercent,
+src\__tests__\materialUsage.integration.test.ts:499: wastePercent: 0,
+src\__tests__\PurchaseOrdersList.test.tsx:13: if (url.includes('/api/suppliers')) {
+src\__tests__\QuickActions.test.tsx:6: it('renders inventory, purchase orders and suppliers shortcuts', () => {
+src\__tests__\Suppliers.test.tsx:4: import { SuppliersManager } from '@/components/purchasing/SuppliersManager';
+src\__tests__\Suppliers.test.tsx:6: describe('SuppliersManager', () => {
+src\__tests__\Suppliers.test.tsx:13: if (url === '/api/suppliers' && init?.method === 'POST') {
+src\__tests__\Suppliers.test.tsx:20: if (url === '/api/suppliers') {
+src\__tests__\Suppliers.test.tsx:29: if (url === '/api/suppliers/supplier-1/test') {
+src\__tests__\Suppliers.test.tsx:46: render(<SuppliersManager />);
+src\__tests__\Suppliers.test.tsx:52: '/api/suppliers',
+src\__tests__\Suppliers.test.tsx:57: expect(global.fetch).toHaveBeenCalledWith('/api/suppliers/supplier-1/test', { method: 'POST' });
+src\__tests__\api\production-compatibility.test.ts:475: wastePercent: 5,
+prisma\schema.prisma:104: requiresWastePercent  Boolean @default(false)
+prisma\schema.prisma:479: wastePercent       Float                    @default(0)
+prisma\schema.prisma:480: formatId           String?
+prisma\schema.prisma:488: primarySupplierId  String?
+prisma\schema.prisma:502: compatibleMethods    PrintMethod[]             @relation("PrintMethodMaterials")
+prisma\schema.prisma:503: format              Format?                   @relation(fields: [formatId], references: [id])
+prisma\schema.prisma:504: primarySupplier     Supplier?                 @relation("MaterialPrimarySupplier", fields: [primarySupplierId], references: [id])
+prisma\schema.prisma:505: materialSuppliers   MaterialSupplier[]
+prisma\schema.prisma:521: @@index([formatId])
+prisma\schema.prisma:523: @@index([primarySupplierId])
+prisma\schema.prisma:788: wastePercent Float        @default(0)
+prisma\schema.prisma:818: formatId     String?
+prisma\schema.prisma:836: model MaterialSupplier {
+prisma\schema.prisma:852: @@map("material_suppliers")
+prisma\schema.prisma:867: materialSuppliers MaterialSupplier[]
+prisma\schema.prisma:871: @@map("suppliers")
+prisma\seed.ts:280: //   unit (MaterialUnit enum), notes, consumptionType, wastePercent, stock, minStock
+prisma\seed.ts:291: wastePercent: number;
+prisma\seed.ts:313: wastePercent: 8,
+prisma\seed.ts:332: wastePercent: 8,
+prisma\seed.ts:350: wastePercent: 5,
+prisma\seed.ts:367: wastePercent: 10,
+prisma\seed.ts:384: wastePercent: 5,
+prisma\seed.ts:400: wastePercent: 3,
+prisma\seed.ts:416: wastePercent: 3,
+prisma\seed.ts:432: wastePercent: 10,
+prisma\seed.ts:447: wastePercent: 6,
+prisma\seed.ts:462: wastePercent: 0,
+prisma\seed.ts:481: wastePercent: mat.wastePercent,
+prisma\seed.ts:504: wastePercent: mat.wastePercent,
+prisma\migrations\20260526051029_add_material_schema\migration.sql:18: ADD COLUMN     "wastePercent" DOUBLE PRECISION NOT NULL DEFAULT 0;
+prisma\migrations\20260526051029_add_material_schema\migration.sql:37: CHECK ("wastePercent" >= 0 AND "wastePercent" <= 100);
+prisma\migrations\20260526140000_extend_material_usage_fields\migration.sql:7: ADD COLUMN "wastePercent" DOUBLE PRECISION NOT NULL DEFAULT 0,
+prisma\migrations\20260526152914_material_category_tree\migration.sql:22: "requiresWastePercent" BOOLEAN NOT NULL DEFAULT false,
+prisma\migrations\20260526152914_material_category_tree\migration.sql:37: INSERT INTO "material_categories" ("id", "name", "description", "requiresThickness", "requiresPricePerSqm", "requiresWastePercent", "active", "createdAt", "updatedAt")
+prisma\migrations\20260908140000_add_foi_role_formats_and_material_link\migration.sql:52: ADD COLUMN IF NOT EXISTS "formatId" TEXT;
+prisma\migrations\20260908140000_add_foi_role_formats_and_material_link\migration.sql:64: ADD CONSTRAINT "materials_formatId_fkey"
+prisma\migrations\20260908140000_add_foi_role_formats_and_material_link\migration.sql:65: FOREIGN KEY ("formatId") REFERENCES "formats"("id")
+prisma\migrations\20260908140000_add_foi_role_formats_and_material_link\migration.sql:68: CREATE INDEX IF NOT EXISTS "materials_formatId_idx"
+prisma\migrations\20260908140000_add_foi_role_formats_and_material_link\migration.sql:69: ON "materials"("formatId");
+prisma\migrations\20260908190000_add_purchase_order_reorder_models\migration.sql:3: CREATE TABLE "suppliers" (
+prisma\migrations\20260908190000_add_purchase_order_reorder_models\migration.sql:13: CONSTRAINT "suppliers_pkey" PRIMARY KEY ("id")
+prisma\migrations\20260908190000_add_purchase_order_reorder_models\migration.sql:31: CONSTRAINT "purchase_orders_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+prisma\migrations\20260908190000_add_purchase_order_reorder_models\migration.sql:71: CONSTRAINT "reorder_rules_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:2: ADD COLUMN IF NOT EXISTS "primarySupplierId" TEXT;
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:4: CREATE TABLE IF NOT EXISTS "material_suppliers" (
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:14: CONSTRAINT "material_suppliers_pkey" PRIMARY KEY ("id")
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:17: CREATE UNIQUE INDEX IF NOT EXISTS "material_suppliers_materialId_supplierId_key"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:18: ON "material_suppliers"("materialId", "supplierId");
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:20: CREATE INDEX IF NOT EXISTS "material_suppliers_materialId_idx"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:21: ON "material_suppliers"("materialId");
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:23: CREATE INDEX IF NOT EXISTS "material_suppliers_supplierId_idx"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:24: ON "material_suppliers"("supplierId");
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:26: CREATE INDEX IF NOT EXISTS "materials_primarySupplierId_idx"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:27: ON "materials"("primarySupplierId");
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:30: ADD CONSTRAINT "materials_primarySupplierId_fkey"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:31: FOREIGN KEY ("primarySupplierId") REFERENCES "suppliers"("id")
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:35: ALTER TABLE "material_suppliers"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:36: ADD CONSTRAINT "material_suppliers_materialId_fkey"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:41: ALTER TABLE "material_suppliers"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:42: ADD CONSTRAINT "material_suppliers_supplierId_fkey"
+prisma\migrations\20260908193000_add_material_supplier_links\migration.sql:43: FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id")
+prisma\seeds\seed-materials.ts:173: wastePercent: 0,

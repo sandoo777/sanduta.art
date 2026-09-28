@@ -21,6 +21,11 @@ export const ADMIN_ROUTES = {
   // Production & Inventory
   PRODUCTION: '/admin/production',
   MATERIALS: '/admin/materials',
+  FORMATS: '/admin/formats',
+  INVENTORY: '/admin/inventory',
+  PURCHASE_ORDERS: '/admin/purchase-orders',
+  SUPPLIERS: '/admin/suppliers',
+  DEPOT: '/admin/inventory',
   
   // Configuration
   SETTINGS: '/admin/settings',
@@ -28,6 +33,15 @@ export const ADMIN_ROUTES = {
 } as const;
 
 // Navigation items for sidebar
+export const DEPOT_SECTION = {
+  title: 'Depozit',
+  items: [
+    { name: 'Inventar', href: ADMIN_ROUTES.INVENTORY, description: 'Live material stock dashboard', status: 'ready' },
+    { name: 'Comenzi Achiziții', href: ADMIN_ROUTES.PURCHASE_ORDERS, description: 'Procurement workflow', status: 'ready' },
+    { name: 'Furnizori', href: ADMIN_ROUTES.SUPPLIERS, description: 'Supplier directory and automation', status: 'ready' },
+  ],
+} as const;
+
 export const ADMIN_NAVIGATION = [
   {
     name: 'Dashboard',
@@ -72,6 +86,13 @@ export const ADMIN_NAVIGATION = [
     status: 'planned',
   },
   {
+    name: 'Depozit',
+    href: ADMIN_ROUTES.DEPOT,
+    description: 'Inventory, procurement and supplier management',
+    status: 'ready',
+    children: DEPOT_SECTION.items,
+  },
+  {
     name: 'Reports',
     href: ADMIN_ROUTES.REPORTS,
     description: 'Business reports',
@@ -93,9 +114,13 @@ export const ADMIN_PERMISSIONS = {
     ADMIN_ROUTES.ORDERS,
     ADMIN_ROUTES.CUSTOMERS,
     ADMIN_ROUTES.REPORTS,
+    ADMIN_ROUTES.INVENTORY,
+    ADMIN_ROUTES.PURCHASE_ORDERS,
+    ADMIN_ROUTES.SUPPLIERS,
   ],
   OPERATOR: [
     ADMIN_ROUTES.ORDERS,
     ADMIN_ROUTES.PRODUCTION,
+    ADMIN_ROUTES.INVENTORY,
   ],
 } as const;

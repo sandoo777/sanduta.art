@@ -12,6 +12,8 @@ import PriorityManager from "../_components/PriorityManager";
 import AssignOperator from "../_components/AssignOperator";
 import JobNotes from "../_components/JobNotes";
 import JobTimeline from "../_components/JobTimeline";
+import { ConsumeMaterialModal } from '@/components/jobs/ConsumeMaterialModal';
+import { JobMaterialUsageTable } from '@/components/jobs/JobMaterialUsageTable';
 
 type Tab = "overview" | "order" | "notes" | "timeline";
 
@@ -39,8 +41,37 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
   
   const { loading, error, getJob, updateJob } = useProduction();
   const [job, setJob] = useState<ProductionJob | null>(null);
+  const [materials, setMaterials] = useState<Array<{ id: string; name: string; unit?: string | null }>>([]);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [showConsumeModal, setShowConsumeModal] = useState(false);
   const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    interface MaterialListItem {
+      id: string;
+      name: string;
+      unit?: string | null;
+      materialType?: string | null;
+    }
+
+    fetch('/api/admin/materials')
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Failed to load materials');
+        const payload = await response.json() as MaterialListItem[] | { items?: MaterialListItem[] };
+        const loaded = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload.items)
+            ? payload.items
+            : [];
+
+        setMaterials(loaded.map((material) => ({
+          id: material.id,
+          name: material.name,
+          unit: material.unit ?? material.materialType ?? 'unit',
+        })));
+      })
+      .catch(() => setMaterials([]));
+  }, []);
 
   const loadJob = useCallback(async () => {
     try {
@@ -164,7 +195,16 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
               <>
                 {/* Job Details */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Job Details</h2>
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-semibold text-gray-900">Job Details</h2>
+                    <button
+                      type="button"
+                      onClick={() => setShowConsumeModal(true)}
+                      className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                    >
+                      Consume material
+                    </button>
+                  </div>
                   <dl className="grid grid-cols-2 gap-4">
                     <div>
                       <dt className="text-sm text-gray-500">Order ID</dt>
@@ -205,6 +245,13 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
                   </dl>
                 </div>
               </>
+            )}
+
+            {activeTab === "overview" && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Material usage</h2>
+                <JobMaterialUsageTable jobId={job.id} />
+              </div>
             )}
 
             {activeTab === "order" && job.order && (
@@ -329,6 +376,14 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       </div>
+
+      <ConsumeMaterialModal
+        jobId={job.id}
+        isOpen={showConsumeModal}
+        onClose={() => setShowConsumeModal(false)}
+        materials={materials}
+        onConsumed={() => loadJob()}
+      />
     </div>
   );
 }

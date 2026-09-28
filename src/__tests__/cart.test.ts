@@ -3,11 +3,31 @@
  * Tests cart state management, price calculations, validations
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 import { useCartStore } from '@/modules/cart/cartStore';
 import { recalculateItemPrice } from '@/lib/cart/recalculateItemPrice';
 import { validateCart } from '@/lib/cart/validateCart';
 import type { CartItem } from '@/modules/cart/cartStore';
+import { GET as getCartRoute, POST as addCartRoute } from '@/app/api/cart/route';
+import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
+import { addCartMemoryItem, getCartMemory } from '@/lib/inMemoryCart';
+
+vi.mock('next-auth', () => ({
+  getServerSession: vi.fn(),
+}));
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {},
+}));
+
+vi.mock('@/lib/inMemoryCart', () => ({
+  getCartMemory: vi.fn(() => [{ productId: 'prod-memory', qty: 1, price: 89, name: 'Memory item' }]),
+  addCartMemoryItem: vi.fn((item) => ({ ...item, id: 'memory-1' })),
+  clearCartMemory: vi.fn(() => []),
+  removeCartMemoryItem: vi.fn(() => []),
+}));
 
 describe('Cart Store', () => {
   beforeEach(() => {
@@ -201,6 +221,46 @@ describe('Cart Store', () => {
     expect(totals.discount).toBeGreaterThan(0);
     expect(totals.vat).toBeGreaterThan(0);
     expect(totals.total).toBeGreaterThan(totals.subtotal);
+  });
+});
+
+describe('Cart API fallback without DB cart model', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return in-memory cart when authenticated user has no persisted cart table', async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: 'user-123' } } as any);
+
+    const response = await getCartRoute();
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.cart).toEqual([{ productId: 'prod-memory', qty: 1, price: 89, name: 'Memory item' }]);
+    expect(prisma).toEqual({});
+    expect(getCartMemory).toHaveBeenCalled();
+  });
+
+  it('should add to in-memory cart when DB cart model is unavailable', async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: 'user-123' } } as any);
+
+    const request = new NextRequest('http://localhost:3000/api/cart', {
+      method: 'POST',
+      body: JSON.stringify({ productId: 'prod-fallback', qty: 2, price: 49.99, name: 'Fallback product' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const response = await addCartRoute(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(addCartMemoryItem).toHaveBeenCalledWith({
+      productId: 'prod-fallback',
+      qty: 2,
+      price: 49.99,
+      name: 'Fallback product',
+    });
   });
 });
 

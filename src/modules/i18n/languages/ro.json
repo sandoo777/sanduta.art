@@ -42,6 +42,12 @@
     "preferences": "Preferințe",
     "notifications": "Notificări"
   },
+  "menu": {
+    "depozit": "Depozit",
+    "depozitInventory": "Inventar",
+    "depozitPurchaseOrders": "Comenzi Achiziții",
+    "depozitSuppliers": "Furnizori"
+  },
   "preferences": {
     "title": "Preferințele mele",
     "subtitle": "Gestionează preferințele tale pentru o experiență personalizată",

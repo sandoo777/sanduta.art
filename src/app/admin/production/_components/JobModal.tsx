@@ -15,7 +15,7 @@ import { Select } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { fetchOrders, fetchUsers } from '@/lib/api';
 import { Order, User } from '@/types/models';
-import { EQUIPMENT_TYPE_CONFIG } from '@/modules/machines/types';
+import { EQUIPMENT_TYPE_CONFIG, normalizeEquipmentType } from '@/modules/machines/types';
 import type { CompatibleMachine } from '@/app/api/admin/machines/suggest/route';
 import {
   calculateProductionTime,
@@ -771,7 +771,7 @@ export default function JobModal({
                   <div>
                     <FormLabel>
                       {selectedMachine
-                        ? (selectedMachine.equipmentType === 'DIGITAL' ? 'Pagini color' : getQuantityLabel(selectedMachine.equipmentType))
+                        ? (['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalizeEquipmentType(selectedMachine.equipmentType)) ? 'Pagini color' : getQuantityLabel(selectedMachine.equipmentType))
                         : isOutsourcedMethod ? 'Cantitate outsource' : 'Cantitate (optional)'}
                     </FormLabel>
                     <Input
@@ -799,7 +799,7 @@ export default function JobModal({
                 )}
               />
 
-              {selectedMachine?.equipmentType === 'DIGITAL' && !isOutsourcedMethod && (
+              {(['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalizeEquipmentType(selectedMachine?.equipmentType))) && !isOutsourcedMethod && (
                 <FormField
                   name="bwPages"
                   render={({ field }) => (

@@ -5,6 +5,7 @@ import { UserRole, Prisma } from "@prisma/client";
 import { rateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { validateInput } from "@/lib/validation";
 import { logAuditAction, AUDIT_ACTIONS } from "@/lib/audit-log";
+import { normalizeEquipmentType } from "@/modules/machines/types";
 import { getCompatibleMaterials } from "@/modules/materials/server";
 import {
   calculateMaterialUsage,
@@ -588,12 +589,14 @@ export const PATCH = withRole(
             for (const consumable of machine.consumables) {
               let consumedAmount = 0;
 
+              const normalizedEquipmentType = normalizeEquipmentType(machine.equipmentType);
+
               // Calculate consumption based on equipment type and consumable config
-              if (consumable.consumptionPerSqm && machine.equipmentType === 'LARGE_FORMAT') {
-                // For Large Format: consumption per m²
+              if (consumable.consumptionPerSqm && ['UV', 'LARGE_FORMAT', 'DTF', 'SUBLIMATION'].includes(normalizedEquipmentType)) {
+                // For large-format equipment: consumption per m²
                 consumedAmount = Number(consumable.consumptionPerSqm) * jobQuantity;
-              } else if (consumable.consumptionPerUnit && machine.equipmentType === 'DIGITAL') {
-                // For Digital: consumption per click/page
+              } else if (consumable.consumptionPerUnit && ['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalizedEquipmentType)) {
+                // For digital equipment: consumption per click/page
                 consumedAmount = Number(consumable.consumptionPerUnit) * jobQuantity;
               }
 

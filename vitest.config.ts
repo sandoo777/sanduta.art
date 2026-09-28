@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/?(*.)+(test|spec).[jt]s?(x)'],
+    include: ['src/**/?(*.)+(test|spec).[jt]s?(x)', 'tests/**/?(*.)+(test|spec).[jt]s?(x)'],
     exclude: [
       '**/node_modules/**',
       '**/playwright/**',

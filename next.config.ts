@@ -71,15 +71,24 @@ const nextConfig: NextConfig = {
     },
   ],
 
+  async redirects() {
+    return [
+      { source: '/inventory', destination: '/admin/inventory', permanent: false },
+      { source: '/purchase-orders', destination: '/admin/purchase-orders', permanent: false },
+      { source: '/suppliers', destination: '/admin/suppliers', permanent: false },
+    ];
+  },
+
   // Environment variables
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   },
 
   // Experimental features
+  // Disable lucide-react package optimization in dev because it can generate
+  // missing vendor-chunk files on this Next.js setup.
   experimental: {
     optimizePackageImports: [
-      'lucide-react',
       '@heroicons/react',
       'recharts',
       'date-fns',

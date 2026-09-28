@@ -75,6 +75,7 @@ const { mockMaterials } = vi.hoisted(() => {
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    $queryRaw: vi.fn().mockResolvedValue([{ exists: true }]),
     material: {
       findMany: vi.fn().mockResolvedValue(mockMaterials),
       findUnique: vi.fn().mockImplementation(({ where }: { where: { id?: string; sku?: string } }) =>
@@ -97,6 +98,62 @@ describe('materials smoke', () => {
     it('returns an array', async () => {
       const result = await listMaterials();
       expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('skips the priceBreaks relation when the table is missing', async () => {
+      const { prisma } = await import('@/lib/prisma');
+      vi.mocked(prisma.$queryRaw).mockResolvedValueOnce([{ exists: false }]);
+
+      const result = await listMaterials();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(prisma.material.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            compatibleMethods: expect.anything(),
+            category: true,
+            primarySupplier: expect.anything(),
+            materialSuppliers: expect.anything(),
+            consumption: expect.anything(),
+          }),
+        })
+      );
+    });
+
+    it('falls back when Prisma reports the material price-break column is missing', async () => {
+      const { prisma } = await import('@/lib/prisma');
+      vi.mocked(prisma.material.findMany).mockRejectedValueOnce({
+        code: 'P2022',
+        message: 'The column "(not available)" does not exist in the current database.',
+        meta: {
+          modelName: 'Material',
+          driverAdapterError: {
+            message: 'ColumnNotFound',
+          },
+        },
+      });
+
+      const result = await listMaterials();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(prisma.material.findMany).toHaveBeenCalledTimes(2);
+    });
+
+    it('falls back on Prisma ColumnNotFound errors without a table name in the message', async () => {
+      const { prisma } = await import('@/lib/prisma');
+      vi.mocked(prisma.material.findMany).mockRejectedValueOnce({
+        code: 'P2022',
+        message: 'The column "(not available)" does not exist in the current database.',
+        meta: {
+          modelName: 'Material',
+          driverAdapterError: { message: 'ColumnNotFound' },
+        },
+      });
+
+      const result = await listMaterials();
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(prisma.material.findMany).toHaveBeenCalledTimes(2);
     });
 
     it('returns at least 2 materials', async () => {

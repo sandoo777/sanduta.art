@@ -7,7 +7,7 @@ import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useMaterials } from "@/modules/materials/useMaterials";
-import type { MaterialWithDetails } from "@/modules/materials/types";
+import { formatPriceBreakQuantityRange, type MaterialWithDetails } from "@/modules/materials/types";
 import { MaterialModal } from "../_components/MaterialModal";
 import { MaterialConsumption } from "../_components/MaterialConsumption";
 import { MaterialJobs } from "../_components/MaterialJobs";
@@ -73,6 +73,8 @@ export default function MaterialDetailsPage() {
           ? material.costPerUnit
           : null;
   const totalCost = effectiveUnitCost != null ? material.stock * effectiveUnitCost : null;
+  const detailThumbnail = material.thumbnailUrl ?? null;
+  const detailMacroTexture = material.macroTextureUrl ?? null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -229,7 +231,7 @@ export default function MaterialDetailsPage() {
                     : "border-transparent text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Consum ({material.consumption.length})
+                Istoric consum ({material.consumption.length})
               </button>
               <button
                 onClick={() => setActiveTab("jobs")}
@@ -257,6 +259,34 @@ export default function MaterialDetailsPage() {
           <div className="p-6">
             {activeTab === "overview" && (
               <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview material</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                      {detailThumbnail ? (
+                        <img
+                          src={detailThumbnail}
+                          alt={`Thumbnail ${material.name}`}
+                          className="h-48 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-48 items-center justify-center text-sm text-gray-500">Fara thumbnail</div>
+                      )}
+                    </div>
+                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                      {detailMacroTexture ? (
+                        <img
+                          src={detailMacroTexture}
+                          alt={`Macro textura ${material.name}`}
+                          className="h-48 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-48 items-center justify-center text-sm text-gray-500">Fara macro textura</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">
                     Informații generale
@@ -303,11 +333,28 @@ export default function MaterialDetailsPage() {
                     </div>
                   </div>
                 )}
+
+                {Array.isArray(material.priceBreaks) && material.priceBreaks.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Prețuri cu reducere</h3>
+                    <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                      {material.priceBreaks.map((item, index) => (
+                        <div key={item.id ?? `${item.qtyMin}-${item.qtyMax}-${index}`} className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
+                          <span className="font-medium">
+                            {formatPriceBreakQuantityRange(item.qtyMin, item.qtyMax)} buc:
+                          </span>
+                          <span>{Number(item.price).toFixed(2)} MDL</span>
+                          <span className="text-gray-500">({item.discount ?? 0}% reducere)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === "consumption" && (
-              <MaterialConsumption material={material} onUpdate={loadMaterial} />
+              <MaterialConsumption material={material} />
             )}
 
             {activeTab === "jobs" && <MaterialJobs material={material} />}
@@ -324,7 +371,13 @@ export default function MaterialDetailsPage() {
         <MaterialModal
           material={material}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
+          onSuccess={async (updatedMaterial) => {
+            if (updatedMaterial) {
+              setMaterial((current) => current ? ({
+                ...current,
+                ...updatedMaterial,
+              }) as MaterialWithDetails : current);
+            }
             setIsEditModalOpen(false);
             loadMaterial();
           }}

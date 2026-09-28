@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePreferences } from "@/modules/account/usePreferences";
 import { useTranslations } from "@/modules/i18n";
 import { Mail, CheckCircle2 } from "lucide-react";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
 import { FormField } from "@/components/ui/FormField";
 import { communicationPreferencesSchema, type CommunicationPreferencesFormData } from "@/lib/validations/user-panel";
 

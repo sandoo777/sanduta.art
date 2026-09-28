@@ -182,6 +182,43 @@ Migrarea a fost creată și aplicată cu succes:
 }
 ```
 
+### POST /api/admin/materials/preview
+**Descriere:** Calculează preview-ul de consum pentru un material fără a salva obiectul
+
+**Autorizare:** ADMIN sau MANAGER
+
+**Body (exemplu):**
+```json
+{
+  "materialType": "SUPORT_FOI",
+  "width_mm": 210,
+  "height_mm": 297,
+  "unit": "mm",
+  "consumptionRate": 0
+}
+```
+
+**Response (success):**
+```json
+{
+  "ok": true,
+  "preview": {
+    "area_m2": 0.06237,
+    "length_m": null,
+    "estimated_consumption": { "value": 0, "unit": "L" },
+    "autoName": "210x297 mm"
+  }
+}
+```
+
+**Response (validation error):**
+```json
+[
+  { "field": "width_mm", "message": "Lățimea este obligatorie și trebuie să fie > 0" },
+  { "field": "unit", "message": "Unitatea trebuie să fie mm sau m2" }
+]
+```
+
 ### POST /api/admin/materials/[id]/consume
 **Descriere:** Consumă material pentru un job de producție
 

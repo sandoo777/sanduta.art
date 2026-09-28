@@ -57,7 +57,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     }
 
     return { success: true };
-  } catch (_error) {
+  } catch (error) {
     console.error('Error sending order confirmation email:', error);
     return { success: false, error };
   }
@@ -81,7 +81,7 @@ export async function sendAdminNewOrderEmail(data: OrderEmailData) {
     }
 
     return { success: true };
-  } catch (_error) {
+  } catch (error) {
     console.error('Error sending admin notification email:', error);
     return { success: false, error };
   }
@@ -176,8 +176,38 @@ export async function sendOrderStatusUpdateEmail(data: OrderStatusUpdateData) {
     }
 
     return { success: true };
-  } catch (_error) {
+  } catch (error) {
     console.error('Error sending order status update email:', error);
+    return { success: false, error };
+  }
+}
+
+export interface PurchaseOrderEmailData {
+  to: string;
+  subject: string;
+  html?: string;
+  text?: string;
+}
+
+export async function sendPurchaseOrderEmail(data: PurchaseOrderEmailData) {
+  try {
+    const resend = getResendClient();
+    const { error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Sanduta Art <noreply@sanduta.art>',
+      to: data.to,
+      subject: data.subject,
+      html: data.html ?? data.text ?? 'Purchase order details',
+      text: data.text ?? data.html ?? 'Purchase order details',
+    });
+
+    if (error) {
+      console.error('Failed to send purchase order email:', error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending purchase order email:', error);
     return { success: false, error };
   }
 }

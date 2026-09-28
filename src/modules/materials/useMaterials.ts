@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { safeGet, safePost, safePut } from '@/lib/safeFetch';
+import { safeFetch, safePost, safePut } from '@/lib/safeFetch';
 import type {
   Material,
   MaterialWithDetails,
@@ -19,11 +19,13 @@ export function useMaterials() {
     setIsLoading(true);
     setLastError(null);
     try {
-      const data = await safeGet<Material[]>(
-        "/api/admin/materials",
-        [],
-        "Materials:List"
-      );
+      const data = await safeFetch<Material[]>("/api/admin/materials", {
+        method: 'GET',
+        fallback: [],
+        logTag: 'Materials:List',
+        retries: 2,
+        timeout: 15000,
+      });
       return data;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Eroare la încărcarea materialelor";
@@ -89,12 +91,16 @@ export function useMaterials() {
     setIsLoading(true);
     setLastError(null);
     try {
-      const material = await safePut<Material | null>(
-        `/api/admin/materials/${id}`,
-        data,
-        null,
-        "Materials:Update"
-      );
+      const material = await safeFetch<Material | null>(`/api/admin/materials/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        fallback: null,
+        logTag: 'Materials:Update',
+        retries: 1,
+        timeout: 45000,
+        throwOnError: true,
+      });
 
       if (!material) {
         throw new Error("Failed to update material");
@@ -104,6 +110,33 @@ export function useMaterials() {
       return material;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Eroare la actualizarea materialului";
+      setLastError(message);
+      toast.error(message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const copyMaterial = useCallback(async (id: string): Promise<Material | null> => {
+    setIsLoading(true);
+    setLastError(null);
+    try {
+      const created = await safePost<Material | null>(
+        `/api/admin/materials/${id}/copy`,
+        {},
+        null,
+        "Materials:Copy"
+      );
+
+      if (!created) {
+        throw new Error("Nu am putut crea copia materialului");
+      }
+
+      toast.success("Material copiat cu succes");
+      return created;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Eroare la copierea materialului";
       setLastError(message);
       toast.error(message);
       return null;
@@ -180,6 +213,7 @@ export function useMaterials() {
     getMaterials,
     getMaterial,
     createMaterial,
+    copyMaterial,
     updateMaterial,
     deleteMaterial,
     consumeMaterial,

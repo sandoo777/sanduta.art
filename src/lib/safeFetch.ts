@@ -35,6 +35,11 @@ export interface SafeFetchOptions<T> extends RequestInit {
    * Dacă true, validează că response.ok = true
    */
   requireOk?: boolean;
+
+  /**
+   * Dacă true, aruncă ultima eroare după epuizarea retry-urilor în loc să returneze fallback
+   */
+  throwOnError?: boolean;
 }
 
 /**
@@ -70,6 +75,7 @@ export async function safeFetch<T>(
     timeout = 30000,
     retries = 0,
     requireOk = true,
+    throwOnError = false,
     ...fetchOptions
   } = options;
 
@@ -102,7 +108,27 @@ export async function safeFetch<T>(
           return fallback;
         }
 
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const responseText = await response.text();
+        let serverMessage = '';
+        if (responseText) {
+          try {
+            const parsed = JSON.parse(responseText) as { error?: unknown; message?: unknown };
+            const extracted = typeof parsed.error === 'string'
+              ? parsed.error
+              : typeof parsed.message === 'string'
+                ? parsed.message
+                : '';
+            serverMessage = extracted || responseText.substring(0, 180);
+          } catch {
+            serverMessage = responseText.substring(0, 180);
+          }
+        }
+
+        throw new Error(
+          serverMessage
+            ? `HTTP ${response.status}: ${response.statusText} - ${serverMessage}`
+            : `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       // Try to parse JSON
@@ -132,18 +158,30 @@ export async function safeFetch<T>(
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      const isNetworkFetchError =
+        lastError.message.toLowerCase().includes('failed to fetch') ||
+        lastError.message.toLowerCase().includes('networkerror');
+      const isFinalAttempt = attempt >= retries;
       
       // Abort error (timeout)
       if (lastError.name === 'AbortError') {
         if (!silent) {
-          logger.error(logTag, `Request timeout after ${timeout}ms`, { url, attempt });
+          logger.error(logTag, `Request timeout after ${timeout}ms`, { url, attempt: attempt + 1, retries: retries + 1 });
         }
       } else if (!silent) {
-        logger.error(logTag, 'Fetch error', {
+        const logContext = {
           url,
-          attempt,
-          error: lastError.message
-        });
+          attempt: attempt + 1,
+          retries: retries + 1,
+        };
+
+        if (isNetworkFetchError && !throwOnError && !isFinalAttempt) {
+          logger.warn(logTag, `Transient fetch warning: ${lastError.message}`, logContext);
+        } else if (isNetworkFetchError && !throwOnError && isFinalAttempt) {
+          logger.warn(logTag, `Fetch warning (using fallback): ${lastError.message}`, logContext);
+        } else {
+          logger.error(logTag, `Fetch error: ${lastError.message}`, logContext);
+        }
       }
 
       // Retry sau return fallback
@@ -154,10 +192,14 @@ export async function safeFetch<T>(
   }
 
   // All retries failed
-  if (!silent && lastError) {
+  if (!silent && lastError && retries > 0) {
     logger.error(logTag, 'All retries exhausted', { url, error: lastError.message });
   }
-  
+
+  if (throwOnError && lastError) {
+    throw lastError;
+  }
+
   return fallback;
 }
 

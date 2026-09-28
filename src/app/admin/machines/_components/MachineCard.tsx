@@ -1,11 +1,11 @@
 ﻿'use client';
 
 import { useState } from 'react';
-import { MoreVertical, Edit2, Trash2, DollarSign, Gauge, CalendarClock, StickyNote, Layers } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, DollarSign, Gauge, CalendarClock, StickyNote } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import type { Machine } from '@/modules/machines/types';
-import { MACHINE_TYPES, MACHINE_STATUS_CONFIG, EQUIPMENT_TYPE_CONFIG } from '@/modules/machines/types';
+import { MACHINE_TYPES, MACHINE_STATUS_CONFIG, EQUIPMENT_TYPE_CONFIG, normalizeEquipmentType } from '@/modules/machines/types';
 
 interface MachineCardProps {
   machine: Machine;
@@ -20,7 +20,7 @@ export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
   const typeConfig = MACHINE_TYPES.find((t) => t.value === machine.type);
   const Icon = typeConfig?.icon || MoreVertical;
   const statusCfg = MACHINE_STATUS_CONFIG[machine.status] ?? MACHINE_STATUS_CONFIG.AVAILABLE;
-  const etCfg = EQUIPMENT_TYPE_CONFIG[machine.equipmentType ?? 'HOURLY'];
+  const etCfg = EQUIPMENT_TYPE_CONFIG[normalizeEquipmentType(machine.equipmentType ?? 'DIGITAL_COLOR')];
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow relative">
@@ -115,32 +115,6 @@ export function MachineCard({ machine, onEdit, onDelete }: MachineCardProps) {
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Dimensiuni maxime</p>
           <p className="text-sm text-gray-900">{machine.maxWidth} × {machine.maxHeight} mm</p>
-        </div>
-      )}
-
-      {/* Metode tipărire compatibile */}
-      {(machine.compatiblePrintMethods?.length ?? machine.compatiblePrintMethodIds.length) > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Layers className="h-3.5 w-3.5 text-gray-400" />
-            <span className="text-xs text-gray-500">Metode tipărire</span>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {machine.compatiblePrintMethods && machine.compatiblePrintMethods.length > 0
-              ? machine.compatiblePrintMethods.map((m) => (
-                  <span
-                    key={m.id}
-                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200"
-                  >
-                    {m.name}
-                  </span>
-                ))
-              : (
-                  <Badge variant="success" size="sm">
-                    {machine.compatiblePrintMethodIds.length} metode
-                  </Badge>
-                )}
-          </div>
         </div>
       )}
 

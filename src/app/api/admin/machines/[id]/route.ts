@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { validateMachinePayload } from '@/modules/machines/validation';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -12,12 +13,17 @@ const prisma = new PrismaClient({ adapter });
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function serializeMachine(
-  machine: Record<string, unknown>,
-  printMethods?: { id: string; name: string; type: string }[]
+  machine: Record<string, unknown>
 ) {
   const n = (v: unknown) => (v != null ? Number(v) : null);
+  const {
+    compatiblePrintMethodIds: _compatiblePrintMethodIds,
+    compatiblePrintMethods: _compatiblePrintMethods,
+    ...machineWithoutPrintMethodCompatibility
+  } = machine;
+
   return {
-    ...machine,
+    ...machineWithoutPrintMethodCompatibility,
     costPerHour:         n(machine.costPerHour),
     speedM2PerHour:      n(machine.speedM2PerHour),
     inkPerM2:            n(machine.inkPerM2),
@@ -30,16 +36,7 @@ function serializeMachine(
     costClickColor:      n(machine.costClickColor),
     costClickBW:         n(machine.costClickBW),
     servicePerClick:     n(machine.servicePerClick),
-    compatiblePrintMethods: printMethods ?? [],
   };
-}
-
-async function loadPrintMethods(ids: string[]) {
-  if (ids.length === 0) return [];
-  return prisma.printMethod.findMany({
-    where: { id: { in: ids } },
-    select: { id: true, name: true, type: true },
-  });
 }
 
 async function loadMaterials(ids: string[]) {
@@ -48,15 +45,6 @@ async function loadMaterials(ids: string[]) {
     where: { id: { in: ids } },
     select: { id: true, name: true, unit: true },
   });
-}
-
-async function validatePrintMethodIds(ids: string[]): Promise<string | null> {
-  if (ids.length === 0) return null;
-  const found = await prisma.printMethod.count({ where: { id: { in: ids } } });
-  if (found !== ids.length) {
-    return 'Una sau mai multe metode de tipărire selectate nu există';
-  }
-  return null;
 }
 
 async function validateMaterialIds(ids: string[]): Promise<string | null> {
@@ -69,29 +57,7 @@ async function validateMaterialIds(ids: string[]): Promise<string | null> {
 }
 
 function validateByType(body: Record<string, unknown>): string | null {
-  const { equipmentType, compatibleMaterialIds, compatiblePrintMethodIds } = body as {
-    equipmentType?: string;
-    compatibleMaterialIds?: string[];
-    compatiblePrintMethodIds?: string[];
-  };
-
-  if (Array.isArray(compatibleMaterialIds) && compatibleMaterialIds.length === 0) {
-    return 'Trebuie selectat cel puțin un material compatibil';
-  }
-  if (Array.isArray(compatiblePrintMethodIds) && compatiblePrintMethodIds.length === 0) {
-    return 'Trebuie selectată cel puțin o metodă de tipărire compatibilă';
-  }
-
-  if (equipmentType === 'LARGE_FORMAT' && !body.speedM2PerHour) {
-    return 'Câmpul "Viteză (m²/h)" este obligatoriu pentru echipamente Large Format';
-  }
-  if (equipmentType === 'DIGITAL' && !body.costClickColor && !body.costClickBW) {
-    return 'Cel puțin un cost per click (color sau A/N) este obligatoriu pentru echipamente Digitale';
-  }
-  if (equipmentType === 'HOURLY' && !body.costPerHour) {
-    return 'Câmpul "Cost pe oră" este obligatoriu pentru echipamente Orare';
-  }
-  return null;
+  return validateMachinePayload(body);
 }
 
 // ─── GET /api/admin/machines/[id] ───────────────────────────────────────────
@@ -113,10 +79,9 @@ export async function GET(
       return NextResponse.json({ error: 'Machine not found' }, { status: 404 });
     }
 
-    const printMethods = await loadPrintMethods(machine.compatiblePrintMethodIds);
     const materials = await loadMaterials(machine.compatibleMaterialIds);
     return NextResponse.json({
-      ...serializeMachine(machine as unknown as Record<string, unknown>, printMethods),
+      ...serializeMachine(machine as unknown as Record<string, unknown>),
       compatibleMaterials: materials,
     });
   } catch (error) {
@@ -148,14 +113,6 @@ export async function PATCH(
       }
     }
 
-    // Validate that print method IDs exist in DB
-    if (Array.isArray(body.compatiblePrintMethodIds)) {
-      const idsError = await validatePrintMethodIds(body.compatiblePrintMethodIds as string[]);
-      if (idsError) {
-        return NextResponse.json({ error: idsError }, { status: 422 });
-      }
-    }
-
     // Validate that material IDs exist in DB
     if (Array.isArray(body.compatibleMaterialIds)) {
       const matError = await validateMaterialIds(body.compatibleMaterialIds as string[]);
@@ -168,7 +125,7 @@ export async function PATCH(
     const updateData: Record<string, unknown> = {};
 
     // Scalar fields – only set if key present in body
-    const scalarFields = ['name', 'type', 'equipmentType', 'status', 'speed', 'maxFormat', 'description', 'notes'] as const;
+    const scalarFields = ['name', 'type', 'equipmentType', 'productionMode', 'status', 'speed', 'maxFormat', 'description', 'notes'] as const;
     for (const f of scalarFields) {
       if (f in body) updateData[f] = body[f] ?? null;
     }
@@ -200,17 +157,15 @@ export async function PATCH(
 
     // Array fields
     if ('compatibleMaterialIds'    in body) updateData.compatibleMaterialIds    = Array.isArray(body.compatibleMaterialIds)    ? body.compatibleMaterialIds    : [];
-    if ('compatiblePrintMethodIds' in body) updateData.compatiblePrintMethodIds = Array.isArray(body.compatiblePrintMethodIds) ? body.compatiblePrintMethodIds : [];
 
     const machine = await prisma.machine.update({
       where: { id },
       data: updateData,
     });
 
-    const printMethods = await loadPrintMethods(machine.compatiblePrintMethodIds);
     const materials = await loadMaterials(machine.compatibleMaterialIds);
     return NextResponse.json({
-      ...serializeMachine(machine as unknown as Record<string, unknown>, printMethods),
+      ...serializeMachine(machine as unknown as Record<string, unknown>),
       compatibleMaterials: materials,
     });
   } catch (error) {

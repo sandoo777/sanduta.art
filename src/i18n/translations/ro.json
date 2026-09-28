@@ -127,6 +127,12 @@
     "blog": "Blog",
     "users": "Utilizatori"
   },
+  "menu": {
+    "depozit": "Depozit",
+    "depozitInventory": "Inventar",
+    "depozitPurchaseOrders": "Comenzi Achiziții",
+    "depozitSuppliers": "Furnizori"
+  },
   "auth": {
     "signIn": "Autentificare",
     "signUp": "Înregistrare",

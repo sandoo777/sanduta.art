@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Edit3, Plus, Search, Trash2 } from "lucide-react";
+import { Copy, Edit3, Plus, Search, Trash2 } from "lucide-react";
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { Badge } from "@/components/ui/Badge";
 import { Button } from '@/components/ui/Button';
@@ -15,7 +15,6 @@ import { MaterialCard } from "./_components/MaterialCard";
 import { MaterialModal } from "./_components/MaterialModal";
 import {
   getMaterialCategoryLabel,
-  getMaterialWasteDisplay,
   getMaterialCategoryIcon,
   normalizeMaterialForList,
 } from './_components/materialListUtils';
@@ -26,33 +25,41 @@ interface MaterialListFilters {
   status: 'all' | 'active' | 'inactive';
 }
 
-function CompatibilityBadges({
-  items,
-  emptyLabel,
-  colorClass,
-}: {
-  items: Array<{ id: string; name: string }>;
-  emptyLabel: string;
-  colorClass: string;
-}) {
-  if (items.length === 0) {
-    return <Badge variant="default" size="sm">{emptyLabel}</Badge>;
+function getMaterialGramajDisplay(material: Material): string {
+  if (typeof material.density === 'number' && Number.isFinite(material.density) && material.density > 0) {
+    return `${material.density.toFixed(0)} g`;
   }
 
-  const visibleItems = items.slice(0, 3);
+  const nameMatch = material.name.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|gsm)/i);
+  if (nameMatch) {
+    return `${Number(nameMatch[1].replace(',', '.')).toFixed(0)} g`;
+  }
 
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {visibleItems.map((item) => (
-        <Badge key={item.id} size="sm" className={`max-w-[140px] truncate ${colorClass}`}>
-          {item.name}
-        </Badge>
-      ))}
-      {items.length > visibleItems.length ? (
-        <Badge variant="default" size="sm">+{items.length - visibleItems.length}</Badge>
-      ) : null}
-    </div>
-  );
+  if (typeof material.thickness === 'number' && Number.isFinite(material.thickness) && material.thickness > 0) {
+    return `${material.thickness.toFixed(0)} mm`;
+  }
+
+  return '—';
+}
+
+function getMaterialFormatDisplay(material: Material): string {
+  const width = material.width_mm ?? null;
+  const height = material.height_mm ?? null;
+  const formatName = material.formatName ?? null;
+
+  if (formatName && width && height) {
+    return `${formatName} (${width} × ${height} mm)`;
+  }
+
+  if (formatName) {
+    return formatName;
+  }
+
+  if (width && height) {
+    return `${width} × ${height} mm`;
+  }
+
+  return '—';
 }
 
 export default function MaterialsPage() {
@@ -64,10 +71,11 @@ export default function MaterialsPage() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | undefined>();
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'copy'>('create');
   const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [dbCategories, setDbCategories] = useState<Array<{ id: string; name: string }>>([]);
-  const { getMaterials, deleteMaterial, isLoading, lastError } = useMaterials();
+  const { getMaterials, copyMaterial, deleteMaterial, isLoading, lastError } = useMaterials();
 
   const fetchMaterials = useCallback(async () => {
     const data = await getMaterials();
@@ -125,20 +133,38 @@ export default function MaterialsPage() {
     return dbCategories.filter((c) => usedIds.has(c.id));
   }, [materials, dbCategories]);
 
-  const handleModalClose = async () => {
+  const handleModalClose = async (updatedMaterial?: Material | null) => {
     setIsModalOpen(false);
     setEditingMaterial(undefined);
+    setModalMode('create');
+    if (updatedMaterial) {
+      setMaterials((current) => current.map((material) => (
+        material.id === updatedMaterial.id ? normalizeMaterialForList(updatedMaterial) : material
+      )));
+    }
     setMaterials(await fetchMaterials());
   };
 
   const handleOpenCreate = () => {
     setEditingMaterial(undefined);
+    setModalMode('create');
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (material: Material) => {
     setEditingMaterial(material);
+    setModalMode('edit');
     setIsModalOpen(true);
+  };
+
+  const handleCopy = async (material: Material) => {
+    const copied = await copyMaterial(material.id);
+    if (copied) {
+      setEditingMaterial(copied);
+      setModalMode('copy');
+      setIsModalOpen(true);
+      setMaterials(await fetchMaterials());
+    }
   };
 
   const handleDelete = async () => {
@@ -166,10 +192,10 @@ export default function MaterialsPage() {
               Vizualizează materialele, compatibilitățile și statusurile de activare.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Link
               href="/admin/materials/categories"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-gray-300 px-4 py-2 text-base font-medium text-gray-700 transition-all duration-200 hover:scale-[1.02] hover:border-gray-400 hover:bg-gray-50 hover:shadow-md"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-base font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Categorii Materiale
             </Link>
@@ -285,6 +311,30 @@ export default function MaterialsPage() {
               ),
             },
             {
+              key: 'gramaj',
+              label: 'Gramaj',
+              sortable: true,
+              accessor: (material) => getMaterialGramajDisplay(material),
+              width: '9%',
+              render: (material) => <span className="font-medium text-gray-700">{getMaterialGramajDisplay(material)}</span>,
+            },
+            {
+              key: 'format',
+              label: 'Format',
+              sortable: true,
+              accessor: (material) => getMaterialFormatDisplay(material),
+              width: '14%',
+              render: (material) => <span className="text-gray-700">{getMaterialFormatDisplay(material)}</span>,
+            },
+            {
+              key: 'unit',
+              label: 'Unitate',
+              sortable: true,
+              accessor: (material) => material.unit ?? '—',
+              width: '8%',
+              render: (material) => <span className="text-gray-700 uppercase">{material.unit ?? '—'}</span>,
+            },
+            {
               key: 'category',
               label: 'Categorie',
               sortable: true,
@@ -326,25 +376,6 @@ export default function MaterialsPage() {
               ),
             },
             {
-              key: 'wastePercent',
-              label: 'Waste %',
-              sortable: true,
-              width: '8%',
-              render: (material) => <span className="text-gray-700">{getMaterialWasteDisplay(material)}</span>,
-            },
-            {
-              key: 'printMethods',
-              label: 'Metode compatibile',
-              width: '20%',
-              render: (material) => (
-                <CompatibilityBadges
-                  items={material.printMethods ?? []}
-                  emptyLabel="Niciuna"
-                  colorClass="bg-blue-100 text-blue-800"
-                />
-              ),
-            },
-            {
               key: 'status',
               label: 'Status',
               sortable: true,
@@ -368,6 +399,9 @@ export default function MaterialsPage() {
                 <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                   <Button type="button" size="sm" variant="secondary" onClick={() => handleOpenEdit(material)}>
                     <Edit3 className="h-4 w-4" /> Edit
+                  </Button>
+                  <Button type="button" size="sm" variant="secondary" onClick={() => void handleCopy(material)}>
+                    <Copy className="h-4 w-4" /> Copy
                   </Button>
                   <Button type="button" size="sm" variant="danger" onClick={() => setMaterialToDelete(material)}>
                     <Trash2 className="h-4 w-4" /> Delete
@@ -409,6 +443,7 @@ export default function MaterialsPage() {
               key={material.id}
               material={material}
               onEdit={handleOpenEdit}
+              onCopy={handleCopy}
               onDelete={setMaterialToDelete}
             />
           ))
@@ -416,7 +451,16 @@ export default function MaterialsPage() {
       </div>
 
       {isModalOpen ? (
-        <MaterialModal material={editingMaterial} onClose={handleModalClose} onSuccess={handleModalClose} />
+        <MaterialModal material={editingMaterial} mode={modalMode} onClose={handleModalClose} onSuccess={async (updatedMaterial) => {
+          if (updatedMaterial) {
+            setMaterials((current) => current.map((material) => (
+              material.id === updatedMaterial.id ? normalizeMaterialForList(updatedMaterial) : material
+            )));
+          }
+          setIsModalOpen(false);
+          setEditingMaterial(undefined);
+          setMaterials(await fetchMaterials());
+        }} />
       ) : null}
 
       {materialToDelete ? (

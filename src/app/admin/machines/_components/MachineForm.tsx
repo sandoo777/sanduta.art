@@ -1,18 +1,24 @@
 ﻿'use client';
 
 import { Info, X } from 'lucide-react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MaterialCompatibilitySelector } from '../../finishing/_components/MaterialCompatibilitySelector';
-import { PrintMethodCompatibilitySelector } from '../../finishing/_components/PrintMethodCompatibilitySelector';
 import { EquipmentConsumables } from './EquipmentConsumables';
 import type { Machine } from '@/modules/machines/types';
-import { MACHINE_TYPES, MACHINE_STATUS_CONFIG, EQUIPMENT_TYPE_CONFIG } from '@/modules/machines/types';
+import {
+  MACHINE_TYPES,
+  MACHINE_STATUS_CONFIG,
+  EQUIPMENT_TYPE_CONFIG,
+  PRODUCTION_MODE_CONFIG,
+  isDigitalEquipmentType,
+  isHourlyEquipmentType,
+  isLargeFormatEquipmentType,
+  normalizeEquipmentType,
+} from '@/modules/machines/types';
 import { machineFormSchema, type MachineFormData } from '@/lib/validations/admin';
-import { Form } from '@/components/ui/Form';
-import { FormField } from '@/components/ui/FormField';
-import { FormLabel } from '@/components/ui/FormLabel';
-import { FormMessage } from '@/components/ui/FormMessage';
+import { Form, FormField, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -73,13 +79,18 @@ function SectionHeading({ title, description }: { title: string; description: st
   );
 }
 
+type TabType = 'general' | 'compatibilities' | 'costs' | 'technical' | 'consumables';
+
 export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('general');
+
   const form = useForm<MachineFormData>({
     resolver: zodResolver(machineFormSchema),
     defaultValues: {
       name:          machine?.name          ?? '',
-      type:          machine?.type          ?? 'Digital Printer',
-      equipmentType: machine?.equipmentType ?? 'DIGITAL',
+      type:          machine?.type          ?? 'Digital Color',
+      equipmentType: normalizeEquipmentType(machine?.equipmentType ?? 'DIGITAL_COLOR'),
+      productionMode: machine?.productionMode ?? 'IN_HOUSE',
       status:        machine?.status        ?? 'AVAILABLE',
       speed:         machine?.speed         ?? '',
       maxWidth:      machine?.maxWidth      ?? null,
@@ -100,7 +111,6 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
       maxGramWeight:    machine?.maxGramWeight   ?? null,
       speedPpm:         machine?.speedPpm        ?? null,
       compatibleMaterialIds:    machine?.compatibleMaterialIds    ?? [],
-      compatiblePrintMethodIds: machine?.compatiblePrintMethodIds ?? [],
       description:     machine?.description     ?? '',
       notes:           machine?.notes           ?? '',
       lastMaintenance: machine?.lastMaintenance
@@ -111,7 +121,8 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
   });
 
   const { formState: { isSubmitting } } = form;
-  const equipmentType = useWatch({ control: form.control, name: 'equipmentType' });
+  const equipmentType = normalizeEquipmentType(useWatch({ control: form.control, name: 'equipmentType' }));
+  const productionMode = useWatch({ control: form.control, name: 'productionMode' });
 
   const handleTypeChange = (value: string) => {
     form.setValue('type', value);
@@ -124,7 +135,7 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
     onClose();
   };
 
-  const etCfg = EQUIPMENT_TYPE_CONFIG[equipmentType ?? 'HOURLY'];
+  const etCfg = EQUIPMENT_TYPE_CONFIG[equipmentType ?? 'DIGITAL_COLOR'];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -136,7 +147,7 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
               {machine ? 'Editează echipament' : 'Adaugă echipament'}
             </h2>
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${etCfg.bg} ${etCfg.color} mt-1 inline-block`}>
-              {etCfg.label} · {etCfg.description}
+              {etCfg.label} · {PRODUCTION_MODE_CONFIG[productionMode ?? 'IN_HOUSE'].label} · {etCfg.description}
             </span>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -145,6 +156,31 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
         </div>
 
         <Form form={form} onSubmit={handleFormSubmit} className="p-6 space-y-6">
+          <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-2">
+            {[
+              { id: 'general', label: 'General' },
+              { id: 'compatibilities', label: 'Compatibilities' },
+              { id: 'costs', label: 'Costs' },
+              { id: 'technical', label: 'Technical Parameters' },
+              { id: 'consumables', label: 'Consumables' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className={`rounded-t-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-200 bg-blue-50 text-blue-700'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'general' && (
+            <>
           <section className="space-y-5 rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
             <SectionHeading
               title="General"
@@ -183,21 +219,20 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
             </div>
 
             <FormField
-              name="equipmentType"
+              name="productionMode"
               render={({ field }) => (
                 <div>
-                  <FormLabel required>Categorie calcul cost</FormLabel>
+                  <FormLabel required>Production Mode</FormLabel>
                   <div className="flex gap-3 flex-wrap">
-                    {(Object.entries(EQUIPMENT_TYPE_CONFIG) as [string, typeof EQUIPMENT_TYPE_CONFIG[keyof typeof EQUIPMENT_TYPE_CONFIG]][]).map(([key, cfg]) => (
+                    {(Object.entries(PRODUCTION_MODE_CONFIG) as [string, typeof PRODUCTION_MODE_CONFIG[keyof typeof PRODUCTION_MODE_CONFIG]][]).map(([key, cfg]) => (
                       <label
                         key={key}
-                        className={`flex flex-col px-4 py-2.5 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
                           field.value === key ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <input type="radio" value={key} checked={field.value === key} onChange={() => field.onChange(key)} className="sr-only" />
-                        <span className={`text-sm font-semibold ${cfg.color}`}>{cfg.label}</span>
-                        <span className="text-xs text-gray-500">{cfg.description}</span>
+                        <span className={`text-sm font-medium ${cfg.color}`}>{cfg.label}</span>
                       </label>
                     ))}
                   </div>
@@ -261,190 +296,229 @@ export function MachineForm({ machine, onSubmit, onClose }: MachineFormProps) {
               />
             </div>
 
-            <FormField
-              name="description"
-              render={({ field }) => (
-                <div>
-                  <FormLabel>Descriere tehnică</FormLabel>
-                  <textarea
-                    {...field}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
-                    placeholder="Detalii tehnice despre echipament..."
-                  />
-                  <FormMessage />
-                </div>
-              )}
-            />
-
-            <FormField
-              name="notes"
-              render={({ field }) => (
-                <div>
-                  <FormLabel>Observații tehnice</FormLabel>
-                  <textarea
-                    {...field}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
-                    placeholder="ex: necesită calibrare săptămânală, consumabile speciale..."
-                  />
-                  <FormMessage />
-                </div>
-              )}
-            />
           </section>
 
-          <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
-            <SectionHeading
-              title="Compatibilități"
-              description="Selectează materialele și metodele de tipărire pe care le poate procesa acest echipament."
-            />
-
-            <FormField
-              name="compatibleMaterialIds"
-              render={({ field }) => (
-                <div>
-                  <FormLabel>Materiale compatibile</FormLabel>
-                  <MaterialCompatibilitySelector
-                    selectedMaterialIds={field.value}
-                    onChange={field.onChange}
-                  />
-                  <FormMessage />
-                </div>
-              )}
-            />
-
-            <FormField
-              name="compatiblePrintMethodIds"
-              render={({ field }) => (
-                <div>
-                  <FormLabel>Metode de tipărire compatibile</FormLabel>
-                  <PrintMethodCompatibilitySelector
-                    selectedPrintMethodIds={field.value}
-                    onChange={field.onChange}
-                  />
-                  <FormMessage />
-                </div>
-              )}
-            />
-          </section>
-
-          <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
-            <SectionHeading
-              title="Parametri tehnici"
-              description="Valorile de mai jos sunt folosite pentru estimarea timpului și costului de producție."
-            />
-
-            {/* ===== LARGE FORMAT ===== */}
-            {equipmentType === 'LARGE_FORMAT' && (
-            <div className="space-y-4 rounded-xl border border-purple-200 bg-purple-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
-              <h3 className="text-sm font-semibold text-purple-800">Parametri Large Format (cost per m²)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <NumericField name="speedM2PerHour"    label="Viteză" suffix="m²/h" step="0.1" placeholder="20" tooltip="Capacitatea efectivă de producție pe oră. Este folosită la calculul timpului estimat." />
-                <NumericField name="inkPerM2"          label="Cerneală" suffix="lei/m²" step="0.001" placeholder="0.80" tooltip="Costul mediu de cerneală consumată pentru un metru pătrat imprimat." />
-                <NumericField name="materialPerM2"     label="Material" suffix="lei/m²" step="0.001" placeholder="1.20" tooltip="Costul substratului sau al materialului de bază pentru un metru pătrat." />
-                <NumericField name="headAmortPerM2"    label="Amort. cap" suffix="lei/m²" step="0.0001" placeholder="0.15" tooltip="Amortizarea capului de print repartizată per metru pătrat produs." />
-                <NumericField name="printerAmortPerM2" label="Amort. imprimantă" suffix="lei/m²" step="0.0001" placeholder="0.30" tooltip="Amortizarea echipamentului principal repartizată per metru pătrat." />
-                <NumericField name="maintCostPerM2"    label="Mentenanță" suffix="lei/m²" step="0.0001" placeholder="0.10" tooltip="Cost mediu de întreținere, piese și consumabile auxiliare per metru pătrat." />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <NumericField name="operatorCostPerHour" label="Cost operator" suffix="lei/h" placeholder="25" tooltip="Costul orar al operatorului alocat echipamentului." />
-                <NumericField name="maxWidth" label="Lățime max" suffix="mm" step="1" placeholder="3200" tooltip="Lățimea maximă a suportului acceptat de echipament." />
-              </div>
-            </div>
+            </>
           )}
 
-          {/* ===== DIGITAL ===== */}
-          {equipmentType === 'DIGITAL' && (
-            <div className="space-y-4 rounded-xl border border-blue-200 bg-blue-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
-              <h3 className="text-sm font-semibold text-blue-800">Parametri Digital (cost per click/coală)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <NumericField name="costClickColor"  label="Click color"   suffix="lei/click" step="0.0001" placeholder="0.0850" tooltip="Costul total per pagină color imprimată." />
-                <NumericField name="costClickBW"     label="Click A/N"     suffix="lei/click" step="0.0001" placeholder="0.0120" tooltip="Costul total per pagină alb-negru imprimată." />
-                <NumericField name="servicePerClick" label="Service/click"  suffix="lei/click" step="0.000001" placeholder="0.005000" tooltip="Taxa de service sau mentenanță repartizată pentru fiecare click imprimat." />
-                <NumericField name="speedPpm"        label="Viteză"         suffix="ppm" step="1" placeholder="100" tooltip="Numărul de pagini pe minut folosit pentru estimarea timpului de producție." />
-                <NumericField name="maxGramWeight"   label="Gramaj max"     suffix="g/m²" step="1" placeholder="300" tooltip="Gramajul maxim acceptat al hârtiei sau suportului printat." />
+          {activeTab === 'costs' && (
+            <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
+              <SectionHeading
+                title="Costs"
+                description="Costurile principale folosite pentru estimarea și calculul producției."
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <NumericField name="operatorCostPerHour" label="Operator cost" suffix="lei/h" placeholder="20" tooltip="Costul orar al operatorului alocat echipamentului." />
+                <NumericField name="energyConsumptionKw" label="Energy consumption" suffix="kW" placeholder="3.5" tooltip="Consum energetic mediu pe oră." />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  name="maxFormat"
-                  render={({ field }) => (
-                    <div>
-                      <FormLabel>
-                        <span className="inline-flex items-center gap-1.5">
-                          <span>Format maxim</span>
-                          <span
-                            title="Formatul maxim al colii sau suportului acceptat de echipament."
-                            aria-label="Formatul maxim al colii sau suportului acceptat de echipament."
-                            className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-gray-500 cursor-help"
-                          >
-                            <Info className="h-3 w-3" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <NumericField name="costPerHour" label="Machine cost" suffix="lei/h" placeholder="50" tooltip="Costul de funcționare al echipamentului pentru o oră de lucru." />
+                <NumericField name="costClickColor" label="Click color" suffix="lei/click" step="0.0001" placeholder="0.0850" tooltip="Costul total per pagină color imprimată." />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <NumericField name="costClickBW" label="Click A/N" suffix="lei/click" step="0.0001" placeholder="0.0120" tooltip="Costul total per pagină alb-negru imprimată." />
+                <NumericField name="servicePerClick" label="Service/click" suffix="lei/click" step="0.000001" placeholder="0.005000" tooltip="Taxa de service repartizată pentru fiecare click." />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <NumericField name="inkPerM2" label="Ink" suffix="lei/m²" step="0.001" placeholder="0.80" tooltip="Costul mediu de cerneală consumată per metru pătrat." />
+                <NumericField name="materialPerM2" label="Material" suffix="lei/m²" step="0.001" placeholder="1.20" tooltip="Costul substratului sau al materialului de bază per metru pătrat." />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <NumericField name="headAmortPerM2" label="Head amortization" suffix="lei/m²" step="0.0001" placeholder="0.15" tooltip="Amortizarea capului de print repartizată per metru pătrat." />
+                <NumericField name="printerAmortPerM2" label="Machine amortization" suffix="lei/m²" step="0.0001" placeholder="0.30" tooltip="Amortizarea echipamentului principal repartizată per metru pătrat." />
+                <NumericField name="maintCostPerM2" label="Maintenance" suffix="lei/m²" step="0.0001" placeholder="0.10" tooltip="Cost mediu de întreținere și piese per metru pătrat." />
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'technical' && (
+            <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
+              <SectionHeading
+                title="Technical Parameters"
+                description="Valorile de mai jos sunt folosite pentru estimarea timpului și costului de producție."
+              />
+
+              {/* ===== LARGE FORMAT ===== */}
+              {isLargeFormatEquipmentType(equipmentType) && (
+              <div className="space-y-4 rounded-xl border border-purple-200 bg-purple-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
+                <h3 className="text-sm font-semibold text-purple-800">Parametri Large Format (cost per m²)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <NumericField name="speedM2PerHour"    label="Viteză" suffix="m²/h" step="0.1" placeholder="20" tooltip="Capacitatea efectivă de producție pe oră. Este folosită la calculul timpului estimat." />
+                  <NumericField name="inkPerM2"          label="Cerneală" suffix="lei/m²" step="0.001" placeholder="0.80" tooltip="Costul mediu de cerneală consumată pentru un metru pătrat imprimat." />
+                  <NumericField name="materialPerM2"     label="Material" suffix="lei/m²" step="0.001" placeholder="1.20" tooltip="Costul substratului sau al materialului de bază pentru un metru pătrat." />
+                  <NumericField name="headAmortPerM2"    label="Amort. cap" suffix="lei/m²" step="0.0001" placeholder="0.15" tooltip="Amortizarea capului de print repartizată per metru pătrat produs." />
+                  <NumericField name="printerAmortPerM2" label="Amort. imprimantă" suffix="lei/m²" step="0.0001" placeholder="0.30" tooltip="Amortizarea echipamentului principal repartizată per metru pătrat." />
+                  <NumericField name="maintCostPerM2"    label="Mentenanță" suffix="lei/m²" step="0.0001" placeholder="0.10" tooltip="Cost mediu de întreținere, piese și consumabile auxiliare per metru pătrat." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <NumericField name="operatorCostPerHour" label="Cost operator" suffix="lei/h" placeholder="25" tooltip="Costul orar al operatorului alocat echipamentului." />
+                  <NumericField name="maxWidth" label="Lățime max" suffix="mm" step="1" placeholder="3200" tooltip="Lățimea maximă a suportului acceptat de echipament." />
+                </div>
+              </div>
+            )}
+
+            {/* ===== DIGITAL ===== */}
+            {isDigitalEquipmentType(equipmentType) && (
+              <div className="space-y-4 rounded-xl border border-blue-200 bg-blue-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
+                <h3 className="text-sm font-semibold text-blue-800">Parametri Digital (cost per click/coală)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <NumericField name="costClickColor"  label="Click color"   suffix="lei/click" step="0.0001" placeholder="0.0850" tooltip="Costul total per pagină color imprimată." />
+                  <NumericField name="costClickBW"     label="Click A/N"     suffix="lei/click" step="0.0001" placeholder="0.0120" tooltip="Costul total per pagină alb-negru imprimată." />
+                  <NumericField name="servicePerClick" label="Service/click"  suffix="lei/click" step="0.000001" placeholder="0.005000" tooltip="Taxa de service sau mentenanță repartizată pentru fiecare click imprimat." />
+                  <NumericField name="speedPpm"        label="Viteză"         suffix="ppm" step="1" placeholder="100" tooltip="Numărul de pagini pe minut folosit pentru estimarea timpului de producție." />
+                  <NumericField name="maxGramWeight"   label="Gramaj max"     suffix="g/m²" step="1" placeholder="300" tooltip="Gramajul maxim acceptat al hârtiei sau suportului printat." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    name="maxFormat"
+                    render={({ field }) => (
+                      <div>
+                        <FormLabel>
+                          <span className="inline-flex items-center gap-1.5">
+                            <span>Format maxim</span>
+                            <span
+                              title="Formatul maxim al colii sau suportului acceptat de echipament."
+                              aria-label="Formatul maxim al colii sau suportului acceptat de echipament."
+                              className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-gray-500 cursor-help"
+                            >
+                              <Info className="h-3 w-3" />
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <select
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.value || null)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">— selectează —</option>
-                        {['A4', 'A3', 'SRA3', 'SRA2', 'B2', 'B1'].map((f) => (
-                          <option key={f} value={f}>{f}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                />
-                <NumericField name="operatorCostPerHour" label="Cost operator" suffix="lei/h" placeholder="20" tooltip="Costul orar al operatorului alocat acestei imprimante." />
+                        </FormLabel>
+                        <select
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value || null)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">— selectează —</option>
+                          {['A4', 'A3', 'SRA3', 'SRA2', 'B2', 'B1'].map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  />
+                  <NumericField name="operatorCostPerHour" label="Cost operator" suffix="lei/h" placeholder="20" tooltip="Costul orar al operatorului alocat acestei imprimante." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <NumericField name="maxWidth"  label="Lățime max"   suffix="mm" step="1" tooltip="Lățimea maximă acceptată pentru coli sau suporturi speciale." />
+                  <NumericField name="maxHeight" label="Înălțime max" suffix="mm" step="1" tooltip="Înălțimea maximă acceptată pentru coli sau suporturi speciale." />
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <NumericField name="maxWidth"  label="Lățime max"   suffix="mm" step="1" tooltip="Lățimea maximă acceptată pentru coli sau suporturi speciale." />
-                <NumericField name="maxHeight" label="Înălțime max" suffix="mm" step="1" tooltip="Înălțimea maximă acceptată pentru coli sau suporturi speciale." />
-              </div>
-            </div>
-          )}
+            )}
 
-          {/* ===== HOURLY ===== */}
-          {equipmentType === 'HOURLY' && (
-            <div className="space-y-4 rounded-xl border border-orange-200 bg-orange-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
-              <h3 className="text-sm font-semibold text-orange-800">Parametri Orar (cost per oră)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <NumericField name="costPerHour"         label="Cost mașină"    suffix="lei/h" placeholder="50" tooltip="Costul de funcționare al echipamentului pentru o oră de lucru." />
-                <NumericField name="operatorCostPerHour" label="Cost operator"  suffix="lei/h" placeholder="25" tooltip="Tariful orar al operatorului necesar pentru utilizarea echipamentului." />
-                <NumericField name="energyConsumptionKw" label="Consum energie" suffix="kW"    placeholder="3.5" tooltip="Consum energetic mediu pe oră, folosit la calculul costului total." />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  name="speed"
-                  render={({ field }) => (
-                    <div>
-                      <FormLabel>
-                        <span className="inline-flex items-center gap-1.5">
-                          <span>Viteză (opțional)</span>
-                          <span
-                            title="Descriere operațională liberă a vitezei: mm/s, cicluri/h, bucăți/oră sau alt indicator util operatorilor."
-                            aria-label="Descriere operațională liberă a vitezei: mm/s, cicluri/h, bucăți/oră sau alt indicator util operatorilor."
-                            className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-gray-500 cursor-help"
-                          >
-                            <Info className="h-3 w-3" />
+            {/* ===== HOURLY ===== */}
+            {isHourlyEquipmentType(equipmentType) && (
+              <div className="space-y-4 rounded-xl border border-orange-200 bg-orange-50 p-4 animate-in fade-in slide-in-from-top-2 duration-300 transition-all">
+                <h3 className="text-sm font-semibold text-orange-800">Parametri Orar (cost per oră)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <NumericField name="costPerHour"         label="Cost mașină"    suffix="lei/h" placeholder="50" tooltip="Costul de funcționare al echipamentului pentru o oră de lucru." />
+                  <NumericField name="operatorCostPerHour" label="Cost operator"  suffix="lei/h" placeholder="25" tooltip="Tariful orar al operatorului necesar pentru utilizarea echipamentului." />
+                  <NumericField name="energyConsumptionKw" label="Consum energie" suffix="kW"    placeholder="3.5" tooltip="Consum energetic mediu pe oră, folosit la calculul costului total." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    name="speed"
+                    render={({ field }) => (
+                      <div>
+                        <FormLabel>
+                          <span className="inline-flex items-center gap-1.5">
+                            <span>Viteză (opțional)</span>
+                            <span
+                              title="Descriere operațională liberă a vitezei: mm/s, cicluri/h, bucăți/oră sau alt indicator util operatorilor."
+                              aria-label="Descriere operațională liberă a vitezei: mm/s, cicluri/h, bucăți/oră sau alt indicator util operatorilor."
+                              className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-gray-500 cursor-help"
+                            >
+                              <Info className="h-3 w-3" />
+                            </span>
                           </span>
-                        </span>
-                      </FormLabel>
-                      <Input {...field} value={field.value ?? ''} placeholder="ex: 1000 mm/s, 200 cicluri/h" />
-                    </div>
-                  )}
-                />
-                <NumericField name="maxWidth" label="Lățime max" suffix="mm" step="1" tooltip="Lățimea maximă de lucru admisă pentru această operațiune tehnologică." />
+                        </FormLabel>
+                        <Input {...field} value={field.value ?? ''} placeholder="ex: 1000 mm/s, 200 cicluri/h" />
+                      </div>
+                    )}
+                  />
+                  <NumericField name="maxWidth" label="Lățime max" suffix="mm" step="1" tooltip="Lățimea maximă de lucru admisă pentru această operațiune tehnologică." />
+                </div>
               </div>
-            </div>
+            )}
+            </section>
           )}
-          </section>
 
-          {/* Consumabile Utilaj */}
-          <EquipmentConsumables 
-            machineId={machine?.id || null} 
-            initialConsumables={machine?.consumables || []}
-          />
+          {activeTab === 'compatibilities' && (
+            <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
+              <SectionHeading
+                title="Compatibilități"
+                description="Selectează materialele pe care le poate procesa acest echipament."
+              />
+
+              <FormField
+                name="compatibleMaterialIds"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Materiale compatibile</FormLabel>
+                    <MaterialCompatibilitySelector
+                      selectedMaterialIds={field.value}
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
+            </section>
+          )}
+
+          {activeTab === 'consumables' && (
+            <EquipmentConsumables 
+              machineId={machine?.id || null} 
+              initialConsumables={machine?.consumables || []}
+            />
+          )}
+
+          {activeTab !== 'consumables' && (
+            <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5">
+              <SectionHeading
+                title="Note tehnice"
+                description="Descrieri și observații interne legate de funcționarea echipamentului."
+              />
+
+              <FormField
+                name="description"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Descriere tehnică</FormLabel>
+                    <textarea
+                      {...field}
+                      rows={5}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                      placeholder="Detalii tehnice despre echipament..."
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
+
+              <FormField
+                name="notes"
+                render={({ field }) => (
+                  <div>
+                    <FormLabel>Observații tehnice</FormLabel>
+                    <textarea
+                      {...field}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                      placeholder="ex: necesită calibrare săptămânală, consumabile speciale..."
+                    />
+                    <FormMessage />
+                  </div>
+                )}
+              />
+            </section>
+          )}
 
           {/* Acțiuni */}
           <div className="flex gap-3 pt-4 border-t border-gray-200">

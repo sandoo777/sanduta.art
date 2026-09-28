@@ -1,11 +1,11 @@
 "use client";
 
-import { Edit3, Trash2 } from "lucide-react";
+import { Copy, Edit3, Trash2 } from "lucide-react";
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import type { Material } from "@/modules/materials/types";
+import { formatPriceBreakQuantityRange, type Material } from "@/modules/materials/types";
 import {
   getMaterialCategoryLabel,
   getMaterialCategoryIcon,
@@ -18,16 +18,35 @@ import {
 interface MaterialCardProps {
   material: Material;
   onEdit: (material: Material) => void;
+  onCopy: (material: Material) => void;
   onDelete: (material: Material) => void;
 }
 
-export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) {
+export function MaterialCard({ material, onEdit, onCopy, onDelete }: MaterialCardProps) {
   const normalizedMaterial = normalizeMaterialForList(material);
   const methods = normalizedMaterial.printMethods ?? [];
+  const thumbnail = normalizedMaterial.thumbnailUrl ?? null;
+  const priceBreaks = Array.isArray(normalizedMaterial.priceBreaks)
+    ? [...normalizedMaterial.priceBreaks].sort((a, b) => a.qtyMin - b.qtyMin)
+    : [];
 
   return (
     <Card className="transition-shadow hover:shadow-md">
       <CardContent className="space-y-4 p-4">
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+          {thumbnail ? (
+            <img
+              src={thumbnail}
+              alt={`Thumbnail ${normalizedMaterial.name}`}
+              className="h-36 w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-36 items-center justify-center text-sm text-gray-500">
+              Fara thumbnail
+            </div>
+          )}
+        </div>
+
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className={`mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xl ${getCategoryIconBg(normalizedMaterial)}`}>
@@ -65,6 +84,19 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
           </div>
         </div>
 
+        {priceBreaks.length > 0 && (
+          <div className="space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Prețuri cu reducere</p>
+            {priceBreaks.map((item, index) => (
+              <p key={item.id ?? `${item.qtyMin}-${item.qtyMax}-${index}`} className="text-xs text-gray-700">
+                <span className="font-medium">{formatPriceBreakQuantityRange(item.qtyMin, item.qtyMax)} buc:</span>{' '}
+                {Number(item.price).toFixed(2)} MDL{' '}
+                <span className="text-gray-500">({item.discount ?? 0}% reducere)</span>
+              </p>
+            ))}
+          </div>
+        )}
+
         <div className="space-y-3 border-t border-gray-100 pt-3">
           <div>
             <p className="mb-2 text-xs text-gray-500">Metode tipărire compatibile</p>
@@ -84,6 +116,9 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
         <div className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3">
           <Button type="button" size="sm" variant="secondary" onClick={() => onEdit(normalizedMaterial)}>
             <Edit3 className="h-4 w-4" /> Edit
+          </Button>
+          <Button type="button" size="sm" variant="secondary" onClick={() => onCopy(normalizedMaterial)}>
+            <Copy className="h-4 w-4" /> Copy
           </Button>
           <Button type="button" size="sm" variant="danger" onClick={() => onDelete(normalizedMaterial)}>
             <Trash2 className="h-4 w-4" /> Delete

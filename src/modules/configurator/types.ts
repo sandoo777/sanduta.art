@@ -40,6 +40,12 @@ export interface ConfiguratorMaterial {
   name: string;
   unit: string;
   costPerUnit: number;
+  colorName?: string | null;
+  colorCode?: string | null;
+  thumbnailUrl?: string | null;
+  thumbnailImage?: string | null;
+  macroTextureUrl?: string | null;
+  macroTextureImage?: string | null;
   priceModifier?: number;
   constraints?: MaterialConstraints;
   notes?: string | null;

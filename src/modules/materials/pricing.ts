@@ -21,6 +21,20 @@ export interface ConsumptionPricingInput {
   equipment?: {
     costPerHour?: number | null;
   } | null;
+  priceBreaks?: Array<{
+    qtyMin: number;
+    qtyMax: number | null;
+    price: number;
+    discount?: number | null;
+  }>;
+}
+
+export interface MaterialPriceBreakMatch {
+  qtyMin: number;
+  qtyMax: number | null;
+  price: number;
+  discount: number | null;
+  finalPrice: number;
 }
 
 export interface ConsumptionPricingResult {
@@ -105,6 +119,32 @@ const BASE_FACTOR: Record<MaterialUnit, number> = {
 
 function round(value: number, decimals: number): number {
   return Number(value.toFixed(decimals));
+}
+
+export function getMaterialPrice(
+  material: { priceBreaks?: Array<{ qtyMin: number; qtyMax: number | null; price: number; discount?: number | null }> },
+  qty: number
+): MaterialPriceBreakMatch | null {
+  if (!Number.isFinite(qty) || qty < 0) return null;
+  const ranges = Array.isArray(material.priceBreaks) ? material.priceBreaks : [];
+
+  // A null qtyMax means the tier is open-ended (unlimited) — matches any quantity >= qtyMin.
+  const matched = ranges.find((row) => qty >= row.qtyMin && (row.qtyMax === null || row.qtyMax === undefined || qty <= row.qtyMax));
+  if (!matched) return null;
+
+  const discount = matched.discount ?? null;
+  const effectiveDiscount = discount !== null ? Math.min(Math.max(discount, 0), 100) : null;
+  const finalPrice = effectiveDiscount !== null
+    ? matched.price * (1 - effectiveDiscount / 100)
+    : matched.price;
+
+  return {
+    qtyMin: matched.qtyMin,
+    qtyMax: matched.qtyMax,
+    price: matched.price,
+    discount: effectiveDiscount,
+    finalPrice,
+  };
 }
 
 export function calculateEquipmentCost(
@@ -230,7 +270,8 @@ export function calculateConsumptionCost(
     throw new Error('Consumed quantity must be a positive number');
   }
 
-  const unitPrice = input.salePrice ?? input.purchasePrice;
+  const priceBreakMatch = getMaterialPrice({ priceBreaks: input.priceBreaks }, consumedQuantity);
+  const unitPrice = priceBreakMatch?.finalPrice ?? input.salePrice ?? input.purchasePrice;
   if (unitPrice == null || !Number.isFinite(unitPrice) || unitPrice < 0) {
     throw new Error('A valid unit price (sale or purchase) is required');
   }
@@ -306,4 +347,3 @@ export function calculateConsumptionCost(
     snapshot,
   };
 }
-export { MaterialUnit, getAllowedUnitsForMaterialType } from './materialUnits';

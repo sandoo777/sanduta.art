@@ -1,0 +1,2 @@
+[22m[39m[DEBUG] POST /api/admin/materials body: {"name":"Custom name","materialType":"SUPORT_FOI","formatId":"format-uuid-123","width_mm":220,"height_mm":300,"unit":"m2"}
+[22m[39m[DEBUG] POST /api/admin/materials body: {"name":"Broken format","materialType":"SUPORT_FOI","formatId":"nope","width_mm":210,"height_mm":297}

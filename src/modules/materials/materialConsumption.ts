@@ -150,6 +150,20 @@ function resolveColorModeFactor(job: JobForConsumption, material: MaterialForCon
  *
  * @throws MaterialConsumptionError with an appropriate HTTP status code
  */
+export function calculateFormatAreaSqm(widthMm: number, heightMm: number): number {
+  if (!Number.isFinite(widthMm) || !Number.isFinite(heightMm) || widthMm <= 0 || heightMm <= 0) {
+    throw new MaterialConsumptionError('Format dimensions must be positive numbers');
+  }
+
+  return (widthMm * heightMm) / 1_000_000;
+}
+
+export function calculateFormatConsumption(widthMm: number, heightMm: number, wastePercent: number): number {
+  const areaSqm = calculateFormatAreaSqm(widthMm, heightMm);
+  const effectiveWaste = Number.isFinite(wastePercent) ? Math.min(Math.max(wastePercent, 0), 100) : 0;
+  return areaSqm * (1 + effectiveWaste / 100);
+}
+
 export function calculateMaterialUsage(
   job: JobForConsumption,
   material: MaterialForConsumption

@@ -1,4 +1,4 @@
-import { prisma } from './src/lib/prisma';
+const { prisma } = require('./src/lib/prisma');
 
 async function main() {
   try {

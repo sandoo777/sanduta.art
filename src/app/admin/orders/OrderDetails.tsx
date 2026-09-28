@@ -13,7 +13,7 @@ import { ChevronLeft, Clock3, Cpu, Layers, Printer, RefreshCw, Scissors, Wallet 
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Order } from '@/types/models';
-import { EQUIPMENT_TYPE_CONFIG, MACHINE_STATUS_CONFIG, MACHINE_TYPES } from '@/modules/machines/types';
+import { EQUIPMENT_TYPE_CONFIG, MACHINE_STATUS_CONFIG, MACHINE_TYPES, normalizeEquipmentType } from '@/modules/machines/types';
 
 interface OrderDetailsPageProps {
   params: {
@@ -185,12 +185,20 @@ function getMachineIcon(type?: string, equipmentType?: string) {
   const typeMatch = type ? MACHINE_TYPES.find((item) => item.value === type) : null;
   if (typeMatch) return typeMatch.icon;
 
-  switch (equipmentType) {
+  const normalizedType = normalizeEquipmentType(equipmentType);
+
+  switch (normalizedType) {
     case 'LARGE_FORMAT':
+    case 'UV':
+    case 'DTF':
+    case 'SUBLIMATION':
       return Printer;
-    case 'DIGITAL':
+    case 'DIGITAL_COLOR':
+    case 'DIGITAL_MONO':
       return Layers;
-    case 'HOURLY':
+    case 'OFFSET':
+    case 'EMBROIDERY':
+    case 'PLOTTER_CUTTING':
       return Scissors;
     default:
       return Cpu;
@@ -366,8 +374,8 @@ function ProductionTab({
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate text-sm font-semibold text-gray-900">{job.machine.name}</p>
                     {job.machine.equipmentType && (
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${EQUIPMENT_TYPE_CONFIG[job.machine.equipmentType as keyof typeof EQUIPMENT_TYPE_CONFIG]?.bg ?? 'bg-gray-100'} ${EQUIPMENT_TYPE_CONFIG[job.machine.equipmentType as keyof typeof EQUIPMENT_TYPE_CONFIG]?.color ?? 'text-gray-600'}`}>
-                        {EQUIPMENT_TYPE_CONFIG[job.machine.equipmentType as keyof typeof EQUIPMENT_TYPE_CONFIG]?.label ?? job.machine.equipmentType}
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${EQUIPMENT_TYPE_CONFIG[normalizeEquipmentType(job.machine.equipmentType)]?.bg ?? 'bg-gray-100'} ${EQUIPMENT_TYPE_CONFIG[normalizeEquipmentType(job.machine.equipmentType)]?.color ?? 'text-gray-600'}`}>
+                        {EQUIPMENT_TYPE_CONFIG[normalizeEquipmentType(job.machine.equipmentType)]?.label ?? job.machine.equipmentType}
                       </span>
                     )}
                   </div>

@@ -1,0 +1,22 @@
+Supplier API fields audit (apiEndpoint/apiKey)
+Generated: 2026-09-15
+
+Scope searched:
+- src/app/api/suppliers/**
+- src/app/api/admin/suppliers/**
+- src/components/purchasing/**
+- src/app/api/purchase-orders/**
+- prisma/**/*.{prisma,sql}
+
+Results:
+1) prisma/migrations/20260908190000_add_purchase_order_reorder_models/migration.sql:7
+   - "apiEndpoint" TEXT,
+   - Context: historical migration artifact (legacy Supplier columns)
+
+2) prisma/migrations/20260908190000_add_purchase_order_reorder_models/migration.sql:8
+   - "apiKey" TEXT,
+   - Context: historical migration artifact (legacy Supplier columns)
+
+Summary:
+- No active runtime references to supplier.apiEndpoint or supplier.apiKey in supplier APIs, supplier UI, or purchase-order send flow.
+- Remaining references are migration-history only.

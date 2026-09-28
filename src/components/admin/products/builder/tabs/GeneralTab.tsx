@@ -51,8 +51,11 @@ export function GeneralTab({
       ? materials.filter((material) => compatibleMaterialIds.includes(material.id))
       : materials;
 
+  const compatibleEquipmentIds = selectedMethod?.compatibleEquipment?.map((equipment) => equipment.id) ?? [];
   const compatibleEquipment = selectedMethod
-    ? machines.filter((machine) => machine.compatiblePrintMethodIds.includes(selectedMethod.id))
+    ? (compatibleEquipmentIds.length > 0
+      ? machines.filter((machine) => compatibleEquipmentIds.includes(machine.id))
+      : machines)
     : [];
 
   const supplierCostPerUnit = Number(selectedMethod?.costFurnizorPerUnit ?? 0);

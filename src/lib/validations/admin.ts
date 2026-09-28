@@ -135,12 +135,42 @@ export const customerFormSchema = z.object({
 export type CustomerFormData = z.infer<typeof customerFormSchema>;
 
 // ==================== Material Schema ====================
+export const DEFAULT_MINIMUM_MARGIN_PERCENT = 15;
+
 const optionalMaterialNumber = (message: string) => z.string()
   .optional()
   .or(z.literal(''))
   .refine((val) => val === '' || (!isNaN(Number(val)) && Number(val) >= 0), {
     message,
   });
+
+const materialPriceBreakRowSchema = z.object({
+  qtyMin: z.string().min(1, 'Cantitatea minimă este obligatorie').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
+    message: 'Cantitatea minimă trebuie să fie un număr valid',
+  }),
+  // Empty qtyMax means the tier is open-ended (unlimited, e.g. "5000+"). Only the last
+  // tier is allowed to be open-ended — enforced at the array level in materialFormSchema.
+  qtyMax: z.string().optional().or(z.literal('')).refine((val) => val === undefined || val === '' || (Number.isFinite(Number(val)) && Number(val) >= 0), {
+    message: 'Cantitatea maximă trebuie să fie un număr valid',
+  }),
+  price: z.string().min(1, 'Prețul este obligatoriu').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
+    message: 'Prețul trebuie să fie un număr valid',
+  }),
+  discount: z.string().optional().or(z.literal('')).refine((val) => val === '' || (Number.isFinite(Number(val)) && Number(val) >= 0 && Number(val) <= 100), {
+    message: 'Reducerea trebuie să fie între 0 și 100',
+  }),
+}).superRefine((row, ctx) => {
+  const qtyMin = Number(row.qtyMin);
+  const qtyMax = row.qtyMax === undefined || row.qtyMax === '' ? null : Number(row.qtyMax);
+
+  if (qtyMax !== null && Number.isFinite(qtyMin) && Number.isFinite(qtyMax) && qtyMax < qtyMin) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Cantitatea maximă trebuie să fie mai mare sau egală cu minimul',
+      path: ['qtyMax'],
+    });
+  }
+});
 
 export const materialFormSchema = z.object({
   name: z.string()
@@ -149,6 +179,24 @@ export const materialFormSchema = z.object({
     .max(100, 'Material name must be less than 100 characters'),
 
   categoryId: z.string().min(1, 'Category is required'),
+  colorName: z.string().max(100, 'Color name must be less than 100 characters').optional().or(z.literal('')),
+  colorCode: z.string().max(100, 'Color code must be less than 100 characters').optional().or(z.literal('')),
+  thumbnailImage: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine((value) => {
+      if (!value) return true;
+      return /^https?:\/\//i.test(value) || value.startsWith('/uploads/');
+    }, 'Thumbnail URL invalid'),
+  macroTextureImage: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine((value) => {
+      if (!value) return true;
+      return /^https?:\/\//i.test(value) || value.startsWith('/uploads/');
+    }, 'Macro texture URL invalid'),
 
   consumptionType: z.enum(['AREA_BASED', 'DIRECT']).default('AREA_BASED'),
 
@@ -163,6 +211,7 @@ export const materialFormSchema = z.object({
   packagingPrice: z.string().optional().or(z.literal('')),
 
   finishType: z.string().max(50).optional().or(z.literal('')),
+  texture: z.string().max(50, 'Texture must be less than 50 characters').optional().or(z.literal('')),
   stock: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
       message: 'Stock must be a non-negative number',
@@ -177,24 +226,24 @@ export const materialFormSchema = z.object({
   salePrice: optionalMaterialNumber('Prețul de vânzare trebuie să fie un număr pozitiv'),
   salePriceMode: z.enum(['amount', 'percent']).default('amount'),
   salePricePercent: optionalMaterialNumber('Procentul de adaos trebuie să fie un număr pozitiv'),
+  minimumMarginPercent: z.string().optional().or(z.literal('')).refine((val) => val === '' || (!isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100), {
+    message: 'Marginea minimă trebuie să fie între 0% și 100%',
+  }),
   thickness: optionalMaterialNumber('Thickness must be a non-negative number'),
   density: optionalMaterialNumber('Density must be a non-negative number'),
   wastePercent: optionalMaterialNumber('Waste percent must be between 0 and 100'),
+  formatId: z.string().optional().or(z.literal('')),
+  formatName: z.string().optional().or(z.literal('')),
+  width_mm: z.string().optional().or(z.literal('')),
+  height_mm: z.string().optional().or(z.literal('')),
 
   notes: z.string().optional().or(z.literal('')),
   compatibleMethods: z.array(z.string()).default([]),
   compatibleEquipment: z.array(z.string()).default([]),
+  priceBreaks: z.array(materialPriceBreakRowSchema).default([]),
 }).superRefine((data, ctx) => {
   const hasPurchasePrice = data.purchasePrice !== undefined && data.purchasePrice !== '';
   const hasSalePrice = data.salePrice !== undefined && data.salePrice !== '';
-
-  if (!hasPurchasePrice && !hasSalePrice) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Completează cel puțin un preț (achiziție sau vânzare)',
-      path: ['salePrice'],
-    });
-  }
 
   if (data.salePriceMode === 'percent') {
     if (!hasPurchasePrice) {
@@ -214,11 +263,23 @@ export const materialFormSchema = z.object({
     }
   }
 
-  if (data.consumptionType === 'DIRECT' && !hasSalePrice && !hasPurchasePrice) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Consumabilele directe trebuie să aibă preț configurat',
-      path: ['salePrice'],
+  const numericPurchasePrice = hasPurchasePrice ? Number(data.purchasePrice) : null;
+  const minimumMarginValue = data.minimumMarginPercent === undefined || data.minimumMarginPercent === ''
+    ? DEFAULT_MINIMUM_MARGIN_PERCENT
+    : Number(data.minimumMarginPercent);
+
+  if (Number.isFinite(numericPurchasePrice) && Number.isFinite(minimumMarginValue) && minimumMarginValue >= 0 && minimumMarginValue <= 100) {
+    const minimumAllowedPrice = numericPurchasePrice * (1 + minimumMarginValue / 100);
+
+    data.priceBreaks.forEach((row, index) => {
+      const rowPrice = Number(row.price);
+      if (Number.isFinite(rowPrice) && rowPrice < minimumAllowedPrice) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `Prețul rândului trebuie să fie cel puțin ${minimumAllowedPrice.toFixed(2)} MDL (margine minimă ${minimumMarginValue}%)`,
+          path: ['priceBreaks', index, 'price'],
+        });
+      }
     });
   }
 
@@ -231,6 +292,61 @@ export const materialFormSchema = z.object({
         message: 'Waste percent must be between 0 and 100',
         path: ['wastePercent'],
       });
+    }
+  }
+
+  // Quantity tier rules: only the last tier (row) may leave qtyMax empty (open-ended,
+  // e.g. "5000+"), and tiers must not overlap or leave gaps between them.
+  if (data.priceBreaks.length > 0) {
+    data.priceBreaks.forEach((row, index) => {
+      const isLastRow = index === data.priceBreaks.length - 1;
+      const qtyMaxEmpty = row.qtyMax === undefined || row.qtyMax === '';
+
+      if (qtyMaxEmpty && !isLastRow) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Doar ultimul rând poate avea cantitatea maximă goală (nelimitat)',
+          path: ['priceBreaks', index, 'qtyMax'],
+        });
+      }
+    });
+
+    const numericRows = data.priceBreaks
+      .map((row, index) => ({
+        index,
+        qtyMin: Number(row.qtyMin),
+        qtyMax: row.qtyMax === undefined || row.qtyMax === '' ? null : Number(row.qtyMax),
+      }))
+      .filter((row) => Number.isFinite(row.qtyMin) && (row.qtyMax === null || Number.isFinite(row.qtyMax)));
+
+    const sortedByQtyMin = [...numericRows].sort((a, b) => a.qtyMin - b.qtyMin);
+
+    for (let i = 0; i < sortedByQtyMin.length - 1; i += 1) {
+      const current = sortedByQtyMin[i];
+      const next = sortedByQtyMin[i + 1];
+
+      if (current.qtyMax === null) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Doar ultimul interval (cel cu cantitatea minimă cea mai mare) poate fi nelimitat',
+          path: ['priceBreaks', current.index, 'qtyMax'],
+        });
+        continue;
+      }
+
+      if (next.qtyMin <= current.qtyMax) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `Intervalul se suprapune cu rândul anterior (până la ${current.qtyMax})`,
+          path: ['priceBreaks', next.index, 'qtyMin'],
+        });
+      } else if (next.qtyMin > current.qtyMax + 1) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `Există un gol între cantitatea ${current.qtyMax} și ${next.qtyMin}`,
+          path: ['priceBreaks', next.index, 'qtyMin'],
+        });
+      }
     }
   }
 
@@ -252,7 +368,19 @@ export const machineFormSchema = z.object({
 
   type: z.string().min(1, 'Tipul este obligatoriu'),
 
-  equipmentType: z.enum(['LARGE_FORMAT', 'DIGITAL', 'HOURLY']).default('HOURLY'),
+  equipmentType: z.enum([
+    'DIGITAL_COLOR',
+    'DIGITAL_MONO',
+    'UV',
+    'LARGE_FORMAT',
+    'DTF',
+    'SUBLIMATION',
+    'OFFSET',
+    'EMBROIDERY',
+    'PLOTTER_CUTTING',
+  ]).default('DIGITAL_COLOR'),
+
+  productionMode: z.enum(['IN_HOUSE', 'OUTSOURCE']).default('IN_HOUSE'),
 
   status: z.enum(['AVAILABLE', 'BUSY', 'MAINTENANCE'], { message: 'Status invalid' }),
 
@@ -281,7 +409,6 @@ export const machineFormSchema = z.object({
   speedPpm:        optionalInt(),
 
   compatibleMaterialIds:    z.array(z.string()).default([]),
-  compatiblePrintMethodIds: z.array(z.string()).default([]),
 
   description:     z.string().optional().or(z.literal('')),
   notes:           z.string().optional().or(z.literal('')),

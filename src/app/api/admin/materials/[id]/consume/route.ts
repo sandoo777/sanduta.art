@@ -62,6 +62,11 @@ export async function POST(
             requiresPricePerUnit: true,
           },
         },
+        priceBreaks: {
+          orderBy: {
+            qtyMin: 'asc',
+          },
+        },
       },
     });
 
@@ -129,6 +134,12 @@ export async function POST(
         purchasePrice: material.purchasePrice ? Number(material.purchasePrice) : null,
         salePrice: material.salePrice ? Number(material.salePrice) : null,
         wastePercent: material.wastePercent,
+        priceBreaks: material.priceBreaks.map((row) => ({
+          qtyMin: row.qtyMin,
+          qtyMax: row.qtyMax,
+          price: row.price,
+          discount: row.discount,
+        })),
       });
     } catch (pricingError) {
       const message = pricingError instanceof Error ? pricingError.message : 'Configurare preț invalidă';

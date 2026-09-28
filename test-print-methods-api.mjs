@@ -26,7 +26,7 @@ const log = {
 
 let sessionCookie = '';
 
-async function _login() {
+async function login() {
   const response = await fetch(`${AUTH_URL}/signin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

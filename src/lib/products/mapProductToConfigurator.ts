@@ -148,6 +148,12 @@ export function mapProductToConfigurator(product: PrismaProductWithRelations): C
         name: entry.material.name,
         unit: entry.material.unit,
         costPerUnit: Number(entry.material.costPerUnit ?? 0),
+        colorName: entry.material.colorName ?? null,
+        colorCode: entry.material.colorCode ?? null,
+        thumbnailUrl: entry.material.thumbnailUrl ?? null,
+        thumbnailImage: entry.material.thumbnailUrl ?? null,
+        macroTextureUrl: entry.material.macroTextureUrl ?? null,
+        macroTextureImage: entry.material.macroTextureUrl ?? null,
         priceModifier: toNumber(entry.priceModifier ?? undefined),
         notes: entry.material.notes ?? null,
         constraints: constraints

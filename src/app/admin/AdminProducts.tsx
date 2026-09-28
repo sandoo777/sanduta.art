@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productFormSchema, type ProductFormData } from "@/lib/validations/admin";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/Form";
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";

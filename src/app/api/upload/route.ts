@@ -10,7 +10,7 @@ import { join } from "path";
  * 
  * @see docs/IMAGE_UPLOAD.md for migration guide
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;

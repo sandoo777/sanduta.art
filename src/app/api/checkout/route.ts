@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
     // Gather cart items: DB for authenticated users, in-memory for guests
     let cartItems: { productId: string; qty: number; price: number; name?: string }[] = [];
 
-    if (userId) {
-      const dbItems = await prisma.cartItem.findMany({ where: { userId } });
-      cartItems = dbItems.map((item) => ({
+    if (userId && (prisma as any)?.cartItem) {
+      const dbItems = await (prisma as any).cartItem.findMany({ where: { userId } });
+      cartItems = dbItems.map((item: any) => ({
         productId: item.productId,
         qty: item.qty,
         price: Number(item.price),
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Clear cart after successful order
-    if (userId) {
-      await prisma.cartItem.deleteMany({ where: { userId } });
+    if (userId && (prisma as any)?.cartItem) {
+      await (prisma as any).cartItem.deleteMany({ where: { userId } });
     } else {
       clearCartMemory();
     }

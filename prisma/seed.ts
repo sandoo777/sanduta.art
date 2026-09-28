@@ -29,6 +29,66 @@ async function main() {
   });
   console.log('✅ Admin user created:', admin.email);
 
+  const materialPropertyTypes = ['finishes', 'colors', 'textures'] as const;
+
+  for (const type of materialPropertyTypes) {
+    const key = `material_property_lists.${type}`;
+    const payload: Array<{ id: string; value: string; enabled: boolean; usageCount: number; createdAt: string; updatedAt: string }> = [];
+
+    const existing = await prisma.systemSetting.findUnique({ where: { key } });
+    if (!existing) {
+      await prisma.systemSetting.create({
+        data: { key, value: JSON.stringify(payload) },
+      });
+      continue;
+    }
+
+    let shouldInitialize = false;
+    try {
+      const parsed = JSON.parse(existing.value);
+      shouldInitialize = !Array.isArray(parsed) || parsed.length === 0;
+    } catch {
+      shouldInitialize = true;
+    }
+
+    if (shouldInitialize) {
+      await prisma.systemSetting.update({
+        where: { key },
+        data: { value: JSON.stringify(payload) },
+      });
+    }
+  }
+
+  console.log('✅ Material property list keys ensured (initialized only when missing/empty)');
+
+  const formatCategoriesKey = 'format_categories';
+  const defaultFormatCategories = [
+    { id: 'fmt-cat-foi', code: 'FOI', name: 'Foi', enabled: true, usageCount: 0 },
+    { id: 'fmt-cat-role', code: 'ROLE', name: 'Role', enabled: true, usageCount: 0 },
+  ];
+
+  const existingFormatCategories = await prisma.systemSetting.findUnique({ where: { key: formatCategoriesKey } });
+  if (!existingFormatCategories) {
+    await prisma.systemSetting.create({
+      data: {
+        key: formatCategoriesKey,
+        value: JSON.stringify(defaultFormatCategories),
+      },
+    });
+  }
+
+  const formats = await prisma.format.createMany({
+    data: [
+      { category: 'FOI', width_mm: 210, height_mm: 297, name: '210x297 mm' },
+      { category: 'FOI', width_mm: 297, height_mm: 420, name: '297x420 mm' },
+      { category: 'ROLE', width_mm: 420, name: '420 mm' },
+      { category: 'FOI', width_mm: 320, height_mm: 450, name: '320x450 mm' },
+      { category: 'ROLE', width_mm: 707, name: '707 mm' },
+    ],
+    skipDuplicates: false,
+  });
+  console.log(`✅ Created ${formats.count} formats`);
+
   // Create sample customers
   const customers = await prisma.customer.createMany({
     data: [
@@ -271,6 +331,7 @@ async function main() {
     name: string;
     sku: string;
     categoryId: string;
+    materialType: 'SUPORT_FOI' | 'SUPORT_ROLA' | 'SUPORT_M2' | 'CERNEALA' | 'CONSUMABIL';
     unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs' | 'sheet';
     consumptionType: 'AREA_BASED' | 'DIRECT';
     purchasePrice: number;
@@ -282,27 +343,36 @@ async function main() {
     notes: string;
     finishType?: string | null;
     thickness?: number | null;
+    consumptionRate?: number | null;
+    isTemplate?: boolean;
+    width_mm?: number | null;
+    height_mm?: number | null;
   }> = [
     {
       id: 'seed-mat-001',
-      name: 'Banner mesh 440g',
-      sku: 'BANNER-MESH-440',
+      name: 'Support foi A4',
+      sku: 'SUPORT-FOI-A4',
       categoryId: 'default_sheet',
-      unit: 'm2',
-      consumptionType: 'AREA_BASED',
+      materialType: 'SUPORT_FOI',
+      unit: 'sheet',
+      consumptionType: 'DIRECT',
       purchasePrice: 35,
       salePrice: 45,
       wastePercent: 8,
       stock: 200,
       minStock: 20,
       active: true,
-      notes: 'Mesh poliester 440g/m² pentru bannere exterioare',
+      notes: 'Suport din foi A4 pentru imprimare și montaj',
+      width_mm: 210,
+      height_mm: 297,
+      isTemplate: true,
     },
     {
       id: 'seed-mat-002',
-      name: 'Banner frontlit 510g',
-      sku: 'BANNER-FL-510',
+      name: 'Support rolă 420mm',
+      sku: 'SUPORT-ROLA-420',
       categoryId: 'default_sheet',
+      materialType: 'SUPORT_ROLA',
       unit: 'm2',
       consumptionType: 'AREA_BASED',
       purchasePrice: 42,
@@ -311,14 +381,17 @@ async function main() {
       stock: 300,
       minStock: 30,
       active: true,
-      notes: 'PVC frontlit 510g/m² pentru bannere iluminate',
+      notes: 'Suport de rolă pentru format mare, lățime 420mm',
+      width_mm: 420,
+      consumptionRate: 1.2,
     },
     {
       id: 'seed-mat-003',
-      name: 'Vinil adeziv gri',
-      sku: 'VINYL-ADH-GRI',
+      name: 'Support m² standard',
+      sku: 'SUPORT-M2-STD',
       categoryId: 'default_roll',
-      unit: 'meter',
+      materialType: 'SUPORT_M2',
+      unit: 'm2',
       consumptionType: 'AREA_BASED',
       purchasePrice: 9,
       salePrice: 12,
@@ -326,38 +399,42 @@ async function main() {
       stock: 500,
       minStock: 50,
       active: true,
-      notes: 'Vinil adeziv cu spate gri, 1520mm lățime',
+      notes: 'Suprafețe de bază pe metru pătrat pentru aplicații de format mare',
+      consumptionRate: 0.85,
     },
     {
       id: 'seed-mat-004',
-      name: 'Vinil perforat 50/50',
-      sku: 'VINYL-PERF-5050',
+      name: 'Cerneală UV albă',
+      sku: 'CERNEALA-UV-WHITE',
       categoryId: 'default_roll',
-      unit: 'meter',
-      consumptionType: 'AREA_BASED',
+      materialType: 'CERNEALA',
+      unit: 'ml',
+      consumptionType: 'DIRECT',
       purchasePrice: 14,
       salePrice: 18,
       wastePercent: 10,
       stock: 150,
       minStock: 15,
       active: true,
-      notes: 'Vinil perforat one-way vision 50/50 pentru geamuri',
+      notes: 'Cerneală UV albă pentru imprimare pe suporturi speciale',
+      consumptionRate: 5,
     },
     {
       id: 'seed-mat-005',
-      name: 'PVC expandat 5mm',
-      sku: 'PVC-EXP-5MM',
+      name: 'Consumabil cap rotativ',
+      sku: 'CONSUMABIL-CAP-ROT',
       categoryId: 'default_rigid',
-      unit: 'm2',
-      consumptionType: 'AREA_BASED',
+      materialType: 'CONSUMABIL',
+      unit: 'pcs',
+      consumptionType: 'DIRECT',
       purchasePrice: 90,
       salePrice: 120,
       wastePercent: 5,
       stock: 80,
       minStock: 10,
       active: true,
-      notes: 'Placă PVC expandat 5mm pentru panouri rigide',
-      thickness: 5,
+      notes: 'Consumabil pentru cap rotativ, schimbabil după 5000 ore',
+      consumptionRate: 1,
     },
     {
       id: 'seed-mat-006',
@@ -454,14 +531,20 @@ async function main() {
         minStock: mat.minStock,
         active: mat.active,
         notes: mat.notes,
+        materialType: mat.materialType,
         ...(mat.finishType !== undefined ? { finishType: mat.finishType } : {}),
         ...(mat.thickness !== undefined ? { thickness: mat.thickness } : {}),
+        ...(mat.consumptionRate !== undefined ? { consumptionRate: mat.consumptionRate } : {}),
+        ...(mat.isTemplate !== undefined ? { isTemplate: mat.isTemplate } : {}),
+        ...(mat.width_mm !== undefined ? { width_mm: mat.width_mm } : {}),
+        ...(mat.height_mm !== undefined ? { height_mm: mat.height_mm } : {}),
       },
       create: {
         id: mat.id,
         name: mat.name,
         sku: mat.sku,
         categoryId: mat.categoryId,
+        materialType: mat.materialType,
         unit: mat.unit,
         consumptionType: mat.consumptionType,
         purchasePrice: mat.purchasePrice,
@@ -473,6 +556,10 @@ async function main() {
         notes: mat.notes,
         ...(mat.finishType !== undefined ? { finishType: mat.finishType } : {}),
         ...(mat.thickness !== undefined ? { thickness: mat.thickness } : {}),
+        ...(mat.consumptionRate !== undefined ? { consumptionRate: mat.consumptionRate } : {}),
+        ...(mat.isTemplate !== undefined ? { isTemplate: mat.isTemplate } : {}),
+        ...(mat.width_mm !== undefined ? { width_mm: mat.width_mm } : {}),
+        ...(mat.height_mm !== undefined ? { height_mm: mat.height_mm } : {}),
       },
     });
   }

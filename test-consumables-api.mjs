@@ -45,7 +45,7 @@ async function main() {
     console.log('3. Creare Production Job...');
     
     // Găsește o comandă existentă sau folosește ID gol pentru test
-      const _testOrderId = 'test-order-consumables-' + Date.now();
+    let testOrderId = 'test-order-consumables-' + Date.now();
     
     console.log('   ⚠️  API necesită orderId valid, testăm doar update...\n');
     

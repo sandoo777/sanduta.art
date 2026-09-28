@@ -1,12 +1,88 @@
-import { Printer, PrinterCheck, Scissors, Layers, Gauge, MoreHorizontal, Cpu, Zap } from 'lucide-react';
+import { Printer, PrinterCheck, Scissors, Layers, Cpu, Zap } from 'lucide-react';
 
 export type MachineStatus = 'AVAILABLE' | 'BUSY' | 'MAINTENANCE';
-export type EquipmentType = 'LARGE_FORMAT' | 'DIGITAL' | 'HOURLY';
+export type ProductionMode = 'IN_HOUSE' | 'OUTSOURCE';
+
+export const EQUIPMENT_TYPE_VALUES = [
+  'DIGITAL_COLOR',
+  'DIGITAL_MONO',
+  'UV',
+  'LARGE_FORMAT',
+  'DTF',
+  'SUBLIMATION',
+  'OFFSET',
+  'EMBROIDERY',
+  'PLOTTER_CUTTING',
+] as const;
+
+export type EquipmentType = typeof EQUIPMENT_TYPE_VALUES[number];
+
+export const LEGACY_EQUIPMENT_TYPE_MAP: Record<string, EquipmentType> = {
+  DIGITAL: 'DIGITAL_COLOR',
+  DIGITAL_PRINTER: 'DIGITAL_COLOR',
+  DIGITAL_MONOCHROME: 'DIGITAL_MONO',
+  LARGE_FORMAT: 'LARGE_FORMAT',
+  UV: 'UV',
+  UV_FLATBED: 'UV',
+  DTF: 'DTF',
+  DTF_PRINTER: 'DTF',
+  SUBLIMATION: 'SUBLIMATION',
+  SUBLIMATION_PRINTER: 'SUBLIMATION',
+  OFFSET: 'OFFSET',
+  OFFSET_PRESS: 'OFFSET',
+  EMBROIDERY: 'EMBROIDERY',
+  EMBROIDERY_MACHINE: 'EMBROIDERY',
+  PLOTTER_CUTTING: 'PLOTTER_CUTTING',
+  CUTTER_PLOTTER: 'PLOTTER_CUTTING',
+  HOURLY: 'PLOTTER_CUTTING',
+  LASER_CUTTER: 'PLOTTER_CUTTING',
+  LAMINATOR: 'PLOTTER_CUTTING',
+  CNC: 'PLOTTER_CUTTING',
+  GHILOTINA: 'PLOTTER_CUTTING',
+  ALTELE: 'PLOTTER_CUTTING',
+};
+
+export function normalizeEquipmentType(value?: string | null): EquipmentType {
+  if (!value) return 'DIGITAL_COLOR';
+
+  const normalized = value.trim().toUpperCase().replace(/-/g, '_');
+  if (EQUIPMENT_TYPE_VALUES.some((entry) => entry === normalized)) {
+    return normalized as EquipmentType;
+  }
+
+  return LEGACY_EQUIPMENT_TYPE_MAP[normalized] ?? 'DIGITAL_COLOR';
+}
+
+export function isLargeFormatEquipmentType(type?: string | null): boolean {
+  const normalized = normalizeEquipmentType(type);
+  return ['UV', 'LARGE_FORMAT', 'DTF', 'SUBLIMATION'].includes(normalized);
+}
+
+export function isDigitalEquipmentType(type?: string | null): boolean {
+  const normalized = normalizeEquipmentType(type);
+  return ['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalized);
+}
+
+export function isHourlyEquipmentType(type?: string | null): boolean {
+  const normalized = normalizeEquipmentType(type);
+  return ['OFFSET', 'EMBROIDERY', 'PLOTTER_CUTTING'].includes(normalized);
+}
+
+export const PRODUCTION_MODE_CONFIG: Record<ProductionMode, { label: string; color: string; bg: string }> = {
+  IN_HOUSE: { label: 'In-House', color: 'text-blue-700', bg: 'bg-blue-100' },
+  OUTSOURCE: { label: 'Outsource', color: 'text-amber-700', bg: 'bg-amber-100' },
+};
 
 export const EQUIPMENT_TYPE_CONFIG: Record<EquipmentType, { label: string; description: string; unit: string; color: string; bg: string }> = {
-  LARGE_FORMAT: { label: 'Large Format', description: 'Imprimare pe m²', unit: 'm²', color: 'text-purple-700', bg: 'bg-purple-100' },
-  DIGITAL:      { label: 'Digital',       description: 'Cost per click/coală', unit: 'click', color: 'text-blue-700',   bg: 'bg-blue-100' },
-  HOURLY:       { label: 'Pe oră',        description: 'Cost per oră', unit: 'oră', color: 'text-orange-700', bg: 'bg-orange-100' },
+  DIGITAL_COLOR:   { label: 'Digital Color', description: 'Cost per click color', unit: 'click', color: 'text-blue-700', bg: 'bg-blue-100' },
+  DIGITAL_MONO:    { label: 'Digital Mono', description: 'Cost per click mono', unit: 'click', color: 'text-sky-700', bg: 'bg-sky-100' },
+  UV:              { label: 'UV', description: 'Cost per m²', unit: 'm²', color: 'text-violet-700', bg: 'bg-violet-100' },
+  LARGE_FORMAT:    { label: 'Large Format', description: 'Cost per m²', unit: 'm²', color: 'text-purple-700', bg: 'bg-purple-100' },
+  DTF:             { label: 'DTF', description: 'Cost per m²', unit: 'm²', color: 'text-pink-700', bg: 'bg-pink-100' },
+  SUBLIMATION:     { label: 'Sublimation', description: 'Cost per m²', unit: 'm²', color: 'text-fuchsia-700', bg: 'bg-fuchsia-100' },
+  OFFSET:          { label: 'Offset', description: 'Cost per hour', unit: 'h', color: 'text-orange-700', bg: 'bg-orange-100' },
+  EMBROIDERY:      { label: 'Embroidery', description: 'Cost per hour', unit: 'h', color: 'text-emerald-700', bg: 'bg-emerald-100' },
+  PLOTTER_CUTTING: { label: 'Plotter Cutting', description: 'Cost per hour', unit: 'h', color: 'text-amber-700', bg: 'bg-amber-100' },
 };
 
 export interface Machine {
@@ -14,6 +90,7 @@ export interface Machine {
   name: string;
   type: string;
   equipmentType: EquipmentType;
+  productionMode?: ProductionMode;
   status: MachineStatus;
 
   // Comune
@@ -41,40 +118,28 @@ export interface Machine {
   speedPpm?: number | null;
 
   compatibleMaterialIds: string[];
-  /** Populat de API – obiecte complete pentru badge-uri */
   compatibleMaterials?: { id: string; name: string; unit: string }[];
-  compatiblePrintMethodIds: string[];
-  /** Populat de API – obiecte complete pentru badge-uri */ 
-  compatiblePrintMethods?: { id: string; name: string; type: string }[];
   description?: string | null;
   notes?: string | null;
   lastMaintenance?: string | null;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
-  // Consumabile asociate echipamentului
   consumables?: EquipmentConsumable[];
 }
 
-/** Consumabil folosit de un echipament (vopsea, pulbere, soluție) */
 export interface EquipmentConsumable {
   id: string;
   machineId: string;
   materialId: string;
-  
-  // Consum pe diferite unități
-  consumptionPerSqm?: number | null;   // pentru echipamente Large Format
-  consumptionPerUnit?: number | null;  // pentru echipamente Digital (per click/pagină)
-  consumptionPerJob?: number | null;   // consum fix per job
-  
-  unit: string; // MaterialUnit
+  consumptionPerSqm?: number | null;
+  consumptionPerUnit?: number | null;
+  consumptionPerJob?: number | null;
+  unit: string;
   active: boolean;
   notes?: string | null;
   createdAt: Date;
   updatedAt: Date;
-  
-  // Relații populate de API
   material?: {
     id: string;
     name: string;
@@ -84,9 +149,10 @@ export interface EquipmentConsumable {
   };
 }
 
-/** Calculează costul estimat pe unitate (lei/m², lei/click sau lei/oră) */
 export function calcCostPerUnit(m: Machine): number {
-  if (m.equipmentType === 'LARGE_FORMAT') {
+  const equipmentType = normalizeEquipmentType(m.equipmentType);
+
+  if (isLargeFormatEquipmentType(equipmentType)) {
     return (
       (m.inkPerM2 ?? 0) +
       (m.materialPerM2 ?? 0) +
@@ -95,43 +161,45 @@ export function calcCostPerUnit(m: Machine): number {
       (m.maintCostPerM2 ?? 0)
     );
   }
-  if (m.equipmentType === 'DIGITAL') {
+
+  if (isDigitalEquipmentType(equipmentType)) {
     return (m.costClickColor ?? 0) + (m.servicePerClick ?? 0);
   }
+
   return m.costPerHour ?? 0;
 }
 
-/** Calculează timp estimat în minute */
 export function calcEstimatedMinutes(m: Machine, quantity: number): number {
-  if (m.equipmentType === 'LARGE_FORMAT' && m.speedM2PerHour && m.speedM2PerHour > 0) {
+  const equipmentType = normalizeEquipmentType(m.equipmentType);
+
+  if (isLargeFormatEquipmentType(equipmentType) && m.speedM2PerHour && m.speedM2PerHour > 0) {
     return Math.ceil((quantity / m.speedM2PerHour) * 60);
   }
-  if (m.equipmentType === 'DIGITAL' && m.speedPpm && m.speedPpm > 0) {
+  if (isDigitalEquipmentType(equipmentType) && m.speedPpm && m.speedPpm > 0) {
     return Math.ceil(quantity / m.speedPpm);
   }
-  // Hourly: quantity = ore
   return Math.ceil(quantity * 60);
 }
 
-/** Calculează cost total estimat (lei) */
 export function calcEstimatedCost(m: Machine, quantity: number): number {
   const minutes = calcEstimatedMinutes(m, quantity);
   const hours = minutes / 60;
+  const equipmentType = normalizeEquipmentType(m.equipmentType);
 
-  if (m.equipmentType === 'LARGE_FORMAT') {
+  if (isLargeFormatEquipmentType(equipmentType)) {
     const materialCost = calcCostPerUnit(m) * quantity;
     const operatorCost = (m.operatorCostPerHour ?? 0) * hours;
     return materialCost + operatorCost;
   }
-  if (m.equipmentType === 'DIGITAL') {
+  if (isDigitalEquipmentType(equipmentType)) {
     const clickCost = calcCostPerUnit(m) * quantity;
     const operatorCost = (m.operatorCostPerHour ?? 0) * hours;
     return clickCost + operatorCost;
   }
-  // Hourly
+
   const machineCost = (m.costPerHour ?? 0) * hours;
   const operatorCost = (m.operatorCostPerHour ?? 0) * hours;
-  const energyCost = (m.energyConsumptionKw ?? 0) * hours * 2.5; // 2.5 lei/kWh
+  const energyCost = (m.energyConsumptionKw ?? 0) * hours * 2.5;
   return machineCost + operatorCost + energyCost;
 }
 
@@ -146,17 +214,14 @@ export const MACHINE_STATUS_CONFIG: Record<MachineStatus, { label: string; color
 };
 
 export const MACHINE_TYPES = [
-  { value: 'Digital Printer',      label: 'Digital Printer',      equipmentType: 'DIGITAL'       as EquipmentType, icon: Printer },
-  { value: 'Offset Press',         label: 'Offset Press',         equipmentType: 'DIGITAL'       as EquipmentType, icon: PrinterCheck },
-  { value: 'Large Format Printer', label: 'Large Format Printer', equipmentType: 'LARGE_FORMAT'  as EquipmentType, icon: Printer },
-  { value: 'UV Flatbed',           label: 'UV Flatbed',           equipmentType: 'LARGE_FORMAT'  as EquipmentType, icon: Layers },
-  { value: 'Sublimation Printer',  label: 'Sublimation Printer',  equipmentType: 'LARGE_FORMAT'  as EquipmentType, icon: Printer },
-  { value: 'Laser Cutter',         label: 'Laser Cutter',         equipmentType: 'HOURLY'        as EquipmentType, icon: Scissors },
-  { value: 'Laminator',            label: 'Laminator',            equipmentType: 'HOURLY'        as EquipmentType, icon: Layers },
-  { value: 'Cutter Plotter',       label: 'Cutter Plotter',       equipmentType: 'HOURLY'        as EquipmentType, icon: Scissors },
-  { value: 'Ghilotină',            label: 'Ghilotină',            equipmentType: 'HOURLY'        as EquipmentType, icon: Scissors },
-  { value: 'CNC',                  label: 'CNC',                  equipmentType: 'HOURLY'        as EquipmentType, icon: Cpu },
-  { value: 'Sublimation',          label: 'Sublimare',            equipmentType: 'LARGE_FORMAT'  as EquipmentType, icon: Zap },
-  { value: 'Altele',               label: 'Altele',               equipmentType: 'HOURLY'        as EquipmentType, icon: MoreHorizontal },
+  { value: 'Digital Color', equipmentType: 'DIGITAL_COLOR' as EquipmentType, label: 'Digital Color', icon: Printer },
+  { value: 'Digital Mono', equipmentType: 'DIGITAL_MONO' as EquipmentType, label: 'Digital Mono', icon: PrinterCheck },
+  { value: 'UV', equipmentType: 'UV' as EquipmentType, label: 'UV', icon: Layers },
+  { value: 'Large Format', equipmentType: 'LARGE_FORMAT' as EquipmentType, label: 'Large Format', icon: Printer },
+  { value: 'DTF', equipmentType: 'DTF' as EquipmentType, label: 'DTF', icon: Printer },
+  { value: 'Sublimation', equipmentType: 'SUBLIMATION' as EquipmentType, label: 'Sublimation', icon: Zap },
+  { value: 'Offset', equipmentType: 'OFFSET' as EquipmentType, label: 'Offset', icon: PrinterCheck },
+  { value: 'Embroidery', equipmentType: 'EMBROIDERY' as EquipmentType, label: 'Embroidery', icon: Scissors },
+  { value: 'Plotter Cutting', equipmentType: 'PLOTTER_CUTTING' as EquipmentType, label: 'Plotter Cutting', icon: Scissors },
 ] as const;
 

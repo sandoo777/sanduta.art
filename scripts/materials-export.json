@@ -1,0 +1,137 @@
+﻿{
+  "exported_at": "2026-08-28T15:36:17.776Z",
+  "exported_by": "Copilot/export-materials.mjs",
+  "schema_version": "1.0.0",
+  "stats": {
+    "total_materials": 0,
+    "active_materials": 0,
+    "inactive_materials": 0,
+    "materials_with_sku": 0,
+    "materials_missing_sku": 0,
+    "materials_low_stock": 0,
+    "total_categories": 7,
+    "active_categories": 7
+  },
+  "categories": [
+    {
+      "id": "default_other",
+      "name": "Other",
+      "description": "Other materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": false,
+        "requiresDensity": false,
+        "requiresPricePerSqm": false,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": false
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_paper",
+      "name": "Paper",
+      "description": "Paper materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": true,
+        "requiresDensity": false,
+        "requiresPricePerSqm": true,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": false
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_rigid",
+      "name": "Rigid Materials",
+      "description": "Rigid board materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": true,
+        "requiresDensity": false,
+        "requiresPricePerSqm": true,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": true
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_roll",
+      "name": "Roll Materials",
+      "description": "Roll materials (vinyl, fabric)",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": false,
+        "requiresDensity": false,
+        "requiresPricePerSqm": false,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": true
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_sheet",
+      "name": "Sheet Materials",
+      "description": "Flat sheet materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": true,
+        "requiresDensity": false,
+        "requiresPricePerSqm": true,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": true
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_textile",
+      "name": "Textile",
+      "description": "Textile materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": false,
+        "requiresDensity": false,
+        "requiresPricePerSqm": false,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": true
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    },
+    {
+      "id": "default_vinyl",
+      "name": "Vinyl",
+      "description": "Vinyl materials",
+      "parentId": null,
+      "active": true,
+      "flags": {
+        "requiresThickness": false,
+        "requiresDensity": false,
+        "requiresPricePerSqm": false,
+        "requiresPricePerMeter": false,
+        "requiresPricePerUnit": false,
+        "requiresWastePercent": true
+      },
+      "created_at": "2026-08-25T19:25:59.767Z",
+      "updated_at": "2026-08-25T19:25:59.767Z"
+    }
+  ],
+  "materials": []
+}

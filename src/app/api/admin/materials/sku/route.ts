@@ -3,6 +3,9 @@ import { requireRole } from '@/lib/auth-helpers';
 import { createErrorResponse, logApiError, logger } from '@/lib/logger';
 import { getNextMaterialSku, MaterialApiValidationError } from '@/modules/materials/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * GET /api/admin/materials/sku?categoryId=...
  * Returns next auto-generated SKU for a category.
@@ -18,7 +21,13 @@ export async function GET(request: NextRequest) {
     logger.info('API:Admin:Materials', 'Generating next SKU', { userId: user.id, categoryId });
     const result = await getNextMaterialSku(categoryId);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    });
   } catch (error) {
     if (error instanceof MaterialApiValidationError) {
       return createErrorResponse(error.message, error.status);

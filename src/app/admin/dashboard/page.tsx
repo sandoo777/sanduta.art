@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { KpiCard } from './_components/KpiCard';
 import { SalesChart } from './_components/SalesChart';
 import { TopProducts } from './_components/TopProducts';
+import { QuickActions } from './_components/QuickActions';
 
 export default function DashboardPage() {
   return (
@@ -53,6 +54,12 @@ export default function DashboardPage() {
           bgColor="bg-orange-50"
           iconColor="text-orange-600"
         />
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="mb-4 text-xl font-semibold text-slate-900">Quick Actions</h2>
+        <QuickActions />
       </div>
 
       {/* Charts and Top Products */}

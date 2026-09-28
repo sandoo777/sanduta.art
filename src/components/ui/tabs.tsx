@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 type TabsContainerChildProps = {
-  value?: string;
+  activeValue?: string;
   onValueChange?: (value: string) => void;
 };
 
@@ -39,7 +39,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(child as React.ReactElement<TabsContainerChildProps>, {
-              value: selectedValue,
+              activeValue: selectedValue,
               onValueChange: handleValueChange,
             });
           }
@@ -56,18 +56,21 @@ export interface TabsListProps {
   className?: string;
   children: React.ReactNode;
   value?: string;
+  activeValue?: string;
   onValueChange?: (value: string) => void;
 }
 
 export const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
-  ({ className, children, value: _value, onValueChange }, ref) => {
+  ({ className, children, value: _value, activeValue, onValueChange }, ref) => {
+    const selectedValue = activeValue ?? _value;
+
     return (
       <div ref={ref} className={className} role="tablist">
         {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             const tabsChild = child as React.ReactElement<TabsListChildProps>;
             return React.cloneElement(tabsChild, {
-              isActive: tabsChild.props.value === _value,
+              isActive: tabsChild.props.value === selectedValue,
               onClick: () => onValueChange?.(tabsChild.props.value ?? ''),
             });
           }

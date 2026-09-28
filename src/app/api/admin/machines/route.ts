@@ -1,23 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { EquipmentType, MachineStatus, Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { normalizeEquipmentType } from '@/modules/machines/types';
+import { validateMachinePayload } from '@/modules/machines/validation';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const EQUIPMENT_TYPES: EquipmentType[] = [
+  'DIGITAL_COLOR',
+  'DIGITAL_MONO',
+  'UV',
+  'LARGE_FORMAT',
+  'DTF',
+  'SUBLIMATION',
+  'OFFSET',
+  'EMBROIDERY',
+  'PLOTTER_CUTTING',
+];
+const MACHINE_STATUSES: MachineStatus[] = ['AVAILABLE', 'BUSY', 'MAINTENANCE'];
+
+type EquipmentConsumableRecord = {
+  machineId: string;
+  materialId: string;
+  consumptionPerSqm: Prisma.Decimal | null;
+  consumptionPerUnit: Prisma.Decimal | null;
+  consumptionPerJob: Prisma.Decimal | null;
+  material: {
+    id: string;
+    name: string;
+    unit: string;
+    stock: number;
+    purchasePrice: Prisma.Decimal | null;
+  };
+};
+
+type SerializedEquipmentConsumable = Omit<EquipmentConsumableRecord, 'consumptionPerSqm' | 'consumptionPerUnit' | 'consumptionPerJob' | 'material'> & {
+  consumptionPerSqm: number | null;
+  consumptionPerUnit: number | null;
+  consumptionPerJob: number | null;
+  material: EquipmentConsumableRecord['material'] & {
+    purchasePrice: number | null;
+  };
+};
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function serializeMachine(
-  machine: Record<string, unknown>,
-  printMethods?: { id: string; name: string; type: string }[]
+  machine: Record<string, unknown>
 ) {
   const n = (v: unknown) => (v != null ? Number(v) : null);
+  const {
+    compatiblePrintMethodIds: _compatiblePrintMethodIds,
+    compatiblePrintMethods: _compatiblePrintMethods,
+    ...machineWithoutPrintMethodCompatibility
+  } = machine;
+
   return {
-    ...machine,
+    ...machineWithoutPrintMethodCompatibility,
     costPerHour:         n(machine.costPerHour),
     speedM2PerHour:      n(machine.speedM2PerHour),
     inkPerM2:            n(machine.inkPerM2),
@@ -30,36 +69,7 @@ function serializeMachine(
     costClickColor:      n(machine.costClickColor),
     costClickBW:         n(machine.costClickBW),
     servicePerClick:     n(machine.servicePerClick),
-    compatiblePrintMethods: printMethods ?? [],
   };
-}
-
-async function enrichWithPrintMethods<T extends { id: string; compatiblePrintMethodIds: string[] }>(
-  machines: T[]
-): Promise<(T & { compatiblePrintMethods: { id: string; name: string; type: string }[] })[]> {
-  const allIds = [...new Set(machines.flatMap((m) => m.compatiblePrintMethodIds))];
-  const methods = allIds.length > 0
-    ? await prisma.printMethod.findMany({
-        where: { id: { in: allIds } },
-        select: { id: true, name: true, type: true },
-      })
-    : [];
-  const byId = new Map(methods.map((m) => [m.id, m]));
-  return machines.map((machine) => ({
-    ...machine,
-    compatiblePrintMethods: machine.compatiblePrintMethodIds
-      .map((id) => byId.get(id))
-      .filter(Boolean) as { id: string; name: string; type: string }[],
-  }));
-}
-
-async function validatePrintMethodIds(ids: string[]): Promise<string | null> {
-  if (ids.length === 0) return null;
-  const found = await prisma.printMethod.count({ where: { id: { in: ids } } });
-  if (found !== ids.length) {
-    return 'Una sau mai multe metode de tipărire selectate nu există';
-  }
-  return null;
 }
 
 async function enrichWithMaterials<T extends { id: string; compatibleMaterialIds: string[] }>(
@@ -92,7 +102,7 @@ async function validateMaterialIds(ids: string[]): Promise<string | null> {
 
 async function enrichWithConsumables<T extends { id: string }>(
   machines: T[]
-): Promise<(T & { consumables: any[] })[]> {
+): Promise<(T & { consumables: SerializedEquipmentConsumable[] })[]> {
   const machineIds = machines.map((m) => m.id);
   const consumables = machineIds.length > 0
     ? await prisma.equipmentConsumable.findMany({
@@ -104,15 +114,15 @@ async function enrichWithConsumables<T extends { id: string }>(
               name: true,
               unit: true,
               stock: true,
-              pricePerUnit: true,
+              purchasePrice: true,
             },
           },
         },
       })
     : [];
   
-  const byMachineId = new Map<string, any[]>();
-  consumables.forEach((c) => {
+  const byMachineId = new Map<string, SerializedEquipmentConsumable[]>();
+  consumables.forEach((c: EquipmentConsumableRecord) => {
     if (!byMachineId.has(c.machineId)) {
       byMachineId.set(c.machineId, []);
     }
@@ -123,7 +133,7 @@ async function enrichWithConsumables<T extends { id: string }>(
       consumptionPerJob: c.consumptionPerJob ? Number(c.consumptionPerJob) : null,
       material: {
         ...c.material,
-        pricePerUnit: c.material.pricePerUnit ? Number(c.material.pricePerUnit) : null,
+        purchasePrice: c.material.purchasePrice ? Number(c.material.purchasePrice) : null,
       },
     });
   });
@@ -135,29 +145,7 @@ async function enrichWithConsumables<T extends { id: string }>(
 }
 
 function validateByType(body: Record<string, unknown>): string | null {
-  const { equipmentType, compatibleMaterialIds, compatiblePrintMethodIds } = body as {
-    equipmentType?: string;
-    compatibleMaterialIds?: string[];
-    compatiblePrintMethodIds?: string[];
-  };
-
-  if (!compatibleMaterialIds || compatibleMaterialIds.length === 0) {
-    return 'Trebuie selectat cel puțin un material compatibil';
-  }
-  if (!compatiblePrintMethodIds || compatiblePrintMethodIds.length === 0) {
-    return 'Trebuie selectată cel puțin o metodă de tipărire compatibilă';
-  }
-
-  if (equipmentType === 'LARGE_FORMAT' && !body.speedM2PerHour) {
-    return 'Câmpul "Viteză (m²/h)" este obligatoriu pentru echipamente Large Format';
-  }
-  if (equipmentType === 'DIGITAL' && !body.costClickColor && !body.costClickBW) {
-    return 'Cel puțin un cost per click (color sau A/N) este obligatoriu pentru echipamente Digitale';
-  }
-  if (equipmentType === 'HOURLY' && !body.costPerHour) {
-    return 'Câmpul "Cost pe oră" este obligatoriu pentru echipamente Orare';
-  }
-  return null;
+  return validateMachinePayload(body);
 }
 
 // ─── GET /api/admin/machines ─────────────────────────────────────────────────
@@ -170,14 +158,11 @@ export async function GET() {
     }
 
     const machines = await prisma.machine.findMany({
-      orderBy: [{ active: 'desc' }, { name: 'asc' }],
+      orderBy: { name: 'asc' },
     });
 
-    const enriched = await enrichWithPrintMethods(
-      machines as unknown as { id: string; compatiblePrintMethodIds: string[] }[]
-    );
     const enrichedWithMaterials = await enrichWithMaterials(
-      enriched as unknown as { id: string; compatibleMaterialIds: string[] }[]
+      machines as unknown as { id: string; compatibleMaterialIds: string[] }[]
     );
     const enrichedWithConsumables = await enrichWithConsumables(
       enrichedWithMaterials as unknown as { id: string }[]
@@ -185,11 +170,10 @@ export async function GET() {
 
     return NextResponse.json(
       enrichedWithConsumables.map((m) => {
-        const pm = (m as unknown as { compatiblePrintMethods: { id: string; name: string; type: string }[] }).compatiblePrintMethods;
         const mat = (m as unknown as { compatibleMaterials: { id: string; name: string; unit: string }[] }).compatibleMaterials;
-        const cons = (m as unknown as { consumables: any[] }).consumables;
+        const cons = (m as unknown as { consumables: SerializedEquipmentConsumable[] }).consumables;
         return { 
-          ...serializeMachine(m as unknown as Record<string, unknown>, pm), 
+          ...serializeMachine(m as unknown as Record<string, unknown>), 
           compatibleMaterials: mat,
           consumables: cons,
         };
@@ -222,12 +206,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 422 });
     }
 
-    const methodIds = Array.isArray(body.compatiblePrintMethodIds) ? (body.compatiblePrintMethodIds as string[]) : [];
-    const idsError = await validatePrintMethodIds(methodIds);
-    if (idsError) {
-      return NextResponse.json({ error: idsError }, { status: 422 });
-    }
-
     const matIds = Array.isArray(body.compatibleMaterialIds) ? (body.compatibleMaterialIds as string[]) : [];
     const matIdsError = await validateMaterialIds(matIds);
     if (matIdsError) {
@@ -235,24 +213,32 @@ export async function POST(request: NextRequest) {
     }
 
     const {
-      equipmentType, status,
+      equipmentType, productionMode, status,
       costPerHour, speed, maxWidth, maxHeight,
       operatorCostPerHour, energyConsumptionKw,
       speedM2PerHour, inkPerM2, materialPerM2, headAmortPerM2, printerAmortPerM2, maintCostPerM2,
       costClickColor, costClickBW, servicePerClick, maxFormat, maxGramWeight, speedPpm,
-      compatibleMaterialIds, compatiblePrintMethodIds,
+      compatibleMaterialIds,
       description, notes, lastMaintenance, active,
     } = body as Record<string, unknown>;
 
     const n = (v: unknown) => (v != null ? Number(v) : null);
     const arr = (v: unknown) => (Array.isArray(v) ? (v as string[]) : []);
+    const resolvedEquipmentType: EquipmentType = EQUIPMENT_TYPES.includes(normalizeEquipmentType(equipmentType as string) as EquipmentType)
+      ? (normalizeEquipmentType(equipmentType as string) as EquipmentType)
+      : 'DIGITAL_COLOR';
+    const resolvedProductionMode = productionMode === 'OUTSOURCE' ? 'OUTSOURCE' : 'IN_HOUSE';
+    const resolvedStatus: MachineStatus = MACHINE_STATUSES.includes(status as MachineStatus)
+      ? (status as MachineStatus)
+      : 'AVAILABLE';
 
     const machine = await prisma.machine.create({
       data: {
         name: name as string,
         type: type as string,
-        equipmentType: (equipmentType as string) || 'HOURLY',
-        status:        (status as string) || 'AVAILABLE',
+        equipmentType: resolvedEquipmentType,
+        productionMode: resolvedProductionMode,
+        status: resolvedStatus,
         costPerHour:         n(costPerHour),
         speed:               (speed as string) ?? null,
         maxWidth:            n(maxWidth),
@@ -271,8 +257,7 @@ export async function POST(request: NextRequest) {
         maxFormat:           (maxFormat as string) || null,
         maxGramWeight:       n(maxGramWeight) != null ? Math.round(n(maxGramWeight)!) : null,
         speedPpm:            n(speedPpm) != null ? Math.round(n(speedPpm)!) : null,
-        compatibleMaterialIds:    arr(compatibleMaterialIds),
-        compatiblePrintMethodIds: arr(compatiblePrintMethodIds),
+        compatibleMaterialIds: arr(compatibleMaterialIds),
         description: (description as string) ?? null,
         notes:       (notes as string) ?? null,
         lastMaintenance: lastMaintenance ? new Date(lastMaintenance as string) : null,
@@ -280,16 +265,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const [withMethods] = await enrichWithPrintMethods([
-      machine as unknown as { id: string; compatiblePrintMethodIds: string[] },
-    ]);
     const [withMaterials] = await enrichWithMaterials([
-      withMethods as unknown as { id: string; compatibleMaterialIds: string[] },
+      machine as unknown as { id: string; compatibleMaterialIds: string[] },
     ]);
-    const serialized = serializeMachine(
-      withMaterials as unknown as Record<string, unknown>,
-      withMethods.compatiblePrintMethods
-    );
+    const serialized = serializeMachine(withMaterials as unknown as Record<string, unknown>);
     return NextResponse.json({ ...serialized, compatibleMaterials: withMaterials.compatibleMaterials }, { status: 201 });
   } catch (error) {
     console.error('Error creating machine:', error);

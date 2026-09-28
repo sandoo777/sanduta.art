@@ -3,6 +3,7 @@ import { MaterialUnit } from '@prisma/client';
 import {
   calculateConsumptionCost,
   convertMaterialQuantity,
+  getMaterialPrice,
   resolveAllowedUnitsByCategory,
 } from '@/modules/materials/pricing';
 
@@ -54,6 +55,22 @@ describe('materials pricing - calculateConsumptionCost', () => {
     expect(result.totalCost).toBeCloseTo(15, 5);
   });
 
+  it('uses price break when quantity falls into configured range', () => {
+    const result = calculateConsumptionCost(60, {
+      consumptionType: 'DIRECT',
+      purchasePrice: 5,
+      salePrice: 12,
+      wastePercent: 0,
+      priceBreaks: [
+        { qtyMin: 1, qtyMax: 49, price: 12, discount: null },
+        { qtyMin: 50, qtyMax: 100, price: 10, discount: 10 },
+      ],
+    });
+
+    expect(result.unitPrice).toBeCloseTo(9, 5);
+    expect(result.totalCost).toBeCloseTo(540, 5);
+  });
+
   it('rejects invalid quantity', () => {
     expect(() =>
       calculateConsumptionCost(0, {
@@ -63,6 +80,89 @@ describe('materials pricing - calculateConsumptionCost', () => {
         wastePercent: 0,
       })
     ).toThrow('Consumed quantity must be a positive number');
+  });
+});
+
+describe('materials pricing - getMaterialPrice', () => {
+  it('returns matching price break with discount-adjusted final price', () => {
+    const matched = getMaterialPrice(
+      {
+        priceBreaks: [
+          { qtyMin: 1, qtyMax: 10, price: 25, discount: null },
+          { qtyMin: 11, qtyMax: 100, price: 20, discount: 15 },
+        ],
+      },
+      20
+    );
+
+    expect(matched).toEqual(
+      expect.objectContaining({
+        qtyMin: 11,
+        qtyMax: 100,
+        price: 20,
+        discount: 15,
+        finalPrice: 17,
+      })
+    );
+  });
+
+  it('returns null when no range matches', () => {
+    const matched = getMaterialPrice(
+      {
+        priceBreaks: [{ qtyMin: 11, qtyMax: 100, price: 20, discount: 15 }],
+      },
+      5
+    );
+
+    expect(matched).toBeNull();
+  });
+
+  describe('open-ended last tier', () => {
+    const priceBreaks = [
+      { qtyMin: 2500, qtyMax: 4999, price: 100, discount: 10 },
+      { qtyMin: 5000, qtyMax: null, price: 100, discount: 15 },
+    ];
+
+    it('matches the open-ended tier at its exact minimum boundary (qty 5000)', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 5000);
+
+      expect(matched).toEqual(
+        expect.objectContaining({ qtyMin: 5000, qtyMax: null, discount: 15, finalPrice: 85 })
+      );
+    });
+
+    it('matches the open-ended tier at qty 9999', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 9999);
+
+      expect(matched).toEqual(expect.objectContaining({ qtyMin: 5000, discount: 15 }));
+    });
+
+    it('matches the open-ended tier at qty 10000', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 10000);
+
+      expect(matched).toEqual(expect.objectContaining({ qtyMin: 5000, discount: 15 }));
+    });
+
+    it('matches the open-ended tier at qty 15000 (acceptance test)', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 15000);
+
+      expect(matched).not.toBeNull();
+      expect(matched).toEqual(
+        expect.objectContaining({ qtyMin: 5000, qtyMax: null, discount: 15, finalPrice: 85 })
+      );
+    });
+
+    it('matches the open-ended tier at a very large qty 50000', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 50000);
+
+      expect(matched).toEqual(expect.objectContaining({ qtyMin: 5000, discount: 15 }));
+    });
+
+    it('still uses the bounded tier below the open-ended threshold', () => {
+      const matched = getMaterialPrice({ priceBreaks }, 3000);
+
+      expect(matched).toEqual(expect.objectContaining({ qtyMin: 2500, qtyMax: 4999, discount: 10 }));
+    });
   });
 });
 

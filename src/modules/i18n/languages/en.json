@@ -42,6 +42,12 @@
     "preferences": "Preferences",
     "notifications": "Notifications"
   },
+  "menu": {
+    "depozit": "Warehouse",
+    "depozitInventory": "Inventory",
+    "depozitPurchaseOrders": "Purchase Orders",
+    "depozitSuppliers": "Suppliers"
+  },
   "preferences": {
     "title": "My Preferences",
     "subtitle": "Manage your preferences for a personalized experience",

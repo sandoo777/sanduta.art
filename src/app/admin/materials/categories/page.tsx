@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { logger } from '@/lib/logger';
@@ -133,12 +134,12 @@ export default function MaterialCategoriesPage() {
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-gray-600">
         <Home className="w-4 h-4" />
-        <span>Admin</span>
+        <Link href="/admin" className="hover:text-gray-900 transition-colors">Admin</Link>
         <span>/</span>
-        <span>Materiale</span>
+        <Link href="/admin/materials" className="hover:text-gray-900 transition-colors">Materiale</Link>
         <span>/</span>
         <Folder className="w-4 h-4" />
-        <span className="text-gray-900 font-medium">Categorii</span>
+        <Link href="/admin/materials/categories" className="text-gray-900 font-medium hover:text-gray-700 transition-colors">Categorii</Link>
       </nav>
 
       {/* Header */}

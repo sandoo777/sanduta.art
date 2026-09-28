@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { useSettings } from "@/modules/settings/useSettings";
 import { systemSettingsFormSchema, type SystemSettingsFormData } from "@/lib/validations/admin";
-import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/Form";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui";
 
@@ -45,7 +45,6 @@ export function SystemSettingsForm() {
     try {
       const settings = await getSystemSettings();
       
-      // Map settings to form data
       reset({
         company_name: settings.company_name || "",
         company_email: settings.company_email || "",
@@ -80,21 +79,18 @@ export function SystemSettingsForm() {
 
   return (
     <Form form={form} onSubmit={onSubmit} className="space-y-6">
-      {/* Success Message */}
       {isSubmitSuccessful && (
         <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-600">
           Settings saved successfully!
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
           {error}
         </div>
       )}
 
-      {/* Company Info */}
       <Card>
         <CardHeader>
           <CardTitle>Company Information</CardTitle>
@@ -132,7 +128,6 @@ export function SystemSettingsForm() {
       </CardContent>
       </Card>
 
-      {/* Localization */}
       <Card>
         <CardHeader>
           <CardTitle>Localization</CardTitle>
@@ -171,7 +166,6 @@ export function SystemSettingsForm() {
         </CardContent>
       </Card>
 
-      {/* Inventory */}
       <Card>
         <CardHeader>
           <CardTitle>Inventory Settings</CardTitle>
@@ -200,7 +194,6 @@ export function SystemSettingsForm() {
         </CardContent>
       </Card>
 
-      {/* Actions */}
       <div className="flex items-center gap-3">
         <Button
           type="submit"

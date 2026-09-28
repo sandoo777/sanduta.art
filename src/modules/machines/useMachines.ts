@@ -33,6 +33,28 @@ export function filterMachines(
   return filtered;
 }
 
+function extractApiErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+
+  const record = payload as Record<string, unknown>;
+  if (typeof record.error === 'string' && record.error.trim()) {
+    return record.error.trim();
+  }
+  if (typeof record.message === 'string' && record.message.trim()) {
+    return record.message.trim();
+  }
+  if (Array.isArray(record.errors) && record.errors.length > 0) {
+    const first = record.errors[0];
+    if (first && typeof first === 'object') {
+      const message = (first as { message?: unknown }).message;
+      if (typeof message === 'string' && message.trim()) {
+        return message.trim();
+      }
+    }
+  }
+  return null;
+}
+
 export function useMachines() {
   const [loading, setLoading] = useState(false);
 
@@ -41,10 +63,20 @@ export function useMachines() {
       const response = await fetch('/api/admin/machines', {
         credentials: 'include',
       });
-      if (!response.ok) throw new Error('Failed to fetch machines');
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        const message = extractApiErrorMessage(payload) ??
+          (response.status === 401 ? 'Unauthorized' : 'Failed to fetch machines');
+
+        if (response.status === 401 && typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+
+        throw new Error(message);
+      }
       return await response.json();
     } catch (err) {
-      toast.error('Eroare la încărcarea echipamentelor');
+      toast.error(err instanceof Error ? err.message : 'Eroare la încărcarea echipamentelor');
       throw err;
     }
   }, []);
@@ -59,8 +91,9 @@ export function useMachines() {
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create machine');
+        const payload = await response.json().catch(() => null);
+        const message = extractApiErrorMessage(payload) ?? 'Failed to create machine';
+        throw new Error(message);
       }
       const machine = await response.json();
       toast.success('Echipament creat cu succes!');
@@ -83,8 +116,9 @@ export function useMachines() {
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update machine');
+        const payload = await response.json().catch(() => null);
+        const message = extractApiErrorMessage(payload) ?? 'Failed to update machine';
+        throw new Error(message);
       }
       const machine = await response.json();
       toast.success('Echipament actualizat cu succes!');
@@ -105,8 +139,9 @@ export function useMachines() {
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete machine');
+        const payload = await response.json().catch(() => null);
+        const message = extractApiErrorMessage(payload) ?? 'Failed to delete machine';
+        throw new Error(message);
       }
       toast.success('Echipament șters cu succes!');
     } catch (err) {

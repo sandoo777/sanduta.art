@@ -127,6 +127,12 @@
     "blog": "Blog",
     "users": "Users"
   },
+  "menu": {
+    "depozit": "Warehouse",
+    "depozitInventory": "Inventory",
+    "depozitPurchaseOrders": "Purchase Orders",
+    "depozitSuppliers": "Suppliers"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Sign Up",

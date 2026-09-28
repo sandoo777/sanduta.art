@@ -1,0 +1,112 @@
+[
+  {
+    "id": "cmtsxqnsh0000zgdi41ziku0m",
+    "name": "Mondi",
+    "sku": "PAP-0001",
+    "density": null,
+    "thickness": 0.1,
+    "primarySupplierId": null,
+    "wastePercent": 3,
+    "formatId": "e2f4d1e1-4e89-4021-8746-c04ef97db852",
+    "unit": "sheet"
+  },
+  {
+    "id": "seed-mat-010",
+    "name": "Sistem banner roll-up",
+    "sku": "ROLLUP-SYS-85",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 0,
+    "formatId": null,
+    "unit": "unit"
+  },
+  {
+    "id": "seed-mat-009",
+    "name": "P+ónz-â banner backlit",
+    "sku": "TEXTILE-BACKLIT-500",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 6,
+    "formatId": null,
+    "unit": "meter"
+  },
+  {
+    "id": "seed-mat-008",
+    "name": "Folie one-way vision",
+    "sku": "VINYL-OWV-1520",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 10,
+    "formatId": null,
+    "unit": "meter"
+  },
+  {
+    "id": "seed-mat-007",
+    "name": "H+órtie mat-â 170g",
+    "sku": "PAPER-MATTE-170G",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 3,
+    "formatId": null,
+    "unit": "m2"
+  },
+  {
+    "id": "seed-mat-006",
+    "name": "H+órtie foto lucioas-â 200g",
+    "sku": "PAPER-PHOTO-200G",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 3,
+    "formatId": null,
+    "unit": "m2"
+  },
+  {
+    "id": "seed-mat-005",
+    "name": "PVC expandat 5mm",
+    "sku": "PVC-EXP-5MM",
+    "density": null,
+    "thickness": 5,
+    "primarySupplierId": null,
+    "wastePercent": 5,
+    "formatId": null,
+    "unit": "m2"
+  },
+  {
+    "id": "seed-mat-004",
+    "name": "Vinil perforat 50/50",
+    "sku": "VINYL-PERF-5050",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 10,
+    "formatId": null,
+    "unit": "meter"
+  },
+  {
+    "id": "seed-mat-003",
+    "name": "Vinil adeziv gri",
+    "sku": "VINYL-ADH-GRI",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 5,
+    "formatId": null,
+    "unit": "meter"
+  },
+  {
+    "id": "seed-mat-002",
+    "name": "Banner frontlit 510g",
+    "sku": "BANNER-FL-510",
+    "density": null,
+    "thickness": null,
+    "primarySupplierId": null,
+    "wastePercent": 8,
+    "formatId": null,
+    "unit": "m2"
+  }
+]

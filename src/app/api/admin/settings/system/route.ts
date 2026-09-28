@@ -37,7 +37,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // PATCH /api/admin/settings/system - Update system settings
-export async function PATCH(_request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   const { user, error } = await requireRole(["ADMIN", "MANAGER"]);
   
   if (error) {

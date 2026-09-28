@@ -5,7 +5,7 @@ import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardContent, Badge } from "@/components/ui";
 import { ProductionJob, ProductionPriority, ProductionStatus } from "@/modules/production/useProduction";
 import { Clock3, Cpu, Layers, Printer, Scissors, Wallet } from 'lucide-react';
-import { MACHINE_STATUS_CONFIG, MACHINE_TYPES } from '@/modules/machines/types';
+import { MACHINE_STATUS_CONFIG, MACHINE_TYPES, normalizeEquipmentType } from '@/modules/machines/types';
 import { getMaterialCategoryIcon } from '@/app/admin/materials/_components/materialListUtils';
 import type { MaterialCategory } from '@/modules/materials/types';
 
@@ -55,12 +55,20 @@ function getMachineIcon(job: ProductionJob) {
   const typeMatch = job.machine?.type ? MACHINE_TYPES.find((item) => item.value === job.machine?.type) : null;
   if (typeMatch) return typeMatch.icon;
 
-  switch (job.machine?.equipmentType) {
+  const normalizedType = normalizeEquipmentType(job.machine?.equipmentType);
+
+  switch (normalizedType) {
     case 'LARGE_FORMAT':
+    case 'UV':
+    case 'DTF':
+    case 'SUBLIMATION':
       return Printer;
-    case 'DIGITAL':
+    case 'DIGITAL_COLOR':
+    case 'DIGITAL_MONO':
       return Layers;
-    case 'HOURLY':
+    case 'OFFSET':
+    case 'EMBROIDERY':
+    case 'PLOTTER_CUTTING':
       return Scissors;
     default:
       return Cpu;

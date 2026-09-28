@@ -104,7 +104,7 @@ async function main() {
     
     // 4. Marchează job-ul ca COMPLETED
     log.info('\n4. Marcare job ca COMPLETED...');
-    const _completedJob = await fetchAPI(`/production/${job.id}`, {
+    const completedJob = await fetchAPI(`/production/${job.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
         status: 'COMPLETED'

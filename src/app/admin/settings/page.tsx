@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Activity, Download, Search, User, CheckCircle, XCircle } from "lucide-react";
 import { ActivityType } from "@prisma/client";
 import { Table, Badge } from "@/components/ui";
@@ -112,6 +113,14 @@ export default function AuditLogsPage() {
             <p className="text-gray-600">
               Monitorizează și analizează activitatea utilizatorilor
             </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href="/admin/settings/system"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                System Settings
+              </Link>
+            </div>
           </div>
           <button
             onClick={exportLogs}

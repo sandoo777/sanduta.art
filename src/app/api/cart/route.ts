@@ -22,12 +22,19 @@ async function getUserId(): Promise<string | null> {
   }
 }
 
+function hasDbCartModel() {
+  return Boolean((prisma as any)?.cartItem);
+}
+
 async function getDbCart(userId: string) {
-  const items = await prisma.cartItem.findMany({
+  const cartModel = (prisma as any)?.cartItem;
+  if (!cartModel) return [];
+
+  const items = await cartModel.findMany({
     where: { userId },
     orderBy: { createdAt: 'asc' },
   });
-  return items.map((item) => ({
+  return items.map((item: any) => ({
     id: item.id,
     productId: item.productId,
     qty: item.qty,
@@ -40,7 +47,7 @@ async function getDbCart(userId: string) {
 
 export async function GET() {
   const userId = await getUserId();
-  if (userId) {
+  if (userId && hasDbCartModel()) {
     const cart = await getDbCart(userId);
     return NextResponse.json({ cart });
   }
@@ -59,20 +66,22 @@ export async function POST(request: NextRequest) {
 
     const userId = await getUserId();
 
-    if (userId) {
+    if (userId && hasDbCartModel()) {
+      const cartModel = (prisma as any).cartItem;
+
       // Upsert: increment qty if product already in cart, otherwise create
-      const existing = await prisma.cartItem.findUnique({
+      const existing = await cartModel.findUnique({
         where: { userId_productId: { userId, productId } },
       });
 
       let item;
       if (existing) {
-        item = await prisma.cartItem.update({
+        item = await cartModel.update({
           where: { userId_productId: { userId, productId } },
           data: { qty: existing.qty + qty, price, name },
         });
       } else {
-        item = await prisma.cartItem.create({
+        item = await cartModel.create({
           data: { userId, productId, qty, price, name },
         });
       }
@@ -97,11 +106,12 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const userId = await getUserId();
 
-    if (userId) {
+    if (userId && hasDbCartModel()) {
+      const cartModel = (prisma as any).cartItem;
       if (body?.clearAll || !body?.productId) {
-        await prisma.cartItem.deleteMany({ where: { userId } });
+        await cartModel.deleteMany({ where: { userId } });
       } else {
-        await prisma.cartItem.deleteMany({
+        await cartModel.deleteMany({
           where: { userId, productId: String(body.productId) },
         });
       }

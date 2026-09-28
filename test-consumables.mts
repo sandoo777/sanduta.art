@@ -10,21 +10,21 @@ async function main() {
   try {
     console.log('\n=== TEST CONSUMABILE UTILAJ ===\n');
     
-    // 1. VerificÄƒ stoc Ã®nainte
-    console.log('1. Stoc ÃŽNAINTE:');
+    // 1. Verifică stoc înainte
+    console.log('1. Stoc ÎNAINTE:');
     const beforeMaterial = await prisma.material.findUnique({
       where: { id: 'cmpnmnj840000hkdifrrzksyv' },
       select: { name: true, stock: true, unit: true }
     });
     
     if (!beforeMaterial) {
-      throw new Error('Material Vopsea Cyan Test nu a fost gÄƒsit!');
+      throw new Error('Material Vopsea Cyan Test nu a fost găsit!');
     }
     
     console.log(`   ${beforeMaterial.name}: ${beforeMaterial.stock} ${beforeMaterial.unit}\n`);
     
-    // 2. CreeazÄƒ comandÄƒ
-    console.log('2. Creare comandÄƒ...');
+    // 2. Creează comandă
+    console.log('2. Creare comandă...');
     const order = await prisma.order.create({
       data: {
         customerName: 'Test Consumabile',
@@ -40,21 +40,21 @@ async function main() {
         source: 'MANUAL'
       }
     });
-    console.log(`   ComandÄƒ #${order.orderNumber} creatÄƒ (ID: ${order.id})\n`);
+    console.log(`   Comandă #${order.orderNumber} creată (ID: ${order.id})\n`);
     
-    // 3. CreeazÄƒ Production Job
+    // 3. Creează Production Job
     console.log('3. Creare Production Job...');
     const job = await prisma.productionJob.create({
       data: {
         name: 'Test Job - Consumabile Cyan',
         orderId: order.id,
         machineId: 'cmpljn9h20002s8di8e872cja', // HP Latex 570 (Test)
-        quantity: 10, // 10 mÂ²
+        quantity: 10, // 10 m²
         priority: 'NORMAL',
         status: 'PENDING'
       }
     });
-    console.log(`   Job "${job.name}" creat (${job.quantity} mÂ², ID: ${job.id})\n`);
+    console.log(`   Job "${job.name}" creat (${job.quantity} m², ID: ${job.id})\n`);
     
     // 4. Marcare ca COMPLETED (trigger auto-consumption)
     console.log('4. Marcare ca COMPLETED (trigger auto-consumption prin API)...');
@@ -62,12 +62,12 @@ async function main() {
       where: { id: job.id },
       data: { status: 'COMPLETED' }
     });
-    console.log(`   Status: ${completed.status} âœ“\n`);
+    console.log(`   Status: ${completed.status} ✓\n`);
     
-    // AÈ™teaptÄƒ puÈ›in pentru ca transacÈ›ia sÄƒ se finalizeze
+    // Așteaptă puțin pentru ca transacția să se finalizeze
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // 5. VerificÄƒ MaterialUsage
+    // 5. Verifică MaterialUsage
     console.log('5. Verificare MaterialUsage...');
     const materialUsages = await prisma.materialUsage.findMany({
       where: { jobId: job.id },
@@ -82,7 +82,7 @@ async function main() {
     });
     
     if (materialUsages.length > 0) {
-      console.log(`   âœ“ ${materialUsages.length} record(e) MaterialUsage create:`);
+      console.log(`   ✓ ${materialUsages.length} record(e) MaterialUsage create:`);
       let totalMaterialCost = 0;
       materialUsages.forEach(u => {
         console.log(`     - ${u.material.name}: ${u.quantity} ${u.unit}, cost: ${u.cost} RON`);
@@ -90,18 +90,18 @@ async function main() {
       });
       console.log(`   COST TOTAL MATERIALE: ${totalMaterialCost.toFixed(2)} RON\n`);
     } else {
-      console.log('   âš ï¸  NU s-au creat MaterialUsage records!\n');
+      console.log('   ⚠️  NU s-au creat MaterialUsage records!\n');
     }
     
-    // 6. VerificÄƒ stoc dupÄƒ
-    console.log('6. Stoc DUPÄ‚:');
+    // 6. Verifică stoc după
+    console.log('6. Stoc DUPĂ:');
     const afterMaterial = await prisma.material.findUnique({
       where: { id: 'cmpnmnj840000hkdifrrzksyv' },
       select: { name: true, stock: true, unit: true }
     });
     
     if (!afterMaterial) {
-      throw new Error('Material nu mai existÄƒ!');
+      throw new Error('Material nu mai există!');
     }
     
     console.log(`   ${afterMaterial.name}: ${afterMaterial.stock} ${afterMaterial.unit}`);
@@ -109,36 +109,36 @@ async function main() {
     const consumed = Number(beforeMaterial.stock) - Number(afterMaterial.stock);
     console.log(`   CONSUMAT: ${consumed} ${afterMaterial.unit}`);
     
-    // VerificÄƒ dacÄƒ consumul corespunde
-    // Configurare: 0.05 ml/mÂ² * 10 mÂ² = 0.5 ml
+    // Verifică dacă consumul corespunde
+    // Configurare: 0.05 ml/m² * 10 m² = 0.5 ml
     const expectedConsumption = 0.05 * 10;
-    console.log(`   AÈ˜TEPTAT: ${expectedConsumption} ml\n`);
+    console.log(`   AȘTEPTAT: ${expectedConsumption} ml\n`);
     
     if (Math.abs(consumed - expectedConsumption) < 0.01) {
-      console.log('âœ… TEST REUÈ˜IT - Consumul corespunde configuraÈ›iei!\n');
+      console.log('✅ TEST REUȘIT - Consumul corespunde configurației!\n');
     } else {
-      console.log(`âš ï¸  ATENÈšIE - DiferenÈ›Äƒ: ${Math.abs(consumed - expectedConsumption)} ml\n`);
+      console.log(`⚠️  ATENȚIE - Diferență: ${Math.abs(consumed - expectedConsumption)} ml\n`);
     }
     
     // 7. Rezumat final
     console.log('=== REZUMAT FINAL ===');
-    console.log(`âœ“ ComandÄƒ: #${order.orderNumber}`);
-    console.log(`âœ“ Job: ${job.name}`);
-    console.log(`âœ“ Cantitate: ${job.quantity} mÂ²`);
-    console.log(`âœ“ MaterialUsage records: ${materialUsages.length}`);
-    console.log(`âœ“ Consum vopsea: ${consumed} ml`);
-    console.log(`âœ“ Stoc Ã®nainte: ${beforeMaterial.stock} ml`);
-    console.log(`âœ“ Stoc dupÄƒ: ${afterMaterial.stock} ml`);
+    console.log(`✓ Comandă: #${order.orderNumber}`);
+    console.log(`✓ Job: ${job.name}`);
+    console.log(`✓ Cantitate: ${job.quantity} m²`);
+    console.log(`✓ MaterialUsage records: ${materialUsages.length}`);
+    console.log(`✓ Consum vopsea: ${consumed} ml`);
+    console.log(`✓ Stoc înainte: ${beforeMaterial.stock} ml`);
+    console.log(`✓ Stoc după: ${afterMaterial.stock} ml`);
     
     if (materialUsages.length > 0) {
       const totalCost = materialUsages.reduce((sum, u) => sum + Number(u.cost), 0);
-      console.log(`âœ“ Cost materiale: ${totalCost.toFixed(2)} RON`);
+      console.log(`✓ Cost materiale: ${totalCost.toFixed(2)} RON`);
     }
     
-    console.log('\nðŸŽ‰ TESTARE COMPLETÄ‚ FINALIZATÄ‚ CU SUCCES!\n');
+    console.log('\n🎉 TESTARE COMPLETĂ FINALIZATĂ CU SUCCES!\n');
     
-  } catch (error: unknown) {
-    console.error('\nâŒ ERROR:', error.message);
+  } catch (error: any) {
+    console.error('\n❌ ERROR:', error.message);
     console.error(error);
     process.exit(1);
   } finally {

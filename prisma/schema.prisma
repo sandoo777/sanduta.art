@@ -67,16 +67,35 @@ enum ProductionPriority {
   URGENT
 }
 
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  SENT
+  RECEIVED
+  CANCELLED
+}
+
 enum MachineStatus {
   AVAILABLE
   BUSY
   MAINTENANCE
 }
 
+enum ProductionMode {
+  IN_HOUSE
+  OUTSOURCE
+}
+
 enum EquipmentType {
+  DIGITAL_COLOR
+  DIGITAL_MONO
+  UV
   LARGE_FORMAT
-  DIGITAL
-  HOURLY
+  DTF
+  SUBLIMATION
+  OFFSET
+  EMBROIDERY
+  PLOTTER_CUTTING
 }
 
 model MaterialCategory {
@@ -96,13 +115,27 @@ model MaterialCategory {
   requiresWastePercent  Boolean @default(false)
   active                Boolean @default(true)
 
-  materials Material[]
+  materials      Material[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([parentId])
   @@map("material_categories")
+}
+
+model Format {
+  id        String          @id @default(uuid())
+  category  String
+  width_mm  Int
+  height_mm Int?
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  materials Material[]
+
+  @@map("formats")
 }
 
 enum UsageUnit {
@@ -126,6 +159,21 @@ enum MaterialUnit {
   meter
   pcs
   sheet
+}
+
+enum MaterialType {
+  SUPORT_FOI
+  SUPORT_ROLA
+  SUPORT_M2
+  CERNEALA
+  CONSUMABIL
+}
+
+enum SupplierPreferredChannel {
+  email
+  phone
+  chat
+  web
 }
 
 enum NotificationType {
@@ -207,26 +255,9 @@ model User {
   preferences      UserPreferences?
   orderTimeline    OrderTimeline[]    @relation("OrderTimelineEvents")
   orderNotes       OrderNote[]        @relation("OrderNotes")
-  cartItems        CartItem[]
+  purchaseOrdersCreated PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
 
   @@map("users")
-}
-
-model CartItem {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String
-  qty       Int      @default(1)
-  price     Decimal  @default(0) @db.Decimal(10, 2)
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, productId])
-  @@index([userId])
-  @@map("cart_items")
 }
 
 model Account {
@@ -459,8 +490,20 @@ model Material {
   salePriceMode      String                   @default("amount")
   salePricePercent   Float?
   wastePercent       Float                    @default(0)
+  formatId           String?
+  formatName         String?
+  width_mm           Int?
+  height_mm          Int?
+  materialType       MaterialType?
+  consumptionRate    Float?
+  isTemplate         Boolean                  @default(false)
   active             Boolean                  @default(true)
+  primarySupplierId  String?
   sku                String?                  @unique
+  colorName          String?
+  colorCode          String?
+  thumbnailUrl       String?
+  macroTextureUrl    String?
   unit               MaterialUnit             @default(pcs)
   stock              Float                    @default(0)
   minStock           Float                    @default(0) // alert threshold
@@ -474,8 +517,16 @@ model Material {
   updatedAt          DateTime                 @updatedAt
 
   compatibleMethods    PrintMethod[]             @relation("PrintMethodMaterials")
-  consumption          MaterialUsage[]
-  productionJobs       ProductionJob[]
+  format              Format?                   @relation(fields: [formatId], references: [id])
+  primarySupplier     Supplier?                 @relation("MaterialPrimarySupplier", fields: [primarySupplierId], references: [id])
+  materialSuppliers   MaterialSupplier[]
+  priceBreaks         MaterialPriceBreak[]
+  consumption         MaterialUsage[]
+  inventoryItem       InventoryItem?
+  jobMaterialUsages   JobMaterialUsage[]
+  productionJobs      ProductionJob[]
+  purchaseOrderLines  PurchaseOrderLine[]
+  reorderRules        ReorderRule[]
   defaultProducts      Product[]                 @relation("ProductDefaultMaterial")
   productMaterials     ProductMaterial[]
   equipmentConsumables EquipmentConsumable[]
@@ -485,7 +536,23 @@ model Material {
   @@index([categoryId])
   @@index([active])
   @@index([consumptionType])
+  @@index([formatId])
+  @@index([materialType])
+  @@index([primarySupplierId])
   @@map("materials")
+}
+
+model MaterialPriceBreak {
+  id         String   @id @default(cuid())
+  qtyMin     Int
+  qtyMax     Int?
+  price      Float
+  discount   Float?
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
+  @@map("material_price_breaks")
 }
 
 model ProductMaterial {
@@ -734,6 +801,7 @@ model ProductionJob {
   printMethod    PrintMethod?    @relation(fields: [printMethodId], references: [id], onDelete: SetNull)
   material       Material?       @relation(fields: [materialId], references: [id], onDelete: SetNull)
   materialUsages MaterialUsage[]
+  jobMaterialUsages JobMaterialUsage[]
 
   @@index([machineId])
   @@index([productId])
@@ -759,6 +827,159 @@ model MaterialUsage {
   @@index([materialId])
   @@index([jobId])
   @@map("material_usages")
+}
+
+model InventoryItem {
+  id          String   @id @default(uuid())
+  materialId  String   @unique
+  quantity    Float    @default(0)
+  unit        String
+  costPerUnit Decimal  @default(0) @db.Decimal(10, 2)
+  updatedAt   DateTime @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_items")
+}
+
+model JobMaterialUsage {
+  id           String   @id @default(uuid())
+  jobId        String
+  materialId   String
+  formatId     String?
+  width_mm     Int?
+  height_mm    Int?
+  area_m2      Float?
+  length_m     Float?
+  quantityUsed Float
+  unit         String
+  cost         Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+
+  job      ProductionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  material Material      @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([materialId])
+  @@map("job_material_usages")
+}
+
+model MaterialSupplier {
+  id           String   @id @default(cuid())
+  materialId   String
+  supplierId   String
+  isPrimary    Boolean  @default(false)
+  leadTimeDays Int?
+  unitCost     Decimal? @db.Decimal(10, 2)
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  @@unique([materialId, supplierId])
+  @@index([materialId])
+  @@index([supplierId])
+  @@map("material_suppliers")
+}
+
+model Supplier {
+  id                  String                   @id @default(cuid())
+  name                String
+  email               String?                  @map("contactEmail")
+  phones              String[]                 @default([])
+  address             String?
+  website             String?
+  codFiscal           String?
+  preferredChannel    SupplierPreferredChannel?
+  notes               String?                  @db.Text
+  defaultLeadTimeDays Int                      @default(7)
+  defaultCurrency     String                   @default("MDL")
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  primaryMaterials  Material[]         @relation("MaterialPrimarySupplier")
+  materialSuppliers MaterialSupplier[]
+  purchaseOrders    PurchaseOrder[]
+  reorderRules      ReorderRule[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id                   String             @id @default(cuid())
+  poNumber             String?            @unique
+  supplierId           String
+  status               PurchaseOrderStatus @default(DRAFT)
+  createdBy            String?
+  totalCost            Decimal            @default(0) @db.Decimal(10, 2)
+  currency             String             @default("MDL")
+  expectedDeliveryDate DateTime?
+  lastSentAt           DateTime?
+  lastResponse         String?
+  attempts             Int                @default(0)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  supplier       Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  createdByUser  User?               @relation("PurchaseOrderCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  lines          PurchaseOrderLine[]
+  events         PurchaseOrderEvent[]
+
+  @@index([supplierId])
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  materialId      String
+  quantity        Float    @default(0)
+  unit            String   @default("unit")
+  unitCost        Decimal  @default(0) @db.Decimal(10, 2)
+  lineTotal       Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  material      Material      @relation(fields: [materialId], references: [id], onDelete: Restrict)
+
+  @@index([purchaseOrderId])
+  @@index([materialId])
+  @@map("purchase_order_lines")
+}
+
+model PurchaseOrderEvent {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  eventType       String
+  message         String
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_events")
+}
+
+model ReorderRule {
+  id             String   @id @default(cuid())
+  materialId     String
+  minThreshold   Float    @default(0)
+  reorderQuantity Float   @default(0)
+  supplierId     String
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+  @@unique([materialId, supplierId])
+  @@index([supplierId])
+  @@index([enabled])
+  @@map("reorder_rules")
 }
 
 model SystemSetting {
@@ -1061,7 +1282,8 @@ model Machine {
   id            String        @id @default(cuid())
   name          String
   type          String // Digital Printer, Offset Press, Large Format, etc.
-  equipmentType EquipmentType @default(HOURLY)
+  equipmentType EquipmentType @default(DIGITAL_COLOR)
+  productionMode ProductionMode @default(IN_HOUSE)
   status        MachineStatus @default(AVAILABLE)
 
   // Câmpuri comune
