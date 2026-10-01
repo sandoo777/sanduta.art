@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jobFormSchema, type JobFormData } from "@/lib/validations/admin";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -15,7 +15,7 @@ import { Select } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { fetchOrders, fetchUsers } from '@/lib/api';
 import { Order, User } from '@/types/models';
-import { EQUIPMENT_TYPE_CONFIG, normalizeEquipmentType } from '@/modules/machines/types';
+import { EQUIPMENT_TYPE_CONFIG } from '@/modules/machines/types';
 import type { CompatibleMachine } from '@/app/api/admin/machines/suggest/route';
 import {
   calculateProductionTime,
@@ -771,7 +771,7 @@ export default function JobModal({
                   <div>
                     <FormLabel>
                       {selectedMachine
-                        ? (['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalizeEquipmentType(selectedMachine.equipmentType)) ? 'Pagini color' : getQuantityLabel(selectedMachine.equipmentType))
+                        ? (selectedMachine.equipmentType === 'DIGITAL' ? 'Pagini color' : getQuantityLabel(selectedMachine.equipmentType))
                         : isOutsourcedMethod ? 'Cantitate outsource' : 'Cantitate (optional)'}
                     </FormLabel>
                     <Input
@@ -799,7 +799,7 @@ export default function JobModal({
                 )}
               />
 
-              {(['DIGITAL_COLOR', 'DIGITAL_MONO'].includes(normalizeEquipmentType(selectedMachine?.equipmentType))) && !isOutsourcedMethod && (
+              {selectedMachine?.equipmentType === 'DIGITAL' && !isOutsourcedMethod && (
                 <FormField
                   name="bwPages"
                   render={({ field }) => (

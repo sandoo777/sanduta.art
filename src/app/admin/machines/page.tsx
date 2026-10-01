@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -40,12 +40,18 @@ export default function MachinesPage() {
     return () => { cancelled = true; };
   }, []); // empty deps — runs exactly once on mount
 
-  const loadMachines = () => {
+  const loadMachines = async () => {
     setLoadingData(true);
-    getMachinesRef.current()
-      .then((data) => setMachines(data))
-      .catch((err) => console.error('Error loading machines:', err))
-      .finally(() => setLoadingData(false));
+    try {
+      const data = await getMachinesRef.current();
+      setMachines(data);
+      console.log('MACHINES_REFRESH_COMPLETE', { count: data.length });
+    } catch (err) {
+      console.error('MACHINES_REFRESH_FAILED', err);
+      throw err;
+    } finally {
+      setLoadingData(false);
+    }
   };
 
   const filteredMachines = useMemo(() => {
@@ -63,14 +69,40 @@ export default function MachinesPage() {
   }, [machines]);
 
   const handleCreate = async (data: Parameters<typeof createMachine>[0]) => {
+    console.log('MACHINE_CREATE_SUBMIT_START', { name: data.name });
     await createMachine(data);
     await loadMachines();
+    handleCloseForm();
+    console.log('MACHINE_CREATE_FLOW_DONE');
   };
 
   const handleUpdate = async (data: Parameters<typeof updateMachine>[1]) => {
+    console.log('MACHINE_UPDATE_SUBMIT_START', {
+      editingMachineId: editingMachine?.id,
+      name: data.name,
+      equipmentType: data.equipmentType,
+    });
+
     if (editingMachine) {
-      await updateMachine(editingMachine.id, data);
-      await loadMachines();
+      const updatedMachine = await updateMachine(editingMachine.id, data);
+      console.log('MACHINE_UPDATE_API_SUCCESS', {
+        id: updatedMachine.id,
+        name: updatedMachine.name,
+      });
+
+      console.log('MACHINE_UPDATE_CLOSE_MODAL');
+      handleCloseForm();
+
+      try {
+        await loadMachines();
+      } catch (refreshError) {
+        // Refresh failure should not block a successful save UX.
+        console.error('MACHINE_UPDATE_REFRESH_AFTER_SUCCESS_FAILED', refreshError);
+      }
+
+      console.log('MACHINE_UPDATE_FLOW_DONE');
+    } else {
+      console.warn('MACHINE_UPDATE_SKIPPED_NO_EDITING_MACHINE');
     }
   };
 

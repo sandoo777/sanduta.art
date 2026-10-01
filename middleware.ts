@@ -22,9 +22,9 @@ export async function middleware(req: NextRequest) {
   console.log(`[Middleware] Path: ${path}`);
   
   // Get token using getToken
-  const token = await getToken({ 
-    req, 
-    secret: process.env.NEXTAUTH_SECRET 
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET ?? 'development-secret-key-at-least-32-characters'
   });
   
   console.log(`[Middleware] Role: ${token?.role || 'NO ROLE'}`);

@@ -7,7 +7,7 @@ import { AuthLink } from '@/components/common/links/AuthLink';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useMaterials } from "@/modules/materials/useMaterials";
-import { formatPriceBreakQuantityRange, type MaterialWithDetails } from "@/modules/materials/types";
+import type { MaterialWithDetails } from "@/modules/materials/types";
 import { MaterialModal } from "../_components/MaterialModal";
 import { MaterialConsumption } from "../_components/MaterialConsumption";
 import { MaterialJobs } from "../_components/MaterialJobs";
@@ -231,7 +231,7 @@ export default function MaterialDetailsPage() {
                     : "border-transparent text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Istoric consum ({material.consumption.length})
+                Consum ({material.consumption.length})
               </button>
               <button
                 onClick={() => setActiveTab("jobs")}
@@ -340,9 +340,7 @@ export default function MaterialDetailsPage() {
                     <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
                       {material.priceBreaks.map((item, index) => (
                         <div key={item.id ?? `${item.qtyMin}-${item.qtyMax}-${index}`} className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
-                          <span className="font-medium">
-                            {formatPriceBreakQuantityRange(item.qtyMin, item.qtyMax)} buc:
-                          </span>
+                          <span className="font-medium">{item.qtyMin}–{item.qtyMax} buc:</span>
                           <span>{Number(item.price).toFixed(2)} MDL</span>
                           <span className="text-gray-500">({item.discount ?? 0}% reducere)</span>
                         </div>
@@ -354,7 +352,7 @@ export default function MaterialDetailsPage() {
             )}
 
             {activeTab === "consumption" && (
-              <MaterialConsumption material={material} />
+              <MaterialConsumption material={material} onUpdate={loadMaterial} />
             )}
 
             {activeTab === "jobs" && <MaterialJobs material={material} />}

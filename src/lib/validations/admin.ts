@@ -148,9 +148,7 @@ const materialPriceBreakRowSchema = z.object({
   qtyMin: z.string().min(1, 'Cantitatea minimă este obligatorie').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
     message: 'Cantitatea minimă trebuie să fie un număr valid',
   }),
-  // Empty qtyMax means the tier is open-ended (unlimited, e.g. "5000+"). Only the last
-  // tier is allowed to be open-ended — enforced at the array level in materialFormSchema.
-  qtyMax: z.string().optional().or(z.literal('')).refine((val) => val === undefined || val === '' || (Number.isFinite(Number(val)) && Number(val) >= 0), {
+  qtyMax: z.string().min(1, 'Cantitatea maximă este obligatorie').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
     message: 'Cantitatea maximă trebuie să fie un număr valid',
   }),
   price: z.string().min(1, 'Prețul este obligatoriu').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
@@ -161,9 +159,9 @@ const materialPriceBreakRowSchema = z.object({
   }),
 }).superRefine((row, ctx) => {
   const qtyMin = Number(row.qtyMin);
-  const qtyMax = row.qtyMax === undefined || row.qtyMax === '' ? null : Number(row.qtyMax);
+  const qtyMax = Number(row.qtyMax);
 
-  if (qtyMax !== null && Number.isFinite(qtyMin) && Number.isFinite(qtyMax) && qtyMax < qtyMin) {
+  if (Number.isFinite(qtyMin) && Number.isFinite(qtyMax) && qtyMax < qtyMin) {
     ctx.addIssue({
       code: 'custom',
       message: 'Cantitatea maximă trebuie să fie mai mare sau egală cu minimul',
@@ -295,61 +293,6 @@ export const materialFormSchema = z.object({
     }
   }
 
-  // Quantity tier rules: only the last tier (row) may leave qtyMax empty (open-ended,
-  // e.g. "5000+"), and tiers must not overlap or leave gaps between them.
-  if (data.priceBreaks.length > 0) {
-    data.priceBreaks.forEach((row, index) => {
-      const isLastRow = index === data.priceBreaks.length - 1;
-      const qtyMaxEmpty = row.qtyMax === undefined || row.qtyMax === '';
-
-      if (qtyMaxEmpty && !isLastRow) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Doar ultimul rând poate avea cantitatea maximă goală (nelimitat)',
-          path: ['priceBreaks', index, 'qtyMax'],
-        });
-      }
-    });
-
-    const numericRows = data.priceBreaks
-      .map((row, index) => ({
-        index,
-        qtyMin: Number(row.qtyMin),
-        qtyMax: row.qtyMax === undefined || row.qtyMax === '' ? null : Number(row.qtyMax),
-      }))
-      .filter((row) => Number.isFinite(row.qtyMin) && (row.qtyMax === null || Number.isFinite(row.qtyMax)));
-
-    const sortedByQtyMin = [...numericRows].sort((a, b) => a.qtyMin - b.qtyMin);
-
-    for (let i = 0; i < sortedByQtyMin.length - 1; i += 1) {
-      const current = sortedByQtyMin[i];
-      const next = sortedByQtyMin[i + 1];
-
-      if (current.qtyMax === null) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Doar ultimul interval (cel cu cantitatea minimă cea mai mare) poate fi nelimitat',
-          path: ['priceBreaks', current.index, 'qtyMax'],
-        });
-        continue;
-      }
-
-      if (next.qtyMin <= current.qtyMax) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `Intervalul se suprapune cu rândul anterior (până la ${current.qtyMax})`,
-          path: ['priceBreaks', next.index, 'qtyMin'],
-        });
-      } else if (next.qtyMin > current.qtyMax + 1) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `Există un gol între cantitatea ${current.qtyMax} și ${next.qtyMin}`,
-          path: ['priceBreaks', next.index, 'qtyMin'],
-        });
-      }
-    }
-  }
-
   // Note: Dynamic field validation based on category flags will be handled
   // by the CategoryTreeSelector in MaterialForm
 });
@@ -360,6 +303,18 @@ export type MaterialFormData = z.infer<typeof materialFormSchema>;
 const optionalDecimal = () => z.number().min(0).optional().nullable();
 const optionalInt    = () => z.number().int().min(0).optional().nullable();
 
+const MACHINE_EQUIPMENT_TYPES = [
+  'DIGITAL_COLOR',
+  'DIGITAL_MONO',
+  'UV',
+  'LARGE_FORMAT',
+  'DTF',
+  'SUBLIMATION',
+  'OFFSET',
+  'EMBROIDERY',
+  'PLOTTER_CUTTING',
+] as const;
+
 export const machineFormSchema = z.object({
   name: z.string()
     .min(1, 'Numele echipamentului este obligatoriu')
@@ -368,31 +323,23 @@ export const machineFormSchema = z.object({
 
   type: z.string().min(1, 'Tipul este obligatoriu'),
 
-  equipmentType: z.enum([
-    'DIGITAL_COLOR',
-    'DIGITAL_MONO',
-    'UV',
-    'LARGE_FORMAT',
-    'DTF',
-    'SUBLIMATION',
-    'OFFSET',
-    'EMBROIDERY',
-    'PLOTTER_CUTTING',
-  ]).default('DIGITAL_COLOR'),
-
-  productionMode: z.enum(['IN_HOUSE', 'OUTSOURCE']).default('IN_HOUSE'),
-
+  equipmentType: z.enum(MACHINE_EQUIPMENT_TYPES).default('DIGITAL_COLOR'),
+ 
   status: z.enum(['AVAILABLE', 'BUSY', 'MAINTENANCE'], { message: 'Status invalid' }),
 
   // Comune
   speed: z.string().optional().or(z.literal('')),
-  maxWidth:  optionalInt(),
+  maxWidth: optionalInt(),
   maxHeight: optionalInt(),
+  printMarginsMm: optionalDecimal(),
   operatorCostPerHour: optionalDecimal(),
   energyConsumptionKw: optionalDecimal(),
+  electricityCostPerKwh: optionalDecimal(),
+  purchaseCostMdl: optionalDecimal(),
+  expectedLifetimePages: optionalInt(),
 
   // Large Format
-  costPerHour:      optionalDecimal(), // folosit și la Hourly
+  costPerHour:      optionalDecimal(),
   speedM2PerHour:   optionalDecimal(),
   inkPerM2:         optionalDecimal(),
   materialPerM2:    optionalDecimal(),
@@ -407,8 +354,24 @@ export const machineFormSchema = z.object({
   maxFormat:       z.string().optional().nullable(),
   maxGramWeight:   optionalInt(),
   speedPpm:        optionalInt(),
+  speedProfiles: z.array(z.object({
+    minWeight: z.number().min(0),
+    maxWeight: z.number().min(0),
+    speedPpm: z.number().min(0),
+  })).default([]),
+  maintenanceComponents: z.array(z.object({
+    name: z.string().optional(),
+    cost: z.number().min(0).optional(),
+    expectedLifetimePages: z.number().min(0).optional(),
+  })).default([]),
+  tonerConsumables: z.array(z.object({
+    type: z.string().optional(),
+    materialId: z.string().nullable().optional(),
+    cost: z.number().min(0).optional(),
+    yieldPages: z.number().min(0).optional(),
+  })).default([]),
 
-  compatibleMaterialIds:    z.array(z.string()).default([]),
+  compatibleMaterialIds: z.array(z.string()).default([]),
 
   description:     z.string().optional().or(z.literal('')),
   notes:           z.string().optional().or(z.literal('')),

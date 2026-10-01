@@ -290,106 +290,106 @@ export async function sendProductionNotification(
 
 export const defaultEmailTemplates: Record<string, { subject: string; html: string; text: string }> = {
   order_placed: {
-    subject: 'Comanda ta #{{orderNumber}} a fost plasatÄƒ',
+    subject: 'Comanda ta #{{orderNumber}} a fost plasata',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">ComandÄƒ ConfirmatÄƒ</h1>
-        <p>BunÄƒ {{customerName}},</p>
-        <p>ÃŽÈ›i mulÈ›umim pentru comandÄƒ! Am primit comanda ta <strong>#{{orderNumber}}</strong>.</p>
+        <h1 style="color: #4F46E5;">Comanda Confirmata</h1>
+        <p>Buna {{customerName}},</p>
+        <p>Iti multumim pentru comanda! Am primit comanda ta <strong>#{{orderNumber}}</strong>.</p>
         <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>NumÄƒr comandÄƒ:</strong> {{orderNumber}}</p>
+          <p><strong>Numar comanda:</strong> {{orderNumber}}</p>
           <p><strong>Total:</strong> {{total}}</p>
-          <p><strong>DatÄƒ:</strong> {{date}}</p>
+          <p><strong>Data:</strong> {{date}}</p>
         </div>
-        <p>Vei primi un email cÃ¢nd comanda va intra Ã®n producÈ›ie.</p>
+        <p>Vei primi un email cand comanda va intra in productie.</p>
         <p style="margin-top: 30px;">
           <a href="{{trackingUrl}}" style="background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
             Vezi Comanda
           </a>
         </p>
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Cu stimÄƒ,<br>
+          Cu stima,<br>
           Echipa Sanduta.art
         </p>
       </div>
     `,
     text: `
-      BunÄƒ {{customerName}},
+      Buna {{customerName}},
       
-      ÃŽÈ›i mulÈ›umim pentru comandÄƒ! Am primit comanda ta #{{orderNumber}}.
+      Iti multumim pentru comanda! Am primit comanda ta #{{orderNumber}}.
       
-      NumÄƒr comandÄƒ: {{orderNumber}}
+      Numar comanda: {{orderNumber}}
       Total: {{total}}
-      DatÄƒ: {{date}}
+      Data: {{date}}
       
-      Vei primi un email cÃ¢nd comanda va intra Ã®n producÈ›ie.
+      Vei primi un email cand comanda va intra in productie.
       
       Vezi comanda: {{trackingUrl}}
       
-      Cu stimÄƒ,
+      Cu stima,
       Echipa Sanduta.art
     `,
   },
   
   order_in_production: {
-    subject: 'Comanda ta #{{orderNumber}} este Ã®n producÈ›ie',
+    subject: 'Comanda ta #{{orderNumber}} este in productie',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">ComandÄƒ Ã®n ProducÈ›ie</h1>
-        <p>BunÄƒ {{customerName}},</p>
-        <p>Comanda ta <strong>#{{orderNumber}}</strong> a intrat Ã®n producÈ›ie!</p>
-        <p>Livrare estimatÄƒ: <strong>{{estimatedDelivery}}</strong></p>
-        <p>Vei primi o notificare cÃ¢nd comanda este gata.</p>
+        <h1 style="color: #4F46E5;">Comanda in Productie</h1>
+        <p>Buna {{customerName}},</p>
+        <p>Comanda ta <strong>#{{orderNumber}}</strong> a intrat in productie!</p>
+        <p>Livrare estimata: <strong>{{estimatedDelivery}}</strong></p>
+        <p>Vei primi o notificare cand comanda este gata.</p>
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Cu stimÄƒ,<br>
+          Cu stima,<br>
           Echipa Sanduta.art
         </p>
       </div>
     `,
     text: `
-      BunÄƒ {{customerName}},
+      Buna {{customerName}},
       
-      Comanda ta #{{orderNumber}} a intrat Ã®n producÈ›ie!
+      Comanda ta #{{orderNumber}} a intrat in productie!
       
-      Livrare estimatÄƒ: {{estimatedDelivery}}
+      Livrare estimata: {{estimatedDelivery}}
       
-      Vei primi o notificare cÃ¢nd comanda este gata.
+      Vei primi o notificare cand comanda este gata.
       
-      Cu stimÄƒ,
+      Cu stima,
       Echipa Sanduta.art
     `,
   },
   
   admin_new_order: {
-    subject: 'ComandÄƒ nouÄƒ #{{orderNumber}} primitÄƒ',
+    subject: 'Comanda noua #{{orderNumber}} primita',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #EF4444;">ðŸ”” ComandÄƒ NouÄƒ</h1>
-        <p>O comandÄƒ nouÄƒ a fost plasatÄƒ:</p>
+        <h1 style="color: #EF4444;">[NOU] Comanda Noua</h1>
+        <p>O comanda noua a fost plasata:</p>
         <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 20px; margin: 20px 0;">
-          <p><strong>ComandÄƒ:</strong> #{{orderNumber}}</p>
+          <p><strong>Comanda:</strong> #{{orderNumber}}</p>
           <p><strong>Client:</strong> {{customerName}}</p>
           <p><strong>Produs:</strong> {{productName}}</p>
           <p><strong>Total:</strong> {{total}}</p>
         </div>
         <p>
           <a href="{{adminUrl}}" style="background: #EF4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-            Vezi Ã®n Admin
+            Vezi in Admin
           </a>
         </p>
       </div>
     `,
     text: `
-      ðŸ”” ComandÄƒ NouÄƒ
+      [NOU] Comanda Noua
       
-      O comandÄƒ nouÄƒ a fost plasatÄƒ:
+      O comanda noua a fost plasata:
       
-      ComandÄƒ: #{{orderNumber}}
+      Comanda: #{{orderNumber}}
       Client: {{customerName}}
       Produs: {{productName}}
       Total: {{total}}
       
-      Vezi Ã®n admin: {{adminUrl}}
+      Vezi in admin: {{adminUrl}}
     `,
   },
 };

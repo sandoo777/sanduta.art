@@ -62,7 +62,7 @@ export class RollbackSystem {
   private errors: string[] = [];
 
   /**
-   * ExecutÄƒ rollback complet
+    * Executa rollback complet
    */
   async rollback(options: RollbackOptions): Promise<RollbackResult> {
     this.startTime = Date.now();
@@ -439,7 +439,7 @@ export class RollbackSystem {
   ): Promise<void> {
     try {
       const message = `
-ðŸ”„ **Rollback Completed**
+    [OK] **Rollback Completed**
 
 Environment: ${options.environment}
 Version: ${options.version}
@@ -447,11 +447,11 @@ Reason: ${options.reason || 'Manual rollback'}
 Duration: ${result.duration}ms
 
 Steps:
-- Deployment: ${result.rollbackSteps.deployment ? 'âœ…' : 'âŒ'}
-- Database: ${result.rollbackSteps.database ? 'âœ…' : 'âŒ'}
-- Storage: ${result.rollbackSteps.storage ? 'âœ…' : 'âŒ'}
-- Theme: ${result.rollbackSteps.theme ? 'âœ…' : 'âŒ'}
-- CMS: ${result.rollbackSteps.cms ? 'âœ…' : 'âŒ'}
+- Deployment: ${result.rollbackSteps.deployment ? '[OK]' : '[FAIL]'}
+- Database: ${result.rollbackSteps.database ? '[OK]' : '[FAIL]'}
+- Storage: ${result.rollbackSteps.storage ? '[OK]' : '[FAIL]'}
+- Theme: ${result.rollbackSteps.theme ? '[OK]' : '[FAIL]'}
+- CMS: ${result.rollbackSteps.cms ? '[OK]' : '[FAIL]'}
       `.trim();
 
       // Send to Slack
@@ -480,13 +480,13 @@ Steps:
   ): Promise<void> {
     try {
       const message = `
-ðŸš¨ **CRITICAL: Rollback Failed**
+    [ALERT] **CRITICAL: Rollback Failed**
 
 Environment: ${options.environment}
 Version: ${options.version}
 Error: ${error instanceof Error ? error.message : String(error)}
 
-âš ï¸ Manual intervention required immediately!
+[WARN] Manual intervention required immediately!
       `.trim();
 
       // Send to Slack with @channel mention

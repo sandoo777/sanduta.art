@@ -26,7 +26,7 @@ export interface FeatureFlagConfig {
  * Feature Flags System
  * 
  * Permite:
- * - Activare/dezactivare funcÈ›ionalitÄƒÈ›i
+ * - Activare/dezactivare functionalitati
  * - Rollout gradual (percentage-based)
  * - Testare A/B
  * - Feature toggles per environment
@@ -506,7 +506,7 @@ if (require.main === module) {
       featureFlags.getAllFlags().then((flags) => {
         console.log('Feature Flags:');
         flags.forEach((flag) => {
-          console.log(`- ${flag.key}: ${flag.enabled ? 'âœ…' : 'âŒ'} (${flag.name})`);
+          console.log(`- ${flag.key}: ${flag.enabled ? '[ON]' : '[OFF]'} (${flag.name})`);
         });
       });
       break;
@@ -517,7 +517,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.enableFlag(flagKey).then(() => {
-        console.log(`âœ… Flag "${flagKey}" enabled`);
+        console.log(`[ON] Flag "${flagKey}" enabled`);
       });
       break;
 
@@ -527,7 +527,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.disableFlag(flagKey).then(() => {
-        console.log(`âŒ Flag "${flagKey}" disabled`);
+        console.log(`[OFF] Flag "${flagKey}" disabled`);
       });
       break;
 
@@ -538,7 +538,7 @@ if (require.main === module) {
         process.exit(1);
       }
       featureFlags.setRolloutPercentage(flagKey, percentage).then(() => {
-        console.log(`ðŸ“Š Flag "${flagKey}" rollout set to ${percentage}%`);
+        console.log(`[ROLLOUT] Flag "${flagKey}" rollout set to ${percentage}%`);
       });
       break;
 

@@ -44,10 +44,10 @@ export interface DeploymentAlert {
 /**
  * Deploy Monitoring System
  * 
- * MonitorizeazÄƒ È™i raporteazÄƒ:
+ * Monitorizeaza si raporteaza:
  * - Timp build
  * - Timp deploy
- * - Erori È™i warning-uri
+ * - Erori si warning-uri
  * - Logs
  * - Alerte automate
  */
@@ -254,10 +254,10 @@ export class DeployMonitoring {
       if (process.env.SLACK_WEBHOOK) {
         const emoji =
           alert.severity === 'critical'
-            ? 'ðŸš¨'
+            ? '[ALERT]'
             : alert.severity === 'high'
-            ? 'âš ï¸'
-            : 'ðŸ“¢';
+            ? '[WARN]'
+            : '[INFO]';
 
         await fetch(process.env.SLACK_WEBHOOK, {
           method: 'POST',
@@ -306,7 +306,7 @@ export class DeployMonitoring {
     if (!this.metrics) return;
 
     try {
-      const emoji = this.metrics.status === 'success' ? 'âœ…' : 'âŒ';
+      const emoji = this.metrics.status === 'success' ? '[OK]' : '[FAIL]';
       const statusText = this.metrics.status === 'success' ? 'succeeded' : 'failed';
 
       const message = `
@@ -317,13 +317,13 @@ Version: ${this.metrics.version}
 Commit: ${this.metrics.commit.substring(0, 7)}
 Deployed by: ${this.metrics.deployedBy}
 
-â±ï¸ Timing:
+[TIME] Timing:
 - Build: ${Math.round(this.metrics.buildTime / 1000)}s
 - Deploy: ${Math.round(this.metrics.deployTime / 1000)}s
 - Total: ${Math.round(this.metrics.totalTime / 1000)}s
 
-${this.metrics.errors.length > 0 ? `âŒ Errors: ${this.metrics.errors.length}` : ''}
-${this.metrics.warnings.length > 0 ? `âš ï¸ Warnings: ${this.metrics.warnings.length}` : ''}
+${this.metrics.errors.length > 0 ? `[FAIL] Errors: ${this.metrics.errors.length}` : ''}
+${this.metrics.warnings.length > 0 ? `[WARN] Warnings: ${this.metrics.warnings.length}` : ''}
       `.trim();
 
       // Send to Slack

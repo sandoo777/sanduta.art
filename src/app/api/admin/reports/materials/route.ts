@@ -66,14 +66,14 @@ export async function GET(_request: NextRequest) {
         name: true,
         sku: true,
         unit: true,
-        costPerUnit: true,
+        purchasePrice: true,
       },
     });
 
     const topConsumedMaterials: TopMaterial[] = topConsumedData.map(item => {
       const material = topMaterials.find(m => m.id === item.materialId);
       const totalConsumed = item._sum.quantity || 0;
-      const costPerUnit = material ? Number(material.costPerUnit) : 0;
+      const costPerUnit = material ? Number(material.purchasePrice ?? 0) : 0;
       const totalCost = totalConsumed * costPerUnit;
 
       return {
@@ -106,7 +106,7 @@ export async function GET(_request: NextRequest) {
         materialId: true,
         material: {
           select: {
-            costPerUnit: true,
+            purchasePrice: true,
           },
         },
       },
@@ -122,7 +122,7 @@ export async function GET(_request: NextRequest) {
       const month = format(usage.createdAt, "yyyy-MM");
       if (monthlyConsumptionData[month]) {
         monthlyConsumptionData[month].quantity += usage.quantity;
-        monthlyConsumptionData[month].cost += usage.quantity * Number(usage.material.costPerUnit);
+        monthlyConsumptionData[month].cost += usage.quantity * Number(usage.material.purchasePrice ?? 0);
         monthlyConsumptionData[month].materials.add(usage.materialId);
       }
     });
@@ -143,9 +143,9 @@ export async function GET(_request: NextRequest) {
       sku: string | null;
       stock: number;
       minStock: number;
-      costPerUnit: number;
+      purchasePrice: number;
     }>>`
-      SELECT id, name, sku, stock, "minStock", "costPerUnit"
+      SELECT id, name, sku, stock, "minStock", "purchasePrice"
       FROM materials
       WHERE stock <= "minStock"
       ORDER BY (stock / NULLIF("minStock", 0)) ASC
@@ -159,7 +159,7 @@ export async function GET(_request: NextRequest) {
         currentStock: material.stock,
         minStock: material.minStock,
         difference: material.minStock - material.stock,
-        costPerUnit: Number(material.costPerUnit),
+        costPerUnit: Number(material.purchasePrice ?? 0),
       };
     });
 
@@ -173,7 +173,7 @@ export async function GET(_request: NextRequest) {
         quantity: true,
         material: {
           select: {
-            costPerUnit: true,
+            purchasePrice: true,
           },
         },
       },
@@ -181,7 +181,7 @@ export async function GET(_request: NextRequest) {
 
     const totalConsumption = allConsumption.reduce((total, usage) => total + usage.quantity, 0);
     const totalCost = allConsumption.reduce((total, usage) => {
-      const cost = usage.quantity * Number(usage.material.costPerUnit);
+      const cost = usage.quantity * Number(usage.material.purchasePrice ?? 0);
       return total + cost;
     }, 0);
 

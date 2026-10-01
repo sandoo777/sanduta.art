@@ -183,7 +183,7 @@ export class SecurityMonitoring {
    * Trigger security alert
    */
   private static async triggerAlert(event: SecurityEvent, recentEvents: SecurityEvent[]): Promise<void> {
-    logger.error('SecurityMonitoring', 'ðŸš¨ SECURITY ALERT TRIGGERED', {
+    logger.error('SecurityMonitoring', '[ALERT] SECURITY ALERT TRIGGERED', {
       type: event.type,
       severity: event.severity,
       eventCount: recentEvents.length,
@@ -206,13 +206,13 @@ export class SecurityMonitoring {
       if (!webhookUrl) return;
 
       const message = {
-        text: `ðŸš¨ Security Alert: ${event.type}`,
+        text: `[ALERT] Security Alert: ${event.type}`,
         blocks: [
           {
             type: 'header',
             text: {
               type: 'plain_text',
-              text: `ðŸš¨ Security Alert: ${event.type}`,
+              text: `[ALERT] Security Alert: ${event.type}`,
             },
           },
           {

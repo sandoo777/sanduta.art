@@ -5,7 +5,6 @@ import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import { DEFAULT_MINIMUM_MARGIN_PERCENT, type MaterialFormData } from '@/lib/validations/admin';
-import { formatPriceBreakQuantityRange } from '@/modules/materials/types';
 
 type PricingSectionProps = {
   unit: string;
@@ -26,46 +25,6 @@ export function PricingSection({ unit }: PricingSectionProps) {
     control: form.control,
     name: 'priceBreaks',
   });
-
-  const [unlimitedRowById, setUnlimitedRowById] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (form.formState.isDirty) return;
-
-    setUnlimitedRowById(() => {
-      const next: Record<string, boolean> = {};
-      priceBreakFields.forEach((field, index) => {
-        const isLast = index === priceBreakFields.length - 1;
-        const rowQtyMax = watchedPriceBreaks?.[index]?.qtyMax;
-        next[field.id] = Boolean(isLast && (rowQtyMax === null || rowQtyMax === undefined || rowQtyMax === ''));
-      });
-      return next;
-    });
-  }, [form.formState.isDirty, priceBreakFields, watchedPriceBreaks]);
-
-  // Once the current last row is marked open-ended, no more rows can be appended.
-  const lastRowIsUnlimited = useMemo(() => {
-    if (priceBreakFields.length === 0) return false;
-    const lastField = priceBreakFields[priceBreakFields.length - 1];
-    return Boolean(unlimitedRowById[lastField.id]);
-  }, [priceBreakFields, unlimitedRowById]);
-
-  // Remembers the last typed max-quantity value per row (keyed by the stable field id)
-  // so unchecking "Nelimitat" can restore what the user had entered before checking it.
-  const [restoredQtyMaxByRowId, setRestoredQtyMaxByRowId] = useState<Record<string, string>>({});
-
-  const handleUnlimitedToggle = useCallback((fieldId: string, index: number, checked: boolean) => {
-    setUnlimitedRowById((prev) => ({ ...prev, [fieldId]: checked }));
-
-    if (checked) {
-      const currentValue = form.getValues(`priceBreaks.${index}.qtyMax`);
-      setRestoredQtyMaxByRowId((prev) => ({ ...prev, [fieldId]: currentValue ?? '' }));
-      form.setValue(`priceBreaks.${index}.qtyMax`, '', { shouldDirty: true, shouldValidate: true });
-    } else {
-      const restored = restoredQtyMaxByRowId[fieldId] ?? '';
-      form.setValue(`priceBreaks.${index}.qtyMax`, restored, { shouldDirty: true, shouldValidate: true });
-    }
-  }, [form, restoredQtyMaxByRowId]);
 
   const toFiniteNumber = (value: unknown): number | null => {
     if (value === undefined || value === null || value === '') return null;
@@ -421,22 +380,17 @@ export function PricingSection({ unit }: PricingSectionProps) {
           <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Gradație prețuri / reduceri</p>
           <button
             type="button"
-            disabled={lastRowIsUnlimited}
-            title={lastRowIsUnlimited ? 'Nu se pot adăuga rânduri după un interval nelimitat' : undefined}
             onClick={() => appendPriceBreak({
               qtyMin: '',
               qtyMax: '',
               discount: '',
               price: baseMaterialPrice !== null ? baseMaterialPrice.toFixed(2) : '',
             })}
-            className="rounded-md border border-gray-300 px-2.5 py-1.5 text-xs hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+            className="rounded-md border border-gray-300 px-2.5 py-1.5 text-xs hover:bg-gray-50"
           >
             + Adaugă rând
           </button>
         </div>
-        {lastRowIsUnlimited && (
-          <p className="mb-3 -mt-2 text-xs text-gray-500">Ultimul rând este nelimitat — nu mai pot fi adăugate alte rânduri.</p>
-        )}
 
         {priceBreakFields.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500">
@@ -459,8 +413,6 @@ export function PricingSection({ unit }: PricingSectionProps) {
                   const discountField = form.register(`priceBreaks.${index}.discount`);
                   const rowError = form.formState.errors.priceBreaks?.[index]?.price?.message;
                   const discountError = form.formState.errors.priceBreaks?.[index]?.discount?.message;
-                  const qtyMinError = form.formState.errors.priceBreaks?.[index]?.qtyMin?.message;
-                  const qtyMaxError = form.formState.errors.priceBreaks?.[index]?.qtyMax?.message;
                   const rowPrice = watchedPriceBreaks?.[index]?.price;
                   const rowInvalid = minimumAllowedPrice !== null && typeof rowPrice === 'string' && Number(rowPrice) < minimumAllowedPrice;
                   const rowPriceValue = toFiniteNumber(rowPrice);
@@ -468,49 +420,14 @@ export function PricingSection({ unit }: PricingSectionProps) {
                   const rowMargin = rowPriceValue !== null && rowPurchaseValue !== null && rowPurchaseValue > 0
                     ? ((rowPriceValue - rowPurchaseValue) / rowPurchaseValue) * 100
                     : null;
-                  const isLastBreakRow = index === priceBreakFields.length - 1;
-                  const rowQtyMin = watchedPriceBreaks?.[index]?.qtyMin;
-                  const isOpenEnded = isLastBreakRow && Boolean(unlimitedRowById[field.id]);
 
                   return (
                     <tr key={field.id} className={`border-t border-gray-200 ${rowError || rowInvalid ? 'bg-red-50' : ''}`}>
                       <td className="px-3 py-2">
-                        <Input {...form.register(`priceBreaks.${index}.qtyMin`)} type="number" min="0" step="1" className={qtyMinError ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : ''} />
-                        {qtyMinError && (
-                          <p className="mt-1 text-xs text-red-600">{qtyMinError}</p>
-                        )}
+                        <Input {...form.register(`priceBreaks.${index}.qtyMin`)} type="number" min="0" step="1" />
                       </td>
                       <td className="px-3 py-2">
-                        <Input
-                          {...form.register(`priceBreaks.${index}.qtyMax`)}
-                          type="number"
-                          min="0"
-                          step="1"
-                          disabled={isOpenEnded}
-                          placeholder={isLastBreakRow ? 'Nelimitat' : ''}
-                          className={`${qtyMaxError ? 'border-red-400 focus:border-red-500 focus:ring-red-500' : ''} ${isOpenEnded ? 'cursor-not-allowed bg-gray-50 text-gray-400' : ''}`}
-                        />
-                        {isLastBreakRow && (
-                          <label
-                            htmlFor={`unlimited-${field.id}`}
-                            className="mt-1.5 flex cursor-pointer items-center gap-1.5 text-xs text-gray-600"
-                          >
-                            <input
-                              id={`unlimited-${field.id}`}
-                              type="checkbox"
-                              checked={isOpenEnded}
-                              onChange={(event) => handleUnlimitedToggle(field.id, index, event.target.checked)}
-                              className="h-3.5 w-3.5 rounded border-gray-300"
-                            />
-                            Nelimitat
-                          </label>
-                        )}
-                        {isOpenEnded && (
-                          <p className="mt-1 text-xs text-emerald-700">→ afișat ca &quot;{formatPriceBreakQuantityRange(rowQtyMin || 0, null)}&quot;</p>
-                        )}
-                        {qtyMaxError && (
-                          <p className="mt-1 text-xs text-red-600">{qtyMaxError}</p>
-                        )}
+                        <Input {...form.register(`priceBreaks.${index}.qtyMax`)} type="number" min="0" step="1" />
                       </td>
                       <td className="px-3 py-2">
                         <Input

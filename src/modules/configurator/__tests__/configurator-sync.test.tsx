@@ -128,7 +128,7 @@ const basePrismaProduct = {
       createdAt: new Date(),
       finishing: {
         id: 'fin-1',
-        name: 'Laminare lucioasÄƒ',
+        name: 'Laminare lucioasa',
         type: 'Laminare',
         costFix: 15,
         costPerUnit: 1,
@@ -169,7 +169,7 @@ describe('Configurator sync pipeline', () => {
     };
   });
 
-  it('Produs standard â†’ mapare completÄƒ pentru configurator', () => {
+  it('Produs standard -> mapare completa pentru configurator', () => {
     const mapped = mapProductToConfigurator(basePrismaProduct as unknown);
     expect(mapped.name).toBe('Poster Standard');
     expect(mapped.options).toHaveLength(1);
@@ -177,21 +177,21 @@ describe('Configurator sync pipeline', () => {
     expect(mapped.defaults.optionValues).toHaveProperty('color');
   });
 
-  it('Produs configurabil â†’ dimensiunile limiteazÄƒ materialele disponibile', () => {
+  it('Produs configurabil -> dimensiunile limiteaza materialele disponibile', () => {
     const constrainedSelections = { ...selections, dimension: { width: 400, height: 300, unit: 'cm' } };
     const result = filterMaterialsByProduct(product, constrainedSelections);
     expect(result.materials).toHaveLength(0);
     expect(result.issues[0]).toMatch(/nu este compatibil/);
   });
 
-  it('Price breaks â†’ totalul scade corespunzÄƒtor cantitÄƒÈ›ii', () => {
+  it('Price breaks -> totalul scade corespunzator cantitatii', () => {
     const highQuantity = { ...selections, quantity: 150 };
     const summary = calculateProductPrice(product, highQuantity);
     expect(summary.appliedPriceBreak?.minQuantity).toBe(100);
     expect(summary.base).toBeLessThan(120 * 150);
   });
 
-  it('FormulÄƒ custom â†’ calculeazÄƒ corect Ã®n funcÈ›ie de variabile', () => {
+  it('Formula custom -> calculeaza corect in functie de variabile', () => {
     const formulaProduct = buildConfiguratorProduct({
       pricing: {
         ...product.pricing,
@@ -208,7 +208,7 @@ describe('Configurator sync pipeline', () => {
     expect(summary.base).toBeCloseTo(expectedBase, 2);
   });
 
-  it('Finisaje â†’ adaugÄƒ cost suplimentar Ã®n total', () => {
+  it('Finisaje -> adauga cost suplimentar in total', () => {
     const withoutFinishing = calculateProductPrice(product, { ...selections, finishingIds: [] });
     const withFinishing = calculateProductPrice(product, selections, {
       finishing: product.finishing,
@@ -216,18 +216,18 @@ describe('Configurator sync pipeline', () => {
     expect(withFinishing.finishingCost).toBeGreaterThan(withoutFinishing.finishingCost);
   });
 
-  it('Metode tipÄƒrire â†’ filtreazÄƒ dupÄƒ material È™i dimensiuni', () => {
+  it('Metode tiparire -> filtreaza dupa material si dimensiuni', () => {
     const filtered = filterPrintMethodsByProduct(product, { ...selections, materialId: 'alt-material' });
     expect(filtered.printMethods).toHaveLength(0);
   });
 
-  it('OpÈ›iuni custom â†’ regulile aplicÄƒ ascundere È™i preÈ› suplimentar', () => {
+  it('Optiuni custom -> regulile aplica ascundere si pret suplimentar', () => {
     const rules = applyOptionRules(product, { ...selections, options: { color: 'negru' } });
     expect(rules.priceAdjustment).toBeGreaterThan(0);
     expect(rules.visibleOptions[0]?.values.find((value) => value.value === 'negru')).toBeDefined();
   });
 
-  it('Preview â†’ afiÈ™eazÄƒ selecÈ›iile È™i preÈ›ul final', () => {
+  it('Preview -> afiseaza selectiile si pretul final', () => {
     const summary = calculateProductPrice(product, selections);
     render(
       <ConfiguratorPreview
@@ -240,6 +240,6 @@ describe('Configurator sync pipeline', () => {
 
     expect(screen.getAllByText('Poster Standard').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Total/).length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /AdaugÄƒ Ã®n coÈ™/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Adauga in cos/i })).toBeEnabled();
   });
 });

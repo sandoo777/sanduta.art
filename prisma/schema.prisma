@@ -81,11 +81,6 @@ enum MachineStatus {
   MAINTENANCE
 }
 
-enum ProductionMode {
-  IN_HOUSE
-  OUTSOURCE
-}
-
 enum EquipmentType {
   DIGITAL_COLOR
   DIGITAL_MONO
@@ -545,7 +540,7 @@ model Material {
 model MaterialPriceBreak {
   id         String   @id @default(cuid())
   qtyMin     Int
-  qtyMax     Int?
+  qtyMax     Int
   price      Float
   discount   Float?
   materialId String
@@ -1283,7 +1278,7 @@ model Machine {
   name          String
   type          String // Digital Printer, Offset Press, Large Format, etc.
   equipmentType EquipmentType @default(DIGITAL_COLOR)
-  productionMode ProductionMode @default(IN_HOUSE)
+  productionMode String? @default("IN_HOUSE")
   status        MachineStatus @default(AVAILABLE)
 
   // Câmpuri comune
@@ -1291,8 +1286,12 @@ model Machine {
   speed               String? // ex: "100 ppm", "50 m²/oră"
   maxWidth            Int? // în mm
   maxHeight           Int? // în mm
+  printMarginsMm      Decimal? @db.Decimal(10, 2)
   operatorCostPerHour Decimal? @db.Decimal(10, 2)
   energyConsumptionKw Decimal? @db.Decimal(10, 2)
+  purchaseCostMdl     Decimal? @db.Decimal(10, 2)
+  expectedLifetimePages Int?
+  electricityCostPerKwh Decimal? @db.Decimal(10, 2)
 
   // Câmpuri Large Format (m²)
   speedM2PerHour    Decimal? @db.Decimal(10, 2)
@@ -1309,6 +1308,9 @@ model Machine {
   maxFormat       String? // A4/A3/SRA3
   maxGramWeight   Int?
   speedPpm        Int?
+  speedProfiles   Json?
+  maintenanceComponents Json?
+  tonerConsumables Json?
 
   compatibleMaterialIds    String[]  @default([]) // IDs materiale compatibile
   compatiblePrintMethodIds String[]  @default([]) // IDs metode tipărire compatibile
@@ -1322,10 +1324,30 @@ model Machine {
   compatiblePrintMethodRelations PrintMethod[]  @relation("PrintMethodMachines")
   productionJobs                 ProductionJob[]
   consumables                    EquipmentConsumable[]
+  maintenanceHistory             MachineMaintenanceRecord[]
 
   @@index([status])
   @@index([active])
   @@map("machines")
+}
+
+model MachineMaintenanceRecord {
+  id          String   @id @default(cuid())
+  machineId   String
+  date        DateTime
+  type        String
+  description String?  @db.Text
+  cost        Decimal? @db.Decimal(10, 2)
+  technician  String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  machine Machine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+
+  @@index([machineId])
+  @@index([date])
+  @@map("machine_maintenance_records")
 }
 
 model EquipmentConsumable {

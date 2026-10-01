@@ -12,7 +12,7 @@ describe('machine validation', () => {
     ).toBeNull();
   });
 
-  it('still requires type-specific cost fields when applicable', () => {
+  it('allows digital equipment without legacy cost-per-click values', () => {
     expect(
       validateMachinePayload({
         equipmentType: 'DIGITAL_COLOR',
@@ -20,6 +20,6 @@ describe('machine validation', () => {
         costClickColor: null,
         costClickBW: null,
       })
-    ).toBe('Cel puțin un cost per click (color sau A/N) este obligatoriu pentru echipamente Digitale');
+    ).toBeNull();
   });
 });

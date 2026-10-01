@@ -56,7 +56,7 @@ export async function GET(_req: NextRequest) {
 
     // Calculate costs
     const materialsCost = materialUsage.reduce((sum, usage) => {
-      return sum + (Number(usage.material.costPerUnit) * usage.quantity);
+      return sum + (Number(usage.material.purchasePrice ?? 0) * usage.quantity);
     }, 0);
 
     const laborCost = jobs.reduce((sum) => {
@@ -90,7 +90,7 @@ export async function GET(_req: NextRequest) {
       materialMap.set(key, {
         ...current,
         quantity: current.quantity + usage.quantity,
-        totalCost: current.totalCost + (Number(usage.material.costPerUnit) * usage.quantity)
+        totalCost: current.totalCost + (Number(usage.material.purchasePrice ?? 0) * usage.quantity)
       });
     });
 

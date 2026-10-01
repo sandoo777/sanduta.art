@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { prisma } from '@/lib/prisma';
 import { validateMachinePayload } from '@/modules/machines/validation';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+import { normalizeMaintenanceType, toDbMaintenanceType } from '@/modules/machines/types';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -16,14 +11,9 @@ function serializeMachine(
   machine: Record<string, unknown>
 ) {
   const n = (v: unknown) => (v != null ? Number(v) : null);
-  const {
-    compatiblePrintMethodIds: _compatiblePrintMethodIds,
-    compatiblePrintMethods: _compatiblePrintMethods,
-    ...machineWithoutPrintMethodCompatibility
-  } = machine;
 
   return {
-    ...machineWithoutPrintMethodCompatibility,
+    ...machine,
     costPerHour:         n(machine.costPerHour),
     speedM2PerHour:      n(machine.speedM2PerHour),
     inkPerM2:            n(machine.inkPerM2),
@@ -39,10 +29,11 @@ function serializeMachine(
   };
 }
 
-async function loadMaterials(ids: string[]) {
-  if (ids.length === 0) return [];
+async function loadMaterials(ids?: string[] | null) {
+  const safeIds = Array.isArray(ids) ? ids : [];
+  if (safeIds.length === 0) return [];
   return prisma.material.findMany({
-    where: { id: { in: ids } },
+    where: { id: { in: safeIds } },
     select: { id: true, name: true, unit: true },
   });
 }
@@ -52,6 +43,15 @@ async function validateMaterialIds(ids: string[]): Promise<string | null> {
   const found = await prisma.material.count({ where: { id: { in: ids } } });
   if (found !== ids.length) {
     return 'Unul sau mai multe materiale selectate nu există';
+  }
+  return null;
+}
+
+async function validatePrintMethodIds(ids: string[]): Promise<string | null> {
+  if (ids.length === 0) return null;
+  const found = await prisma.printMethod.count({ where: { id: { in: ids } } });
+  if (found !== ids.length) {
+    return 'Una sau mai multe metode de tipărire selectate nu există';
   }
   return null;
 }
@@ -73,15 +73,31 @@ export async function GET(
     }
 
     const { id } = await params;
-    const machine = await prisma.machine.findUnique({ where: { id } });
+    const machine = await prisma.machine.findUnique({
+      where: { id },
+    });
 
     if (!machine) {
       return NextResponse.json({ error: 'Machine not found' }, { status: 404 });
     }
 
-    const materials = await loadMaterials(machine.compatibleMaterialIds);
+    const maintenanceHistory = await prisma.machineMaintenanceRecord.findMany({
+      where: { machineId: id },
+      orderBy: { date: 'desc' },
+    });
+
+    const materials = await loadMaterials(machine.compatibleMaterialIds ?? []);
     return NextResponse.json({
-      ...serializeMachine(machine as unknown as Record<string, unknown>),
+      ...serializeMachine({
+        ...machine,
+        maintenanceHistory,
+      } as unknown as Record<string, unknown>),
+      maintenanceHistory: maintenanceHistory.map((record) => ({
+        ...record,
+        type: normalizeMaintenanceType(record.type as string),
+        cost: record.cost != null ? Number(record.cost) : null,
+        date: record.date ? new Date(record.date).toISOString() : null,
+      })),
       compatibleMaterials: materials,
     });
   } catch (error) {
@@ -121,11 +137,19 @@ export async function PATCH(
       }
     }
 
+    if (Array.isArray(body.compatiblePrintMethodIds)) {
+      const printMethodError = await validatePrintMethodIds(body.compatiblePrintMethodIds as string[]);
+      if (printMethodError) {
+        return NextResponse.json({ error: printMethodError }, { status: 422 });
+      }
+    }
+
     const n = (v: unknown) => (v != null ? Number(v) : null);
     const updateData: Record<string, unknown> = {};
+    const rawMaintenanceHistory = Array.isArray(body.maintenanceHistory) ? body.maintenanceHistory as Record<string, unknown>[] : [];
 
     // Scalar fields – only set if key present in body
-    const scalarFields = ['name', 'type', 'equipmentType', 'productionMode', 'status', 'speed', 'maxFormat', 'description', 'notes'] as const;
+    const scalarFields = ['name', 'type', 'equipmentType', 'status', 'speed', 'maxFormat', 'description', 'notes'] as const;
     for (const f of scalarFields) {
       if (f in body) updateData[f] = body[f] ?? null;
     }
@@ -133,20 +157,16 @@ export async function PATCH(
     // Boolean
     if ('active' in body) updateData.active = Boolean(body.active);
 
-    // Date
-    if ('lastMaintenance' in body) {
-      updateData.lastMaintenance = body.lastMaintenance ? new Date(body.lastMaintenance as string) : null;
-    }
-
     // Integer fields
     if ('maxWidth'      in body) updateData.maxWidth      = body.maxWidth      != null ? Math.round(n(body.maxWidth)!)      : null;
     if ('maxHeight'     in body) updateData.maxHeight     = body.maxHeight     != null ? Math.round(n(body.maxHeight)!)     : null;
     if ('maxGramWeight' in body) updateData.maxGramWeight = body.maxGramWeight != null ? Math.round(n(body.maxGramWeight)!) : null;
+    if ('expectedLifetimePages' in body) updateData.expectedLifetimePages = body.expectedLifetimePages != null ? Math.round(n(body.expectedLifetimePages)!) : null;
     if ('speedPpm'      in body) updateData.speedPpm      = body.speedPpm      != null ? Math.round(n(body.speedPpm)!)      : null;
 
     // Decimal fields
     const decimalFields = [
-      'costPerHour', 'operatorCostPerHour', 'energyConsumptionKw',
+      'costPerHour', 'operatorCostPerHour', 'energyConsumptionKw', 'purchaseCostMdl', 'electricityCostPerKwh',
       'speedM2PerHour', 'inkPerM2', 'materialPerM2', 'headAmortPerM2',
       'printerAmortPerM2', 'maintCostPerM2',
       'costClickColor', 'costClickBW', 'servicePerClick',
@@ -157,15 +177,57 @@ export async function PATCH(
 
     // Array fields
     if ('compatibleMaterialIds'    in body) updateData.compatibleMaterialIds    = Array.isArray(body.compatibleMaterialIds)    ? body.compatibleMaterialIds    : [];
+    if ('compatiblePrintMethodIds' in body) updateData.compatiblePrintMethodIds = Array.isArray(body.compatiblePrintMethodIds) ? body.compatiblePrintMethodIds : [];
+    if ('speedProfiles' in body) updateData.speedProfiles = Array.isArray(body.speedProfiles) ? body.speedProfiles : null;
+    if ('maintenanceComponents' in body) updateData.maintenanceComponents = Array.isArray(body.maintenanceComponents) ? body.maintenanceComponents : null;
+    if ('tonerConsumables' in body) updateData.tonerConsumables = Array.isArray(body.tonerConsumables) ? body.tonerConsumables : null;
+
+    if (rawMaintenanceHistory.length > 0) {
+      const latestDate = new Date(Math.max(...rawMaintenanceHistory.map((record) => new Date(String(record.date ?? 0)).getTime()))).toISOString();
+      updateData.lastMaintenance = new Date(latestDate);
+      updateData.maintenanceHistory = {
+        upsert: rawMaintenanceHistory.map((record) => {
+          const recordId = typeof record.id === 'string' && record.id.trim() ? record.id : crypto.randomUUID();
+          const payload = {
+            date: new Date(String(record.date)),
+            type: toDbMaintenanceType(String(record.type ?? 'Preventive')) as any,
+            description: String(record.description ?? 'Maintenance record'),
+            cost: record.cost != null ? Number(record.cost) : null,
+            technician: record.technician ? String(record.technician) : null,
+            notes: record.notes ? String(record.notes) : null,
+          };
+
+          return {
+            where: { id: recordId },
+            update: payload,
+            create: { id: recordId, ...payload },
+          };
+        }),
+      };
+    }
 
     const machine = await prisma.machine.update({
       where: { id },
       data: updateData,
     });
 
-    const materials = await loadMaterials(machine.compatibleMaterialIds);
+    const maintenanceHistory = await prisma.machineMaintenanceRecord.findMany({
+      where: { machineId: id },
+      orderBy: { date: 'desc' },
+    });
+
+    const materials = await loadMaterials(machine.compatibleMaterialIds ?? []);
     return NextResponse.json({
-      ...serializeMachine(machine as unknown as Record<string, unknown>),
+      ...serializeMachine({
+        ...machine,
+        maintenanceHistory,
+      } as unknown as Record<string, unknown>),
+      maintenanceHistory: maintenanceHistory.map((record) => ({
+        ...record,
+        type: normalizeMaintenanceType(record.type as string),
+        cost: record.cost != null ? Number(record.cost) : null,
+        date: record.date ? new Date(record.date).toISOString() : null,
+      })),
       compatibleMaterials: materials,
     });
   } catch (error) {

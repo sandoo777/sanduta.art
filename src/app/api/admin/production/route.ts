@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/modules/auth/nextauth";
 import { calculateProductionTime, calculateProductionCost, type EquipmentTypeForCalc } from "@/lib/production-time";
+import { normalizeGlobalProductionCostSettings } from '@/lib/global-cost-settings';
 import { getCompatibleMaterials } from "@/modules/materials/server";
 
 // GET /api/admin/production - List production jobs with filters
@@ -270,6 +271,14 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    const systemSettings = await prisma.systemSetting.findMany({
+      where: { key: { startsWith: 'production_cost.' } },
+      select: { key: true, value: true },
+    });
+    const globalCostSettings = normalizeGlobalProductionCostSettings(
+      Object.fromEntries(systemSettings.map((setting) => [setting.key, setting.value])),
+    );
+
     // Validate machine + fetch data needed for time+cost calculation (one query)
     let machineCalcData: {
       name: string;
@@ -285,6 +294,10 @@ export async function POST(request: NextRequest) {
       costClickColor: number | null;
       costClickBW: number | null;
       costPerHour: number | null;
+      energyConsumptionKw: number | null;
+      electricityCostPerKwh: number | null;
+      operatorCostPerHour: number | null;
+      globalCostSettings: typeof globalCostSettings;
     } | null = null;
 
     if (machineId && !selectedPrintMethod?.isOutsourced) {
@@ -349,6 +362,10 @@ export async function POST(request: NextRequest) {
         costClickColor:    machine.costClickColor    ? Number(machine.costClickColor)    : null,
         costClickBW:       machine.costClickBW       ? Number(machine.costClickBW)       : null,
         costPerHour:       machine.costPerHour       ? Number(machine.costPerHour)       : null,
+        energyConsumptionKw: machine.energyConsumptionKw ?? null,
+        electricityCostPerKwh: globalCostSettings.electricityCostMdlPerKwh,
+        operatorCostPerHour: globalCostSettings.productionOperatorCostMdlPerHour,
+        globalCostSettings,
       };
     }
 
@@ -411,7 +428,7 @@ export async function POST(request: NextRequest) {
 
       try {
         const costResult = calculateProductionCost(
-          { id: machineId, ...machineCalcData },
+          { id: machineId, ...machineCalcData, globalCostSettings },
           { quantity: parsedQuantity, bwPages: parsedBwPages ?? 0 },
         );
         estimatedCost = costResult.estimatedCost;

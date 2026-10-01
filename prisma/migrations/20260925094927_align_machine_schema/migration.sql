@@ -28,8 +28,9 @@ COMMIT;
 -- DropForeignKey
 ALTER TABLE "cart_items" DROP CONSTRAINT "cart_items_userId_fkey";
 
--- DropIndex
-DROP INDEX "materials_name_key";
+-- Drop unique constraint first; the index is required by the constraint.
+ALTER TABLE "materials"
+DROP CONSTRAINT IF EXISTS "materials_name_key";
 
 -- AlterTable
 ALTER TABLE "machines" DROP COLUMN "inkChangeoverCost",

@@ -5,6 +5,7 @@
 
 import { resolveColorModeSpeedFactor } from '@/modules/print-methods/colorModes';
 import { isDigitalEquipmentType, isLargeFormatEquipmentType, normalizeEquipmentType } from '@/modules/machines/types';
+import { DEFAULT_GLOBAL_PRODUCTION_COST_SETTINGS, type GlobalProductionCostSettings } from '@/lib/global-cost-settings';
 
 export type EquipmentTypeForCalc =
   | 'DIGITAL_COLOR'
@@ -138,8 +139,19 @@ export interface EquipmentForCostCalc {
   // DIGITAL — costuri per click
   costClickColor?: number | null;
   costClickBW?: number | null;
+  purchaseCostMdl?: number | null;
+  expectedLifetimePages?: number | null;
+  electricityCostPerKwh?: number | null;
+  powerConsumptionKw?: number | null;
+  energyConsumptionKw?: number | null;
+  operatorCostPerHour?: number | null;
+  speedPpm?: number | null;
+  speedProfiles?: Array<{ minWeight: number; maxWeight: number; speedPpm: number }>;
+  maintenanceComponents?: Array<{ name: string; cost: number; expectedLifetimePages: number }>;
+  tonerConsumables?: Array<{ type: string; cost: number; yieldPages: number }>;
   // HOURLY — cost orar
   costPerHour?: number | null;
+  globalCostSettings?: Partial<GlobalProductionCostSettings>;
 }
 
 export interface JobParamsForCostCalc {
@@ -159,6 +171,36 @@ export interface ProductionCostResult {
  * Calculează costul estimat de producție.
  * Aruncă Error cu mesaj clar dacă lipsesc datele necesare.
  */
+export function calculateDigitalColorCostPerPage(
+  equipment: EquipmentForCostCalc,
+): number {
+  const purchaseCost = equipment.purchaseCostMdl ?? 0;
+  const lifetimePages = equipment.expectedLifetimePages ?? 0;
+  const equipmentAmortization = lifetimePages > 0 ? purchaseCost / lifetimePages : 0;
+
+  const maintenanceCost = (equipment.maintenanceComponents ?? []).reduce((sum, component) => {
+    const lifetime = component.expectedLifetimePages > 0 ? component.expectedLifetimePages : 1;
+    return sum + (component.cost / lifetime);
+  }, 0);
+
+  const tonerCost = (equipment.tonerConsumables ?? []).reduce((sum, consumable) => {
+    const yieldPages = consumable.yieldPages > 0 ? consumable.yieldPages : 1;
+    return sum + (consumable.cost / yieldPages);
+  }, 0);
+
+  const powerConsumption = equipment.powerConsumptionKw ?? equipment.energyConsumptionKw ?? 0;
+  const electricityCostPerKwh = equipment.globalCostSettings?.electricityCostMdlPerKwh ?? equipment.electricityCostPerKwh ?? DEFAULT_GLOBAL_PRODUCTION_COST_SETTINGS.electricityCostMdlPerKwh;
+  const operatorCostPerHour = equipment.globalCostSettings?.productionOperatorCostMdlPerHour ?? equipment.operatorCostPerHour ?? DEFAULT_GLOBAL_PRODUCTION_COST_SETTINGS.productionOperatorCostMdlPerHour;
+  const ppm = equipment.speedPpm ?? 0;
+
+  const electricityCostPerHour = powerConsumption * electricityCostPerKwh;
+  const pagesPerHour = ppm > 0 ? ppm * 60 : 0;
+  const operatorCostPerPage = pagesPerHour > 0 ? operatorCostPerHour / pagesPerHour : 0;
+  const electricityCostPerPage = pagesPerHour > 0 ? electricityCostPerHour / pagesPerHour : 0;
+
+  return equipmentAmortization + maintenanceCost + tonerCost + operatorCostPerPage + electricityCostPerPage;
+}
+
 export function calculateProductionCost(
   equipment: EquipmentForCostCalc,
   job: JobParamsForCostCalc,
@@ -169,6 +211,15 @@ export function calculateProductionCost(
 
   if (!quantity || quantity <= 0) {
     throw new Error('Cantitatea trebuie să fie mai mare decât zero');
+  }
+
+  if (normalizedType === 'DIGITAL_COLOR') {
+    const costPerPage = calculateDigitalColorCostPerPage(equipment);
+    const estimatedCost = quantity * costPerPage;
+    return {
+      estimatedCost: Math.round(estimatedCost * 10000) / 10000,
+      breakdown: `${quantity} pag. × ${costPerPage.toFixed(4)} RON/pag. (amortizare + mentenanță + toner + operator + electricitate)`,
+    };
   }
 
   if (isLargeFormatEquipmentType(normalizedType)) {

@@ -3,8 +3,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+const fallbackSecret = process.env.NEXTAUTH_SECRET ?? 'development-secret-key-at-least-32-characters';
+const fallbackBaseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: fallbackSecret,
+  trustHost: true,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -117,4 +121,6 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   debug: process.env.NODE_ENV === "development",
+  // Default local URL to keep login and callback flows working when .env is not yet configured.
+  ...(process.env.NEXTAUTH_URL ? {} : { cookies: { sessionToken: { name: 'next-auth.session-token', options: { httpOnly: true, sameSite: 'lax', path: '/', secure: fallbackBaseUrl.startsWith('https://') } } } }),
 };

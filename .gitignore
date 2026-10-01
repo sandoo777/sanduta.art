@@ -46,6 +46,10 @@ next-env.d.ts
 # uploads
 /public/uploads
 
+# local database backups
+/backups/
+!/backups/.gitkeep
+
 /src/generated/prisma
 .log
 jest_*.txt

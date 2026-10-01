@@ -14,10 +14,6 @@ export function validateMachinePayload(body: Record<string, unknown>): string | 
     return 'Câmpul "Viteză (m²/h)" este obligatoriu pentru echipamente Large Format / UV / DTF / Sublimation';
   }
 
-  if (isDigital && !body.costClickColor && !body.costClickBW) {
-    return 'Cel puțin un cost per click (color sau A/N) este obligatoriu pentru echipamente Digitale';
-  }
-
   if (isHourly && !body.costPerHour) {
     return 'Câmpul "Cost pe oră" este obligatoriu pentru echipamente de tip Offset / Embroidery / Plotter Cutting';
   }

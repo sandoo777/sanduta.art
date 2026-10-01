@@ -28,7 +28,7 @@ export const useI18n = create<I18nStore>()(
       language: "RO",
       setLanguage: (language: Language) => {
         set({ language });
-        // SalveazÄƒ È™i Ã®n localStorage direct
+        // Salveaza si in localStorage direct
         if (typeof window !== "undefined") {
           localStorage.setItem("language", language);
         }
@@ -42,7 +42,7 @@ export const useI18n = create<I18nStore>()(
           if (value && typeof value === "object" && k in value) {
             value = value[k];
           } else {
-            // Fallback la romÃ¢nÄƒ dacÄƒ nu gÄƒseÈ™te cheia
+            // Fallback la romana daca nu gaseste cheia
             console.warn(`Translation key not found: ${key}`);
             let fallback: unknown = translations.RO;
             for (const fk of keys) {
@@ -71,7 +71,7 @@ export const useTranslations = () => {
   return { t, language };
 };
 
-// Detectare limbÄƒ browser
+// Detectare limba browser
 export const detectBrowserLanguage = (): Language => {
   if (typeof window === "undefined") return "RO";
 
@@ -84,7 +84,7 @@ export const detectBrowserLanguage = (): Language => {
   return "RO"; // Default fallback
 };
 
-// IniÈ›ializare limbÄƒ
+// Initializare limba
 export const initializeLanguage = () => {
   if (typeof window === "undefined") return;
 

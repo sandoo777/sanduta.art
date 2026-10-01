@@ -10,7 +10,7 @@ import { useMaterials } from "@/modules/materials/useMaterials";
 import { useMachines } from "@/modules/machines/useMachines";
 import type { Material } from "@/modules/materials/types";
 import type { Machine } from "@/modules/machines/types";
-import { Form } from "@/components/ui/Form";
+import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { FormMessage } from "@/components/ui/FormMessage";
@@ -18,9 +18,8 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
-import { Package, Cpu, Info, ChevronDown, ChevronRight, Search } from "lucide-react";
+import { Package, Cpu, Info } from "lucide-react";
 import { ConsumablesManager } from "./ConsumablesManager";
-import { filterGroupedMaterials, groupMaterialsByCategory } from './materialCompatibilityGrouping';
 
 // Validation schema
 const printMethodFormSchema = z.object({
@@ -60,8 +59,6 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
   const [materials, setMaterials] = useState<Material[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('general');
-  const [materialSearch, setMaterialSearch] = useState('');
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
 
   const form = useForm<PrintMethodFormData>({
     resolver: zodResolver(printMethodFormSchema),
@@ -152,18 +149,6 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
       : [...currentIds, materialId];
     form.setValue("compatibleMaterialIds", newIds);
   };
-
-  const toggleCategory = (categoryId: string) => {
-    setCollapsedCategories((prev) => ({
-      ...prev,
-      [categoryId]: !Boolean(prev[categoryId]),
-    }));
-  };
-
-  const groupedMaterials = filterGroupedMaterials(
-    groupMaterialsByCategory(materials),
-    materialSearch
-  );
 
   const toggleMachine = (machineId: string) => {
     const currentIds = form.getValues("compatibleEquipmentIds") || [];
@@ -583,71 +568,32 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
                 name="compatibleMaterialIds"
                 render={({ field }) => (
                   <div>
-                    <div className="mb-3">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="text"
-                          value={materialSearch}
-                          onChange={(event) => setMaterialSearch(event.target.value)}
-                          placeholder="Caută categorie sau material..."
-                          className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-700 outline-none ring-0 transition focus:border-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="max-h-80 overflow-y-auto border border-gray-300 rounded-lg bg-gray-50 p-3 space-y-3">
+                    <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2 bg-gray-50">
                       {materials.length === 0 ? (
                         <p className="text-sm text-gray-500 text-center py-4">Nu există materiale active</p>
-                      ) : groupedMaterials.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-4">Nu există rezultate pentru căutarea selectată</p>
                       ) : (
-                        groupedMaterials.map((group) => {
-                          const isCollapsed = Boolean(collapsedCategories[group.categoryId]);
-
-                          return (
-                            <div key={group.categoryId} className="rounded border border-gray-200 bg-white">
-                              <button
-                                type="button"
-                                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm font-semibold text-gray-800 hover:bg-gray-50"
-                                onClick={() => toggleCategory(group.categoryId)}
-                              >
-                                <span>{group.categoryName}</span>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="secondary" size="sm">
-                                    {group.materials.length}
-                                  </Badge>
-                                  {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                </div>
-                              </button>
-
-                              {!isCollapsed && (
-                                <div className="space-y-1 border-t border-gray-100 p-2">
-                                  {group.materials.map((material) => (
-                                    <label
-                                      key={material.id}
-                                      className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={field.value?.includes(material.id)}
-                                        onChange={() => toggleMaterial(material.id)}
-                                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                      />
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-medium text-gray-900 truncate">{material.name}</div>
-                                        <div className="text-xs text-gray-500">{material.unit || 'N/A'}</div>
-                                      </div>
-                                      {typeof material.stock === 'number' && typeof material.minStock === 'number' && material.stock < material.minStock && (
-                                        <Badge variant="danger" size="sm">Stoc scăzut</Badge>
-                                      )}
-                                    </label>
-                                  ))}
-                                </div>
-                              )}
+                        materials.map((material) => (
+                          <label
+                            key={material.id}
+                            className="flex items-center gap-3 cursor-pointer hover:bg-white p-2.5 rounded transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={field.value?.includes(material.id)}
+                              onChange={() => toggleMaterial(material.id)}
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">{material.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {material.category?.name || 'N/A'} • {material.unit}
+                              </div>
                             </div>
-                          );
-                        })
+                            {material.stock < material.minStock && (
+                              <Badge variant="danger" size="sm">Stoc scăzut</Badge>
+                            )}
+                          </label>
+                        ))
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">

@@ -14,7 +14,7 @@ async function loginAsAdmin(page: import('@playwright/test').Page) {
 async function waitForMaterialsReady(page: import('@playwright/test').Page) {
   await page.goto('/admin/materials');
 
-  const loading = page.getByText('Se Ã®ncarcÄƒ...');
+  const loading = page.getByText('Se incarca...');
   if ((await loading.count()) > 0) {
     await loading.first().waitFor({ state: 'hidden', timeout: 30000 }).catch(() => undefined);
   }
@@ -38,7 +38,7 @@ test.describe('Materials Regression', () => {
       const editButtons = page.getByRole('button', { name: 'Edit' });
       await expect(editButtons.first()).toBeVisible();
 
-      await page.getByPlaceholder('CautÄƒ dupÄƒ nume sau SKU...').fill('Banner BlockOut 340');
+      await page.getByPlaceholder('Cauta dupa nume sau SKU...').fill('Banner BlockOut 340');
       await expect(page.getByRole('button', { name: 'Copie' }).first()).toBeVisible();
     });
 
@@ -50,9 +50,9 @@ test.describe('Materials Regression', () => {
 
       await consumptionType.selectOption('DIRECT');
 
-      await expect(page.getByText('PreÈ› per mÂ² (MDL) *')).toHaveCount(0);
-      await expect(page.getByText('PreÈ› per metru (MDL) *')).toHaveCount(0);
-      await expect(page.getByText(/PreÈ› per unitate \(MDL\)/)).toHaveCount(1);
+      await expect(page.getByText('Pret per m2 (MDL) *')).toHaveCount(0);
+      await expect(page.getByText('Pret per metru (MDL) *')).toHaveCount(0);
+      await expect(page.getByText(/Pret per unitate \(MDL\)/)).toHaveCount(1);
 
       // m2 unit should show the sheet size selector block.
       await page.locator('select[name="unit"]').selectOption('m2');
@@ -62,7 +62,7 @@ test.describe('Materials Regression', () => {
     });
 
     await test.step('Copy flow creates material with per-sheet conversion and auto SKU', async () => {
-      await page.getByPlaceholder('CautÄƒ dupÄƒ nume sau SKU...').fill('Banner BlockOut 340');
+      await page.getByPlaceholder('Cauta dupa nume sau SKU...').fill('Banner BlockOut 340');
       await page.getByRole('button', { name: 'Copie' }).first().click();
 
       const uniqueName = `E2E_MATERIAL_${Date.now()}`;
@@ -73,7 +73,7 @@ test.describe('Materials Regression', () => {
       await page.locator('select').filter({ hasText: 'A4 (210x297 mm)' }).first().selectOption('A4');
       await page.locator('input[name="purchasePrice"]').fill('0.16');
 
-      await page.getByRole('button', { name: 'CreeazÄƒ' }).click();
+      await page.getByRole('button', { name: 'Creeaza' }).click();
 
       const createdCheck = await page.evaluate(async (targetName) => {
         const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
