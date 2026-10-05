@@ -14,6 +14,13 @@ function serializeMachine(
 
   return {
     ...machine,
+    maxWidth:            n(machine.maxWidth),
+    maxHeight:           n(machine.maxHeight),
+    purchaseCostMdl:     n(machine.purchaseCostMdl),
+    expectedLifetimePages: n(machine.expectedLifetimePages),
+    electricityCostPerKwh: n(machine.electricityCostPerKwh),
+    maxGramWeight:       n(machine.maxGramWeight),
+    speedPpm:            n(machine.speedPpm),
     costPerHour:         n(machine.costPerHour),
     speedM2PerHour:      n(machine.speedM2PerHour),
     inkPerM2:            n(machine.inkPerM2),
@@ -232,7 +239,10 @@ export async function PATCH(
     });
   } catch (error) {
     console.error('Error updating machine:', error);
-    return NextResponse.json({ error: 'Failed to update machine' }, { status: 500 });
+    const message = error instanceof Error && error.message
+      ? error.message
+      : 'Failed to update machine';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

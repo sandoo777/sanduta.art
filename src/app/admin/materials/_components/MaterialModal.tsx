@@ -12,17 +12,18 @@ interface MaterialModalProps {
 }
 
 export function MaterialModal({ material, mode, onClose, onSuccess }: MaterialModalProps) {
-  const isEditMode = mode === 'edit' && Boolean(material?.id);
+  const resolvedMode: 'create' | 'edit' | 'copy' = mode ?? (material?.id ? 'edit' : 'create');
+  const isEditMode = resolvedMode === 'edit' && Boolean(material?.id);
 
   return (
     <Modal isOpen={true} onClose={onClose} size="lg">
       <div className="bg-white rounded-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
-            {mode === 'copy' ? 'Copiază Material' : isEditMode ? 'Editează Material' : 'Adaugă Material Nou'}
+            {resolvedMode === 'copy' ? 'Copiază Material' : isEditMode ? 'Editează Material' : 'Adaugă Material Nou'}
           </h2>
         </div>
-        <MaterialForm material={material} forceCreate={mode !== 'edit'} onClose={onClose} onSuccess={onSuccess} />
+        <MaterialForm material={material} forceCreate={resolvedMode !== 'edit'} onClose={onClose} onSuccess={onSuccess} />
       </div>
     </Modal>
   );

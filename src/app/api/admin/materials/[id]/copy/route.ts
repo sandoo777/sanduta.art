@@ -61,7 +61,7 @@ export async function POST(
       name: uniqueCopyName,
       categoryId: original.categoryId,
       consumptionType: original.consumptionType,
-      active: original.active,
+      active: true,
       unit: original.unit,
       stock: original.stock,
       minStock: original.minStock,
@@ -100,7 +100,7 @@ export async function POST(
         price: row.price,
         discount: row.discount ?? null,
       })),
-      printMethodIds: original.printMethodIds ?? original.printMethods?.map((method) => method.id) ?? [],
+      printMethodIds: [],
       notes: original.notes ?? undefined,
       sku: null,
       // Intentionally no `id`, `createdAt`, `updatedAt`.

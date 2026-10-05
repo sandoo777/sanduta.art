@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { FormLabel } from '@/components/ui/FormLabel';
 import type { MaterialFormData } from '@/lib/validations/admin';
 import CategoryTreeSelector from '@/app/admin/materials/_components/CategoryTreeSelector';
-import type { CategoryChangeHandler, FormatCategoryOption, FormatOption } from './types';
+import type { CategoryChangeHandler } from './types';
 
 type GeneralSectionProps = {
   categoryId: string;
@@ -17,19 +17,6 @@ type GeneralSectionProps = {
   skuLoading: boolean;
   onGenerateSku: () => void;
   unit: string;
-  formatCategory: string;
-  formatCategoryOptions: FormatCategoryOption[];
-  onFormatCategoryChange: (value: string) => void;
-  showFormatSelector: boolean;
-  showWidthField: boolean;
-  showHeightField: boolean;
-  filteredFormats: FormatOption[];
-  formats: FormatOption[];
-  formatId?: string;
-  formatName?: string;
-  width_mm?: string;
-  height_mm?: string;
-  onFormatNameDirty: () => void;
 };
 
 export function GeneralSection({
@@ -40,19 +27,6 @@ export function GeneralSection({
   skuLoading,
   onGenerateSku,
   unit,
-  formatCategory,
-  formatCategoryOptions,
-  onFormatCategoryChange,
-  showFormatSelector,
-  showWidthField,
-  showHeightField,
-  filteredFormats,
-  formats,
-  formatId,
-  formatName,
-  width_mm,
-  height_mm,
-  onFormatNameDirty,
 }: GeneralSectionProps) {
   const form = useFormContext<MaterialFormData>();
 
@@ -159,107 +133,6 @@ export function GeneralSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <FormLabel>Categoria formatului</FormLabel>
-          <select
-            aria-label="Format category"
-            value={formatCategory}
-            onChange={(event) => onFormatCategoryChange(event.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Toate formaturile</option>
-            {formatCategoryOptions.map((category) => (
-              <option key={category.id} value={category.code}>{category.name} ({category.code})</option>
-            ))}
-          </select>
-        </div>
-
-        {showFormatSelector && (
-          <div>
-            <FormLabel>Format</FormLabel>
-            <select
-              {...form.register('formatId')}
-              aria-label="Format select"
-              value={formatId ?? ''}
-              onChange={(event) => {
-                const nextId = event.target.value;
-                form.setValue('formatId', nextId);
-                if (!nextId) {
-                  form.setValue('formatName', '');
-                  form.setValue('width_mm', '');
-                  form.setValue('height_mm', '');
-                  return;
-                }
-
-                const selected = formats.find((format) => format.id === nextId);
-                if (selected) {
-                  form.setValue('width_mm', String(selected.width_mm));
-                  form.setValue('height_mm', selected.height_mm == null ? '' : String(selected.height_mm));
-                  form.setValue('formatName', selected.name);
-                }
-              }}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">— fără format —</option>
-              {filteredFormats.map((format) => (
-                <option key={format.id} value={format.id}>
-                  {format.name} ({format.width_mm}{format.height_mm != null ? `×${format.height_mm}` : ''} mm)
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-400">Selectează formatul standard pentru calculul ariei și a pierderilor.</p>
-            {unit === 'sheet' && (
-              <p role="status" className="mt-1 text-xs text-amber-700">
-                Pentru COALA, dimensiunile se preiau din Format. Selectează un format.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {(showFormatSelector || showWidthField || showHeightField) && (
-        <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-3">
-          {showFormatSelector && (
-            <div>
-              <FormLabel>Format name</FormLabel>
-              <Input
-                {...form.register('formatName')}
-                value={formatName ?? ''}
-                onChange={(event) => {
-                  onFormatNameDirty();
-                  form.setValue('formatName', event.target.value);
-                }}
-                placeholder="210x297 mm"
-              />
-            </div>
-          )}
-
-          {showWidthField && (
-            <div>
-              <FormLabel>Lățime (mm)</FormLabel>
-              <Input
-                {...form.register('width_mm')}
-                value={width_mm ?? ''}
-                type="number"
-                min="1"
-              />
-            </div>
-          )}
-
-          {showHeightField && (
-            <div>
-              <FormLabel>Înălțime (mm)</FormLabel>
-              <Input
-                {...form.register('height_mm')}
-                value={height_mm ?? ''}
-                type="number"
-                min="1"
-              />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -83,6 +83,7 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
       { name: 'Formate', href: '/admin/formats', icon: Tag },
       { name: 'Metode Printare', href: '/admin/print-methods', icon: Printer },
       { name: 'Finisare', href: '/admin/finishing', icon: Scissors },
+      { name: 'Parteneri', href: '/admin/partners', icon: Truck },
     ],
   },
   {

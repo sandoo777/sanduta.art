@@ -16,11 +16,18 @@ const actions = [
     accent: 'from-violet-500 to-indigo-500',
   },
   {
+    title: 'Parteneri',
+    description: 'Administrează companiile outsource și partenerii externi.',
+    href: '/admin/partners',
+    icon: '🤝',
+    accent: 'from-amber-500 to-orange-500',
+  },
+  {
     title: 'Furnizori',
-    description: 'Administrează furnizorii și testele de conectare.',
+    description: 'Administrează furnizorii și aprovizionarea materialelor.',
     href: '/admin/suppliers',
     icon: '🚚',
-    accent: 'from-amber-500 to-orange-500',
+    accent: 'from-cyan-500 to-blue-500',
   },
 ] as const;
 

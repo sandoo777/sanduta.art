@@ -23,8 +23,8 @@ import { ConsumablesManager } from "./ConsumablesManager";
 
 // Validation schema
 const printMethodFormSchema = z.object({
-  name: z.string().min(1, "Numele este obligatoriu").trim(),
   type: z.string().min(1, "Tipul este obligatoriu"),
+  methodMode: z.enum(['INHOUSE', 'OUTSOURCE', 'MIXED']).default('INHOUSE'),
   isOutsourced: z.boolean().default(false),
   baseCost: z.number().min(0, "Costul de bază trebuie să fie pozitiv").optional().nullable(),
   costPerM2: z.number().min(0, "Costul per m² trebuie să fie pozitiv").optional().nullable(),
@@ -53,18 +53,33 @@ interface PrintMethodFormProps {
 
 type TabType = 'general' | 'compatibilities' | 'consumables';
 
+export function deriveCompatibleMaterialIds(
+  machines: Array<{ id: string; compatibleMaterialIds?: string[] | null }>,
+  selectedEquipmentIds: string[] = []
+) {
+  return Array.from(
+    new Set(
+      machines
+        .filter((machine) => selectedEquipmentIds.includes(machine.id))
+        .flatMap((machine) => machine.compatibleMaterialIds || [])
+    )
+  );
+}
+
 export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFormProps) {
   const { getMaterials } = useMaterials();
   const { getMachines } = useMachines();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+  const [partners, setPartners] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabType>('general');
 
   const form = useForm<PrintMethodFormData>({
     resolver: zodResolver(printMethodFormSchema),
     defaultValues: {
-      name: printMethod?.name || "",
-      type: printMethod?.type || "Digital",
+      type: printMethod?.type || "Digital Color",
+      methodMode: printMethod?.isOutsourced ? 'OUTSOURCE' : 'INHOUSE',
       isOutsourced: printMethod?.isOutsourced ?? false,
       baseCost: printMethod?.baseCost ?? null,
       costPerM2: printMethod?.costPerM2 ?? null,
@@ -85,18 +100,22 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
   });
 
   const { formState: { isSubmitting } } = form;
-  const isOutsourced = form.watch("isOutsourced");
+  const methodMode = form.watch("methodMode");
+  const isOutsourced = methodMode === 'OUTSOURCE';
+  const isMixed = methodMode === 'MIXED';
+  const selectedEquipmentIds = form.watch("compatibleEquipmentIds") || [];
 
   useEffect(() => {
     loadMaterials();
     loadMachines();
+    void loadPartners();
   }, []);
 
   // Reset form when printMethod changes (for switching between create/edit or between different methods)
   useEffect(() => {
     form.reset({
-      name: printMethod?.name || "",
-      type: printMethod?.type || "Digital",
+      type: printMethod?.type || "Digital Color",
+      methodMode: printMethod?.isOutsourced ? 'OUTSOURCE' : 'INHOUSE',
       isOutsourced: printMethod?.isOutsourced ?? false,
       baseCost: printMethod?.baseCost ?? null,
       costPerM2: printMethod?.costPerM2 ?? null,
@@ -127,6 +146,20 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
     }
   }, [isOutsourced, activeTab, form]);
 
+  useEffect(() => {
+    if (!machines.length) {
+      return;
+    }
+
+    const derivedMaterialIds = deriveCompatibleMaterialIds(machines, selectedEquipmentIds);
+    const current = form.getValues("compatibleMaterialIds") || [];
+    const isSame = derivedMaterialIds.length === current.length && derivedMaterialIds.every((id) => current.includes(id));
+
+    if (!isSame) {
+      form.setValue("compatibleMaterialIds", derivedMaterialIds, { shouldDirty: true, shouldTouch: true });
+    }
+  }, [machines, selectedEquipmentIds, form]);
+
   const loadMaterials = async () => {
     const data = await getMaterials();
     setMaterials(data.filter(m => m.active)); // Only active materials
@@ -137,17 +170,31 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
     setMachines(data.filter(m => m.active)); // Only active machines
   };
 
-  const handleFormSubmit = async (data: PrintMethodFormData) => {
-    await onSave(data as CreatePrintMethodInput);
-    onClose();
+  const loadPartners = async () => {
+    try {
+      const response = await fetch('/api/suppliers');
+      if (!response.ok) {
+        setPartners([]);
+        return;
+      }
+      const data = await response.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setPartners(items.filter((item: { id?: string; name?: string }) => item && item.id && item.name));
+    } catch {
+      setPartners([]);
+    }
   };
 
-  const toggleMaterial = (materialId: string) => {
-    const currentIds = form.getValues("compatibleMaterialIds") || [];
-    const newIds = currentIds.includes(materialId)
-      ? currentIds.filter((id) => id !== materialId)
-      : [...currentIds, materialId];
-    form.setValue("compatibleMaterialIds", newIds);
+  const handleFormSubmit = async (data: PrintMethodFormData) => {
+    const { compatibleMaterialIds: _compatibleMaterialIds, methodMode: _methodMode, ...payload } = data;
+    const normalizedPayload: CreatePrintMethodInput = {
+      ...payload,
+      isOutsourced: _methodMode === 'OUTSOURCE',
+      name: data.type,
+    };
+
+    await onSave(normalizedPayload);
+    onClose();
   };
 
   const toggleMachine = (machineId: string) => {
@@ -184,57 +231,44 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
   );
 
   return (
-    <Modal isOpen={true} onClose={onClose} size="2xl">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b">
-        <h2 className="text-xl font-bold text-gray-900">
-          {printMethod ? "Editare Metodă de Printare" : "Adăugare Metodă de Printare"}
-        </h2>
-      </div>
+    <Modal isOpen={true} onClose={onClose} size="md">
+      <div className="bg-white rounded-xl shadow-2xl">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {printMethod ? "Editează metodă de imprimare" : "Adaugă metodă de imprimare"}
+            </h2>
+          </div>
+        </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 px-6 bg-gray-50 border-b">
-        <Tab id="general" label="General" icon={Info} />
-        {!isOutsourced && (
-          <Tab 
-            id="compatibilities" 
-            label="Compatibilități"
-            icon={Package}
-            count={(form.watch("compatibleMaterialIds")?.length || 0) + (form.watch("compatibleEquipmentIds")?.length || 0)}
-          />
-        )}
-        {printMethod && !isOutsourced && (
-          <Tab 
-            id="consumables" 
-            label="Consumabile"
-            icon={Cpu}
-            count={printMethod._count?.consumables || 0}
-          />
-        )}
-      </div>
+        {/* Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-gray-50 px-6 py-3">
+          <Tab id="general" label="General" icon={Info} />
+          {methodMode !== 'OUTSOURCE' && (
+            <Tab 
+              id="compatibilities" 
+              label="Compatibilități"
+              icon={Package}
+              count={form.watch("compatibleEquipmentIds")?.length || 0}
+            />
+          )}
+          {printMethod && methodMode !== 'OUTSOURCE' && (
+            <Tab 
+              id="consumables" 
+              label="Consumabile"
+              icon={Cpu}
+              count={printMethod._count?.consumables || 0}
+            />
+          )}
+        </div>
 
-      {/* Form */}
-      <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+        {/* Form */}
+        <Form form={form} onSubmit={handleFormSubmit} className="px-6 py-5 overflow-y-auto max-h-[calc(86vh-140px)]">
         
         {/* TAB: General */}
         {activeTab === 'general' && (
           <div className="space-y-4">
-            {/* Name */}
-            <FormField
-              name="name"
-              render={({ field }) => (
-                <div>
-                  <FormLabel required>Nume metodă</FormLabel>
-                  <Input
-                    {...field}
-                    placeholder="ex: UV Printing High Gloss"
-                  />
-                  <FormMessage />
-                </div>
-              )}
-            />
-
-            {/* Type & Color Mode */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 name="type"
@@ -273,27 +307,99 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
             </div>
 
             <FormField
-              name="isOutsourced"
+              name="methodMode"
               render={({ field }) => (
-                <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                  <input
-                    type="checkbox"
-                    id="isOutsourced"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="w-4 h-4 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
-                  />
-                  <label htmlFor="isOutsourced" className="text-sm font-medium text-amber-800">
-                    Metodă Outsource
-                  </label>
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                  <div className="mb-2 text-sm font-medium text-amber-800">Sursă metodă</div>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      { value: 'INHOUSE', label: 'Inhouse' },
+                      { value: 'OUTSOURCE', label: 'Outsource' },
+                      { value: 'MIXED', label: 'Mixt' },
+                    ].map((option) => {
+                      const checked = field.value === option.value;
+
+                      return (
+                        <label
+                          key={option.value}
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                            checked
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const nextValue = option.value as 'INHOUSE' | 'OUTSOURCE' | 'MIXED';
+                              field.onChange(nextValue);
+                              form.setValue('isOutsourced', nextValue === 'OUTSOURCE', { shouldDirty: true, shouldTouch: true });
+                            }}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                   <FormMessage />
                 </div>
               )}
             />
 
+            {isOutsourced && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
+                <div className="mb-2 text-sm font-medium text-gray-800">Partener la care tipărim</div>
+                <select
+                  value={selectedPartnerId}
+                  onChange={(event) => setSelectedPartnerId(event.target.value)}
+                  aria-label="Partener la care tipărim"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">{partners.length ? 'Selectează partenerul' : 'Nu există parteneri'}</option>
+                  {partners.map((partner) => (
+                    <option key={partner.id} value={partner.id}>
+                      {partner.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {methodMode !== 'OUTSOURCE' && machines.length > 0 && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
+                <div className="mb-2 text-sm font-medium text-gray-800">
+                  {methodMode === 'MIXED' ? 'Imprimante / furnizor' : 'Imprimantă internă'}
+                </div>
+                <div className="space-y-2">
+                  {machines.map((machine) => {
+                    const checked = form.watch('compatibleEquipmentIds')?.includes(machine.id);
+
+                    return (
+                      <label
+                        key={machine.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm text-gray-700 hover:border-gray-300"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!checked}
+                          onChange={() => toggleMachine(machine.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>{machine.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Costs */}
             <div>
-              <FormLabel className="mb-2 block">{isOutsourced ? 'Costuri Furnizor' : 'Costuri'}</FormLabel>
+              <FormLabel className="mb-2 block">
+                {isOutsourced ? 'Costuri Furnizor' : isMixed ? 'Costuri interne + furnizor' : 'Costuri'}
+              </FormLabel>
               {isOutsourced ? (
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -446,6 +552,12 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
                 />
               </div>
               )}
+
+              {isMixed && (
+                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                  Mod Mixt: metoda include atât costuri interne, cât și costuri furnizor.
+                </div>
+              )}
             </div>
 
             {/* Speed */}
@@ -561,48 +673,36 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               <div className="flex items-center justify-between mb-3">
                 <FormLabel className="text-base font-semibold">Materiale compatibile</FormLabel>
                 <Badge variant="default">
-                  {form.watch("compatibleMaterialIds")?.length || 0} selectate
+                  {form.watch("compatibleMaterialIds")?.length || 0} afișate
                 </Badge>
               </div>
-              <FormField
-                name="compatibleMaterialIds"
-                render={({ field }) => (
-                  <div>
-                    <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2 bg-gray-50">
-                      {materials.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-4">Nu există materiale active</p>
-                      ) : (
-                        materials.map((material) => (
-                          <label
-                            key={material.id}
-                            className="flex items-center gap-3 cursor-pointer hover:bg-white p-2.5 rounded transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={field.value?.includes(material.id)}
-                              onChange={() => toggleMaterial(material.id)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">{material.name}</div>
-                              <div className="text-xs text-gray-500">
-                                {material.category?.name || 'N/A'} • {material.unit}
-                              </div>
-                            </div>
-                            {material.stock < material.minStock && (
-                              <Badge variant="danger" size="sm">Stoc scăzut</Badge>
-                            )}
-                          </label>
-                        ))
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Selectează materialele pe care această metodă le poate procesa
-                    </p>
-                    <FormMessage />
-                  </div>
+              <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2 bg-gray-50">
+                {materials.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Nu există materiale active</p>
+                ) : (
+                  materials
+                    .filter((material) => form.watch("compatibleMaterialIds")?.includes(material.id))
+                    .map((material) => (
+                      <div
+                        key={material.id}
+                        className="flex items-center justify-between gap-3 rounded border border-gray-200 bg-white px-3 py-2"
+                      >
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">{material.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {material.category?.name || 'N/A'} • {material.unit}
+                          </div>
+                        </div>
+                        {material.stock < material.minStock && (
+                          <Badge variant="danger" size="sm">Stoc scăzut</Badge>
+                        )}
+                      </div>
+                    ))
                 )}
-              />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Materialele compatibile sunt definite la nivelul echipamentelor și se afișează aici doar ca referință.
+              </p>
             </div>
 
             {/* Equipment */}
@@ -670,29 +770,30 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
         {activeTab === 'consumables' && printMethod && !isOutsourced && (
           <ConsumablesManager printMethodId={printMethod.id} />
         )}
-      </Form>
+        </Form>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50">
-        <div className="text-xs text-gray-500">
-          {printMethod ? `ID: ${printMethod.id}` : 'Metodă nouă'}
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-          >
-            Anulează
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isSubmitting}
-            onClick={() => form.handleSubmit(handleFormSubmit)()}
-          >
-            {printMethod ? 'Actualizează' : 'Creează'}
-          </Button>
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+          <div className="text-xs text-gray-500">
+            {printMethod ? `ID: ${printMethod.id}` : 'Metodă nouă'}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+            >
+              Anulează
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={isSubmitting}
+              onClick={() => form.handleSubmit(handleFormSubmit)()}
+            >
+              {printMethod ? 'Actualizează' : 'Creează'}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

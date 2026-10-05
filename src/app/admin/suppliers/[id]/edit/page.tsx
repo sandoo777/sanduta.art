@@ -88,7 +88,7 @@ export default function EditSupplierPage() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error('Numele furnizorului este obligatoriu');
+      toast.error('Numele partenerului este obligatoriu');
       return;
     }
 
@@ -133,11 +133,11 @@ export default function EditSupplierPage() {
         return;
       }
 
-      toast.success('Supplier updated');
+      toast.success('Partner updated');
       router.push('/admin/suppliers');
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update supplier');
+      toast.error(error instanceof Error ? error.message : 'Failed to update partner');
     } finally {
       setSaving(false);
     }
@@ -153,16 +153,16 @@ export default function EditSupplierPage() {
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
           <Link href="/admin" className="hover:text-slate-700">Admin</Link>
           <span>/</span>
-          <Link href="/admin/suppliers" className="hover:text-slate-700">Furnizori</Link>
+          <Link href="/admin/suppliers" className="hover:text-slate-700">Parteneri</Link>
           <span>/</span>
           <span className="font-medium text-slate-700">Edit</span>
         </nav>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-900">Edit supplier</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Edit partner</h1>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Supplier name" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Partner name" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Address" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={website} onChange={(event) => setWebsite(event.target.value)} placeholder="Website (https://...)" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={codFiscal} onChange={(event) => setCodFiscal(event.target.value)} placeholder="Cod fiscal" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -271,7 +271,7 @@ export default function EditSupplierPage() {
               disabled={saving}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-60"
             >
-              {saving ? 'Saving...' : 'Update supplier'}
+              {saving ? 'Saving...' : 'Update partner'}
             </button>
             <Link href="/admin/suppliers" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
               Cancel

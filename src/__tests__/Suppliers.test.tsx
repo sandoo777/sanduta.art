@@ -140,6 +140,17 @@ describe('SuppliersManager', () => {
     expect(screen.getByPlaceholderText(/Supplier name/i)).toHaveValue('');
   });
 
+  it('shows partner registry labels in partner mode', async () => {
+    const user = userEvent.setup();
+    render(<SuppliersManager mode="partner" />);
+
+    expect(screen.getByRole('button', { name: /\+ Add partner/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Parteneri/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /\+ Add partner/i }));
+    expect(screen.getByPlaceholderText(/Partener name/i)).toBeInTheDocument();
+  });
+
   it('renders Edit link to admin edit route', async () => {
     render(<SuppliersManager />);
 

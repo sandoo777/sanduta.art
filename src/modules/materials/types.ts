@@ -1,5 +1,74 @@
 export type MaterialCategory = 'sheet' | 'roll' | 'rigid' | 'paper' | 'vinyl' | 'textile' | 'other';
-export type MaterialType = 'SUPORT_FOI' | 'SUPORT_ROLA' | 'SUPORT_M2' | 'CERNEALA' | 'CONSUMABIL';
+export type MaterialSelectionGroup = 'finishType' | 'colorName' | 'texture' | 'material' | string;
+
+export interface MaterialSelectionMeta {
+  selectionGroup: string;
+  selectionLabel: string;
+  selectionValue: string;
+  isSelectable: boolean;
+}
+
+export function getMaterialSelectionMeta(
+  material: Partial<Material> | Record<string, unknown>
+): MaterialSelectionMeta | null {
+  const source = material as Record<string, unknown>;
+  const propSource = (source.properties as Record<string, unknown> | undefined) ?? {};
+
+  const readString = (...paths: Array<string | undefined>) => {
+    for (const path of paths) {
+      if (typeof path === 'string' && path.trim()) return path.trim();
+    }
+    return null;
+  };
+
+  const explicitGroup = readString(
+    typeof source.selectionGroup === 'string' ? source.selectionGroup : undefined,
+    typeof propSource.selectionGroup === 'string' ? propSource.selectionGroup : undefined,
+    typeof source.selection_group === 'string' ? source.selection_group : undefined,
+    typeof propSource.selection_group === 'string' ? propSource.selection_group : undefined,
+  );
+  const explicitLabel = readString(
+    typeof source.selectionLabel === 'string' ? source.selectionLabel : undefined,
+    typeof propSource.selectionLabel === 'string' ? propSource.selectionLabel : undefined,
+    typeof source.selection_label === 'string' ? source.selection_label : undefined,
+    typeof propSource.selection_label === 'string' ? propSource.selection_label : undefined,
+  );
+  const explicitValue = readString(
+    typeof source.selectionValue === 'string' ? source.selectionValue : undefined,
+    typeof propSource.selectionValue === 'string' ? propSource.selectionValue : undefined,
+    typeof source.selection_value === 'string' ? source.selection_value : undefined,
+    typeof propSource.selection_value === 'string' ? propSource.selection_value : undefined,
+  );
+  const explicitSelectable = source.isSelectable ?? propSource.isSelectable ?? source.is_selectable ?? propSource.is_selectable;
+
+  if (explicitGroup && explicitLabel && explicitValue) {
+    return {
+      selectionGroup: explicitGroup,
+      selectionLabel: explicitLabel,
+      selectionValue: explicitValue,
+      isSelectable: explicitSelectable === undefined ? true : Boolean(explicitSelectable),
+    };
+  }
+
+  const groups: Array<{ key: string; label: string; value: string | null | undefined }> = [
+    { key: 'finishType', label: 'finishType', value: readString(typeof source.finishType === 'string' ? source.finishType : undefined, typeof propSource.finishType === 'string' ? propSource.finishType : undefined) },
+    { key: 'colorName', label: 'colorName', value: readString(typeof source.colorName === 'string' ? source.colorName : undefined, typeof propSource.colorName === 'string' ? propSource.colorName : undefined) },
+    { key: 'texture', label: 'texture', value: readString(typeof source.texture === 'string' ? source.texture : undefined, typeof propSource.texture === 'string' ? propSource.texture : undefined) },
+  ];
+
+  for (const group of groups) {
+    if (group.value) {
+      return {
+        selectionGroup: group.key,
+        selectionLabel: group.label,
+        selectionValue: group.value,
+        isSelectable: true,
+      };
+    }
+  }
+
+  return null;
+}
 
 export interface MaterialCategoryInfo {
   id: string;
@@ -30,41 +99,6 @@ export interface MaterialCompatibleEquipment {
   active: boolean;
 }
 
-export interface MaterialSupplierLink {
-  id?: string;
-  supplierId: string;
-  name?: string | null;
-  email?: string | null;
-  contactEmail?: string | null;
-  leadTimeDays?: number | null;
-  unitCost?: number | null;
-  isPrimary?: boolean;
-}
-
-export interface MaterialPriceBreak {
-  id?: string;
-  qtyMin: number;
-  // null means the tier is open-ended (unlimited / "5000+"). Only the highest tier may be null.
-  qtyMax: number | null;
-  price: number;
-  discount?: number | null;
-}
-
-/**
- * Canonical display label for a price-break tier's quantity range.
- * Open-ended tiers (qtyMax === null/undefined) render as "5000+"; bounded
- * tiers render as "2500–4999". Use this everywhere material pricing tiers
- * are shown (Material Editor, Material Details, cards, summaries) so the
- * open-ended-tier UI stays consistent.
- */
-export function formatPriceBreakQuantityRange(qtyMin: number | string, qtyMax: number | string | null | undefined): string {
-  if (qtyMax === null || qtyMax === undefined || qtyMax === '') {
-    return `${qtyMin}+`;
-  }
-  return `${qtyMin}–${qtyMax}`;
-}
-
-
 export interface Material {
   id: string;
   name: string;
@@ -78,7 +112,6 @@ export interface Material {
   salePrice: number | null;
   salePriceMode: 'amount' | 'percent';
   salePricePercent: number | null;
-  minimumMarginPercent?: number;
   // Backward-compatible aliases used in legacy forms/components.
   pricePerSqm?: number | null;
   pricePerMeter?: number | null;
@@ -91,31 +124,17 @@ export interface Material {
   compatibleMethodIds?: string[];
   compatibleEquipment?: MaterialCompatibleEquipment[];
   compatibleEquipmentIds?: string[];
-  formatId?: string | null;
-  formatName?: string | null;
-  width_mm?: number | null;
-  height_mm?: number | null;
-  colorName?: string | null;
-  colorCode?: string | null;
-  thumbnailUrl?: string | null;
-  thumbnailImage?: string | null;
-  macroTextureUrl?: string | null;
-  macroTextureImage?: string | null;
-  materialType?: MaterialType | null;
-  consumptionRate?: number | null;
-  isTemplate?: boolean;
-  primarySupplierId?: string | null;
-  primarySupplier?: { id: string; name: string; email?: string | null; contactEmail?: string | null } | null;
-  suppliers?: MaterialSupplierLink[];
-  priceBreaks?: MaterialPriceBreak[];
   sku: string | null;
   unit: 'liter' | 'ml' | 'gram' | 'kg' | 'unit' | 'm2' | 'meter' | 'pcs' | 'sheet';
   stock: number;
   minStock: number;
   costPerUnit?: number;
   notes: string | null;
-  finishType: string | null;
-  texture?: string | null;
+  finishType: 'mat' | 'lucios' | 'satin' | 'soft-touch' | null;
+  selectionGroup?: MaterialSelectionGroup | null;
+  selectionLabel?: string | null;
+  selectionValue?: string | null;
+  isSelectable?: boolean;
   packagingLabel: string | null;
   packagingQty: number | null;
   packagingPrice: number | null;
@@ -143,9 +162,6 @@ export interface MaterialUsage {
     name: string;
     status: string;
     priority: string;
-    assignedTo?: {
-      name?: string | null;
-    } | null;
     order: {
       id: string;
       customerName: string;
@@ -168,7 +184,6 @@ export interface CreateMaterialInput {
   salePrice?: number | null;
   salePriceMode?: 'amount' | 'percent';
   salePricePercent?: number | null;
-  minimumMarginPercent?: number;
   pricePerSqm?: number | null;
   pricePerMeter?: number | null;
   pricePerUnit?: number | null;
@@ -177,34 +192,12 @@ export interface CreateMaterialInput {
   printMethodIds?: string[];
   compatibleMethods?: string[];
   compatibleEquipment?: string[];
-  primarySupplierId?: string | null;
-  suppliers?: MaterialSupplierLink[];
-  priceBreaks?: MaterialPriceBreak[];
-  formatId?: string | null;
-  formatName?: string | null;
-  width_mm?: number | null;
-  height_mm?: number | null;
-  colorName?: string | null;
-  colorCode?: string | null;
-  thumbnailUrl?: string | null;
-  thumbnailImage?: string | null;
-  macroTextureUrl?: string | null;
-  macroTextureImage?: string | null;
-  materialType?: MaterialType | null;
-  consumptionRate?: number | null;
-  isTemplate?: boolean;
   sku?: string;
   unit: string;
   stock?: number;
   minStock?: number;
   costPerUnit?: number;
   notes?: string;
-  finishType?: string | null;
-  texture?: string | null;
-  packagingLabel?: string | null;
-  packagingQty?: number | null;
-  packagingPrice?: number | null;
-  properties?: Record<string, unknown> | null;
 }
 
 export interface UpdateMaterialInput {
@@ -217,7 +210,6 @@ export interface UpdateMaterialInput {
   salePrice?: number | null;
   salePriceMode?: 'amount' | 'percent';
   salePricePercent?: number | null;
-  minimumMarginPercent?: number;
   pricePerSqm?: number | null;
   pricePerMeter?: number | null;
   pricePerUnit?: number | null;
@@ -226,30 +218,12 @@ export interface UpdateMaterialInput {
   printMethodIds?: string[];
   compatibleMethods?: string[];
   compatibleEquipment?: string[];
-  primarySupplierId?: string | null;
-  suppliers?: MaterialSupplierLink[];
-  priceBreaks?: MaterialPriceBreak[];
-  formatId?: string | null;
-  formatName?: string | null;
-  width_mm?: number | null;
-  height_mm?: number | null;
-  colorName?: string | null;
-  colorCode?: string | null;
-  thumbnailUrl?: string | null;
-  thumbnailImage?: string | null;
-  macroTextureUrl?: string | null;
-  macroTextureImage?: string | null;
-  materialType?: MaterialType | null;
-  consumptionRate?: number | null;
-  isTemplate?: boolean;
   sku?: string;
   unit?: string;
   stock?: number;
   minStock?: number;
   costPerUnit?: number;
   notes?: string;
-  finishType?: string | null;
-  texture?: string | null;
 }
 
 export interface ConsumeMaterialInput {

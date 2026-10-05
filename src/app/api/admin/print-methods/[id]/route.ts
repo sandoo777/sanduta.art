@@ -166,11 +166,14 @@ export async function PUT(
       );
     }
 
+    const resolvedType = data.type ?? existingMethod.type;
+    const resolvedName = data.name?.trim() || resolvedType;
+
     // Check name uniqueness if name is being changed
-    if (data.name && data.name !== existingMethod.name) {
+    if (resolvedName && resolvedName !== existingMethod.name) {
       const duplicate = await prisma.printMethod.findFirst({
         where: { 
-          name: data.name,
+          name: resolvedName,
           id: { not: id },
         },
       });
@@ -216,7 +219,9 @@ export async function PUT(
     // Build update data
     const updateData: Prisma.PrintMethodUpdateInput = {};
     
-    if (data.name !== undefined) updateData.name = data.name;
+    if (data.name !== undefined || data.type !== undefined) {
+      updateData.name = resolvedName;
+    }
     if (data.type !== undefined) updateData.type = data.type;
     if (data.baseCost !== undefined) updateData.baseCost = data.baseCost;
     if (data.costPerM2 !== undefined) updateData.costPerM2 = data.costPerM2;

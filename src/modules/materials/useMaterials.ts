@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { safeFetch, safePost, safePut } from '@/lib/safeFetch';
+import { safeFetch, safeGet, safePost, safePut } from '@/lib/safeFetch';
 import type {
   Material,
   MaterialWithDetails,
@@ -10,6 +10,30 @@ import type {
   UpdateMaterialInput,
   ConsumeMaterialInput,
 } from "./types";
+
+type DeleteUsageDetails = {
+  usages?: Array<{
+    key: string;
+    label: string;
+    count: number;
+    examples?: string[];
+  }>;
+};
+
+function formatDeleteUsageDetails(details: DeleteUsageDetails | null): string {
+  if (!details?.usages || details.usages.length === 0) {
+    return '';
+  }
+
+  return details.usages
+    .filter((item) => item.count > 0)
+    .map((item) => {
+      const examples = Array.isArray(item.examples) ? item.examples.filter(Boolean).slice(0, 2) : [];
+      const suffix = examples.length > 0 ? ` (${examples.join(', ')})` : '';
+      return `${item.label}: ${item.count}${suffix}`;
+    })
+    .join(' | ');
+}
 
 export function useMaterials() {
   const [isLoading, setIsLoading] = useState(false);
@@ -154,8 +178,13 @@ export function useMaterials() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to delete material");
+        const errorPayload = await response.json().catch(() => null) as {
+          error?: string;
+          details?: DeleteUsageDetails;
+        } | null;
+        const message = errorPayload?.error || "Failed to delete material";
+        const details = formatDeleteUsageDetails(errorPayload?.details ?? null);
+        throw new Error(details ? `${message} | ${details}` : message);
       }
 
       toast.success("Material șters cu succes");

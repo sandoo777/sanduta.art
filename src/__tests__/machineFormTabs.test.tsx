@@ -1,9 +1,24 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MachineForm as MachineFormBase } from '@/app/admin/machines/_components/MachineForm';
+import { PrintMethodForm } from '@/app/admin/print-methods/_components/PrintMethodForm';
+import { MACHINE_TYPES } from '@/modules/machines/types';
 import { filterMachines } from '@/modules/machines/useMachines';
+import { PRINT_METHOD_TYPES } from '@/modules/print-methods/types';
 
 const MachineForm = MachineFormBase as any;
+
+vi.mock('@/modules/materials/useMaterials', () => ({
+  useMaterials: () => ({
+    getMaterials: vi.fn().mockResolvedValue([]),
+  }),
+}));
+
+vi.mock('@/modules/machines/useMachines', () => ({
+  useMachines: () => ({
+    getMachines: vi.fn().mockResolvedValue([]),
+  }),
+}));
 
 vi.mock('../app/admin/machines/_components/EquipmentConsumables', () => ({
   EquipmentConsumables: () => <div data-testid="equipment-consumables">Consumables</div>,
@@ -105,6 +120,49 @@ describe('MachineForm tabs', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /^Compatibilities$/i }));
     expect(screen.queryByText(/Metode de tipărire compatibile/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps print-method types identical to machine types', () => {
+    expect(PRINT_METHOD_TYPES.map((item) => item.value)).toEqual(MACHINE_TYPES.map((item) => item.value));
+  });
+
+  it('shows three sourcing modes for print-method methods: inhouse, outsource and mixed', () => {
+    render(
+      <PrintMethodForm
+        printMethod={null}
+        onClose={vi.fn()}
+        onSave={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    expect(screen.getByText(/Sursă metodă/i)).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /Inhouse/i })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /Outsource/i })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /Mixt/i })).toBeInTheDocument();
+  });
+
+  it('shows the partner selector when the print method is outsourced', async () => {
+    const fetchMock = vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: [{ id: 'partner-1', name: 'Acme Print' }, { id: 'partner-2', name: 'North Studio' }] }),
+    } as Response);
+
+    render(
+      <PrintMethodForm
+        printMethod={null}
+        onClose={vi.fn()}
+        onSave={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /Outsource/i }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Partener la care tipărim/i)).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: /Acme Print/i })).toBeInTheDocument();
+    });
+
+    fetchMock.mockRestore();
   });
 
   it('does not render the old required-fields notice after interacting with the form', () => {

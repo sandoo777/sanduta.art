@@ -144,6 +144,25 @@ const optionalMaterialNumber = (message: string) => z.string()
     message,
   });
 
+const validImageOrColor = z.string()
+  .optional()
+  .or(z.literal(''))
+  .refine((value) => {
+    const trimmed = value?.trim() ?? '';
+    if (!trimmed) return true;
+    if (/^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/.test(trimmed)) return true;
+    if (/^(https?:\/\/|\/|blob:|data:)/i.test(trimmed)) return true;
+
+    try {
+      const parsed = new URL(trimmed);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  }, {
+    message: 'Thumbnail must be a valid URL, a valid hex color, or empty',
+  });
+
 const materialPriceBreakRowSchema = z.object({
   qtyMin: z.string().min(1, 'Cantitatea minimă este obligatorie').refine((val) => Number.isFinite(Number(val)) && Number(val) >= 0, {
     message: 'Cantitatea minimă trebuie să fie un număr valid',
@@ -179,22 +198,8 @@ export const materialFormSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   colorName: z.string().max(100, 'Color name must be less than 100 characters').optional().or(z.literal('')),
   colorCode: z.string().max(100, 'Color code must be less than 100 characters').optional().or(z.literal('')),
-  thumbnailImage: z
-    .string()
-    .optional()
-    .or(z.literal(''))
-    .refine((value) => {
-      if (!value) return true;
-      return /^https?:\/\//i.test(value) || value.startsWith('/uploads/');
-    }, 'Thumbnail URL invalid'),
-  macroTextureImage: z
-    .string()
-    .optional()
-    .or(z.literal(''))
-    .refine((value) => {
-      if (!value) return true;
-      return /^https?:\/\//i.test(value) || value.startsWith('/uploads/');
-    }, 'Macro texture URL invalid'),
+  thumbnailImage: validImageOrColor,
+  macroTextureImage: validImageOrColor,
 
   consumptionType: z.enum(['AREA_BASED', 'DIRECT']).default('AREA_BASED'),
 

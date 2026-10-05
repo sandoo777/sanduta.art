@@ -73,8 +73,38 @@ export default function MaterialDetailsPage() {
           ? material.costPerUnit
           : null;
   const totalCost = effectiveUnitCost != null ? material.stock * effectiveUnitCost : null;
-  const detailThumbnail = material.thumbnailUrl ?? null;
+  const isHexColor = (value: string | null | undefined) => /^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value ?? '');
+  const detailThumbnail = material.thumbnailUrl || material.colorCode || null;
   const detailMacroTexture = material.macroTextureUrl ?? null;
+
+  const renderMediaBlock = (value: string | null | undefined, alt: string, fallbackLabel: string) => {
+    if (!value) {
+      return <div className="flex h-48 items-center justify-center text-sm text-gray-500">{fallbackLabel}</div>;
+    }
+
+    if (isHexColor(value)) {
+      return (
+        <div
+          className="flex h-48 w-full items-center justify-center border border-gray-200"
+          style={{ backgroundColor: value }}
+          title={value}
+          aria-label={alt}
+        >
+          <span className="rounded-full border border-white/70 bg-black/10 px-2 py-1 text-xs font-medium text-white shadow-sm">
+            {material.colorName || value}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={value}
+        alt={alt}
+        className="h-48 w-full object-cover"
+      />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -263,26 +293,10 @@ export default function MaterialDetailsPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview material</h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                      {detailThumbnail ? (
-                        <img
-                          src={detailThumbnail}
-                          alt={`Thumbnail ${material.name}`}
-                          className="h-48 w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-48 items-center justify-center text-sm text-gray-500">Fara thumbnail</div>
-                      )}
+                      {renderMediaBlock(detailThumbnail, `Thumbnail ${material.name}`, 'Fara thumbnail')}
                     </div>
                     <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                      {detailMacroTexture ? (
-                        <img
-                          src={detailMacroTexture}
-                          alt={`Macro textura ${material.name}`}
-                          className="h-48 w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-48 items-center justify-center text-sm text-gray-500">Fara macro textura</div>
-                      )}
+                      {renderMediaBlock(detailMacroTexture, `Macro textura ${material.name}`, 'Fara macro textura')}
                     </div>
                   </div>
                 </div>
@@ -367,6 +381,7 @@ export default function MaterialDetailsPage() {
       {/* Edit Modal */}
       {isEditModalOpen && (
         <MaterialModal
+          mode="edit"
           material={material}
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={async (updatedMaterial) => {

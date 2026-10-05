@@ -109,7 +109,7 @@ export async function DELETE(
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof MaterialApiValidationError) {
-      return createErrorResponse(error.message, error.status);
+      return createErrorResponse(error.message, error.status, error.details);
     }
 
     logApiError('API:Admin:Materials', error);

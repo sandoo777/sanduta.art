@@ -81,7 +81,7 @@ function formatPrintMethodResponse(pm: unknown) {
 
 // Validation schema for creating print method
 const createPrintMethodSchema = z.object({
-  name: z.string().min(1, 'Name is required').trim(),
+  name: z.string().trim().optional(),
   type: z.string().min(1, 'Type is required').trim(),
   baseCost: z.number().min(0).nullish(),
   costPerM2: z.number().min(0).nullish(),
@@ -241,15 +241,16 @@ export async function POST(request: NextRequest) {
     }
 
     const data = validationResult.data;
+    const resolvedName = (data.name ?? data.type ?? '').trim() || data.type;
 
     logger.info('API:PrintMethods', 'Creating print method', {
       userId: user.id,
-      name: data.name,
+      name: resolvedName,
     });
 
     // Check if name already exists
     const existingMethod = await prisma.printMethod.findFirst({
-      where: { name: data.name },
+      where: { name: resolvedName },
     });
 
     if (existingMethod) {
@@ -291,7 +292,7 @@ export async function POST(request: NextRequest) {
 
     // Create print method with relations
     const createData: Record<string, unknown> = {
-        name: data.name,
+        name: resolvedName,
         type: data.type,
         baseCost: data.baseCost ?? null,
         costPerM2: data.costPerM2 ?? null,

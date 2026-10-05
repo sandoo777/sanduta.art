@@ -42,7 +42,7 @@ function toFormPriceBreaks(material: Material | undefined) {
   })) ?? [];
 }
 
-function toMaterialFormDefaults(material: Material | undefined): MaterialFormData {
+function toMaterialFormDefaults(material: Material | undefined, forceCreate = false): MaterialFormData {
   const minimumMarginFromProperties = material?.properties
     && typeof material.properties === 'object'
     && 'minimumMarginPercent' in material.properties
@@ -66,8 +66,8 @@ function toMaterialFormDefaults(material: Material | undefined): MaterialFormDat
     macroTextureImage: material?.macroTextureUrl ?? '',
     texture: legacyTexture,
     consumptionType: material?.consumptionType ?? 'AREA_BASED',
-    active: material?.active ?? true,
-    sku: material?.sku ?? '',
+    active: forceCreate ? true : (material?.active ?? true),
+    sku: forceCreate ? '' : (material?.sku ?? ''),
     unit: material?.unit ?? 'pcs',
     stock: material?.stock?.toString() ?? '0',
     minStock: material?.minStock?.toString() ?? '0',
@@ -113,12 +113,9 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
         }))
       : [{ supplierId: '' }]
   );
-  const selectedMethodIds =
-    material?.printMethodIds ?? material?.compatibleMethods ?? material?.printMethods?.map((method) => method.id) ?? [];
-
   const form = useForm({
     resolver: zodResolver(materialFormSchema) as never,
-    defaultValues: toMaterialFormDefaults(material),
+    defaultValues: toMaterialFormDefaults(material, forceCreate),
   }) as unknown as UseFormReturn<MaterialFormData>;
 
   const categoryId = useWatch({ control: form.control, name: 'categoryId' });
@@ -129,6 +126,7 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
   const formatName = useWatch({ control: form.control, name: 'formatName' });
   const width_mm = useWatch({ control: form.control, name: 'width_mm' });
   const height_mm = useWatch({ control: form.control, name: 'height_mm' });
+  const sku = useWatch({ control: form.control, name: 'sku' });
   const [skuLoading, setSkuLoading] = useState(false);
   const isCoalaMaterial = unit === 'sheet';
   const showFormatFields = hasMaterialPropForUnit(unit, 'formatId');
@@ -140,7 +138,7 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
   const showDensityField = hasMaterialPropForUnit(unit, 'density');
 
   useEffect(() => {
-    form.reset(toMaterialFormDefaults(material));
+    form.reset(toMaterialFormDefaults(material, forceCreate));
     setPrimarySupplierId(material?.primarySupplierId ?? null);
     setSupplierLinks(
       material?.suppliers && material.suppliers.length > 0
@@ -151,7 +149,7 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
     );
     setFormatNameDirty(false);
     initializedFormatCategoryForMaterialId.current = null;
-  }, [material, form]);
+  }, [material, forceCreate, form]);
 
   useEffect(() => {
     if (!material?.id) {
@@ -275,8 +273,8 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
     }
   }, [formats, formatId, form, formatName, formatNameDirty]);
 
-  async function generateSku(catId: string) {
-    if (!catId) return;
+  async function generateSku(catId: string): Promise<string | null> {
+    if (!catId) return null;
     setSkuLoading(true);
     try {
       const res = await fetch(`/api/admin/materials/sku?categoryId=${encodeURIComponent(catId)}`, {
@@ -285,21 +283,25 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
       if (res.ok) {
         const { sku } = await res.json() as { sku: string };
         form.setValue('sku', sku);
+        return sku;
       }
+      return null;
     } catch {
       // non-critical
+      return null;
     } finally {
       setSkuLoading(false);
     }
   }
 
-  // Auto-generate SKU when category is selected (only for new materials)
+  // Auto-generate SKU when category is selected in create/copy flows.
   useEffect(() => {
-    if (!material && categoryId) {
+    const isCreateFlow = forceCreate || !material;
+    if (isCreateFlow && categoryId && !sku?.trim()) {
       void generateSku(categoryId);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId, material]);
+  }, [categoryId, forceCreate, material, sku]);
 
   function handleCategoryChange(categoryId: string, category: MaterialCategoryTree | null) {
     const previousCategoryId = form.getValues('categoryId');
@@ -322,6 +324,14 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
   }
 
   const handleMaterialSubmit = async (data: MaterialFormData) => {
+        let resolvedSku = data.sku?.trim() || '';
+        if (forceCreate && !resolvedSku && data.categoryId) {
+          const generatedSku = await generateSku(data.categoryId);
+          if (generatedSku) {
+            resolvedSku = generatedSku;
+          }
+        }
+
     setSubmitError(null);
 
     const hasPurchasePrice = data.purchasePrice !== undefined && data.purchasePrice !== '';
@@ -333,16 +343,6 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
       form.setError('salePrice', {
         type: 'manual',
         message: 'Completeaza cel putin un pret (achizitie sau vanzare).',
-      });
-      return;
-    }
-
-    if (!material && !data.thumbnailImage?.trim()) {
-      setActiveTab('images');
-      setSubmitError('Thumbnail-ul este obligatoriu pentru materialele noi.');
-      form.setError('thumbnailImage', {
-        type: 'manual',
-        message: 'Incarca thumbnail-ul materialului.',
       });
       return;
     }
@@ -387,8 +387,8 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
       macroTextureUrl: data.macroTextureImage?.trim() || null,
       texture: data.texture?.trim() || null,
       consumptionType: data.consumptionType,
-      active: data.active,
-      sku: data.sku?.trim() || undefined,
+      active: forceCreate ? true : data.active,
+      sku: resolvedSku || undefined,
       unit: data.unit,
       stock: Number(data.stock),
       minStock: Number(data.minStock),
@@ -416,7 +416,6 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
       properties: sanitizedProperties,
       primarySupplierId: primarySupplierId || null,
       suppliers: suppliersPayload,
-      printMethodIds: selectedMethodIds,
       compatibleEquipment: [],
     };
 
@@ -449,7 +448,7 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
       setSubmitError(typeof message === 'string' ? message : 'Formularul contine erori. Verifica campurile marcate.');
 
       if (firstField === 'thumbnailImage' || firstField === 'macroTextureImage') {
-        setActiveTab('images');
+        setActiveTab('properties');
       } else if (firstField === 'finishType' || firstField === 'colorName' || firstField === 'texture' || firstField === 'thickness' || firstField === 'density') {
         setActiveTab('properties');
       } else if (firstField === 'purchasePrice' || firstField === 'salePrice' || firstField === 'salePricePercent' || firstField === 'minimumMarginPercent' || firstField === 'priceBreaks') {
@@ -477,13 +476,12 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1 md:grid-cols-6">
-            <TabsTrigger value="general" className="rounded-lg px-3 py-2 text-sm font-medium">General</TabsTrigger>
-            <TabsTrigger value="images" className="rounded-lg px-3 py-2 text-sm font-medium">Images</TabsTrigger>
-            <TabsTrigger value="properties" className="rounded-lg px-3 py-2 text-sm font-medium">Proprietăți</TabsTrigger>
-            <TabsTrigger value="pricing" className="rounded-lg px-3 py-2 text-sm font-medium">Prețuri</TabsTrigger>
-            <TabsTrigger value="suppliers" className="rounded-lg px-3 py-2 text-sm font-medium">Stoc & Furnizori</TabsTrigger>
-            <TabsTrigger value="notes" className="rounded-lg px-3 py-2 text-sm font-medium">Note</TabsTrigger>
+          <TabsList className="flex w-full gap-2 overflow-x-auto rounded-xl bg-gray-100 p-1">
+            <TabsTrigger value="general" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium">General</TabsTrigger>
+            <TabsTrigger value="properties" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium">Proprietăți</TabsTrigger>
+            <TabsTrigger value="pricing" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium">Prețuri</TabsTrigger>
+            <TabsTrigger value="suppliers" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium">Stoc & Furnizori</TabsTrigger>
+            <TabsTrigger value="notes" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium">Note</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" activeValue={activeTab} className="rounded-xl border border-gray-200 bg-white p-4 md:p-5">
@@ -495,32 +493,32 @@ export function MaterialForm({ material, forceCreate = false, onClose, onSuccess
               skuLoading={skuLoading}
               onGenerateSku={() => categoryId && void generateSku(categoryId)}
               unit={unit}
-              formatCategory={formatCategory}
-              formatCategoryOptions={formatCategoryOptions}
-              onFormatCategoryChange={setFormatCategory}
-              showFormatSelector={showFormatSelector}
-              showWidthField={showWidthField}
-              showHeightField={showHeightField}
-              filteredFormats={filteredFormats}
-              formats={formats}
-              formatId={formatId ?? ''}
-              formatName={formatName ?? ''}
-              width_mm={width_mm ?? ''}
-              height_mm={height_mm ?? ''}
-              onFormatNameDirty={() => setFormatNameDirty(true)}
             />
-          </TabsContent>
-
-          <TabsContent value="images" activeValue={activeTab} className="rounded-xl border border-gray-200 bg-white p-4 md:p-5">
-            <ImagesSection isNewMaterial={!material} />
           </TabsContent>
 
           <TabsContent value="properties" activeValue={activeTab} className="rounded-xl border border-gray-200 bg-white p-4 md:p-5">
-            <PropertiesSection
-              unit={unit}
-              showThicknessField={showThicknessField}
-              showDensityField={showDensityField}
-            />
+            <div className="space-y-6">
+              <PropertiesSection
+                unit={unit}
+                showThicknessField={showThicknessField}
+                showDensityField={showDensityField}
+                showFormatSelector={showFormatSelector}
+                showWidthField={showWidthField}
+                showHeightField={showHeightField}
+                formatCategory={formatCategory}
+                formatCategoryOptions={formatCategoryOptions}
+                onFormatCategoryChange={setFormatCategory}
+                filteredFormats={filteredFormats}
+                formats={formats}
+                formatId={formatId ?? ''}
+                formatName={formatName ?? ''}
+                width_mm={width_mm ?? ''}
+                height_mm={height_mm ?? ''}
+                onFormatNameDirty={() => setFormatNameDirty(true)}
+              />
+
+              <ImagesSection isNewMaterial={!material} />
+            </div>
           </TabsContent>
 
           <TabsContent value="pricing" activeValue={activeTab} className="rounded-xl border border-gray-200 bg-white p-4 md:p-5">

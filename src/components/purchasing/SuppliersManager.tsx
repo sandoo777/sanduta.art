@@ -15,6 +15,12 @@ interface SupplierRecord {
   notes?: string | null;
 }
 
+type RegistryMode = 'supplier' | 'partner';
+
+interface SuppliersManagerProps {
+  mode?: RegistryMode;
+}
+
 function buildPhoneEntry(number = '', name = ''): SupplierPhoneEntry {
   return { number, name: name.trim() || null };
 }
@@ -26,7 +32,15 @@ function normalizeWebsiteInput(raw: string): string {
   return `https://${trimmed}`;
 }
 
-export function SuppliersManager() {
+export function SuppliersManager({ mode = 'supplier' }: SuppliersManagerProps) {
+  const isPartnerMode = mode === 'partner';
+  const entityLabel = isPartnerMode ? 'Partener' : 'Supplier';
+  const entityLabelLower = isPartnerMode ? 'partener' : 'supplier';
+  const addButtonLabel = isPartnerMode ? '+ Add partner' : '+ Add supplier';
+  const saveButtonLabel = isPartnerMode ? 'Save partner' : 'Save supplier';
+  const titleText = isPartnerMode ? 'Parteneri' : 'Furnizori';
+  const emptyText = isPartnerMode ? 'No partners yet.' : 'No suppliers yet.';
+  const subtitle = isPartnerMode ? 'Companii outsource și parteneri externi într-un registru separat.' : 'Furnizori și aprovizionare într-un registru dedicat.';
   const [suppliers, setSuppliers] = useState<SupplierRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
@@ -81,7 +95,7 @@ export function SuppliersManager() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      toast.error('Numele furnizorului este obligatoriu');
+      toast.error(`Numele ${entityLabelLower}ului este obligatoriu`);
       return;
     }
 
@@ -123,12 +137,12 @@ export function SuppliersManager() {
         toast.error(data?.error || 'Unable to create supplier');
         return;
       }
-      toast.success('Supplier created');
+      toast.success(`${entityLabel} created`);
       resetCreateForm();
       setShowForm(false);
       void loadSuppliers();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Unable to create supplier');
+      toast.error(err instanceof Error ? err.message : `Unable to create ${entityLabelLower}`);
     }
   };
 
@@ -140,14 +154,14 @@ export function SuppliersManager() {
           onClick={() => setShowForm(true)}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
         >
-          + Add supplier
+          {addButtonLabel}
         </button>
       </div>
 
       {showForm && (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between gap-3">
-            <h2 className="text-xl font-semibold text-slate-900">Add supplier</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Add {entityLabelLower}</h2>
             <button
               type="button"
               onClick={handleCloseForm}
@@ -157,7 +171,7 @@ export function SuppliersManager() {
             </button>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Supplier name" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input value={name} onChange={(event) => setName(event.target.value)} placeholder={`${entityLabel} name`} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Address" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={website} onChange={(event) => setWebsite(event.target.value)} placeholder="Website (https://...)" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <input value={codFiscal} onChange={(event) => setCodFiscal(event.target.value)} placeholder="Cod fiscal" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
@@ -265,15 +279,16 @@ export function SuppliersManager() {
             />
           </div>
           <button type="button" onClick={handleCreate} className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-            Save supplier
+            {saveButtonLabel}
           </button>
         </div>
       )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Suppliers</h2>
-        {loading ? <div className="mt-4 text-sm text-slate-500">Loading suppliers...</div> : null}
-        {!loading && !suppliers.length ? <div className="mt-4 text-sm text-slate-500">No suppliers yet.</div> : null}
+        <h2 className="text-xl font-semibold text-slate-900">{titleText}</h2>
+        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        {loading ? <div className="mt-4 text-sm text-slate-500">Loading {titleText.toLowerCase()}...</div> : null}
+        {!loading && !suppliers.length ? <div className="mt-4 text-sm text-slate-500">{emptyText}</div> : null}
 
         <div className="mt-4 space-y-3">
           {suppliers.map((supplier) => (

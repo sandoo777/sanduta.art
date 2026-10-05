@@ -152,7 +152,6 @@ export interface Machine {
   speed?: string | null;
   maxWidth?: number | null;
   maxHeight?: number | null;
-  printMarginsMm?: number | null;
   operatorCostPerHour?: number | null;
   energyConsumptionKw?: number | null;
 

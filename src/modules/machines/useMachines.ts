@@ -36,6 +36,23 @@ export function filterMachines(
 export function useMachines() {
   const [loading, setLoading] = useState(false);
 
+  const parseApiError = async (response: Response, fallbackMessage: string): Promise<string> => {
+    try {
+      const payload: unknown = await response.json();
+      if (payload && typeof payload === 'object') {
+        const err = (payload as { error?: unknown }).error;
+        if (typeof err === 'string' && err.trim()) return err;
+        if (Array.isArray(err)) {
+          const asText = err.map((item) => (typeof item === 'string' ? item : JSON.stringify(item))).join('; ');
+          if (asText.trim()) return asText;
+        }
+      }
+    } catch {
+      // Ignore JSON parse failures and use fallback message below.
+    }
+    return `${fallbackMessage} (HTTP ${response.status})`;
+  };
+
   const getMachines = useCallback(async (): Promise<Machine[]> => {
     try {
       const response = await fetch('/api/admin/machines', {
@@ -59,8 +76,7 @@ export function useMachines() {
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create machine');
+        throw new Error(await parseApiError(response, 'Nu s-a putut crea echipamentul'));
       }
       const machine = await response.json();
       toast.success('Echipament creat cu succes!');
@@ -85,8 +101,7 @@ export function useMachines() {
       });
       console.log('USE_MACHINES_UPDATE_RESPONSE', { id, status: response.status, ok: response.ok });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update machine');
+        throw new Error(await parseApiError(response, 'Nu s-a putut actualiza echipamentul'));
       }
       const machine = await response.json();
       console.log('USE_MACHINES_UPDATE_JSON_PARSED', { id: machine?.id, name: machine?.name });
@@ -110,8 +125,7 @@ export function useMachines() {
         credentials: 'include',
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete machine');
+        throw new Error(await parseApiError(response, 'Nu s-a putut șterge echipamentul'));
       }
       toast.success('Echipament șters cu succes!');
     } catch (err) {

@@ -7,12 +7,13 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('AdminSidebar', () => {
-  it('renders the Depozit section and keeps the admin warehouse links visible', () => {
+  it('renders the Depozit section and keeps the supplier and partner registries visible', () => {
     render(<AdminSidebar isOpen />);
 
     expect(screen.getByRole('button', { name: /Depozit/i })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('menuitem', { name: /Inventar/i })).toHaveAttribute('href', '/admin/inventory');
     expect(screen.getByRole('menuitem', { name: /Comenzi Achiziții/i })).toHaveAttribute('href', '/admin/purchase-orders');
+    expect(screen.getByRole('menuitem', { name: /Parteneri/i })).toHaveAttribute('href', '/admin/partners');
     expect(screen.getByRole('menuitem', { name: /Furnizori/i })).toHaveAttribute('href', '/admin/suppliers');
   });
 

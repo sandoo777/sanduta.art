@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Material } from '@/modules/materials/types';
 import { MaterialForm } from '@/app/admin/materials/_components/MaterialForm';
+import { materialFormSchema } from '@/lib/validations/admin';
+import { normalizeMaterialResponse } from '@/modules/materials/server';
 
 const createMaterialMock = vi.fn();
 const updateMaterialMock = vi.fn();
@@ -72,6 +74,91 @@ const materialFixture: Material = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
+
+describe('materialFormSchema', () => {
+  it('accepts hex thumbnail colors without url validation errors', () => {
+    const result = materialFormSchema.safeParse({
+      name: 'Pvc',
+      categoryId: 'cat-1',
+      thumbnailImage: '#f7ddaa',
+      macroTextureImage: '',
+      consumptionType: 'AREA_BASED',
+      active: true,
+      sku: '',
+      unit: 'm2',
+      stock: '0',
+      minStock: '0',
+      purchasePrice: '10',
+      salePrice: '15',
+      salePriceMode: 'amount',
+      salePricePercent: '',
+      minimumMarginPercent: '15',
+      thickness: '',
+      density: '',
+      wastePercent: '',
+      notes: '',
+      compatibleMethods: [],
+      compatibleEquipment: [],
+      finishType: '',
+      packagingLabel: '',
+      packagingQty: '',
+      packagingPrice: '',
+      formatId: '',
+      formatName: '',
+      width_mm: '',
+      height_mm: '',
+      colorName: '',
+      colorCode: '',
+      texture: '',
+      priceBreaks: [],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('keeps color and thumbnail values from material properties for later edits', () => {
+    const normalized = normalizeMaterialResponse({
+      id: 'mat-1',
+      name: 'Banner 440g',
+      categoryId: 'cat-1',
+      category: { id: 'cat-1', name: 'Sheet', description: null, requiresThickness: false, requiresDensity: false, requiresPricePerSqm: false, requiresPricePerMeter: false, requiresPricePerUnit: false, requiresWastePercent: false, active: true },
+      consumptionType: 'AREA_BASED',
+      thickness: null,
+      density: 440,
+      purchasePrice: null,
+      salePrice: null,
+      salePriceMode: 'amount',
+      salePricePercent: null,
+      wastePercent: 5,
+      active: true,
+      compatibleMethods: [],
+      consumption: [],
+      sku: 'MAT-001',
+      unit: 'm2',
+      stock: 10,
+      minStock: 1,
+      notes: null,
+      finishType: null,
+      packagingLabel: null,
+      packagingQty: null,
+      packagingPrice: null,
+      properties: {
+        colorName: 'Cream',
+        colorCode: '#f7ddaa',
+        thumbnailUrl: '#f7ddaa',
+        macroTextureUrl: '',
+        texture: 'Soft grain',
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as any);
+
+    expect(normalized.colorName).toBe('Cream');
+    expect(normalized.colorCode).toBe('#f7ddaa');
+    expect(normalized.thumbnailUrl).toBe('#f7ddaa');
+    expect(normalized.texture).toBe('Soft grain');
+  });
+});
 
 describe('MaterialForm admin flow', () => {
   beforeEach(() => {

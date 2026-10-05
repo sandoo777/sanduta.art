@@ -2,20 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Copy, Edit3, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, Folder, FolderOpen, Plus, Search } from 'lucide-react';
 import { AuthLink } from '@/components/common/links/AuthLink';
 import { Badge } from "@/components/ui/Badge";
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from "@/components/ui/Card";
 import { Modal } from '@/components/ui/Modal';
-import { Table } from "@/components/ui/Table";
 import { useMaterials } from "@/modules/materials/useMaterials";
-import type { Material, MaterialCategory } from "@/modules/materials/types";
+import type { Material } from "@/modules/materials/types";
 import { MaterialCard } from "./_components/MaterialCard";
 import { MaterialModal } from "./_components/MaterialModal";
 import {
   getMaterialCategoryLabel,
-  getMaterialCategoryIcon,
   normalizeMaterialForList,
 } from './_components/materialListUtils';
 
@@ -25,41 +23,33 @@ interface MaterialListFilters {
   status: 'all' | 'active' | 'inactive';
 }
 
-function getMaterialGramajDisplay(material: Material): string {
-  if (typeof material.density === 'number' && Number.isFinite(material.density) && material.density > 0) {
-    return `${material.density.toFixed(0)} g`;
+function CompatibilityBadges({
+  items,
+  emptyLabel,
+  colorClass,
+}: {
+  items: Array<{ id: string; name: string }>;
+  emptyLabel: string;
+  colorClass: string;
+}) {
+  if (items.length === 0) {
+    return <Badge variant="default" size="sm">{emptyLabel}</Badge>;
   }
 
-  const nameMatch = material.name.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|gsm)/i);
-  if (nameMatch) {
-    return `${Number(nameMatch[1].replace(',', '.')).toFixed(0)} g`;
-  }
+  const visibleItems = items.slice(0, 3);
 
-  if (typeof material.thickness === 'number' && Number.isFinite(material.thickness) && material.thickness > 0) {
-    return `${material.thickness.toFixed(0)} mm`;
-  }
-
-  return '—';
-}
-
-function getMaterialFormatDisplay(material: Material): string {
-  const width = material.width_mm ?? null;
-  const height = material.height_mm ?? null;
-  const formatName = material.formatName ?? null;
-
-  if (formatName && width && height) {
-    return `${formatName} (${width} × ${height} mm)`;
-  }
-
-  if (formatName) {
-    return formatName;
-  }
-
-  if (width && height) {
-    return `${width} × ${height} mm`;
-  }
-
-  return '—';
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {visibleItems.map((item) => (
+        <Badge key={item.id} size="sm" className={`max-w-[140px] truncate ${colorClass}`}>
+          {item.name}
+        </Badge>
+      ))}
+      {items.length > visibleItems.length ? (
+        <Badge variant="default" size="sm">+{items.length - visibleItems.length}</Badge>
+      ) : null}
+    </div>
+  );
 }
 
 export default function MaterialsPage() {
@@ -70,12 +60,13 @@ export default function MaterialsPage() {
     status: 'all',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMaterial, setEditingMaterial] = useState<Material | undefined>();
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'copy'>('create');
+  const [editingMaterial, setEditingMaterial] = useState<Material | undefined>();
   const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [dbCategories, setDbCategories] = useState<Array<{ id: string; name: string }>>([]);
-  const { getMaterials, copyMaterial, deleteMaterial, isLoading, lastError } = useMaterials();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const { getMaterials, deleteMaterial, isLoading, lastError } = useMaterials();
 
   const fetchMaterials = useCallback(async () => {
     const data = await getMaterials();
@@ -130,41 +121,61 @@ export default function MaterialsPage() {
   const categories = useMemo(() => {
     // Show only categories that have at least one material, preserving DB order
     const usedIds = new Set(materials.map((m) => m.categoryId).filter(Boolean));
-    return dbCategories.filter((c) => usedIds.has(c.id));
+    return dbCategories
+      .filter((c) => usedIds.has(c.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [materials, dbCategories]);
 
-  const handleModalClose = async (updatedMaterial?: Material | null) => {
+  const groupedMaterials = useMemo(() => {
+    const categoryNameById = new Map(dbCategories.map((category) => [category.id, category.name]));
+    const grouped = new Map<string, Material[]>();
+
+    filteredMaterials
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach((material) => {
+        const key = categoryNameById.get(material.categoryId) ?? material.categoryInfo?.name ?? getMaterialCategoryLabel(material) ?? 'Fără mapă';
+        const current = grouped.get(key) ?? [];
+        current.push(material);
+        grouped.set(key, current);
+      });
+
+    return Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [dbCategories, filteredMaterials]);
+
+  useEffect(() => {
+    setOpenGroups((current) => {
+      const next: Record<string, boolean> = {};
+      groupedMaterials.forEach(([groupName]) => {
+        next[groupName] = current[groupName] ?? true;
+      });
+      return next;
+    });
+  }, [groupedMaterials]);
+
+  const handleModalClose = async () => {
     setIsModalOpen(false);
-    setEditingMaterial(undefined);
     setModalMode('create');
-    if (updatedMaterial) {
-      setMaterials((current) => current.map((material) => (
-        material.id === updatedMaterial.id ? normalizeMaterialForList(updatedMaterial) : material
-      )));
-    }
+    setEditingMaterial(undefined);
     setMaterials(await fetchMaterials());
   };
 
   const handleOpenCreate = () => {
-    setEditingMaterial(undefined);
     setModalMode('create');
+    setEditingMaterial(undefined);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (material: Material) => {
-    setEditingMaterial(material);
     setModalMode('edit');
+    setEditingMaterial(material);
     setIsModalOpen(true);
   };
 
-  const handleCopy = async (material: Material) => {
-    const copied = await copyMaterial(material.id);
-    if (copied) {
-      setEditingMaterial(copied);
-      setModalMode('copy');
-      setIsModalOpen(true);
-      setMaterials(await fetchMaterials());
-    }
+  const handleOpenCopy = (material: Material) => {
+    setModalMode('copy');
+    setEditingMaterial(material);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -192,10 +203,10 @@ export default function MaterialsPage() {
               Vizualizează materialele, compatibilitățile și statusurile de activare.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href="/admin/materials/categories"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-base font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-gray-300 px-4 py-2 text-base font-medium text-gray-700 transition-all duration-200 hover:scale-[1.02] hover:border-gray-400 hover:bg-gray-50 hover:shadow-md"
             >
               Categorii Materiale
             </Link>
@@ -293,174 +304,62 @@ export default function MaterialsPage() {
         </CardContent>
       </Card>
 
-      <div className="hidden md:block">
-        <Table
-          columns={[
-            {
-              key: 'name',
-              label: 'Nume material',
-              sortable: true,
-              width: '20%',
-              render: (material) => (
-                <div className="min-w-0">
-                  <AuthLink href={`/admin/materials/${material.id}`} className="block truncate font-medium text-gray-900 hover:text-blue-700">
-                    {material.name}
-                  </AuthLink>
-                  <div className="truncate text-xs text-gray-500">{material.sku || 'Fără SKU'}</div>
-                </div>
-              ),
-            },
-            {
-              key: 'gramaj',
-              label: 'Gramaj',
-              sortable: true,
-              accessor: (material) => getMaterialGramajDisplay(material),
-              width: '9%',
-              render: (material) => <span className="font-medium text-gray-700">{getMaterialGramajDisplay(material)}</span>,
-            },
-            {
-              key: 'format',
-              label: 'Format',
-              sortable: true,
-              accessor: (material) => getMaterialFormatDisplay(material),
-              width: '14%',
-              render: (material) => <span className="text-gray-700">{getMaterialFormatDisplay(material)}</span>,
-            },
-            {
-              key: 'unit',
-              label: 'Unitate',
-              sortable: true,
-              accessor: (material) => material.unit ?? '—',
-              width: '8%',
-              render: (material) => <span className="text-gray-700 uppercase">{material.unit ?? '—'}</span>,
-            },
-            {
-              key: 'category',
-              label: 'Categorie',
-              sortable: true,
-              accessor: (material) => getMaterialCategoryLabel(material),
-              width: '10%',
-              render: (material) => (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base leading-none">{getMaterialCategoryIcon(material)}</span>
-                  <Badge variant="default" size="sm">{getMaterialCategoryLabel(material)}</Badge>
-                </div>
-              ),
-            },
-            {
-              key: 'purchasePrice',
-              label: 'Preț achiziție',
-              sortable: true,
-              accessor: (material) => material.purchasePrice ?? -1,
-              width: '12%',
-              render: (material) => (
-                <span className="font-medium text-gray-700">
-                  {material.purchasePrice != null 
-                    ? `${material.purchasePrice.toFixed(2)} MDL / ${material.unit}`
-                    : 'N/A'}
-                </span>
-              ),
-            },
-            {
-              key: 'salePrice',
-              label: 'Preț vânzare',
-              sortable: true,
-              accessor: (material) => material.salePrice ?? -1,
-              width: '12%',
-              render: (material) => (
-                <span className="font-medium text-green-700">
-                  {material.salePrice != null 
-                    ? `${material.salePrice.toFixed(2)} MDL / ${material.unit}`
-                    : 'N/A'}
-                </span>
-              ),
-            },
-            {
-              key: 'status',
-              label: 'Status',
-              sortable: true,
-              accessor: (material) => (material.active ? 1 : 0),
-              width: '8%',
-              render: (material) => (
-                <Badge
-                  variant={material.active ? 'success' : 'default'}
-                  size="sm"
-                  className={material.active ? '' : 'bg-gray-200 text-gray-700'}
-                >
-                  {material.active ? 'Activ' : 'Inactiv'}
-                </Badge>
-              ),
-            },
-            {
-              key: 'actions',
-              label: 'Acțiuni',
-              width: '14%',
-              render: (material) => (
-                <div className="flex items-center justify-end gap-2 whitespace-nowrap">
-                  <Button type="button" size="sm" variant="secondary" onClick={() => handleOpenEdit(material)}>
-                    <Edit3 className="h-4 w-4" /> Edit
-                  </Button>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => void handleCopy(material)}>
-                    <Copy className="h-4 w-4" /> Copy
-                  </Button>
-                  <Button type="button" size="sm" variant="danger" onClick={() => setMaterialToDelete(material)}>
-                    <Trash2 className="h-4 w-4" /> Delete
-                  </Button>
-                </div>
-              ),
-            },
-          ]}
-          data={filteredMaterials}
-          rowKey="id"
-          loading={isLoading}
-          emptyMessage={
-            filters.search || filters.category !== 'all' || filters.status !== 'all'
-              ? "Nu s-au găsit materiale cu filtrele selectate"
-              : "Nu există materiale. Creează primul material."
-          }
-          clientSideSort={true}
-          compact={true}
-          stickyHeader={true}
-          maxHeight="68vh"
-          className="rounded-lg bg-white shadow-sm"
-          tableClassName="table-fixed"
-          ariaLabel="Lista materialelor din admin"
-        />
-      </div>
-
-      <div className="space-y-4 md:hidden">
+      <div className="space-y-4">
         {isLoading ? (
           <div className="rounded-lg bg-white p-8 text-center text-gray-500">Se încarcă...</div>
-        ) : filteredMaterials.length === 0 ? (
+        ) : groupedMaterials.length === 0 ? (
           <div className="rounded-lg bg-white p-8 text-center text-gray-500">
             {filters.search || filters.category !== 'all' || filters.status !== 'all'
               ? "Nu s-au găsit materiale"
               : "Nu există materiale"}
           </div>
         ) : (
-          filteredMaterials.map((material) => (
-            <MaterialCard
-              key={material.id}
-              material={material}
-              onEdit={handleOpenEdit}
-              onCopy={handleCopy}
-              onDelete={setMaterialToDelete}
-            />
-          ))
+          groupedMaterials.map(([groupName, groupMaterials]) => {
+            const isOpen = openGroups[groupName] ?? true;
+
+            return (
+              <Card key={groupName} className="overflow-hidden bg-white shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setOpenGroups((current) => ({ ...current, [groupName]: !isOpen }))}
+                  className="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-3 py-2.5 text-left hover:bg-gray-50"
+                >
+                  <div className="flex items-center gap-2.5">
+                    {isOpen ? <FolderOpen className="h-5 w-5 text-amber-600" /> : <Folder className="h-5 w-5 text-amber-600" />}
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900">{groupName}</div>
+                      <div className="text-[11px] text-gray-500">{groupMaterials.length} materiale</div>
+                    </div>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isOpen ? (
+                  <CardContent className="space-y-3 p-3 md:p-4">
+                    {groupMaterials.map((material) => (
+                      <MaterialCard
+                        key={material.id}
+                        material={material}
+                        onEdit={handleOpenEdit}
+                        onCopy={handleOpenCopy}
+                        onDelete={setMaterialToDelete}
+                      />
+                    ))}
+                  </CardContent>
+                ) : null}
+              </Card>
+            );
+          })
         )}
       </div>
 
       {isModalOpen ? (
-        <MaterialModal material={editingMaterial} mode={modalMode} onClose={handleModalClose} onSuccess={async (updatedMaterial) => {
-          if (updatedMaterial) {
-            setMaterials((current) => current.map((material) => (
-              material.id === updatedMaterial.id ? normalizeMaterialForList(updatedMaterial) : material
-            )));
-          }
-          setIsModalOpen(false);
-          setEditingMaterial(undefined);
-          setMaterials(await fetchMaterials());
-        }} />
+        <MaterialModal
+          mode={modalMode}
+          material={editingMaterial}
+          onClose={handleModalClose}
+          onSuccess={handleModalClose}
+        />
       ) : null}
 
       {materialToDelete ? (

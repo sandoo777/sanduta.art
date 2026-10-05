@@ -21,6 +21,7 @@ export default function AdminPage() {
     { title: 'Materials', description: 'Manage inventory and materials', icon: '📦', link: '/admin/materials' },
     { title: 'Inventar', description: 'View live stock and materials', icon: '📦', link: '/admin/inventory' },
     { title: 'Comenzi Achiziții', description: 'Open procurement workflow', icon: '🧾', link: '/admin/purchase-orders' },
+    { title: 'Parteneri', description: 'Manage partner directory', icon: '🤝', link: '/admin/partners' },
     { title: 'Furnizori', description: 'Manage supplier directory', icon: '🚚', link: '/admin/suppliers' },
     { title: 'Print Methods', description: 'Configure printing methods and costs', icon: '🖨️', link: '/admin/print-methods' },
     { title: 'Finishing Operations', description: 'Manage finishing and post-processing', icon: '✂️', link: '/admin/finishing' },

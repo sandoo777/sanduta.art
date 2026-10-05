@@ -120,10 +120,13 @@ export function MaterialImageUploadField({
 }: MaterialImageUploadFieldProps) {
   const form = useFormContext<MaterialFormData>();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const colorInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const currentValue = (form.watch(fieldName) ?? '').trim();
+  const isColorValue = /^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(currentValue);
+  const colorPreviewValue = isColorValue ? currentValue : '#f7ddaa';
 
   useEffect(() => {
     if (!isZoomOpen) return;
@@ -187,6 +190,17 @@ export function MaterialImageUploadField({
       shouldTouch: true,
       shouldValidate: true,
     });
+    form.clearErrors(fieldName);
+  }
+
+  function handleColorChange(nextColor: string) {
+    const normalized = /^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(nextColor) ? nextColor : '#f7ddaa';
+    form.setValue(fieldName, normalized, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    form.clearErrors(fieldName);
   }
 
   const isThumbnailPreview = previewMode === 'thumbnail';
@@ -221,12 +235,20 @@ export function MaterialImageUploadField({
           <div className="flex items-center gap-4">
             <div className="flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
               {currentValue ? (
-                <img
-                  src={currentValue}
-                  alt={imageAlt}
-                  className="max-h-[100px] max-w-[100px] object-contain"
-                  onClick={() => enableFullscreenZoom && setIsZoomOpen(true)}
-                />
+                isColorValue ? (
+                  <div
+                    className="h-[100px] w-[100px] rounded-md border border-gray-200"
+                    style={{ backgroundColor: colorPreviewValue }}
+                    title={currentValue}
+                  />
+                ) : (
+                  <img
+                    src={currentValue}
+                    alt={imageAlt}
+                    className="max-h-[100px] max-w-[100px] object-contain"
+                    onClick={() => enableFullscreenZoom && setIsZoomOpen(true)}
+                  />
+                )
               ) : (
                 <ImageIcon className="h-7 w-7 text-gray-400" />
               )}
@@ -258,6 +280,26 @@ export function MaterialImageUploadField({
       {validationHint ? <p className="text-xs text-gray-500">{validationHint}</p> : null}
 
       <div className="flex flex-wrap items-center gap-2">
+        {fieldName === 'thumbnailImage' ? (
+          <>
+            <input
+              ref={colorInputRef}
+              type="color"
+              value={colorPreviewValue}
+              onChange={(event) => handleColorChange(event.target.value)}
+              className="h-10 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              aria-label="Select thumbnail color"
+            />
+            <button
+              type="button"
+              onClick={() => colorInputRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-blue-500 hover:text-blue-700"
+            >
+              {currentValue ? 'Culoare' : 'Selecteaza culoare'}
+            </button>
+          </>
+        ) : null}
+
         <button
           type="button"
           disabled={isUploading}

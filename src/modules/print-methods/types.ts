@@ -134,11 +134,13 @@ export interface PrintMethodFilters {
 }
 
 export const PRINT_METHOD_TYPES = [
-  { value: 'Digital', label: 'Digital', icon: '💻' },
-  { value: 'Offset', label: 'Offset', icon: '🖨️' },
-  { value: 'Inkjet', label: 'Inkjet', icon: '💧' },
+  { value: 'Digital Color', label: 'Digital Color', icon: '💻' },
+  { value: 'Digital Mono', label: 'Digital Mono', icon: '🖨️' },
   { value: 'UV', label: 'UV', icon: '☀️' },
-  { value: 'Latex', label: 'Latex', icon: '🎨' },
-  { value: 'Serigrafie', label: 'Serigrafie', icon: '🧵' },
-  { value: 'Other', label: 'Altele', icon: '⚙️' },
+  { value: 'Large Format', label: 'Large Format', icon: '📏' },
+  { value: 'DTF', label: 'DTF', icon: '🧵' },
+  { value: 'Sublimation', label: 'Sublimation', icon: '🎨' },
+  { value: 'Offset', label: 'Offset', icon: '🖨️' },
+  { value: 'Embroidery', label: 'Embroidery', icon: '🧵' },
+  { value: 'Plotter Cutting', label: 'Plotter Cutting', icon: '✂️' },
 ] as const;

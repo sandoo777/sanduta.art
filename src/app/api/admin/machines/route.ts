@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { EquipmentType, MachineStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { normalizeEquipmentType, normalizeMaintenanceType, toDbMaintenanceType } from '@/modules/machines/types';
 import { validateMachinePayload } from '@/modules/machines/validation';
 
 const EQUIPMENT_TYPES: EquipmentType[] = [
@@ -46,33 +45,19 @@ type SerializedEquipmentConsumable = Omit<EquipmentConsumableRecord, 'consumptio
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function serializeMachine(
-  machine: Record<string, unknown>
+  machine: Record<string, unknown>,
+  printMethods?: { id: string; name: string; type: string }[]
 ) {
   const n = (v: unknown) => (v != null ? Number(v) : null);
-  const {
-    compatiblePrintMethodIds: _compatiblePrintMethodIds,
-    compatiblePrintMethods: _compatiblePrintMethods,
-    ...machineWithoutPrintMethodCompatibility
-  } = machine;
-
-  const rawHistory = Array.isArray((machine as { maintenanceHistory?: unknown[] }).maintenanceHistory)
-    ? (machine as { maintenanceHistory: Record<string, unknown>[] }).maintenanceHistory
-    : [];
-
-  const maintenanceHistory = rawHistory
-    .map((record) => ({
-      ...record,
-      cost: record.cost != null ? Number(record.cost) : null,
-      date: record.date ? new Date(record.date as string).toISOString() : null,
-    }))
-    .sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
-
-  const latestMaintenance = maintenanceHistory[0]?.date ?? (machine.lastMaintenance ? new Date(machine.lastMaintenance as string).toISOString() : null);
-
   return {
-    ...machineWithoutPrintMethodCompatibility,
-    lastMaintenance: latestMaintenance,
-    maintenanceHistory,
+    ...machine,
+    maxWidth:            n(machine.maxWidth),
+    maxHeight:           n(machine.maxHeight),
+    purchaseCostMdl:     n(machine.purchaseCostMdl),
+    expectedLifetimePages: n(machine.expectedLifetimePages),
+    electricityCostPerKwh: n(machine.electricityCostPerKwh),
+    maxGramWeight:       n(machine.maxGramWeight),
+    speedPpm:            n(machine.speedPpm),
     costPerHour:         n(machine.costPerHour),
     speedM2PerHour:      n(machine.speedM2PerHour),
     inkPerM2:            n(machine.inkPerM2),
@@ -82,22 +67,45 @@ function serializeMachine(
     maintCostPerM2:      n(machine.maintCostPerM2),
     operatorCostPerHour: n(machine.operatorCostPerHour),
     energyConsumptionKw: n(machine.energyConsumptionKw),
-    purchaseCostMdl: n(machine.purchaseCostMdl),
-    expectedLifetimePages: machine.expectedLifetimePages != null ? Number(machine.expectedLifetimePages) : null,
-    electricityCostPerKwh: n(machine.electricityCostPerKwh),
     costClickColor:      n(machine.costClickColor),
     costClickBW:         n(machine.costClickBW),
     servicePerClick:     n(machine.servicePerClick),
-    speedProfiles: Array.isArray(machine.speedProfiles) ? machine.speedProfiles as unknown[] : null,
-    maintenanceComponents: Array.isArray(machine.maintenanceComponents) ? machine.maintenanceComponents as unknown[] : null,
-    tonerConsumables: Array.isArray(machine.tonerConsumables) ? machine.tonerConsumables as unknown[] : null,
+    compatiblePrintMethods: printMethods ?? [],
   };
 }
 
-async function enrichWithMaterials<T extends { id: string; compatibleMaterialIds?: string[] | null }>(
+async function enrichWithPrintMethods<T extends { id: string; compatiblePrintMethodIds: string[] }>(
+  machines: T[]
+): Promise<(T & { compatiblePrintMethods: { id: string; name: string; type: string }[] })[]> {
+  const allIds = [...new Set(machines.flatMap((m) => m.compatiblePrintMethodIds))];
+  const methods = allIds.length > 0
+    ? await prisma.printMethod.findMany({
+        where: { id: { in: allIds } },
+        select: { id: true, name: true, type: true },
+      })
+    : [];
+  const byId = new Map(methods.map((m) => [m.id, m]));
+  return machines.map((machine) => ({
+    ...machine,
+    compatiblePrintMethods: machine.compatiblePrintMethodIds
+      .map((id) => byId.get(id))
+      .filter(Boolean) as { id: string; name: string; type: string }[],
+  }));
+}
+
+async function validatePrintMethodIds(ids: string[]): Promise<string | null> {
+  if (ids.length === 0) return null;
+  const found = await prisma.printMethod.count({ where: { id: { in: ids } } });
+  if (found !== ids.length) {
+    return 'Una sau mai multe metode de tipărire selectate nu există';
+  }
+  return null;
+}
+
+async function enrichWithMaterials<T extends { id: string; compatibleMaterialIds: string[] }>(
   machines: T[]
 ): Promise<(T & { compatibleMaterials: { id: string; name: string; unit: string }[] })[]> {
-  const allIds = [...new Set(machines.flatMap((m) => Array.isArray(m.compatibleMaterialIds) ? m.compatibleMaterialIds : [] ))];
+  const allIds = [...new Set(machines.flatMap((m) => m.compatibleMaterialIds))];
   const materials = allIds.length > 0
     ? await prisma.material.findMany({
         where: { id: { in: allIds } },
@@ -107,7 +115,7 @@ async function enrichWithMaterials<T extends { id: string; compatibleMaterialIds
   const byId = new Map(materials.map((m) => [m.id, m]));
   return machines.map((machine) => ({
     ...machine,
-    compatibleMaterials: (Array.isArray(machine.compatibleMaterialIds) ? machine.compatibleMaterialIds : [])
+    compatibleMaterials: machine.compatibleMaterialIds
       .map((id) => byId.get(id))
       .filter(Boolean) as { id: string; name: string; unit: string }[],
   }));
@@ -180,26 +188,14 @@ export async function GET() {
     }
 
     const machines = await prisma.machine.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: [{ active: 'desc' }, { name: 'asc' }],
     });
 
-    const machineIds = machines.map((machine) => machine.id);
-    const maintenanceHistory = machineIds.length > 0
-      ? await prisma.machineMaintenanceRecord.findMany({
-          where: { machineId: { in: machineIds } },
-          orderBy: { date: 'desc' },
-        })
-      : [];
-
-    const historyByMachineId = new Map<string, typeof maintenanceHistory>();
-    for (const record of maintenanceHistory) {
-      const existing = historyByMachineId.get(record.machineId) ?? [];
-      existing.push(record);
-      historyByMachineId.set(record.machineId, existing);
-    }
-
+    const enriched = await enrichWithPrintMethods(
+      machines as unknown as { id: string; compatiblePrintMethodIds: string[] }[]
+    );
     const enrichedWithMaterials = await enrichWithMaterials(
-      machines as unknown as { id: string; compatibleMaterialIds: string[] }[]
+      enriched as unknown as { id: string; compatibleMaterialIds: string[] }[]
     );
     const enrichedWithConsumables = await enrichWithConsumables(
       enrichedWithMaterials as unknown as { id: string }[]
@@ -207,22 +203,11 @@ export async function GET() {
 
     return NextResponse.json(
       enrichedWithConsumables.map((m) => {
+        const pm = (m as unknown as { compatiblePrintMethods: { id: string; name: string; type: string }[] }).compatiblePrintMethods;
         const mat = (m as unknown as { compatibleMaterials: { id: string; name: string; unit: string }[] }).compatibleMaterials;
         const cons = (m as unknown as { consumables: SerializedEquipmentConsumable[] }).consumables;
-        const history = historyByMachineId.get(m.id) ?? [];
-        const serialized = serializeMachine({
-          ...m,
-          maintenanceHistory: history,
-        } as unknown as Record<string, unknown>);
-
-        return {
-          ...serialized,
-          maintenanceHistory: history.map((record) => ({
-            ...record,
-            type: normalizeMaintenanceType(record.type as string),
-            cost: record.cost != null ? Number(record.cost) : null,
-            date: record.date ? new Date(record.date).toISOString() : null,
-          })),
+        return { 
+          ...serializeMachine(m as unknown as Record<string, unknown>, pm), 
           compatibleMaterials: mat,
           consumables: cons,
         };
@@ -255,6 +240,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 422 });
     }
 
+    const methodIds = Array.isArray(body.compatiblePrintMethodIds) ? (body.compatiblePrintMethodIds as string[]) : [];
+    const idsError = await validatePrintMethodIds(methodIds);
+    if (idsError) {
+      return NextResponse.json({ error: idsError }, { status: 422 });
+    }
+
     const matIds = Array.isArray(body.compatibleMaterialIds) ? (body.compatibleMaterialIds as string[]) : [];
     const matIdsError = await validateMaterialIds(matIds);
     if (matIdsError) {
@@ -263,28 +254,22 @@ export async function POST(request: NextRequest) {
 
     const {
       equipmentType, status,
-      costPerHour, speed, maxWidth, maxHeight, printMarginsMm,
-      operatorCostPerHour, energyConsumptionKw, purchaseCostMdl, expectedLifetimePages,
-      electricityCostPerKwh, speedProfiles, maintenanceComponents, tonerConsumables,
+      costPerHour, speed, maxWidth, maxHeight,
+      operatorCostPerHour, energyConsumptionKw,
       speedM2PerHour, inkPerM2, materialPerM2, headAmortPerM2, printerAmortPerM2, maintCostPerM2,
       costClickColor, costClickBW, servicePerClick, maxFormat, maxGramWeight, speedPpm,
-      compatibleMaterialIds,
-      description, notes, active, maintenanceHistory,
+      compatibleMaterialIds, compatiblePrintMethodIds,
+      description, notes, lastMaintenance, active,
     } = body as Record<string, unknown>;
 
     const n = (v: unknown) => (v != null ? Number(v) : null);
     const arr = (v: unknown) => (Array.isArray(v) ? (v as string[]) : []);
-    const resolvedEquipmentType: EquipmentType = EQUIPMENT_TYPES.includes(normalizeEquipmentType(equipmentType as string) as EquipmentType)
-      ? (normalizeEquipmentType(equipmentType as string) as EquipmentType)
+    const resolvedEquipmentType: EquipmentType = EQUIPMENT_TYPES.includes(equipmentType as EquipmentType)
+      ? (equipmentType as EquipmentType)
       : 'DIGITAL_COLOR';
     const resolvedStatus: MachineStatus = MACHINE_STATUSES.includes(status as MachineStatus)
       ? (status as MachineStatus)
       : 'AVAILABLE';
-
-    const normalizedMaintenanceHistory = Array.isArray(maintenanceHistory) ? maintenanceHistory as Record<string, unknown>[] : [];
-    const computedLastMaintenance = normalizedMaintenanceHistory.length > 0
-      ? new Date(Math.max(...normalizedMaintenanceHistory.map((entry) => new Date(String(entry.date ?? 0)).getTime()))).toISOString()
-      : null;
 
     const machine = await prisma.machine.create({
       data: {
@@ -296,15 +281,8 @@ export async function POST(request: NextRequest) {
         speed:               (speed as string) ?? null,
         maxWidth:            n(maxWidth),
         maxHeight:           n(maxHeight),
-        printMarginsMm:      n(printMarginsMm),
         operatorCostPerHour: n(operatorCostPerHour),
         energyConsumptionKw: n(energyConsumptionKw),
-        purchaseCostMdl: n(purchaseCostMdl),
-        expectedLifetimePages: n(expectedLifetimePages) != null ? Math.round(n(expectedLifetimePages)!) : null,
-        electricityCostPerKwh: n(electricityCostPerKwh),
-        speedProfiles: Array.isArray(speedProfiles) ? speedProfiles : null,
-        maintenanceComponents: Array.isArray(maintenanceComponents) ? maintenanceComponents : null,
-        tonerConsumables: Array.isArray(tonerConsumables) ? tonerConsumables : null,
         speedM2PerHour:      n(speedM2PerHour),
         inkPerM2:            n(inkPerM2),
         materialPerM2:       n(materialPerM2),
@@ -317,37 +295,25 @@ export async function POST(request: NextRequest) {
         maxFormat:           (maxFormat as string) || null,
         maxGramWeight:       n(maxGramWeight) != null ? Math.round(n(maxGramWeight)!) : null,
         speedPpm:            n(speedPpm) != null ? Math.round(n(speedPpm)!) : null,
-        compatibleMaterialIds: arr(compatibleMaterialIds),
+        compatibleMaterialIds:    arr(compatibleMaterialIds),
+        compatiblePrintMethodIds: arr(compatiblePrintMethodIds),
         description: (description as string) ?? null,
         notes:       (notes as string) ?? null,
-        lastMaintenance: computedLastMaintenance ? new Date(computedLastMaintenance) : null,
+        lastMaintenance: lastMaintenance ? new Date(lastMaintenance as string) : null,
         active: active !== undefined ? Boolean(active) : true,
-        maintenanceHistory: {
-          create: normalizedMaintenanceHistory.map((record) => {
-            const recordId = typeof record.id === 'string' && record.id.trim() ? record.id : crypto.randomUUID();
-            return {
-              id: recordId,
-              date: new Date(String(record.date)),
-              type: toDbMaintenanceType(String(record.type ?? 'Preventive')) as any,
-              description: String(record.description ?? 'Maintenance record'),
-              cost: record.cost != null ? Number(record.cost) : null,
-              technician: record.technician ? String(record.technician) : null,
-              notes: record.notes ? String(record.notes) : null,
-            };
-          }),
-        },
-      },
-      include: {
-        maintenanceHistory: {
-          orderBy: { date: 'desc' },
-        },
       },
     });
 
-    const [withMaterials] = await enrichWithMaterials([
-      machine as unknown as { id: string; compatibleMaterialIds: string[] },
+    const [withMethods] = await enrichWithPrintMethods([
+      machine as unknown as { id: string; compatiblePrintMethodIds: string[] },
     ]);
-    const serialized = serializeMachine(withMaterials as unknown as Record<string, unknown>);
+    const [withMaterials] = await enrichWithMaterials([
+      withMethods as unknown as { id: string; compatibleMaterialIds: string[] },
+    ]);
+    const serialized = serializeMachine(
+      withMaterials as unknown as Record<string, unknown>,
+      withMethods.compatiblePrintMethods
+    );
     return NextResponse.json({ ...serialized, compatibleMaterials: withMaterials.compatibleMaterials }, { status: 201 });
   } catch (error) {
     console.error('Error creating machine:', error);

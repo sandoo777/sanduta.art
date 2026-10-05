@@ -70,9 +70,12 @@ export default function MachinesPage() {
 
   const handleCreate = async (data: Parameters<typeof createMachine>[0]) => {
     console.log('MACHINE_CREATE_SUBMIT_START', { name: data.name });
-    await createMachine(data);
-    await loadMachines();
+    const createdMachine = await createMachine(data);
+    setMachines((current) => [createdMachine, ...current]);
     handleCloseForm();
+    void loadMachines().catch((refreshError) => {
+      console.error('MACHINE_CREATE_REFRESH_AFTER_SUCCESS_FAILED', refreshError);
+    });
     console.log('MACHINE_CREATE_FLOW_DONE');
   };
 
@@ -90,15 +93,17 @@ export default function MachinesPage() {
         name: updatedMachine.name,
       });
 
+      setMachines((current) => current.map((machine) => (
+        machine.id === updatedMachine.id ? updatedMachine : machine
+      )));
+
       console.log('MACHINE_UPDATE_CLOSE_MODAL');
       handleCloseForm();
 
-      try {
-        await loadMachines();
-      } catch (refreshError) {
+      void loadMachines().catch((refreshError) => {
         // Refresh failure should not block a successful save UX.
         console.error('MACHINE_UPDATE_REFRESH_AFTER_SUCCESS_FAILED', refreshError);
-      }
+      });
 
       console.log('MACHINE_UPDATE_FLOW_DONE');
     } else {

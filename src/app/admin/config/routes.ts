@@ -24,6 +24,7 @@ export const ADMIN_ROUTES = {
   FORMATS: '/admin/formats',
   INVENTORY: '/admin/inventory',
   PURCHASE_ORDERS: '/admin/purchase-orders',
+  PARTNERS: '/admin/partners',
   SUPPLIERS: '/admin/suppliers',
   DEPOT: '/admin/inventory',
   
@@ -38,6 +39,7 @@ export const DEPOT_SECTION = {
   items: [
     { name: 'Inventar', href: ADMIN_ROUTES.INVENTORY, description: 'Live material stock dashboard', status: 'ready' },
     { name: 'Comenzi Achiziții', href: ADMIN_ROUTES.PURCHASE_ORDERS, description: 'Procurement workflow', status: 'ready' },
+    { name: 'Parteneri', href: ADMIN_ROUTES.PARTNERS, description: 'Partner directory and outsourcing companies', status: 'ready' },
     { name: 'Furnizori', href: ADMIN_ROUTES.SUPPLIERS, description: 'Supplier directory and automation', status: 'ready' },
   ],
 } as const;
