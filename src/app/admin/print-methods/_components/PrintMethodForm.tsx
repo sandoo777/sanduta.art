@@ -9,7 +9,7 @@ import { PRINT_METHOD_TYPES } from "@/modules/print-methods/types";
 import { useMaterials } from "@/modules/materials/useMaterials";
 import { useMachines } from "@/modules/machines/useMachines";
 import type { Material } from "@/modules/materials/types";
-import type { Machine } from "@/modules/machines/types";
+import { normalizeEquipmentType, type Machine } from "@/modules/machines/types";
 import { Form } from "@/components/ui/form";
 import { FormField } from "@/components/ui/FormField";
 import { FormLabel } from "@/components/ui/FormLabel";
@@ -101,9 +101,15 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
 
   const { formState: { isSubmitting } } = form;
   const methodMode = form.watch("methodMode");
+  const selectedPrintMethodType = form.watch("type") || "Digital Color";
   const isOutsourced = methodMode === 'OUTSOURCE';
   const isMixed = methodMode === 'MIXED';
   const selectedEquipmentIds = form.watch("compatibleEquipmentIds") || [];
+
+  const compatibleMachines = machines.filter((machine) => {
+    const machineType = normalizeEquipmentType(machine.equipmentType ?? machine.type);
+    return machineType === normalizeEquipmentType(selectedPrintMethodType);
+  });
 
   useEffect(() => {
     loadMaterials();
@@ -133,7 +139,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
       compatibleMaterialIds: printMethod?.compatibleMaterials?.map(m => m.id) || [],
       compatibleEquipmentIds: printMethod?.compatibleEquipment?.map(e => e.id) || [],
     });
-  }, [printMethod, form]);
+  }, [printMethod]);
 
   useEffect(() => {
     if (isOutsourced) {
@@ -151,6 +157,14 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
       return;
     }
 
+    const validEquipmentIds = (form.getValues("compatibleEquipmentIds") || []).filter((id) =>
+      compatibleMachines.some((machine) => machine.id === id)
+    );
+
+    if (validEquipmentIds.length !== (form.getValues("compatibleEquipmentIds") || []).length) {
+      form.setValue("compatibleEquipmentIds", validEquipmentIds, { shouldDirty: true, shouldTouch: true });
+    }
+
     const derivedMaterialIds = deriveCompatibleMaterialIds(machines, selectedEquipmentIds);
     const current = form.getValues("compatibleMaterialIds") || [];
     const isSame = derivedMaterialIds.length === current.length && derivedMaterialIds.every((id) => current.includes(id));
@@ -158,7 +172,7 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
     if (!isSame) {
       form.setValue("compatibleMaterialIds", derivedMaterialIds, { shouldDirty: true, shouldTouch: true });
     }
-  }, [machines, selectedEquipmentIds, form]);
+  }, [machines, selectedEquipmentIds, compatibleMachines, form]);
 
   const loadMaterials = async () => {
     const data = await getMaterials();
@@ -367,13 +381,13 @@ export function PrintMethodForm({ printMethod, onClose, onSave }: PrintMethodFor
               </div>
             )}
 
-            {methodMode !== 'OUTSOURCE' && machines.length > 0 && (
+            {methodMode !== 'OUTSOURCE' && compatibleMachines.length > 0 && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-3">
                 <div className="mb-2 text-sm font-medium text-gray-800">
                   {methodMode === 'MIXED' ? 'Imprimante / furnizor' : 'Imprimantă internă'}
                 </div>
                 <div className="space-y-2">
-                  {machines.map((machine) => {
+                  {compatibleMachines.map((machine) => {
                     const checked = form.watch('compatibleEquipmentIds')?.includes(machine.id);
 
                     return (

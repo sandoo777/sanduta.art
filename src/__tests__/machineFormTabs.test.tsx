@@ -7,6 +7,7 @@ import { filterMachines } from '@/modules/machines/useMachines';
 import { PRINT_METHOD_TYPES } from '@/modules/print-methods/types';
 
 const MachineForm = MachineFormBase as any;
+const mockMachinesState = vi.hoisted(() => ({ current: [] as any[] }));
 
 vi.mock('@/modules/materials/useMaterials', () => ({
   useMaterials: () => ({
@@ -16,7 +17,7 @@ vi.mock('@/modules/materials/useMaterials', () => ({
 
 vi.mock('@/modules/machines/useMachines', () => ({
   useMachines: () => ({
-    getMachines: vi.fn().mockResolvedValue([]),
+    getMachines: vi.fn().mockImplementation(async () => mockMachinesState.current),
   }),
 }));
 
@@ -165,6 +166,39 @@ describe('MachineForm tabs', () => {
     fetchMock.mockRestore();
   });
 
+  it('only shows machines that match the selected print-method type', async () => {
+    mockMachinesState.current = [
+      { id: 'digital-1', name: 'Xerox Versant 280', type: 'Digital Color', equipmentType: 'DIGITAL_COLOR', active: true },
+      { id: 'digital-2', name: 'Ricoh Pro C5200', type: 'Digital Color', equipmentType: 'DIGITAL_COLOR', active: true },
+      { id: 'uv-1', name: 'UV Flatbed', type: 'UV', equipmentType: 'UV', active: true },
+    ] as any;
+
+    render(
+      <PrintMethodForm
+        printMethod={null}
+        onClose={vi.fn()}
+        onSave={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Xerox Versant 280')).toBeInTheDocument();
+      expect(screen.getByText('Ricoh Pro C5200')).toBeInTheDocument();
+      expect(screen.queryByText('UV Flatbed')).not.toBeInTheDocument();
+    });
+
+    const typeSelect = screen.getAllByRole('combobox')[0];
+    fireEvent.change(typeSelect, {
+      target: { value: 'UV' },
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Xerox Versant 280')).not.toBeInTheDocument();
+      expect(screen.queryByText('Ricoh Pro C5200')).not.toBeInTheDocument();
+      expect(screen.getByText('UV Flatbed')).toBeInTheDocument();
+    });
+  });
+
   it('does not render the old required-fields notice after interacting with the form', () => {
     render(
       <MachineForm
@@ -211,7 +245,7 @@ describe('MachineForm tabs', () => {
     expect(screen.queryByText(/Opționale:/i)).not.toBeInTheDocument();
   });
 
-  it('keeps a single equipment type selector with the same functionality under the name Tip echipament', () => {
+  it('keeps a single equipment type selector with the same functionality under the name Tip echipament and renames the method selector to Metoda printare', () => {
     render(
       <MachineForm
         machine={{
@@ -235,6 +269,7 @@ describe('MachineForm tabs', () => {
     );
 
     expect(screen.getByText(/Tip echipament/i)).toBeInTheDocument();
+    expect(screen.getByText(/Metoda printare/i)).toBeInTheDocument();
     expect(screen.queryByText(/Categorie calcul cost/i)).not.toBeInTheDocument();
   });
 

@@ -1,26 +1,8 @@
 import { Printer, PrinterCheck, Scissors, Layers, Cpu, Zap } from 'lucide-react';
 
 export type MachineStatus = 'AVAILABLE' | 'BUSY' | 'MAINTENANCE';
+export type ProductionMode = 'IN_HOUSE' | 'OUTSOURCE';
 export type MachineMaintenanceType = 'Preventive' | 'Corrective' | 'Calibration' | 'Repair' | 'Part Replacement' | 'Inspection';
-
-export interface DigitalColorSpeedProfile {
-  minWeight: number;
-  maxWeight: number;
-  speedPpm: number;
-}
-
-export interface DigitalColorMaintenanceComponent {
-  name: string;
-  cost: number;
-  expectedLifetimePages: number;
-}
-
-export interface DigitalColorTonerConsumable {
-  type: string;
-  materialId?: string | null;
-  cost: number;
-  yieldPages: number;
-}
 
 export const MACHINE_MAINTENANCE_TYPES: MachineMaintenanceType[] = [
   'Preventive',
@@ -30,38 +12,6 @@ export const MACHINE_MAINTENANCE_TYPES: MachineMaintenanceType[] = [
   'Part Replacement',
   'Inspection',
 ];
-
-export function normalizeMaintenanceType(value?: string | null): MachineMaintenanceType {
-  const mapping: Record<string, MachineMaintenanceType> = {
-    PREVENTIVE: 'Preventive',
-    CORRECTIVE: 'Corrective',
-    CALIBRATION: 'Calibration',
-    REPAIR: 'Repair',
-    PART_REPLACEMENT: 'Part Replacement',
-    INSPECTION: 'Inspection',
-    Preventive: 'Preventive',
-    Corrective: 'Corrective',
-    Calibration: 'Calibration',
-    Repair: 'Repair',
-    'Part Replacement': 'Part Replacement',
-    Inspection: 'Inspection',
-  };
-
-  return mapping[String(value ?? 'Preventive').trim()] ?? 'Preventive';
-}
-
-export function toDbMaintenanceType(value?: string | null): string {
-  const mapping: Record<MachineMaintenanceType, string> = {
-    Preventive: 'PREVENTIVE',
-    Corrective: 'CORRECTIVE',
-    Calibration: 'CALIBRATION',
-    Repair: 'REPAIR',
-    'Part Replacement': 'PART_REPLACEMENT',
-    Inspection: 'INSPECTION',
-  };
-
-  return mapping[normalizeMaintenanceType(value)];
-}
 
 export const EQUIPMENT_TYPE_VALUES = [
   'DIGITAL_COLOR',
@@ -105,7 +55,7 @@ export const LEGACY_EQUIPMENT_TYPE_MAP: Record<string, EquipmentType> = {
 export function normalizeEquipmentType(value?: string | null): EquipmentType {
   if (!value) return 'DIGITAL_COLOR';
 
-  const normalized = value.trim().toUpperCase().replace(/-/g, '_');
+  const normalized = value.trim().toUpperCase().replace(/[-\s]+/g, '_');
   if (EQUIPMENT_TYPE_VALUES.some((entry) => entry === normalized)) {
     return normalized as EquipmentType;
   }
@@ -128,6 +78,11 @@ export function isHourlyEquipmentType(type?: string | null): boolean {
   return ['OFFSET', 'EMBROIDERY', 'PLOTTER_CUTTING'].includes(normalized);
 }
 
+export const PRODUCTION_MODE_CONFIG: Record<ProductionMode, { label: string; color: string; bg: string }> = {
+  IN_HOUSE: { label: 'In-House', color: 'text-blue-700', bg: 'bg-blue-100' },
+  OUTSOURCE: { label: 'Outsource', color: 'text-amber-700', bg: 'bg-amber-100' },
+};
+
 export const EQUIPMENT_TYPE_CONFIG: Record<EquipmentType, { label: string; description: string; unit: string; color: string; bg: string }> = {
   DIGITAL_COLOR:   { label: 'Digital Color', description: 'Cost per click color', unit: 'click', color: 'text-blue-700', bg: 'bg-blue-100' },
   DIGITAL_MONO:    { label: 'Digital Mono', description: 'Cost per click mono', unit: 'click', color: 'text-sky-700', bg: 'bg-sky-100' },
@@ -145,6 +100,7 @@ export interface Machine {
   name: string;
   type: string;
   equipmentType: EquipmentType;
+  productionMode?: ProductionMode;
   status: MachineStatus;
 
   // Comune
@@ -167,15 +123,16 @@ export interface Machine {
   costClickColor?: number | null;
   costClickBW?: number | null;
   servicePerClick?: number | null;
-  purchaseCostMdl?: number | null;
-  expectedLifetimePages?: number | null;
-  electricityCostPerKwh?: number | null;
-  speedProfiles?: DigitalColorSpeedProfile[];
-  maintenanceComponents?: DigitalColorMaintenanceComponent[];
-  tonerConsumables?: DigitalColorTonerConsumable[];
   maxFormat?: string | null;
   maxGramWeight?: number | null;
   speedPpm?: number | null;
+  purchaseCostMdl?: number | null;
+  expectedLifetimePages?: number | null;
+  electricityCostPerKwh?: number | null;
+  powerConsumptionKw?: number | null;
+  maintenanceComponents?: Array<{ name: string; cost: number; expectedLifetimePages: number }>;
+  tonerConsumables?: Array<{ type: string; cost: number; yieldPages: number }>;
+  speedProfiles?: Array<{ minWeight: number; maxWeight: number; speedPpm: number }>;
 
   compatibleMaterialIds: string[];
   compatiblePrintMethodIds?: string[];
